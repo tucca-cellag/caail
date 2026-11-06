@@ -17,6 +17,7 @@ import {
   isOaByDoi,
   doiKey,
 } from './citations.js';
+import { doiRelation, type DoiRelation } from './doi-relation.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CACHE_PATH = join(HERE, 'citation-cache.json');
@@ -70,6 +71,8 @@ export function loadPaperIsOa(): Map<string, boolean> {
 export interface CitationInfo {
   doi: string | null;
   doiSource: 'auto' | 'manual' | null;
+  /** whether `doi` is the item's own or its describing paper's (doi-relation.ts, #367) */
+  doiRelation: DoiRelation | null;
   citationCount: number | null;
   citationSources: number;
   /** the bare DOIs whose counts were summed — the works the badge/hub link opens (#102) */
@@ -77,7 +80,7 @@ export interface CitationInfo {
 }
 
 /** The "no associated publication" info. */
-export const NO_CITATION: CitationInfo = { doi: null, doiSource: null, citationCount: null, citationSources: 0, citationDois: [] };
+export const NO_CITATION: CitationInfo = { doi: null, doiSource: null, doiRelation: null, citationCount: null, citationSources: 0, citationDois: [] };
 
 /** Parse the `related_dois` JSON-array column (a committed string) into a DOI list. */
 export function parseRelatedDois(raw: string | null | undefined): string[] {
@@ -112,6 +115,7 @@ export function citationInfo(
   return {
     doi: doi ?? null,
     doiSource: source ?? null,
+    doiRelation: doiRelation(doi),
     citationCount: citationDois.length > 0 ? total : null,
     citationSources: citationDois.length,
     citationDois,

@@ -176,6 +176,9 @@ export const CatalogEntrySchema = z.object({
   /** DB-owned associated-publication DOI + provenance, folded from the catalog NDJSON */
   doi: z.string().nullable().default(null),
   doiSource: z.enum(['auto', 'manual']).nullable().default(null),
+  /** `own` when `doi` is a data repository's (the item itself), `publication` when it is the
+   *  describing paper's, null with no DOI. Derived by registrant in doi-relation.ts (#367). */
+  doiRelation: z.enum(['own', 'publication']).nullable().default(null),
   /** OpenAlex cited_by_count summed over `doi` + its sibling version DOIs; null when unknown */
   citationCount: z.number().int().nonnegative().nullable().default(null),
   /** number of papers the count aggregates (1 = single paper; >1 = versioned resource, #102) */
@@ -213,6 +216,9 @@ export const DatasetEntrySchema = z.object({
   /** DB-owned associated-publication DOI + provenance, folded from dataset_entries NDJSON */
   doi: z.string().nullable().default(null),
   doiSource: z.enum(['auto', 'manual']).nullable().default(null),
+  /** `own` when `doi` is a data repository's (the item itself), `publication` when it is the
+   *  describing paper's, null with no DOI. Derived by registrant in doi-relation.ts (#367). */
+  doiRelation: z.enum(['own', 'publication']).nullable().default(null),
   /** OpenAlex cited_by_count summed over `doi` + its sibling version DOIs; null when unknown */
   citationCount: z.number().int().nonnegative().nullable().default(null),
   /** number of papers the count aggregates (1 = single paper; >1 = versioned resource, #102) */
@@ -295,6 +301,16 @@ export const DatasetInventoryRowSchema = z.object({
   columns: z.record(z.string(), z.string()),
   /** every URL appearing in the row, in document order, deduped */
   links: z.array(z.string()),
+  /** bare lowercase DOI of the row's paper or preprint (the Paper cell); null when none is named */
+  paperDoi: z.string().nullable().default(null),
+  /** what the Data cell holds; null when the page's table has no Data column (#367) */
+  dataStatus: z.enum(['deposit', 'supplementary', 'unavailable']).nullable().default(null),
+  /** the deposit's accession as its Data-cell badge names it, never read from the id; null otherwise */
+  accession: z.string().nullable().default(null),
+  /** the deposit's link from the Data cell; null when there is no deposit */
+  dataUrl: z.string().nullable().default(null),
+  /** the deposit's DOI where its link states one (a doi.org link or `doi:` parameter); null otherwise */
+  dataDoi: z.string().nullable().default(null),
   /** two-tier subject tags, folded in from the committed topic NDJSON */
   topics: z.array(TopicRefSchema).default([]),
   /**
@@ -1084,6 +1100,8 @@ export const ApiCatalogIndexRowSchema = z.strictObject({
   group: z.string(),
   url: z.string().nullable(),
   doi: z.string().nullable(),
+  /** whether `doi` is the item's own (a data repository's) or its describing paper's (#367) */
+  doiRelation: z.enum(['own', 'publication']).nullable(),
   tier: z.string().nullable(),
 });
 

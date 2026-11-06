@@ -108,6 +108,62 @@ export function rowLinks(cells: readonly string[]): string[] {
   return out;
 }
 
+/** The identity a row carries, read from its Paper and Data cells (tucca-cellag/caail-planning#367). */
+export interface RowIdentity {
+  /** bare lowercase DOI of the row's paper or preprint; null for "none named" or no Paper column */
+  paperDoi: string | null;
+  /** what the Data cell holds; null when the table has no Data column or the cell is off-schema */
+  dataStatus: 'deposit' | 'supplementary' | 'unavailable' | null;
+  /** the deposit's accession, as its badge names it; null for a named-repository link or no deposit */
+  accession: string | null;
+  /** the deposit's link; null when there is no deposit */
+  dataUrl: string | null;
+  /** the deposit's DOI where its link states one; never derived from a record URL */
+  dataDoi: string | null;
+}
+
+const NO_IDENTITY: RowIdentity = { paperDoi: null, dataStatus: null, accession: null, dataUrl: null, dataDoi: null };
+
+/** A DOI a link states outright: a doi.org target, or a `doi:` parameter in its query. */
+function statedDoi(url: string): string | null {
+  const m = url.match(/^https?:\/\/(?:dx\.)?doi\.org\/(10\.\d{4,9}\/\S+)$/i)
+    ?? url.match(/[?&][A-Za-z]*=doi:(10\.\d{4,9}\/[^&#\s]+)/i);
+  return m ? m[1]!.toLowerCase() : null;
+}
+
+/**
+ * Read a row's identity from its Paper and Data cells, by header label (multi-species pages
+ * insert a Species column, so positions differ). The shapes are the ones Datasets/CLAUDE.md
+ * allows: a Paper cell is a `[DOI](https://doi.org/…)` or `[preprint](…)` link or
+ * `none named`; a Data cell is an accession badge (`` [`GSE…`](url) ``), a named-repository
+ * link (`[Zenodo](url)`), or one of the status words `supplementary` and `unavailable`.
+ *
+ * The accession comes from the Data cell ONLY, never from the row's id: an id can be
+ * minted from data a row merely mentions (#715), which is the claim this field exists to
+ * keep apart. A cell outside these shapes yields nulls rather than throwing; rejecting it
+ * is db:check's job, and a throw here would take the build down for a curation typo.
+ */
+export function rowIdentity(columns: Readonly<Record<string, string>>): RowIdentity {
+  const paper = columns['Paper']?.trim() ?? '';
+  const paperLink = paper.match(/^\[(?:DOI|preprint)\]\((https?:\/\/[^)\s]+)\)$/);
+  const paperDoi = paperLink ? statedDoi(paperLink[1]!) : null;
+
+  if (!('Data' in columns)) return { ...NO_IDENTITY, paperDoi };
+  const data = columns['Data']!.trim();
+  if (data === 'supplementary' || data === 'unavailable') {
+    return { ...NO_IDENTITY, paperDoi, dataStatus: data };
+  }
+  const badge = data.match(/^\[`([^`]+)`\]\((https?:\/\/[^)\s]+)\)$/);
+  if (badge) {
+    return { paperDoi, dataStatus: 'deposit', accession: badge[1]!.trim(), dataUrl: badge[2]!, dataDoi: statedDoi(badge[2]!) };
+  }
+  const named = data.match(/^\[[^\]`]+\]\((https?:\/\/[^)\s]+)\)$/);
+  if (named) {
+    return { paperDoi, dataStatus: 'deposit', accession: null, dataUrl: named[1]!, dataDoi: statedDoi(named[1]!) };
+  }
+  return { ...NO_IDENTITY, paperDoi };
+}
+
 /**
  * Flatten a raw markdown cell to plain text — the same round-trip `catalogNameKey` uses,
  * so `` `GSE169291` `` and `[Title](url)` reduce to what a reader sees rather than to
@@ -183,13 +239,15 @@ export function buildDatasetInventory(
             `Markdown have diverged — re-run \`pnpm db:bootstrap\`.`,
         );
       }
+      const columns = Object.fromEntries(header.map((h, i) => [h, cells[i]!]));
       inventory.push({
         id: r.item_id,
         kind: 'inventory',
         page,
         name: cellText(cells[0] ?? ''),
-        columns: Object.fromEntries(header.map((h, i) => [h, cells[i]!])),
+        columns,
         links: rowLinks(cells),
+        ...rowIdentity(columns),
         topics: byId.get(r.item_id) ?? [],
         // Filled in below: resolution needs every page's rows to exist first.
         subseries: [],

@@ -456,6 +456,7 @@ export function buildCatalogIndex(catalog: unknown, corpusDate: string): unknown
     group?: string;
     url?: string | null;
     doi?: string | null;
+    doiRelation?: 'own' | 'publication' | null;
     tier?: string | null;
   };
   const cat = catalog as { software?: Entry[]; databases?: Entry[] } | null;
@@ -476,6 +477,7 @@ export function buildCatalogIndex(catalog: unknown, corpusDate: string): unknown
           group: e.group ?? '',
           url: e.url ?? null,
           doi: e.doi ?? null,
+          doiRelation: e.doiRelation ?? null,
           tier: e.tier ?? null,
         })),
     );
@@ -555,7 +557,7 @@ export function buildManifest(
       { path: 'matrix.json', use: 'All method×area cells, empties included. Use to ask what has and has not been indexed — then read `matrixNote` in papers-index.json before reading a silence as an absence.' },
       { path: 'papers-index.json', use: 'START HERE for papers. Every reference, one compact row: id, title, year, first author, section, methods, areas, DOI, code/data flags. A sixth the size of papers.json, so it survives a fetch tool that truncates. Enumerate here, then fetch full records.' },
       { path: 'papers.json', use: 'Full records for the references you selected. Large (~554 KB): if your fetch summarises rather than returning bytes, a "not found" from this file is not evidence of absence.' },
-      { path: 'catalog-index.json', use: 'START HERE for software and databases. One compact row each: slug, name, kind, group, URL, DOI, license tier. A tenth the size of catalog.json.' },
+      { path: 'catalog-index.json', use: 'START HERE for software and databases. One compact row each: slug, name, kind, group, URL, DOI, whether that DOI is the item\'s own or its describing paper\'s (`doiRelation`), license tier. A tenth the size of catalog.json.' },
       { path: 'catalog.json', use: 'Full records with summaries. Large (~576 KB), two thirds of it the same summary prose as Markdown and as HTML; same truncation caveat as papers.json.' },
       {
         path: 'datasets.json',
@@ -566,7 +568,12 @@ export function buildManifest(
           'inventory rows (kind "inventory") — the per-study deposits with accession, tissue, ' +
           'assay type and size, keyed by the source page\'s own column labels. Filter either by ' +
           '`page` (e.g. "Cow", "Benchmarks"). Use the inventory rows for "what could I combine ' +
-          'my own run with", and page "Benchmarks" for "what could I evaluate a model against".',
+          'my own run with", and page "Benchmarks" for "what could I evaluate a model against". ' +
+          'To tell whether something is already held, join on `id`; each inventory row also ' +
+          'carries `paperDoi`, `accession`, `dataUrl`, `dataDoi` and `dataStatus` read from its ' +
+          'Paper and Data cells, and an entry\'s `doiRelation` says whether its `doi` is the ' +
+          'item\'s own ("own", a data repository\'s) or its describing paper\'s ("publication"). ' +
+          'One accession can sit on several rows when a deposit is listed on more than one page.',
       },
       { path: 'reports.json', use: 'Field reports: recurring institutional state-of-field surveys (GFI State of the Industry and the like), one record per edition. When recommending one, use the record with `current: true` for its series and treat any record with a `supersededBy` id as historical only; `seriesEditions` walks the history. The latest edition is derived, so it stays correct as new editions land.' },
       { path: 'topics.json', use: 'Subject tree plus an inverted index: topic → items across all content types. Start here for "what should I use for X".' },

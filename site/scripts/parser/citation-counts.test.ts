@@ -13,10 +13,16 @@ describe('citationInfo', () => {
     expect(citationInfo('https://doi.org/10.1/X', 'manual', counts)).toEqual({
       doi: 'https://doi.org/10.1/X',
       doiSource: 'manual',
+      // A one-digit registrant is not a real DOI, so no relation is claimed for it.
+      doiRelation: null,
       citationCount: 7,
       citationSources: 1,
       citationDois: ['10.1/x'],
     });
+  });
+  it('carries the DOI relation through to the card info', () => {
+    expect(citationInfo('10.5281/zenodo.1', 'manual', new Map()).doiRelation).toBe('own');
+    expect(citationInfo('10.1038/s41586-021-03819-2', 'manual', new Map()).doiRelation).toBe('publication');
   });
   it('is the null info when there is no DOI', () => {
     expect(citationInfo(null, null, new Map())).toEqual(NO_CITATION);

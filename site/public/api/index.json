@@ -50,7 +50,7 @@
     },
     {
       "path": "catalog-index.json",
-      "use": "START HERE for software and databases. One compact row each: slug, name, kind, group, URL, DOI, license tier. A tenth the size of catalog.json."
+      "use": "START HERE for software and databases. One compact row each: slug, name, kind, group, URL, DOI, whether that DOI is the item's own or its describing paper's (`doiRelation`), license tier. A tenth the size of catalog.json."
     },
     {
       "path": "catalog.json",
@@ -58,7 +58,7 @@
     },
     {
       "path": "datasets.json",
-      "use": "Two arrays, together the whole dataset corpus. `entries` = curated dataset entries (portals, atlases, GEMs, reference corpora, and the AI/ML benchmark and evaluation datasets on page \"Benchmarks\"; kind atlas/gem/other). `inventory` = the per-species inventory rows (kind \"inventory\") — the per-study deposits with accession, tissue, assay type and size, keyed by the source page's own column labels. Filter either by `page` (e.g. \"Cow\", \"Benchmarks\"). Use the inventory rows for \"what could I combine my own run with\", and page \"Benchmarks\" for \"what could I evaluate a model against\"."
+      "use": "Two arrays, together the whole dataset corpus. `entries` = curated dataset entries (portals, atlases, GEMs, reference corpora, and the AI/ML benchmark and evaluation datasets on page \"Benchmarks\"; kind atlas/gem/other). `inventory` = the per-species inventory rows (kind \"inventory\") — the per-study deposits with accession, tissue, assay type and size, keyed by the source page's own column labels. Filter either by `page` (e.g. \"Cow\", \"Benchmarks\"). Use the inventory rows for \"what could I combine my own run with\", and page \"Benchmarks\" for \"what could I evaluate a model against\". To tell whether something is already held, join on `id`; each inventory row also carries `paperDoi`, `accession`, `dataUrl`, `dataDoi` and `dataStatus` read from its Paper and Data cells, and an entry's `doiRelation` says whether its `doi` is the item's own (\"own\", a data repository's) or its describing paper's (\"publication\"). One accession can sit on several rows when a deposit is listed on more than one page."
     },
     {
       "path": "reports.json",

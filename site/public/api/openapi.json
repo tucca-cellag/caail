@@ -1405,6 +1405,21 @@
               }
             ]
           },
+          "doiRelation": {
+            "default": null,
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "own",
+                  "publication"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "citationCount": {
             "default": null,
             "anyOf": [
@@ -1446,6 +1461,7 @@
           "tier",
           "doi",
           "doiSource",
+          "doiRelation",
           "citationCount",
           "citationSources",
           "citationDois"
@@ -1491,6 +1507,20 @@
               }
             ]
           },
+          "doiRelation": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "own",
+                  "publication"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "tier": {
             "anyOf": [
               {
@@ -1509,6 +1539,7 @@
           "group",
           "url",
           "doi",
+          "doiRelation",
           "tier"
         ],
         "additionalProperties": false
@@ -1618,6 +1649,21 @@
               }
             ]
           },
+          "doiRelation": {
+            "default": null,
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "own",
+                  "publication"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "citationCount": {
             "default": null,
             "anyOf": [
@@ -1659,6 +1705,7 @@
           "tier",
           "doi",
           "doiSource",
+          "doiRelation",
           "citationCount",
           "citationSources",
           "citationDois"
@@ -1695,6 +1742,66 @@
             "items": {
               "type": "string"
             }
+          },
+          "paperDoi": {
+            "default": null,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dataStatus": {
+            "default": null,
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "deposit",
+                  "supplementary",
+                  "unavailable"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "accession": {
+            "default": null,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dataUrl": {
+            "default": null,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dataDoi": {
+            "default": null,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "topics": {
             "default": [],
@@ -1738,6 +1845,11 @@
           "name",
           "columns",
           "links",
+          "paperDoi",
+          "dataStatus",
+          "accession",
+          "dataUrl",
+          "dataDoi",
           "topics",
           "subseries"
         ],

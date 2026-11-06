@@ -20,6 +20,7 @@
       "tier": "unknown",
       "doi": "10.1093/bib/bbaa294",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 366,
       "citationSources": 1,
       "citationDois": [
@@ -61,6 +62,7 @@
       "tier": "unknown",
       "doi": "10.1038/s41588-025-02155-9",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 65,
       "citationSources": 1,
       "citationDois": [
@@ -87,6 +89,7 @@
       "tier": "unknown",
       "doi": "10.1007/s11367-022-02128-8",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 233,
       "citationSources": 1,
       "citationDois": [
@@ -118,6 +121,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -172,6 +176,7 @@
       "tier": "unknown",
       "doi": "10.1371/journal.pone.0254270",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 7,
       "citationSources": 1,
       "citationDois": [
@@ -213,6 +218,7 @@
       "tier": "unknown",
       "doi": "10.1038/s41588-025-02329-5",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 20,
       "citationSources": 1,
       "citationDois": [
@@ -249,6 +255,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -283,6 +290,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -327,6 +335,7 @@
       "tier": "unknown",
       "doi": "10.1371/journal.pcbi.1010194",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 11,
       "citationSources": 1,
       "citationDois": [
@@ -358,6 +367,7 @@
       "tier": "unknown",
       "doi": "10.1038/s41588-023-01585-7",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 270,
       "citationSources": 1,
       "citationDois": [
@@ -389,6 +399,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -418,6 +429,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkad1080",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 76,
       "citationSources": 1,
       "citationDois": [
@@ -469,6 +481,7 @@
       "tier": "unknown",
       "doi": "10.1016/j.ymben.2026.01.001",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 0,
       "citationSources": 1,
       "citationDois": [
@@ -530,6 +543,7 @@
       "tier": "unknown",
       "doi": "10.64898/2026.05.28.728221",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 0,
       "citationSources": 1,
       "citationDois": [
@@ -566,6 +580,7 @@
       "tier": "unknown",
       "doi": "10.1101/2025.11.03.686346",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 4,
       "citationSources": 1,
       "citationDois": [
@@ -612,6 +627,7 @@
       "tier": "unknown",
       "doi": "10.5281/zenodo.19339684",
       "doiSource": "manual",
+      "doiRelation": "own",
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -661,6 +677,7 @@
       "tier": "unknown",
       "doi": "10.1016/j.crfs.2024.100855",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 8,
       "citationSources": 1,
       "citationDois": [
@@ -712,6 +729,7 @@
       "tier": "unknown",
       "doi": "10.3390/foods12020344",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 31,
       "citationSources": 1,
       "citationDois": [
@@ -738,6 +756,7 @@
       "tier": "unknown",
       "doi": "10.1186/s12915-019-0726-5",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 195,
       "citationSources": 1,
       "citationDois": [
@@ -758,6 +777,7 @@
       "tier": "unknown",
       "doi": "10.1186/s12864-020-07078-9",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 84,
       "citationSources": 1,
       "citationDois": [
@@ -799,6 +819,7 @@
       "tier": "unknown",
       "doi": "10.1016/j.actbio.2025.07.002",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 11,
       "citationSources": 1,
       "citationDois": [
@@ -840,6 +861,7 @@
       "tier": "unknown",
       "doi": "10.1016/j.crfs.2026.101403",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -884,6 +906,7 @@
       "tier": "unknown",
       "doi": "10.1038/s41586-023-06139-9",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 1106,
       "citationSources": 1,
       "citationDois": [
@@ -920,6 +943,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -954,6 +978,7 @@
       "tier": "unknown",
       "doi": "10.1371/journal.pgen.1011420",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 6,
       "citationSources": 1,
       "citationDois": [
@@ -1010,6 +1035,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -1059,6 +1085,7 @@
       "tier": "unknown",
       "doi": "10.1038/s41592-023-02144-y",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 159,
       "citationSources": 1,
       "citationDois": [
@@ -1120,6 +1147,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -1174,6 +1202,7 @@
       "tier": "restricted",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -1208,6 +1237,7 @@
       "tier": "unknown",
       "doi": "10.1186/s13395-020-00236-3",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 232,
       "citationSources": 1,
       "citationDois": [
@@ -1244,6 +1274,7 @@
       "tier": "unknown",
       "doi": "10.1038/s41586-022-04518-2",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 839,
       "citationSources": 1,
       "citationDois": [
@@ -1270,6 +1301,7 @@
       "tier": "unknown",
       "doi": "10.1371/journal.pbio.3000599",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 1328,
       "citationSources": 1,
       "citationDois": [
@@ -1316,6 +1348,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -1365,6 +1398,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -1399,6 +1433,7 @@
       "tier": "unknown",
       "doi": "10.1007/s00253-024-13147-w",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 22,
       "citationSources": 1,
       "citationDois": [
@@ -1450,6 +1485,7 @@
       "tier": "unknown",
       "doi": "10.1002/bit.27899",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 40,
       "citationSources": 1,
       "citationDois": [
@@ -1506,6 +1542,7 @@
       "tier": "unknown",
       "doi": "10.1016/j.ymben.2024.07.009",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 14,
       "citationSources": 1,
       "citationDois": [
@@ -1562,6 +1599,7 @@
       "tier": "unknown",
       "doi": "10.1002/aic.18602",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 3,
       "citationSources": 1,
       "citationDois": [
@@ -1608,6 +1646,7 @@
       "tier": "unknown",
       "doi": "10.1016/j.ymben.2026.102552",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 1,
       "citationSources": 1,
       "citationDois": [
@@ -1674,6 +1713,7 @@
       "tier": "unknown",
       "doi": "10.1038/s44320-024-00060-7",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 58,
       "citationSources": 1,
       "citationDois": [
@@ -1730,6 +1770,7 @@
       "tier": "unknown",
       "doi": "10.1371/journal.pone.0148031",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 72,
       "citationSources": 1,
       "citationDois": [
@@ -1771,6 +1812,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -1805,6 +1847,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -1839,6 +1882,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -1873,6 +1917,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -1917,6 +1962,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -1971,6 +2017,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -2000,6 +2047,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -2039,6 +2087,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -2073,6 +2122,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -2102,6 +2152,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -2141,6 +2192,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -2175,6 +2227,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -2219,6 +2272,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -2248,6 +2302,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -2302,6 +2357,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -2336,6 +2392,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -2370,6 +2427,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -2395,6 +2453,11 @@
         "https://doi.org/10.1038/s43016-022-00658-w",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE169291"
       ],
+      "paperDoi": "10.1038/s43016-022-00658-w",
+      "dataStatus": "deposit",
+      "accession": "GSE169291",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE169291",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-line-engineering",
@@ -2438,6 +2501,11 @@
         "https://doi.org/10.1016/j.foodres.2026.118368",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1331774"
       ],
+      "paperDoi": "10.1016/j.foodres.2026.118368",
+      "dataStatus": "deposit",
+      "accession": "PRJNA1331774",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1331774",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "bioprocess-scale-up",
@@ -2476,6 +2544,11 @@
         "https://doi.org/10.3390/ani12192508",
         "https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA006598"
       ],
+      "paperDoi": "10.3390/ani12192508",
+      "dataStatus": "deposit",
+      "accession": "CRA006598",
+      "dataUrl": "https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA006598",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -2504,6 +2577,11 @@
         "https://doi.org/10.1038/s41597-022-01668-w",
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRP374834"
       ],
+      "paperDoi": "10.1038/s41597-022-01668-w",
+      "dataStatus": "deposit",
+      "accession": "SRP374834",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/sra/?term=SRP374834",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -2532,6 +2610,11 @@
         "https://doi.org/10.1186/s12711-023-00849-4",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA729271"
       ],
+      "paperDoi": "10.1186/s12711-023-00849-4",
+      "dataStatus": "deposit",
+      "accession": "PRJNA729271",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA729271",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -2560,6 +2643,11 @@
         "https://doi.org/10.1016/j.psj.2023.103203",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE241619"
       ],
+      "paperDoi": "10.1016/j.psj.2023.103203",
+      "dataStatus": "deposit",
+      "accession": "GSE241619",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE241619",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -2588,6 +2676,11 @@
         "https://doi.org/10.3389/fphys.2018.01298",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE114452"
       ],
+      "paperDoi": "10.3389/fphys.2018.01298",
+      "dataStatus": "deposit",
+      "accession": "GSE114452",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE114452",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -2616,6 +2709,11 @@
         "https://doi.org/10.1186/s12864-015-1623-0",
         "https://www.ncbi.nlm.nih.gov/bioproject/PRJNA563347"
       ],
+      "paperDoi": "10.1186/s12864-015-1623-0",
+      "dataStatus": "deposit",
+      "accession": "PRJNA563347",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/PRJNA563347",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -2649,6 +2747,11 @@
         "https://doi.org/10.1371/journal.pone.0153750",
         "https://journals.plos.org/plosone/article/file?type=supplementary&id=10.1371/journal.pone.0153750.s002"
       ],
+      "paperDoi": "10.1371/journal.pone.0153750",
+      "dataStatus": "supplementary",
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "ai-methods-tooling",
@@ -2707,6 +2810,11 @@
         "https://doi.org/10.1016/j.foodcont.2020.107803",
         "https://ars.els-cdn.com/content/image/1-s2.0-S0956713520307192-mmc4.docx"
       ],
+      "paperDoi": "10.1016/j.foodcont.2020.107803",
+      "dataStatus": "supplementary",
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "ai-methods-tooling",
@@ -2749,6 +2857,11 @@
       "links": [
         "https://doi.org/10.1021/acs.jproteome.5b01050"
       ],
+      "paperDoi": "10.1021/acs.jproteome.5b01050",
+      "dataStatus": "supplementary",
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "ai-methods-tooling",
@@ -2812,6 +2925,11 @@
         "https://doi.org/10.1016/j.dib.2020.105357",
         "https://data.mendeley.com/datasets/cp2hdhkys3/6"
       ],
+      "paperDoi": "10.1016/j.dib.2020.105357",
+      "dataStatus": "deposit",
+      "accession": null,
+      "dataUrl": "https://data.mendeley.com/datasets/cp2hdhkys3/6",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -2850,6 +2968,11 @@
         "https://doi.org/10.1038/s41598-024-53904-5",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1017808"
       ],
+      "paperDoi": "10.1038/s41598-024-53904-5",
+      "dataStatus": "deposit",
+      "accession": "PRJNA1017808",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1017808",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -2889,6 +3012,11 @@
         "https://www.ebi.ac.uk/ena/browser/view/PRJEB55656",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE158430"
       ],
+      "paperDoi": "10.1126/sciadv.ade1204",
+      "dataStatus": "deposit",
+      "accession": "PRJEB55656",
+      "dataUrl": "https://www.ebi.ac.uk/ena/browser/view/PRJEB55656",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -2917,6 +3045,11 @@
         "https://doi.org/10.3389/fgene.2021.742077",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE184128"
       ],
+      "paperDoi": "10.3389/fgene.2021.742077",
+      "dataStatus": "deposit",
+      "accession": "GSE184128",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE184128",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -2950,6 +3083,11 @@
         "https://doi.org/10.3389/fnut.2023.1212196",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE211428"
       ],
+      "paperDoi": "10.3389/fnut.2023.1212196",
+      "dataStatus": "deposit",
+      "accession": "GSE211428",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE211428",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -2983,6 +3121,11 @@
         "https://doi.org/10.1038/s42003-024-07201-6",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE240556"
       ],
+      "paperDoi": "10.1038/s42003-024-07201-6",
+      "dataStatus": "deposit",
+      "accession": "GSE240556",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE240556",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -3028,6 +3171,11 @@
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173198",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173196"
       ],
+      "paperDoi": "10.1038/s43016-021-00419-1",
+      "dataStatus": "deposit",
+      "accession": "GSE173199",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173199",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -3079,6 +3227,11 @@
       "links": [
         "https://doi.org/10.1038/s42003-022-03423-8"
       ],
+      "paperDoi": "10.1038/s42003-022-03423-8",
+      "dataStatus": "supplementary",
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "ai-methods-tooling",
@@ -3122,6 +3275,11 @@
         "https://doi.org/10.64898/2026.05.20.726299",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE330550"
       ],
+      "paperDoi": "10.64898/2026.05.20.726299",
+      "dataStatus": "deposit",
+      "accession": "GSE330550",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE330550",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-line-engineering",
@@ -3160,6 +3318,11 @@
         "https://doi.org/10.1111/cpr.13430",
         "https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA006626"
       ],
+      "paperDoi": "10.1111/cpr.13430",
+      "dataStatus": "deposit",
+      "accession": "CRA006626",
+      "dataUrl": "https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA006626",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -3193,6 +3356,11 @@
         "https://doi.org/10.1038/s41467-021-22100-8",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE158430"
       ],
+      "paperDoi": "10.1038/s41467-021-22100-8",
+      "dataStatus": "deposit",
+      "accession": "GSE158430",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE158430",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -3254,6 +3422,11 @@
         "https://doi.org/10.1111/cpr.13219",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA790762"
       ],
+      "paperDoi": "10.1111/cpr.13219",
+      "dataStatus": "deposit",
+      "accession": "PRJNA790762",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA790762",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -3282,6 +3455,11 @@
         "https://doi.org/10.1186/s13059-021-02489-7",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE182909"
       ],
+      "paperDoi": "10.1186/s13059-021-02489-7",
+      "dataStatus": "deposit",
+      "accession": "GSE182909",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE182909",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -3310,6 +3488,11 @@
         "https://doi.org/10.1002/jcsm.13292",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE205347"
       ],
+      "paperDoi": "10.1002/jcsm.13292",
+      "dataStatus": "deposit",
+      "accession": "GSE205347",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE205347",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -3343,6 +3526,11 @@
         "https://doi.org/10.3390/ijms24010387",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE161967"
       ],
+      "paperDoi": "10.3390/ijms24010387",
+      "dataStatus": "deposit",
+      "accession": "GSE161967",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE161967",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -3370,6 +3558,11 @@
       "links": [
         "https://doi.org/10.1186/s12864-019-5530-7"
       ],
+      "paperDoi": "10.1186/s12864-019-5530-7",
+      "dataStatus": "supplementary",
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -3402,6 +3595,11 @@
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262757",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE290556"
       ],
+      "paperDoi": "10.1002/advs.202413998",
+      "dataStatus": "deposit",
+      "accession": "GSE262758",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262758",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -3458,6 +3656,11 @@
         "https://doi.org/10.3390/ani16020218",
         "https://ngdc.cncb.ac.cn/bioproject/browse/PRJCA054990"
       ],
+      "paperDoi": "10.3390/ani16020218",
+      "dataStatus": "deposit",
+      "accession": "PRJCA054990",
+      "dataUrl": "https://ngdc.cncb.ac.cn/bioproject/browse/PRJCA054990",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -3486,6 +3689,11 @@
         "https://doi.org/10.1016/j.ygeno.2024.110959",
         "https://www.ncbi.nlm.nih.gov/bioproject/PRJNA1056565"
       ],
+      "paperDoi": "10.1016/j.ygeno.2024.110959",
+      "dataStatus": "deposit",
+      "accession": "PRJNA1056565",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/PRJNA1056565",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -3513,6 +3721,11 @@
       "links": [
         "https://doi.org/10.1016/j.fochms.2025.100293"
       ],
+      "paperDoi": "10.1016/j.fochms.2025.100293",
+      "dataStatus": "supplementary",
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -3562,6 +3775,11 @@
         "https://www.ebi.ac.uk/pride/archive/projects/PXD017535",
         "https://doi.org/10.1016/j.dib.2020.106064"
       ],
+      "paperDoi": "10.1016/j.jprot.2020.103794",
+      "dataStatus": "deposit",
+      "accession": "PXD017535",
+      "dataUrl": "https://www.ebi.ac.uk/pride/archive/projects/PXD017535",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -3590,6 +3808,11 @@
         "https://doi.org/10.1016/j.jprot.2020.104016",
         "https://ars.els-cdn.com/content/image/1-s2.0-S1874391920303845-mmc2.xlsx"
       ],
+      "paperDoi": "10.1016/j.jprot.2020.104016",
+      "dataStatus": "supplementary",
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "ai-methods-tooling",
@@ -3623,6 +3846,11 @@
         "https://doi.org/10.1016/j.jprot.2022.104637",
         "https://ars.els-cdn.com/content/image/1-s2.0-S1874391922001610-mmc1.xlsx"
       ],
+      "paperDoi": "10.1016/j.jprot.2022.104637",
+      "dataStatus": "supplementary",
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "ai-methods-tooling",
@@ -3656,6 +3884,11 @@
         "https://doi.org/10.1371/journal.pone.0246955",
         "https://journals.plos.org/plosone/article/file?type=supplementary&id=10.1371/journal.pone.0246955.s004"
       ],
+      "paperDoi": "10.1371/journal.pone.0246955",
+      "dataStatus": "supplementary",
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "ai-methods-tooling",
@@ -3688,6 +3921,11 @@
       "links": [
         "https://doi.org/10.1016/j.meatsci.2021.108488"
       ],
+      "paperDoi": "10.1016/j.meatsci.2021.108488",
+      "dataStatus": "supplementary",
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "ai-methods-tooling",
@@ -3730,6 +3968,11 @@
       "links": [
         "https://doi.org/10.1016/j.meatsci.2020.108350"
       ],
+      "paperDoi": "10.1016/j.meatsci.2020.108350",
+      "dataStatus": "supplementary",
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "ai-methods-tooling",
@@ -3782,6 +4025,11 @@
       "links": [
         "https://doi.org/10.1016/j.aca.2015.08.032"
       ],
+      "paperDoi": "10.1016/j.aca.2015.08.032",
+      "dataStatus": "supplementary",
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "ai-methods-tooling",
@@ -3834,6 +4082,11 @@
       "links": [
         "https://doi.org/10.1021/acs.jafc.7b02175"
       ],
+      "paperDoi": "10.1021/acs.jafc.7b02175",
+      "dataStatus": "supplementary",
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "ai-methods-tooling",
@@ -3886,6 +4139,11 @@
       "links": [
         "https://doi.org/10.1016/j.foodchem.2021.131075"
       ],
+      "paperDoi": "10.1016/j.foodchem.2021.131075",
+      "dataStatus": "supplementary",
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "ai-methods-tooling",
@@ -3919,6 +4177,11 @@
         "https://doi.org/10.1016/j.dib.2025.112045",
         "https://zenodo.org/records/16764338"
       ],
+      "paperDoi": "10.1016/j.dib.2025.112045",
+      "dataStatus": "deposit",
+      "accession": null,
+      "dataUrl": "https://zenodo.org/records/16764338",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -3947,6 +4210,11 @@
         "https://doi.org/10.1016/j.dib.2018.11.091",
         "https://data.mendeley.com/datasets/mwmhh766fc/3"
       ],
+      "paperDoi": "10.1016/j.dib.2018.11.091",
+      "dataStatus": "deposit",
+      "accession": null,
+      "dataUrl": "https://data.mendeley.com/datasets/mwmhh766fc/3",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -3980,6 +4248,11 @@
         "https://doi.org/10.1186/s13104-022-06126-9",
         "https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/XNFVTS"
       ],
+      "paperDoi": "10.1186/s13104-022-06126-9",
+      "dataStatus": "deposit",
+      "accession": null,
+      "dataUrl": "https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/XNFVTS",
+      "dataDoi": "10.7910/dvn/xnfvts",
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -4013,6 +4286,11 @@
         "https://doi.org/10.1186/s12864-021-08224-7",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE179821"
       ],
+      "paperDoi": "10.1186/s12864-021-08224-7",
+      "dataStatus": "deposit",
+      "accession": "GSE179821",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE179821",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -4041,6 +4319,11 @@
         "https://doi.org/10.1186/s12864-024-10189-2",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE253395"
       ],
+      "paperDoi": "10.1186/s12864-024-10189-2",
+      "dataStatus": "deposit",
+      "accession": "GSE253395",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE253395",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -4068,6 +4351,11 @@
       "links": [
         "https://doi.org/10.1101/2025.08.21.671512"
       ],
+      "paperDoi": "10.1101/2025.08.21.671512",
+      "dataStatus": "unavailable",
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -4097,6 +4385,11 @@
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173198",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173199"
       ],
+      "paperDoi": "10.1038/s43016-021-00419-1",
+      "dataStatus": "deposit",
+      "accession": "GSE173198",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173198",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -4141,6 +4434,11 @@
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173196",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173199"
       ],
+      "paperDoi": "10.1038/s43016-021-00419-1",
+      "dataStatus": "deposit",
+      "accession": "GSE173196",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173196",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -4185,6 +4483,11 @@
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262675",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262758"
       ],
+      "paperDoi": "10.1002/advs.202413998",
+      "dataStatus": "deposit",
+      "accession": "GSE262675",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262675",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -4224,6 +4527,11 @@
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262757",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262758"
       ],
+      "paperDoi": "10.1002/advs.202413998",
+      "dataStatus": "deposit",
+      "accession": "GSE262757",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262757",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -4268,6 +4576,11 @@
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE290556",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262758"
       ],
+      "paperDoi": "10.1002/advs.202413998",
+      "dataStatus": "deposit",
+      "accession": "GSE290556",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE290556",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -4301,6 +4614,11 @@
         "https://doi.org/10.1038/s41538-021-00122-2",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE189296"
       ],
+      "paperDoi": "10.1038/s41538-021-00122-2",
+      "dataStatus": "deposit",
+      "accession": "GSE189296",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE189296",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -4329,6 +4647,11 @@
         "https://doi.org/10.1016/j.biochi.2025.11.006",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE289644"
       ],
+      "paperDoi": "10.1016/j.biochi.2025.11.006",
+      "dataStatus": "deposit",
+      "accession": "GSE289644",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE289644",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -4357,6 +4680,11 @@
         "https://doi.org/10.1186/s12864-025-12312-3",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE305686"
       ],
+      "paperDoi": "10.1186/s12864-025-12312-3",
+      "dataStatus": "deposit",
+      "accession": "GSE305686",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE305686",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -4390,6 +4718,11 @@
         "https://doi.org/10.3389/fcell.2021.785380",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173477"
       ],
+      "paperDoi": "10.3389/fcell.2021.785380",
+      "dataStatus": "deposit",
+      "accession": "GSE173477",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173477",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -4418,6 +4751,11 @@
         "https://doi.org/10.3389/fvets.2021.777477",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE186730"
       ],
+      "paperDoi": "10.3389/fvets.2021.777477",
+      "dataStatus": "deposit",
+      "accession": "GSE186730",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE186730",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -4447,6 +4785,11 @@
         "https://doi.org/10.1016/j.aquaculture.2023.740534",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA987844"
       ],
+      "paperDoi": "10.1016/j.aquaculture.2023.740534",
+      "dataStatus": "deposit",
+      "accession": "PRJNA987844",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA987844",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -4475,6 +4818,11 @@
       "links": [
         "https://doi.org/10.1016/j.fsi.2026.111364"
       ],
+      "paperDoi": "10.1016/j.fsi.2026.111364",
+      "dataStatus": "supplementary",
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -4514,6 +4862,11 @@
         "https://doi.org/10.3389/fimmu.2026.1713369",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE306674"
       ],
+      "paperDoi": "10.3389/fimmu.2026.1713369",
+      "dataStatus": "deposit",
+      "accession": "GSE306674",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE306674",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -4558,6 +4911,11 @@
         "https://doi.org/10.1186/s12864-025-12475-z",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1302321"
       ],
+      "paperDoi": "10.1186/s12864-025-12475-z",
+      "dataStatus": "deposit",
+      "accession": "PRJNA1302321",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1302321",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -4592,6 +4950,11 @@
         "https://doi.org/10.1128/jvi.00790-25",
         "https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA022393"
       ],
+      "paperDoi": "10.1128/jvi.00790-25",
+      "dataStatus": "deposit",
+      "accession": "CRA022393",
+      "dataUrl": "https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA022393",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -4627,6 +4990,11 @@
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRR5134062",
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRR5135715"
       ],
+      "paperDoi": "10.1038/s41598-017-10475-y",
+      "dataStatus": "deposit",
+      "accession": "SRR5134062",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/sra/?term=SRR5134062",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -4656,6 +5024,11 @@
         "https://doi.org/10.1016/j.aquaculture.2020.735871",
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRP128934"
       ],
+      "paperDoi": "10.1016/j.aquaculture.2020.735871",
+      "dataStatus": "deposit",
+      "accession": "SRP128934",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/sra/?term=SRP128934",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -4686,6 +5059,11 @@
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRR1460493",
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRR1460505"
       ],
+      "paperDoi": "10.1371/journal.pone.0106201",
+      "dataStatus": "deposit",
+      "accession": "SRR1460493",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/sra/?term=SRR1460493",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -4716,6 +5094,11 @@
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRX1098368",
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRX1098375"
       ],
+      "paperDoi": "10.1371/journal.pone.0144350",
+      "dataStatus": "deposit",
+      "accession": "SRX1098368",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/sra/?term=SRX1098368",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -4745,6 +5128,11 @@
         "https://doi.org/10.1016/j.gene.2021.145642",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA664224"
       ],
+      "paperDoi": "10.1016/j.gene.2021.145642",
+      "dataStatus": "deposit",
+      "accession": "PRJNA664224",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA664224",
+      "dataDoi": null,
       "topics": [],
       "subseries": []
     },
@@ -4768,6 +5156,11 @@
         "https://doi.org/10.1016/j.cbd.2021.100874",
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRP304278"
       ],
+      "paperDoi": "10.1016/j.cbd.2021.100874",
+      "dataStatus": "deposit",
+      "accession": "SRP304278",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/sra/?term=SRP304278",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -4797,6 +5190,11 @@
         "https://doi.org/10.1371/journal.pone.0188067",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA389966"
       ],
+      "paperDoi": "10.1371/journal.pone.0188067",
+      "dataStatus": "deposit",
+      "accession": "PRJNA389966",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA389966",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -4827,6 +5225,11 @@
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRR7990528",
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRR7990530"
       ],
+      "paperDoi": "10.1007/s12562-019-01310-6",
+      "dataStatus": "deposit",
+      "accession": "SRR7990528",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/sra/?term=SRR7990528",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -4856,6 +5259,11 @@
         "https://doi.org/10.1007/s00438-019-01621-4",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA577772"
       ],
+      "paperDoi": "10.1007/s00438-019-01621-4",
+      "dataStatus": "deposit",
+      "accession": "PRJNA577772",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA577772",
+      "dataDoi": null,
       "topics": [],
       "subseries": []
     },
@@ -4879,6 +5287,11 @@
         "https://doi.org/10.1371/journal.pone.0178604",
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRP095377"
       ],
+      "paperDoi": "10.1371/journal.pone.0178604",
+      "dataStatus": "deposit",
+      "accession": "SRP095377",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/sra/?term=SRP095377",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -4908,6 +5321,11 @@
         "https://doi.org/10.1186/s12864-015-1701-3",
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRP056408"
       ],
+      "paperDoi": "10.1186/s12864-015-1701-3",
+      "dataStatus": "deposit",
+      "accession": "SRP056408",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/sra/?term=SRP056408",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -4940,6 +5358,11 @@
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA480555",
         "https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA003690"
       ],
+      "paperDoi": "10.1126/sciadv.abl4642",
+      "dataStatus": "deposit",
+      "accession": "PRJNA737102",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA737102",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -4969,6 +5392,11 @@
         "https://doi.org/10.3390/ijms25168623",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA780617"
       ],
+      "paperDoi": "10.3390/ijms25168623",
+      "dataStatus": "deposit",
+      "accession": "PRJNA780617",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA780617",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -5008,6 +5436,11 @@
         "https://doi.org/10.1016/j.ygeno.2025.111125",
         "https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA030323"
       ],
+      "paperDoi": "10.1016/j.ygeno.2025.111125",
+      "dataStatus": "deposit",
+      "accession": "CRA030323",
+      "dataUrl": "https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA030323",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -5042,6 +5475,11 @@
         "https://doi.org/10.1371/journal.pone.0348006",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1307069"
       ],
+      "paperDoi": "10.1371/journal.pone.0348006",
+      "dataStatus": "deposit",
+      "accession": "PRJNA1307069",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1307069",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-line-engineering",
@@ -5082,6 +5520,11 @@
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA725663",
         "https://doi.org/10.64898/2026.04.27.720974"
       ],
+      "paperDoi": "10.3390/ani12192593",
+      "dataStatus": "deposit",
+      "accession": "PRJNA726590",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA726590",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -5110,6 +5553,11 @@
         "https://doi.org/10.1186/s40104-026-01393-z",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1254901"
       ],
+      "paperDoi": "10.1186/s40104-026-01393-z",
+      "dataStatus": "deposit",
+      "accession": "PRJNA1254901",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1254901",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -5138,6 +5586,11 @@
         "https://doi.org/10.1038/s42003-026-09665-0",
         "https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA037446"
       ],
+      "paperDoi": "10.1038/s42003-026-09665-0",
+      "dataStatus": "deposit",
+      "accession": "CRA037446",
+      "dataUrl": "https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA037446",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -5176,6 +5629,11 @@
         "https://doi.org/10.3390/vetsci10020075",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE152947"
       ],
+      "paperDoi": "10.3390/vetsci10020075",
+      "dataStatus": "deposit",
+      "accession": "GSE152947",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE152947",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -5205,6 +5663,11 @@
         "https://doi.org/10.1016/j.ydbio.2019.11.008",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA564810"
       ],
+      "paperDoi": "10.1016/j.ydbio.2019.11.008",
+      "dataStatus": "deposit",
+      "accession": "PRJNA564810",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA564810",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -5239,6 +5702,11 @@
         "https://doi.org/10.1371/journal.pone.0053171",
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRA051669.1"
       ],
+      "paperDoi": "10.1371/journal.pone.0053171",
+      "dataStatus": "deposit",
+      "accession": "SRA051669.1",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/sra/?term=SRA051669.1",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -5268,6 +5736,11 @@
         "https://doi.org/10.1016/j.gdata.2016.04.005",
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRX1674471"
       ],
+      "paperDoi": "10.1016/j.gdata.2016.04.005",
+      "dataStatus": "deposit",
+      "accession": "SRX1674471",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/sra/?term=SRX1674471",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -5297,6 +5770,11 @@
         "https://doi.org/10.1186/s12864-015-1782-z",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJEB7712"
       ],
+      "paperDoi": "10.1186/s12864-015-1782-z",
+      "dataStatus": "deposit",
+      "accession": "PRJEB7712",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJEB7712",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -5326,6 +5804,11 @@
         "https://doi.org/10.1093/g3journal/jkad215",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA970983"
       ],
+      "paperDoi": "10.1093/g3journal/jkad215",
+      "dataStatus": "deposit",
+      "accession": "PRJNA970983",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA970983",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -5354,6 +5837,11 @@
       "links": [
         "https://doi.org/10.1038/s41598-019-50651-w"
       ],
+      "paperDoi": "10.1038/s41598-019-50651-w",
+      "dataStatus": "supplementary",
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -5384,6 +5872,11 @@
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRR955389",
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRR955396"
       ],
+      "paperDoi": "10.1371/journal.pone.0148374",
+      "dataStatus": "deposit",
+      "accession": "SRR955389",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/sra/?term=SRR955389",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -5414,6 +5907,11 @@
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA661185",
         "https://db.cngb.org/search/project/CNP0000222/"
       ],
+      "paperDoi": "10.1016/j.gene.2021.145869",
+      "dataStatus": "deposit",
+      "accession": "PRJNA661185",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA661185",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-line-engineering",
@@ -5448,6 +5946,11 @@
         "https://doi.org/10.1016/j.aquaculture.2018.02.048",
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRS643409"
       ],
+      "paperDoi": "10.1016/j.aquaculture.2018.02.048",
+      "dataStatus": "deposit",
+      "accession": "SRS643409",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/sra/?term=SRS643409",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -5477,6 +5980,11 @@
         "https://doi.org/10.1186/s12864-017-3728-0",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE90058"
       ],
+      "paperDoi": "10.1186/s12864-017-3728-0",
+      "dataStatus": "deposit",
+      "accession": "GSE90058",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE90058",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -5506,6 +6014,11 @@
         "https://doi.org/10.1186/1471-2164-11-39",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE18389"
       ],
+      "paperDoi": "10.1186/1471-2164-11-39",
+      "dataStatus": "deposit",
+      "accession": "GSE18389",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE18389",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -5535,6 +6048,11 @@
         "https://doi.org/10.1016/j.gene.2018.10.070",
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRP074282"
       ],
+      "paperDoi": "10.1016/j.gene.2018.10.070",
+      "dataStatus": "deposit",
+      "accession": "SRP074282",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/sra/?term=SRP074282",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -5564,6 +6082,11 @@
         "https://doi.org/10.1038/s41598-017-16718-2",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE97173"
       ],
+      "paperDoi": "10.1038/s41598-017-16718-2",
+      "dataStatus": "deposit",
+      "accession": "GSE97173",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE97173",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -5593,6 +6116,11 @@
         "https://doi.org/10.1111/jfb.15280",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA848289"
       ],
+      "paperDoi": "10.1111/jfb.15280",
+      "dataStatus": "deposit",
+      "accession": "PRJNA848289",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA848289",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -5622,6 +6150,11 @@
         "https://doi.org/10.1016/j.aqrep.2023.101672",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA843454"
       ],
+      "paperDoi": "10.1016/j.aqrep.2023.101672",
+      "dataStatus": "deposit",
+      "accession": "PRJNA843454",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA843454",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -5656,6 +6189,11 @@
         "https://doi.org/10.1016/j.aca.2020.08.050",
         "https://data.mendeley.com/datasets/k4dyxzzptj/1"
       ],
+      "paperDoi": "10.1016/j.aca.2020.08.050",
+      "dataStatus": "deposit",
+      "accession": null,
+      "dataUrl": "https://data.mendeley.com/datasets/k4dyxzzptj/1",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -5705,6 +6243,11 @@
         "https://doi.org/10.1021/acs.jproteome.1c00759",
         "https://www.ebi.ac.uk/pride/archive/projects/PXD026377"
       ],
+      "paperDoi": "10.1021/acs.jproteome.1c00759",
+      "dataStatus": "deposit",
+      "accession": "PXD026377",
+      "dataUrl": "https://www.ebi.ac.uk/pride/archive/projects/PXD026377",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -5744,6 +6287,11 @@
         "https://doi.org/10.1038/s41598-023-31242-2",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA706530"
       ],
+      "paperDoi": "10.1038/s41598-023-31242-2",
+      "dataStatus": "deposit",
+      "accession": "PRJNA706530",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA706530",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -5774,6 +6322,11 @@
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRP321375",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA625542"
       ],
+      "paperDoi": "10.3389/fimmu.2021.737332",
+      "dataStatus": "deposit",
+      "accession": "SRP321375",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/sra/?term=SRP321375",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -5808,6 +6361,11 @@
         "https://doi.org/10.3389/fmolb.2024.1403861",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1124228"
       ],
+      "paperDoi": "10.3389/fmolb.2024.1403861",
+      "dataStatus": "deposit",
+      "accession": "PRJNA1124228",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1124228",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -5837,6 +6395,11 @@
         "https://doi.org/10.1016/j.fsi.2024.109358",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE252828"
       ],
+      "paperDoi": "10.1016/j.fsi.2024.109358",
+      "dataStatus": "deposit",
+      "accession": "GSE252828",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE252828",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -5870,6 +6433,11 @@
       "links": [
         "https://doi.org/10.1016/j.curpro.2026.100103"
       ],
+      "paperDoi": "10.1016/j.curpro.2026.100103",
+      "dataStatus": "supplementary",
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-line-engineering",
@@ -5904,6 +6472,11 @@
         "https://doi.org/10.1073/pnas.2102344118",
         "https://github.com/SysBioChalmers/Zebrafish-GEM"
       ],
+      "paperDoi": "10.1073/pnas.2102344118",
+      "dataStatus": "deposit",
+      "accession": "Zebrafish-GEM",
+      "dataUrl": "https://github.com/SysBioChalmers/Zebrafish-GEM",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "bioprocess-scale-up",
@@ -5948,6 +6521,11 @@
         "https://doi.org/10.1016/j.devcel.2023.11.001",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE223922"
       ],
+      "paperDoi": "10.1016/j.devcel.2023.11.001",
+      "dataStatus": "deposit",
+      "accession": "GSE223922",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE223922",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -5982,6 +6560,11 @@
         "https://doi.org/10.1016/j.cell.2024.09.047",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA940501"
       ],
+      "paperDoi": "10.1016/j.cell.2024.09.047",
+      "dataStatus": "deposit",
+      "accession": "PRJNA940501",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA940501",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "bioprocess-scale-up",
@@ -6022,6 +6605,11 @@
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1121101",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1121939"
       ],
+      "paperDoi": "10.1186/s13059-025-03764-7",
+      "dataStatus": "deposit",
+      "accession": "PRJNA1121101",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1121101",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -6055,6 +6643,11 @@
       "links": [
         "https://doi.org/10.64898/2026.01.28.702282"
       ],
+      "paperDoi": "10.64898/2026.01.28.702282",
+      "dataStatus": "supplementary",
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -6089,6 +6682,11 @@
         "https://doi.org/10.1038/s41598-023-31822-2",
         "https://osf.io/t742a/"
       ],
+      "paperDoi": "10.1038/s41598-023-31822-2",
+      "dataStatus": "deposit",
+      "accession": null,
+      "dataUrl": "https://osf.io/t742a/",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-line-engineering",
@@ -6117,6 +6715,11 @@
         "https://doi.org/10.3390/cells15020206",
         "https://ngdc.cncb.ac.cn/bioproject/browse/PRJCA049754"
       ],
+      "paperDoi": "10.3390/cells15020206",
+      "dataStatus": "deposit",
+      "accession": "PRJCA049754",
+      "dataUrl": "https://ngdc.cncb.ac.cn/bioproject/browse/PRJCA049754",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -6150,6 +6753,11 @@
         "https://doi.org/10.1038/s41597-025-04950-9",
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRP531789"
       ],
+      "paperDoi": "10.1038/s41597-025-04950-9",
+      "dataStatus": "deposit",
+      "accession": "SRP531789",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/sra/?term=SRP531789",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -6179,6 +6787,11 @@
         "https://doi.org/10.1186/s12864-015-1817-5",
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRP033481"
       ],
+      "paperDoi": "10.1186/s12864-015-1817-5",
+      "dataStatus": "deposit",
+      "accession": "SRP033481",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/sra/?term=SRP033481",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -6207,6 +6820,11 @@
       "links": [
         "https://doi.org/10.1016/j.ygeno.2021.08.015"
       ],
+      "paperDoi": "10.1016/j.ygeno.2021.08.015",
+      "dataStatus": "supplementary",
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -6241,6 +6859,11 @@
         "https://doi.org/10.1186/s12864-025-12122-7",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA906172"
       ],
+      "paperDoi": "10.1186/s12864-025-12122-7",
+      "dataStatus": "deposit",
+      "accession": "PRJNA906172",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA906172",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -6276,6 +6899,11 @@
         "https://www.ebi.ac.uk/pride/archive/projects/PXD005166",
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRR4254476"
       ],
+      "paperDoi": "10.1186/s12864-018-4770-2",
+      "dataStatus": "deposit",
+      "accession": "PXD005166",
+      "dataUrl": "https://www.ebi.ac.uk/pride/archive/projects/PXD005166",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -6317,6 +6945,11 @@
         "https://www.ncbi.nlm.nih.gov/nuccore/JR494687",
         "https://www.ncbi.nlm.nih.gov/nuccore/JR540729"
       ],
+      "paperDoi": "10.1899/11-149.1",
+      "dataStatus": "deposit",
+      "accession": "SRP009061",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/sra/?term=SRP009061",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -6346,6 +6979,11 @@
         "https://doi.org/10.3390/toxins11020097",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA508885"
       ],
+      "paperDoi": "10.3390/toxins11020097",
+      "dataStatus": "deposit",
+      "accession": "PRJNA508885",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA508885",
+      "dataDoi": null,
       "topics": [],
       "subseries": []
     },
@@ -6369,6 +7007,11 @@
         "https://doi.org/10.3389/fphys.2021.632518",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA695322"
       ],
+      "paperDoi": "10.3389/fphys.2021.632518",
+      "dataStatus": "deposit",
+      "accession": "PRJNA695322",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA695322",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -6398,6 +7041,11 @@
         "https://doi.org/10.1016/j.ygeno.2022.110409",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA822005"
       ],
+      "paperDoi": "10.1016/j.ygeno.2022.110409",
+      "dataStatus": "deposit",
+      "accession": "PRJNA822005",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA822005",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -6427,6 +7075,11 @@
         "https://doi.org/10.1186/s12915-025-02210-1",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1187280"
       ],
+      "paperDoi": "10.1186/s12915-025-02210-1",
+      "dataStatus": "deposit",
+      "accession": "PRJNA1187280",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1187280",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -6461,6 +7114,11 @@
         "https://doi.org/10.7554/eLife.102622",
         "https://www.ebi.ac.uk/ena/browser/view/PRJEB74031"
       ],
+      "paperDoi": "10.7554/elife.102622",
+      "dataStatus": "deposit",
+      "accession": "PRJEB74031",
+      "dataUrl": "https://www.ebi.ac.uk/ena/browser/view/PRJEB74031",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -6495,6 +7153,11 @@
         "https://doi.org/10.1016/j.isci.2024.109499",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA983861"
       ],
+      "paperDoi": "10.1016/j.isci.2024.109499",
+      "dataStatus": "deposit",
+      "accession": "PRJNA983861",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA983861",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -6529,6 +7192,11 @@
         "https://doi.org/10.1038/s42003-025-09202-5",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1244049"
       ],
+      "paperDoi": "10.1038/s42003-025-09202-5",
+      "dataStatus": "deposit",
+      "accession": "PRJNA1244049",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1244049",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -6574,6 +7242,11 @@
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206911",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206913"
       ],
+      "paperDoi": "10.1186/s12915-023-01519-z",
+      "dataStatus": "deposit",
+      "accession": "GSE206914",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206914",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -6616,6 +7289,11 @@
         "https://doi.org/10.1016/j.agrcom.2024.100026",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA852173"
       ],
+      "paperDoi": "10.1016/j.agrcom.2024.100026",
+      "dataStatus": "deposit",
+      "accession": "PRJNA852173",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA852173",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -6649,6 +7327,11 @@
         "https://doi.org/10.3390/ijms25021204",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE247753"
       ],
+      "paperDoi": "10.3390/ijms25021204",
+      "dataStatus": "deposit",
+      "accession": "GSE247753",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE247753",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -6682,6 +7365,11 @@
         "https://doi.org/10.1002/advs.202305080",
         "https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA011788"
       ],
+      "paperDoi": "10.1002/advs.202305080",
+      "dataStatus": "deposit",
+      "accession": "CRA011788",
+      "dataUrl": "https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA011788",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -6716,6 +7404,11 @@
         "https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA011059",
         "https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA011069"
       ],
+      "paperDoi": "10.1038/s41538-023-00203-4",
+      "dataStatus": "deposit",
+      "accession": "CRA011059",
+      "dataUrl": "https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA011059",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "metabolic-modeling",
@@ -6754,6 +7447,11 @@
         "https://doi.org/10.3389/fnut.2021.742672",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE180840"
       ],
+      "paperDoi": "10.3389/fnut.2021.742672",
+      "dataStatus": "deposit",
+      "accession": "GSE180840",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE180840",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -6783,6 +7481,11 @@
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRP180031",
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRP180432"
       ],
+      "paperDoi": "10.3390/genes10030231",
+      "dataStatus": "deposit",
+      "accession": "SRP180031",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/sra/?term=SRP180031",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -6811,6 +7514,11 @@
         "https://doi.org/10.1186/s40104-021-00577-z",
         "https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA003275"
       ],
+      "paperDoi": "10.1186/s40104-021-00577-z",
+      "dataStatus": "deposit",
+      "accession": "CRA003275",
+      "dataUrl": "https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA003275",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -6839,6 +7547,11 @@
         "https://doi.org/10.1007/s10142-017-0584-6",
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRP066398"
       ],
+      "paperDoi": "10.1007/s10142-017-0584-6",
+      "dataStatus": "deposit",
+      "accession": "SRP066398",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/sra/?term=SRP066398",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -6867,6 +7580,11 @@
         "https://doi.org/10.1186/s12863-021-00984-1",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA668562"
       ],
+      "paperDoi": "10.1186/s12863-021-00984-1",
+      "dataStatus": "deposit",
+      "accession": "PRJNA668562",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA668562",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -6895,6 +7613,11 @@
         "https://doi.org/10.3389/fgene.2020.00877",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA527944"
       ],
+      "paperDoi": "10.3389/fgene.2020.00877",
+      "dataStatus": "deposit",
+      "accession": "PRJNA527944",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA527944",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -6928,6 +7651,11 @@
         "https://doi.org/10.1371/journal.pone.0167858",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE86441"
       ],
+      "paperDoi": "10.1371/journal.pone.0167858",
+      "dataStatus": "deposit",
+      "accession": "GSE86441",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE86441",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -6956,6 +7684,11 @@
         "https://doi.org/10.3390/cimb44050138",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA820138"
       ],
+      "paperDoi": "10.3390/cimb44050138",
+      "dataStatus": "deposit",
+      "accession": "PRJNA820138",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA820138",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -6983,6 +7716,11 @@
       "links": [
         "https://doi.org/10.3389/fnut.2021.667622"
       ],
+      "paperDoi": "10.3389/fnut.2021.667622",
+      "dataStatus": "supplementary",
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "ai-methods-tooling",
@@ -7016,6 +7754,11 @@
         "https://doi.org/10.1038/s41467-021-22100-8",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE158430"
       ],
+      "paperDoi": "10.1038/s41467-021-22100-8",
+      "dataStatus": "deposit",
+      "accession": "GSE158430",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE158430",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -7076,6 +7819,11 @@
       "links": [
         "https://doi.org/10.3390/cells9041045"
       ],
+      "paperDoi": "10.3390/cells9041045",
+      "dataStatus": "supplementary",
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -7110,6 +7858,11 @@
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE223433",
         "https://ngdc.cncb.ac.cn/omix/release/OMIX005128"
       ],
+      "paperDoi": "10.1038/s41467-023-44001-8",
+      "dataStatus": "deposit",
+      "accession": "GSE223433",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE223433",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -7160,6 +7913,11 @@
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA597497",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA287471"
       ],
+      "paperDoi": "10.1186/s12864-026-12979-2",
+      "dataStatus": "deposit",
+      "accession": "GVM001420",
+      "dataUrl": "https://ngdc.cncb.ac.cn/gvm/search?searchTerm=GVM001420",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -7189,6 +7947,11 @@
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE271977",
         "https://www.ncbi.nlm.nih.gov/bioproject/PRJNA1134234"
       ],
+      "paperDoi": "10.1016/j.dib.2026.112637",
+      "dataStatus": "deposit",
+      "accession": "GSE271977",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE271977",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "ai-methods-tooling",
@@ -7226,6 +7989,11 @@
       "links": [
         "https://doi.org/10.1016/j.foodchem.2025.142946"
       ],
+      "paperDoi": "10.1016/j.foodchem.2025.142946",
+      "dataStatus": "supplementary",
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "ai-methods-tooling",
@@ -7294,6 +8062,11 @@
         "https://doi.org/10.1371/journal.pone.0150605",
         "https://journals.plos.org/plosone/article/file?type=supplementary&id=10.1371/journal.pone.0150605.s002"
       ],
+      "paperDoi": "10.1371/journal.pone.0150605",
+      "dataStatus": "supplementary",
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "ai-methods-tooling",
@@ -7326,6 +8099,11 @@
       "links": [
         "https://doi.org/10.1016/j.foodchem.2020.127133"
       ],
+      "paperDoi": "10.1016/j.foodchem.2020.127133",
+      "dataStatus": "supplementary",
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "ai-methods-tooling",
@@ -7358,6 +8136,11 @@
       "links": [
         "https://doi.org/10.1002/jcsm.13752"
       ],
+      "paperDoi": "10.1002/jcsm.13752",
+      "dataStatus": "supplementary",
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "benchmarks-evaluation",
@@ -7413,6 +8196,11 @@
         "https://www.ebi.ac.uk/ena/browser/view/PRJEB37735",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA762083"
       ],
+      "paperDoi": "10.1038/s41467-021-26153-7",
+      "dataStatus": "deposit",
+      "accession": "GSE158430",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE158430",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -7475,6 +8263,11 @@
         "https://www.ebi.ac.uk/ena/browser/view/PRJEB41485",
         "https://www.ebi.ac.uk/ena/browser/view/PRJEB41488"
       ],
+      "paperDoi": "10.1093/g3journal/jkab424",
+      "dataStatus": "deposit",
+      "accession": "PRJEB41485",
+      "dataUrl": "https://www.ebi.ac.uk/ena/browser/view/PRJEB41485",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -7502,6 +8295,11 @@
       "links": [
         "https://www.openml.org/d/505"
       ],
+      "paperDoi": null,
+      "dataStatus": "deposit",
+      "accession": "OpenML-505",
+      "dataUrl": "https://www.openml.org/d/505",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "ai-methods-tooling",
@@ -7551,6 +8349,11 @@
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206911",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206914"
       ],
+      "paperDoi": "10.1186/s12915-023-01519-z",
+      "dataStatus": "deposit",
+      "accession": "GSE206911",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206911",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -7586,6 +8389,11 @@
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206911",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206914"
       ],
+      "paperDoi": "10.1186/s12915-023-01519-z",
+      "dataStatus": "deposit",
+      "accession": "GSE206913",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206913",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -7619,6 +8427,11 @@
         "https://doi.org/10.1038/s41467-024-48261-w",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1001505"
       ],
+      "paperDoi": "10.1038/s41467-024-48261-w",
+      "dataStatus": "deposit",
+      "accession": "PRJNA1001505",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1001505",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -7651,6 +8464,11 @@
       "links": [
         "https://doi.org/10.1016/j.lwt.2021.111429"
       ],
+      "paperDoi": "10.1016/j.lwt.2021.111429",
+      "dataStatus": "supplementary",
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "ai-methods-tooling",
@@ -7683,6 +8501,11 @@
       "links": [
         "https://doi.org/10.1016/j.meatsci.2016.04.024"
       ],
+      "paperDoi": "10.1016/j.meatsci.2016.04.024",
+      "dataStatus": "supplementary",
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "ai-methods-tooling",
@@ -7725,6 +8548,11 @@
       "links": [
         "https://doi.org/10.1016/j.meatsci.2016.02.028"
       ],
+      "paperDoi": "10.1016/j.meatsci.2016.02.028",
+      "dataStatus": "supplementary",
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "ai-methods-tooling",
@@ -7778,6 +8606,11 @@
         "https://doi.org/10.3390/foods15111962",
         "https://doi.org/10.6084/m9.figshare.29551862"
       ],
+      "paperDoi": "10.3390/foods15111962",
+      "dataStatus": "deposit",
+      "accession": null,
+      "dataUrl": "https://doi.org/10.6084/m9.figshare.29551862",
+      "dataDoi": "10.6084/m9.figshare.29551862",
       "topics": [
         {
           "slug": "benchmarks-evaluation",
@@ -7832,6 +8665,11 @@
         "https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA019589",
         "https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA019576"
       ],
+      "paperDoi": "10.1002/imt2.254",
+      "dataStatus": "deposit",
+      "accession": "CRA019589",
+      "dataUrl": "https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA019589",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-line-engineering",
@@ -7865,6 +8703,11 @@
         "https://doi.org/10.1016/j.psj.2025.105735",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1280141"
       ],
+      "paperDoi": "10.1016/j.psj.2025.105735",
+      "dataStatus": "deposit",
+      "accession": "PRJNA1280141",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1280141",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -7893,6 +8736,11 @@
         "https://doi.org/10.3389/fphys.2025.1547188",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1196520"
       ],
+      "paperDoi": "10.3389/fphys.2025.1547188",
+      "dataStatus": "deposit",
+      "accession": "PRJNA1196520",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1196520",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -7931,6 +8779,11 @@
         "https://doi.org/10.3390/genes13101857",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA842679"
       ],
+      "paperDoi": "10.3390/genes13101857",
+      "dataStatus": "deposit",
+      "accession": "PRJNA842679",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA842679",
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -7956,6 +8809,11 @@
       "links": [
         "https://doi.org/10.5281/zenodo.19339684"
       ],
+      "paperDoi": null,
+      "dataStatus": null,
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "growth-factors",
@@ -7987,6 +8845,11 @@
         "https://doi.org/10.1016/j.crfs.2024.100855",
         "https://doi.org/10.5281/zenodo.11357327"
       ],
+      "paperDoi": null,
+      "dataStatus": null,
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "mass-spectrometry",
@@ -8038,6 +8901,11 @@
         "https://doi.org/10.3390/foods12020344",
         "https://github.com/sezinata/FoodML"
       ],
+      "paperDoi": null,
+      "dataStatus": null,
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "ai-methods-tooling",
@@ -8063,6 +8931,11 @@
       "links": [
         "https://doi.org/10.1186/s12915-019-0726-5"
       ],
+      "paperDoi": null,
+      "dataStatus": null,
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "cell-lines-engineering",
@@ -8088,6 +8961,11 @@
       "links": [
         "https://doi.org/10.1186/s12864-020-07078-9"
       ],
+      "paperDoi": null,
+      "dataStatus": null,
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [],
       "subseries": []
     },
@@ -8108,6 +8986,11 @@
         "https://doi.org/10.1016/j.actbio.2025.07.002",
         "https://github.com/LivingMatterLab/CANN/tree/main/ARTMEAT/FungiSteak"
       ],
+      "paperDoi": null,
+      "dataStatus": null,
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "flavor-sensory",
@@ -8149,6 +9032,11 @@
         "https://doi.org/10.1016/j.crfs.2026.101403",
         "https://github.com/LivingMatterLab/CANN/tree/main/ARTMEAT/LionsManeMushroomSteak"
       ],
+      "paperDoi": null,
+      "dataStatus": null,
+      "accession": null,
+      "dataUrl": null,
+      "dataDoi": null,
       "topics": [
         {
           "slug": "flavor-sensory",
