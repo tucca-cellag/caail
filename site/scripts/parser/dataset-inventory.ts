@@ -134,7 +134,8 @@ const NO_IDENTITY: RowIdentity = { paperDoi: null, dataStatus: null, accession: 
 const DEST = String.raw`((?:[^()\s]|\([^()\s]*\))+)`;
 const PAPER_LINK = new RegExp(String.raw`^\[(?:DOI|preprint)\]\(${DEST}\)$`);
 const BADGE_LINK = new RegExp('^\\[`([^`]+)`\\]\\(' + DEST + '\\)$');
-const NAMED_LINK = new RegExp('^\\[[^\\]`]+\\]\\(' + DEST + '\\)$');
+/** A link whose text is plain words: group 1 is the text, group 2 the destination. */
+const NAMED_LINK = new RegExp('^\\[([^\\]`]+)\\]\\(' + DEST + '\\)$');
 
 /**
  * The DOI a link states outright: a doi.org link on any host form (its path, cut at any
@@ -161,10 +162,21 @@ function statedDoiAs(url: string, relation: DoiRelation): string | null {
   return doi && doiRelation(doi) === relation ? doi : null;
 }
 
-const STATUS_WORDS = ['supplementary', 'unavailable'] as const;
+/** The words a Data cell may hold in place of a deposit link (Datasets/CLAUDE.md). */
+export const STATUS_WORDS = ['supplementary', 'unavailable'] as const;
 type StatusWord = (typeof STATUS_WORDS)[number];
 const isStatusWord = (s: string): s is StatusWord => (STATUS_WORDS as readonly string[]).includes(s);
-const NAMED_TEXT = /^\[([^\]`]+)\]\(/;
+
+/** The forms a Data cell may take, worded for a check's label and a curator's reason. */
+export const DATA_CELL_FORMS = ['a deposit link', ...STATUS_WORDS].join(', ').replace(/, (?=[^,]*$)/, ' or ');
+
+/**
+ * Link text that names no deposit, so a link carrying it is off-schema wherever it points:
+ * the status words (which stand alone), `none named` (the Paper cell's word for no DOI),
+ * `see paper` (a Data status word retired in tucca-cellag/caail#56), and `on request` (a
+ * study Datasets/CLAUDE.md gives no row).
+ */
+const NON_DEPOSIT_TEXT: readonly string[] = [...STATUS_WORDS, 'none named', 'see paper', 'on request'];
 const WEB_ADDRESS = /^https?:\/\//i;
 
 /** What a Data cell holds, or why it is outside the schema. */
@@ -176,22 +188,29 @@ export type DataCellReading =
 /**
  * Read one Data cell against the shapes Datasets/CLAUDE.md allows: an accession badge
  * (`` [`GSE…`](url) ``), a named-repository link (`[Zenodo](url)`), or a bare status word.
- * Off-schema, each with the reason a curator needs: anything that is not a link; a link
- * whose target is not an http(s) address (`mailto:`, `#`, a relative path); a status word
- * written as link text; and a link to a DOI whose registrant is not a data host, which is
+ * Off-schema, each with the reason a curator needs: anything that is not a link; a status
+ * word in the wrong case; a link whose target is not an http(s) address (`mailto:`, `#`, a
+ * relative path); a link whose text names no deposit (a status word, `none named`, `see
+ * paper`, `on request`); and a link to a DOI whose registrant is not a data host, which is
  * either a paper (it belongs in the Paper cell) or a deposit on a host the registrant list
  * lacks. The rule checks shape, not truth: a repository name linking somewhere else passes.
  */
 export function readDataCell(cell: string): DataCellReading {
   const data = cell.trim();
   if (isStatusWord(data)) return { kind: 'status', status: data };
+  if (isStatusWord(data.toLowerCase())) {
+    return { kind: 'off-schema', reason: `writes a status word in the wrong case; write "${data.toLowerCase()}"` };
+  }
   const badge = data.match(BADGE_LINK);
   const named = badge ? null : data.match(NAMED_LINK);
-  const url = badge?.[2] ?? named?.[1];
-  if (!url) return { kind: 'off-schema', reason: 'is not a deposit link, supplementary or unavailable' };
-  const text = (badge?.[1] ?? data.match(NAMED_TEXT)?.[1] ?? '').trim().toLowerCase();
+  const url = badge?.[2] ?? named?.[2];
+  if (!url) return { kind: 'off-schema', reason: `is not ${DATA_CELL_FORMS}` };
+  const text = (badge?.[1] ?? named?.[1] ?? '').trim().toLowerCase();
   if (isStatusWord(text)) {
     return { kind: 'off-schema', reason: `writes the status word "${text}" as a link; a status word stands alone` };
+  }
+  if (NON_DEPOSIT_TEXT.includes(text)) {
+    return { kind: 'off-schema', reason: `is a link labelled "${text}", which names no deposit` };
   }
   if (!WEB_ADDRESS.test(url)) return { kind: 'off-schema', reason: `links "${url}", which is not an http(s) address` };
   const doi = statedDoi(url);
@@ -221,7 +240,9 @@ export type LinkCellReading =
 export function readLinkCell(cell: string): LinkCellReading {
   const link = cell.trim().match(NAMED_LINK);
   if (!link) return { kind: 'off-schema', reason: 'is not a link' };
-  const url = link[1]!;
+  const text = link[1]!.trim().toLowerCase();
+  if (NON_DEPOSIT_TEXT.includes(text)) return { kind: 'off-schema', reason: `is a link labelled "${text}", which names nothing` };
+  const url = link[2]!;
   if (!WEB_ADDRESS.test(url)) return { kind: 'off-schema', reason: `links "${url}", which is not an http(s) address` };
   const doi = statedDoi(url);
   if (doi && doiRelation(doi) === 'publication') return { kind: 'paper', doi };
@@ -239,15 +260,17 @@ export type InventoryHeader = { header: string[] } | { problem: string };
  */
 export function readInventoryHeader(page: string, repoRoot: string = DEFAULT_REPO_ROOT): InventoryHeader {
   const path = join(repoRoot, 'Datasets', `${page}.md`);
-  // Checked separately: extractInventory reads the file, so a missing page would surface as
-  // a bare ENOENT rather than as the reason below.
-  const table = existsSync(path) ? extractInventory(path) : null;
+  // Checked first: extractInventory reads the file, so a missing page would surface as a
+  // bare ENOENT rather than as the reason below.
+  if (!existsSync(path)) return { problem: `Datasets/${page}.md does not exist: restore the page, or re-run \`pnpm db:bootstrap\`` };
+  const table = extractInventory(path);
   if (!table) {
-    return { problem: `Datasets/${page}.md ${existsSync(path) ? 'has no "## Complete data inventory" table' : 'does not exist'}` };
+    return { problem: `Datasets/${page}.md has no "## Complete data inventory" table: restore the heading and table, or re-run \`pnpm db:bootstrap\`` };
   }
+  // extractInventory trims cells already; trimmed again so a change there cannot split one label in two.
   const header = table.header.map((h) => h.trim());
   if (new Set(header).size !== header.length) {
-    return { problem: `Datasets/${page}.md repeats a column label (${header.join(' | ')}), and keying by label would drop one` };
+    return { problem: `Datasets/${page}.md repeats a column label (${header.join(' | ')}): rename the duplicate, since keying by label would drop one` };
   }
   return { header };
 }
@@ -347,8 +370,7 @@ export function buildDatasetInventory(
     if ('problem' in read) {
       throw new Error(
         `dataset-inventory: ${byPage.get(page)!.length} row(s) are recorded for page ` +
-          `"${page}" but ${read.problem}. Rename a repeated label, restore the page, or ` +
-          `re-run \`pnpm db:bootstrap\`.`,
+          `"${page}" but ${read.problem}.`,
       );
     }
     const header = read.header;

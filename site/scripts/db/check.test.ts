@@ -7,13 +7,13 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { writeFileSync, mkdtempSync, mkdirSync } from 'node:fs';
+import { writeFileSync, mkdtempSync, mkdirSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { openDb, importNdjson, type Db } from './lib.js';
+import { openDb, importNdjson, REPO_ROOT, type Db } from './lib.js';
 import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkAxisBijection, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, checkRowTagParity, checkFineTagSeedDrift, checkInventoryCells, INVENTORY_CELLS_LABEL, INVENTORY_CELLS_SHOWN, runChecks } from './check.js';
-import { readInventoryHeader } from '../parser/dataset-inventory.js';
+import { readInventoryHeader, STATUS_WORDS } from '../parser/dataset-inventory.js';
 import { THEME_SLUGS, FINE_TAGS } from './seed.js';
 
 const failing = (results: { label: string; ok: boolean }[], match: RegExp) =>
@@ -754,7 +754,7 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
     db.prepare('INSERT INTO dataset_rows(item_id,page,cells_json,subseries,ordinal) VALUES(?,?,?,NULL,0)')
       .run(id, page, JSON.stringify(cells));
   };
-  const result = (db: Db) => checkInventoryCells(db, headerFor).find((r) => r.label === INVENTORY_CELLS_LABEL)!;
+  const result = (db: Db) => checkInventoryCells(db, undefined, headerFor).find((r) => r.label === INVENTORY_CELLS_LABEL)!;
   const withRow = (page: string, cells: Record<string, string>) => {
     const db = miniDb(); insRow(db, 'ds:study-a', page, cellsFor(headers[page]!, cells)); return result(db);
   };
@@ -785,8 +785,46 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
     ]) {
       expect(withRow('Cow', { Data: data }).ok, data).toBe(false);
     }
-    expect(withRow('Cow', { Data: '[on request](mailto:author@example.org)' }).detail).toContain('http(s)');
+    expect(withRow('Cow', { Data: '[Zenodo](mailto:author@example.org)' }).detail).toContain('http(s)');
     expect(withRow('Cow', { Data: '[supplementary](https://example.org/s1.xlsx)' }).detail).toContain('status word');
+  });
+
+  it('rejects a web link whose text names no deposit', () => {
+    for (const data of [
+      '[on request](https://lab.example.org/contact)', '[see paper](https://www.nature.com/articles/x)',
+      '[None named](https://example.org)',
+    ]) {
+      const r = withRow('Cow', { Data: data });
+      expect(r.ok, data).toBe(false);
+      expect(r.detail, data).toContain('names no deposit');
+    }
+  });
+
+  it('rejects a status word in the wrong case, and says so', () => {
+    const r = withRow('Cow', { Data: 'Unavailable' });
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('write "unavailable"');
+  });
+
+  it('refuses a cell that is not a string, which the API build would crash on', () => {
+    const db = miniDb();
+    db.prepare("INSERT INTO items(id,type,slug) VALUES('ds:study-n','dataset','study-n')").run();
+    db.prepare("INSERT INTO dataset_rows(item_id,page,cells_json,subseries,ordinal) VALUES('ds:study-n','Cow',?,NULL,0)")
+      .run(JSON.stringify(['A', 'none named', 'supplementary', null, 'x', 'x', 'x', 'x']));
+    const r = result(db);
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('not a string');
+  });
+
+  it('builds its label from the status words, so a new word cannot leave it stale', () => {
+    for (const word of STATUS_WORDS) expect(INVENTORY_CELLS_LABEL).toContain(word);
+  });
+
+  it('agrees with Datasets/CLAUDE.md, whose Data bullet names every status word', () => {
+    const doc = readFileSync(join(REPO_ROOT, 'Datasets', 'CLAUDE.md'), 'utf8');
+    const bullet = doc.split('\n').find((l) => l.trimStart().startsWith('- **Data**'));
+    expect(bullet, 'the Data bullet in Datasets/CLAUDE.md').toBeDefined();
+    for (const word of STATUS_WORDS) expect(bullet, word).toContain(`\`${word}\``);
   });
 
   it('accepts an accession badge, a named repository link and both status words', () => {
@@ -827,10 +865,13 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
     mkdirSync(join(root, 'Datasets'));
     writeFileSync(join(root, 'Datasets', 'Dup.md'),
       '# Dup\n\n## Complete data inventory\n\n| Study | Data | Data |\n| --- | --- | --- |\n| A | on request | supplementary |\n');
-    expect(readInventoryHeader('Dup', root)).toEqual({ problem: expect.stringContaining('repeats a column label') });
-    expect(readInventoryHeader('Missing', root)).toEqual({ problem: expect.stringContaining('does not exist') });
+    writeFileSync(join(root, 'Datasets', 'NoTable.md'), '# NoTable\n\nNo inventory yet.\n');
+    // Each cause carries its own remedy, for the build error and the guard alike.
+    expect(readInventoryHeader('Dup', root)).toEqual({ problem: expect.stringContaining('rename the duplicate') });
+    expect(readInventoryHeader('Missing', root)).toEqual({ problem: expect.stringContaining('does not exist: restore the page') });
+    expect(readInventoryHeader('NoTable', root)).toEqual({ problem: expect.stringContaining('restore the heading and table') });
     const db = miniDb(); insRow(db, 'ds:study-d', 'Dup', ['A', 'on request', 'supplementary']);
-    const r = checkInventoryCells(db, (page) => readInventoryHeader(page, root)).find((x) => x.label === INVENTORY_CELLS_LABEL)!;
+    const r = checkInventoryCells(db, root).find((x) => x.label === INVENTORY_CELLS_LABEL)!;
     expect(r.ok).toBe(false);
     expect(r.detail).toContain('repeats a column label');
   });

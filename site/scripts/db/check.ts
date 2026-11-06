@@ -36,7 +36,7 @@ import { seriesRecency, EDITION_SORT_RULE } from '../parser/reports.js';
 import type { TaxonomyData } from '../parser/types.js';
 import { DOI_SHAPE } from '../parser/doi-relation.js';
 import {
-  labelCells, readDataCell, readInventoryHeader, readLinkCell, type InventoryHeader,
+  DATA_CELL_FORMS, labelCells, readDataCell, readInventoryHeader, readLinkCell, type InventoryHeader,
 } from '../parser/dataset-inventory.js';
 
 const MANUAL_LICENSES_PATH = join(SITE_ROOT, 'scripts', 'db', 'licenses-manual.json');
@@ -555,7 +555,7 @@ export function checkSubseries(db: Db, subseriesPath: string = SUBSERIES_PATH): 
 }
 
 export const INVENTORY_CELLS_LABEL =
-  'dataset_rows: every Data cell is a deposit link, supplementary or unavailable (CrossSpecies: its DOI / URL cell is a link)';
+  `dataset_rows: every Data cell is ${DATA_CELL_FORMS} (CrossSpecies: its DOI / URL cell is a link)`;
 
 /** How many problems one failing run names; the count always covers them all. */
 export const INVENTORY_CELLS_SHOWN = 10;
@@ -569,10 +569,13 @@ export const INVENTORY_CELLS_SHOWN = 10;
  *
  * The cell is read by the parser's own `readDataCell`, the reader `rowIdentity` uses to fill the
  * API's identity fields, rather than by a second copy of the vocabulary, so a cell the API serves with
- * no `dataStatus` is a cell this rejects. That includes a link whose target is not an http(s) address,
- * a status word written as a link, and a link to a DOI whose registrant is not a data host, for which
- * the reason says whether to move it to the Paper cell or add the registrant. The header comes from
- * the same `readInventoryHeader` the API build uses, which trims labels and refuses a repeated one.
+ * no `dataStatus` is a cell this rejects. That includes a status word in the wrong case, a link whose
+ * target is not an http(s) address, a link labelled with a word that names no deposit (a status word,
+ * `none named`, `see paper`, `on request`), and a link to a DOI whose registrant is not a data host,
+ * for which the reason says whether to move it to the Paper cell or add the registrant. It checks a
+ * cell's shape, not where its link leads. The header comes from the same `readInventoryHeader` the
+ * API build uses, which trims labels and refuses a repeated one, and a cell that is not a string is
+ * refused before either reader sees it.
  *
  * `CrossSpecies.md` has no Data column. Its `DOI / URL` cell is read by `readLinkCell` and must be a
  * link to an http(s) address (the paper, a deposit's DOI, or where the data sit); it takes no status
@@ -581,7 +584,8 @@ export const INVENTORY_CELLS_SHOWN = 10;
  */
 export function checkInventoryCells(
   db: Db,
-  headerFor: (page: string) => InventoryHeader = (page) => readInventoryHeader(page),
+  repoRoot: string = REPO_ROOT,
+  headerFor: (page: string) => InventoryHeader = (page) => readInventoryHeader(page, repoRoot),
 ): CheckResult[] {
   const rows = db.prepare('SELECT item_id, page, cells_json FROM dataset_rows ORDER BY page, ordinal, item_id')
     .all() as { item_id: string; page: string; cells_json: string }[];
@@ -595,7 +599,13 @@ export function checkInventoryCells(
     if ('problem' in read) { pageProblems.add(`page ${r.page}: ${read.problem} (first row ${r.item_id})`); continue; }
     let cells: unknown;
     try { cells = JSON.parse(r.cells_json); } catch { problems.push(`${r.item_id}: cells_json is not JSON`); continue; }
-    const columns = Array.isArray(cells) ? labelCells(read.header, cells.map(String)) : null;
+    // A non-string cell would pass a String() coercion here and then crash the API build,
+    // which calls string methods on every cell, so it is refused rather than coerced.
+    if (Array.isArray(cells) && !cells.every((c) => typeof c === 'string')) {
+      problems.push(`${r.item_id}: cells_json holds a cell that is not a string`);
+      continue;
+    }
+    const columns = Array.isArray(cells) ? labelCells(read.header, cells as string[]) : null;
     if (!columns) {
       problems.push(`${r.item_id}: ${Array.isArray(cells) ? cells.length : 'no'} cells against ${read.header.length} columns on ${r.page}`);
       continue;
@@ -899,7 +909,7 @@ export function runChecks(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
     ...checkTopicTiers(db), ...checkAxisBijection(db, repoRoot),
     ...checkCatalogHeadings(db), ...checkLicenses(db), ...checkManualLicenseKeys(db),
     ...checkDois(db), ...checkManualDoiKeys(db), ...checkRelatedDois(db), ...checkSubseries(db),
-    ...checkInventoryCells(db, (page) => readInventoryHeader(page, repoRoot)),
+    ...checkInventoryCells(db, repoRoot),
     ...checkSeries(db), ...checkFineTagSeedDrift(db), ...checkRowTagParity(db)];
 }
 
