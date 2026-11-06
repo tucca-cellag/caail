@@ -1169,9 +1169,9 @@
           "theme": "cell-lines-engineering"
         }
       ],
-      "license": null,
-      "licenseSource": null,
-      "tier": "unknown",
+      "license": "CC-BY-NC-4.0",
+      "licenseSource": "manual",
+      "tier": "restricted",
       "doi": null,
       "doiSource": null,
       "citationCount": null,
@@ -8174,5 +8174,5 @@
       "subseries": []
     }
   ],
-  "corpusDate": "2026-11-05"
+  "corpusDate": "2026-11-06"
 }

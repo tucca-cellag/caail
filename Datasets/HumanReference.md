@@ -38,7 +38,7 @@ An AI-agent-curated, uniformly processed, and autonomously updated single-cell d
 
 ### [Parse Biosciences 10M PBMC Atlas](https://www.parsebiosciences.com/datasets/10-million-human-pbmcs-in-a-single-experiment/)
 
-A publicly released ~10-million peripheral blood mononuclear cell (PBMC) single-cell RNA-seq experiment from Parse Biosciences, demonstrating the throughput of their Evercode WT Mega platform. Includes harmonized cell-type annotations and represents the largest single-experiment PBMC atlas available at time of release. For cellular agriculture, useful both as a benchmark dataset for evaluating single-cell-FM batch-effect handling and scaling at extreme throughput, and as immune-cell reference data for cultivated-meat applications involving immune-cell co-cultures or contamination screening.
+A single-cell RNA-seq release from Parse Biosciences of about 10 million peripheral blood mononuclear cells (PBMCs) from 12 healthy donors, whose cells were treated for 24 hours with one of 90 cytokines or a PBS control (1,092 conditions). Parse reports 9,697,974 cells across 18 immune cell types, classified with Azimuth and finalized by hand. For cellular agriculture, it can serve as training or benchmark data for single-cell foundation models. The dataset page links a zipped AnnData (`h5ad`) file of the full dataset, pseudobulk profiles and the differential-expression results (`DEGs.csv`) for direct download, released for non-commercial use under CC BY-NC 4.0.
 
 ### [Human Skeletal Muscle Single-Cell Atlas (De Micheli et al. 2020)](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE143704)
 
