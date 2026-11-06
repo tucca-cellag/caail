@@ -301,13 +301,15 @@ export const DatasetInventoryRowSchema = z.object({
   columns: z.record(z.string(), z.string()),
   /** every URL appearing in the row, in document order, deduped */
   links: z.array(z.string()),
-  /** bare lowercase DOI of the row's paper or preprint (the Paper cell); null when none is named */
+  /** bare lowercase DOI of the row's paper or preprint (its Paper cell, or a CrossSpecies DOI / URL
+   *  cell holding a journal DOI); null when none is named */
   paperDoi: z.string().nullable().default(null),
-  /** what the Data cell holds; null when the page's table has no Data column (#367) */
+  /** what the row says about its data: from the Data cell, or `deposit` for a CrossSpecies DOI / URL
+   *  link to the data itself; null when it states none (#367) */
   dataStatus: z.enum(['deposit', 'supplementary', 'unavailable']).nullable().default(null),
   /** the deposit's accession as its Data-cell badge names it, never read from the id; null otherwise */
   accession: z.string().nullable().default(null),
-  /** the deposit's link from the Data cell; null when there is no deposit */
+  /** the deposit's link; null when there is no deposit */
   dataUrl: z.string().nullable().default(null),
   /** the deposit's DOI where its link states one (a doi.org link or `doi:` parameter); null otherwise */
   dataDoi: z.string().nullable().default(null),

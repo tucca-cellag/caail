@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { doiRelation, DATA_REPOSITORY_REGISTRANTS } from './doi-relation.js';
+import { bareDoi, doiRelation, DATA_REPOSITORY_REGISTRANTS } from './doi-relation.js';
 
 describe('doiRelation', () => {
   it('marks a data-repository DOI as the item\'s own', () => {
@@ -26,6 +26,19 @@ describe('doiRelation', () => {
     expect(doiRelation('10.52810/example.1')).toBe('publication');
   });
 
+  it('knows the data hosts whose DOIs are deposits', () => {
+    expect(doiRelation('10.57967/hf/1234')).toBe('own');
+    expect(doiRelation('10.34740/kaggle/dsv/123')).toBe('own');
+    expect(doiRelation('10.7303/syn12345')).toBe('own');
+    expect(doiRelation('10.24433/CO.1234567.v1')).toBe('own');
+  });
+
+  it('still classifies a DOI stored with a prefix doiKey would leave behind', () => {
+    expect(doiRelation('doi.org/10.5281/zenodo.1')).toBe('own');
+    expect(doiRelation('https://www.doi.org/10.5281/zenodo.1')).toBe('own');
+    expect(doiRelation('DOI: 10.1038/s41586-021-03819-2')).toBe('publication');
+  });
+
   it('returns null when there is no DOI', () => {
     expect(doiRelation(null)).toBeNull();
     expect(doiRelation(undefined)).toBeNull();
@@ -35,5 +48,31 @@ describe('doiRelation', () => {
 
   it('keeps every registrant in the 10.NNNN form', () => {
     for (const r of DATA_REPOSITORY_REGISTRANTS.keys()) expect(r).toMatch(/^10\.\d{4,9}$/);
+  });
+});
+
+describe('bareDoi', () => {
+  it('reduces every common written form to one bare lowercase DOI', () => {
+    for (const v of [
+      '10.7910/DVN/XNFVTS',
+      'https://doi.org/10.7910/DVN/XNFVTS',
+      'http://dx.doi.org/10.7910/DVN/XNFVTS',
+      'https://www.doi.org/10.7910/DVN/XNFVTS',
+      'doi.org/10.7910/DVN/XNFVTS',
+      'doi:10.7910/DVN/XNFVTS',
+      'DOI: 10.7910/DVN/XNFVTS',
+      'doi%3A10.7910%2FDVN%2FXNFVTS',
+    ]) expect(bareDoi(v), v).toBe('10.7910/dvn/xnfvts');
+  });
+
+  it('keeps parentheses inside a DOI', () => {
+    expect(bareDoi('https://doi.org/10.1016/S0092-8674(20)30001-1')).toBe('10.1016/s0092-8674(20)30001-1');
+  });
+
+  it('rejects what is not a DOI', () => {
+    expect(bareDoi('https://github.com/a/b')).toBeNull();
+    expect(bareDoi('10.1/x')).toBeNull();
+    expect(bareDoi('')).toBeNull();
+    expect(bareDoi(null)).toBeNull();
   });
 });

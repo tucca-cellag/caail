@@ -569,11 +569,14 @@ export function buildManifest(
           'assay type and size, keyed by the source page\'s own column labels. Filter either by ' +
           '`page` (e.g. "Cow", "Benchmarks"). Use the inventory rows for "what could I combine ' +
           'my own run with", and page "Benchmarks" for "what could I evaluate a model against". ' +
-          'To tell whether something is already held, join on `id`; each inventory row also ' +
-          'carries `paperDoi`, `accession`, `dataUrl`, `dataDoi` and `dataStatus` read from its ' +
-          'Paper and Data cells, and an entry\'s `doiRelation` says whether its `doi` is the ' +
-          'item\'s own ("own", a data repository\'s) or its describing paper\'s ("publication"). ' +
-          'One accession can sit on several rows when a deposit is listed on more than one page.',
+          'To tell whether a find is already held, match its identifier against the inventory ' +
+          'rows\' `accession`, `dataDoi` and `paperDoi` and the entries\' `doi`, comparing DOIs ' +
+          'case-insensitively; use `id` only to re-find an item you already recorded, since an ' +
+          'id can be minted from data a row merely mentions. `accession` is the primary deposit ' +
+          'named in the Data cell; secondary deposits are named only in the row\'s Description. ' +
+          'An entry\'s `doiRelation` says whether its `doi` is the item\'s own ("own", a data ' +
+          'host\'s) or its describing paper\'s ("publication"). One accession can sit on ' +
+          'several rows when a deposit is listed on more than one page.',
       },
       { path: 'reports.json', use: 'Field reports: recurring institutional state-of-field surveys (GFI State of the Industry and the like), one record per edition. When recommending one, use the record with `current: true` for its series and treat any record with a `supersededBy` id as historical only; `seriesEditions` walks the history. The latest edition is derived, so it stays correct as new editions land.' },
       { path: 'topics.json', use: 'Subject tree plus an inverted index: topic → items across all content types. Start here for "what should I use for X".' },

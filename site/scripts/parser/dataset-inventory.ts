@@ -27,6 +27,7 @@ import { fileURLToPath } from 'node:url';
 import { toString as mdastToString } from 'mdast-util-to-string';
 
 import { ACCESSION, idAccession } from '../db/lib.js';
+import { bareDoi, doiRelation } from './doi-relation.js';
 import { extractInventory } from '../db/extract.js';
 import { parseMarkdown } from './markdown.js';
 import { topicsByItemId } from './topics.js';
@@ -124,19 +125,38 @@ export interface RowIdentity {
 
 const NO_IDENTITY: RowIdentity = { paperDoi: null, dataStatus: null, accession: null, dataUrl: null, dataDoi: null };
 
-/** A DOI a link states outright: a doi.org target, or a `doi:` parameter in its query. */
+/**
+ * A markdown link's destination. CommonMark allows balanced parentheses inside one, and
+ * DOIs use them (`10.1016/S0092-8674(20)30001-1`), so `[^)]+` would cut such a DOI short
+ * and the anchored match below would then fail silently.
+ */
+const DEST = String.raw`((?:[^()\s]|\([^()\s]*\))+)`;
+const PAPER_LINK = new RegExp(String.raw`^\[(?:DOI|preprint)\]\(${DEST}\)$`);
+const BADGE_LINK = new RegExp('^\\[`([^`]+)`\\]\\(' + DEST + '\\)$');
+const NAMED_LINK = new RegExp('^\\[[^\\]`]+\\]\\(' + DEST + '\\)$');
+
+/**
+ * The DOI a link states outright: a doi.org target on any host form, or a `doi:` parameter
+ * in its query (Dataverse's `persistentId=doi:…`, possibly percent-encoded). Never derived
+ * from a record URL such as `zenodo.org/records/N`: that would be a guess about the host.
+ */
 function statedDoi(url: string): string | null {
-  const m = url.match(/^https?:\/\/(?:dx\.)?doi\.org\/(10\.\d{4,9}\/\S+)$/i)
-    ?? url.match(/[?&][A-Za-z]*=doi:(10\.\d{4,9}\/[^&#\s]+)/i);
-  return m ? m[1]!.toLowerCase() : null;
+  let u = url;
+  try { u = decodeURIComponent(u); } catch { /* keep the raw text */ }
+  const m = u.match(/^(?:https?:\/\/)?(?:www\.|dx\.)?doi\.org\/(\S+)$/i) ?? u.match(/[?&][A-Za-z]*=doi:([^&#\s]+)/i);
+  return m ? bareDoi(m[1]!) : null;
 }
 
 /**
- * Read a row's identity from its Paper and Data cells, by header label (multi-species pages
- * insert a Species column, so positions differ). The shapes are the ones Datasets/CLAUDE.md
- * allows: a Paper cell is a `[DOI](https://doi.org/…)` or `[preprint](…)` link or
- * `none named`; a Data cell is an accession badge (`` [`GSE…`](url) ``), a named-repository
- * link (`[Zenodo](url)`), or one of the status words `supplementary` and `unavailable`.
+ * Read a row's identity from its cells, by header label (multi-species pages insert a
+ * Species column, so positions differ). The shapes are the ones Datasets/CLAUDE.md allows:
+ *
+ * - **Paper**: a `[DOI](https://doi.org/…)` or `[preprint](…)` link, or `none named`.
+ * - **Data**: an accession badge (`` [`GSE…`](url) ``), a named-repository link
+ *   (`[Zenodo](url)`), or one of the status words `supplementary` and `unavailable`.
+ * - **DOI / URL** (CrossSpecies, which has neither column above): one link. A stated DOI
+ *   whose registrant is a data host is the deposit itself; any other DOI is the paper, with
+ *   the deposit left unstated; a link with no DOI is where the data sit.
  *
  * The accession comes from the Data cell ONLY, never from the row's id: an id can be
  * minted from data a row merely mentions (#715), which is the claim this field exists to
@@ -144,23 +164,29 @@ function statedDoi(url: string): string | null {
  * is db:check's job, and a throw here would take the build down for a curation typo.
  */
 export function rowIdentity(columns: Readonly<Record<string, string>>): RowIdentity {
-  const paper = columns['Paper']?.trim() ?? '';
-  const paperLink = paper.match(/^\[(?:DOI|preprint)\]\((https?:\/\/[^)\s]+)\)$/);
+  const paperLink = (columns['Paper']?.trim() ?? '').match(PAPER_LINK);
   const paperDoi = paperLink ? statedDoi(paperLink[1]!) : null;
 
-  if (!('Data' in columns)) return { ...NO_IDENTITY, paperDoi };
-  const data = columns['Data']!.trim();
-  if (data === 'supplementary' || data === 'unavailable') {
-    return { ...NO_IDENTITY, paperDoi, dataStatus: data };
+  if ('Data' in columns) {
+    const data = columns['Data']!.trim();
+    if (data === 'supplementary' || data === 'unavailable') return { ...NO_IDENTITY, paperDoi, dataStatus: data };
+    const badge = data.match(BADGE_LINK);
+    if (badge) {
+      return { paperDoi, dataStatus: 'deposit', accession: badge[1]!.trim(), dataUrl: badge[2]!, dataDoi: statedDoi(badge[2]!) };
+    }
+    const named = data.match(NAMED_LINK);
+    if (named) return { paperDoi, dataStatus: 'deposit', accession: null, dataUrl: named[1]!, dataDoi: statedDoi(named[1]!) };
+    return { ...NO_IDENTITY, paperDoi };
   }
-  const badge = data.match(/^\[`([^`]+)`\]\((https?:\/\/[^)\s]+)\)$/);
-  if (badge) {
-    return { paperDoi, dataStatus: 'deposit', accession: badge[1]!.trim(), dataUrl: badge[2]!, dataDoi: statedDoi(badge[2]!) };
+
+  if ('DOI / URL' in columns) {
+    const link = columns['DOI / URL']!.trim().match(NAMED_LINK);
+    if (!link) return { ...NO_IDENTITY, paperDoi };
+    const doi = statedDoi(link[1]!);
+    if (doi && doiRelation(doi) === 'publication') return { ...NO_IDENTITY, paperDoi: paperDoi ?? doi };
+    return { paperDoi, dataStatus: 'deposit', accession: null, dataUrl: link[1]!, dataDoi: doi };
   }
-  const named = data.match(/^\[[^\]`]+\]\((https?:\/\/[^)\s]+)\)$/);
-  if (named) {
-    return { paperDoi, dataStatus: 'deposit', accession: null, dataUrl: named[1]!, dataDoi: statedDoi(named[1]!) };
-  }
+
   return { ...NO_IDENTITY, paperDoi };
 }
 

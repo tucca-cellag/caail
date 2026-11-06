@@ -1,6 +1,6 @@
 /**
  * doi-relation.ts — say whether an item's DOI names the item itself or the paper that
- * describes it.
+ * describes it, and reduce a written DOI to one comparable form.
  *
  * A dataset, database or software entry's `doi` is, by the curation rule in
  * `caail-db-authoring`, its ASSOCIATED PUBLICATION: the paper a reader would cite for it.
@@ -10,15 +10,14 @@
  * or keys an item by a paper that also describes other things.
  *
  * The rule is the DOI's REGISTRANT (the part before the first `/`), matched exactly against
- * the data repositories below. A DOI from any other registrant is a publication. That is a
- * rule, not a lookup, so a repository missing from the list is misread as a publication:
- * add it here when one turns up. Exact matching matters because registrants are numeric
- * strings and `10.52810` is not `10.5281`.
+ * the data hosts below. A DOI from any other registrant is a publication. That is a rule,
+ * not a lookup, and it has two known limits: a host missing from the list is read as a
+ * publication (add it here when one turns up), and a repository that also mints DOIs for
+ * reports or preprints (Zenodo does) reads those as the item's own. Exact matching matters
+ * because registrants are numeric strings and `10.52810` is not `10.5281`.
  */
 
-import { doiKey } from './citations.js';
-
-/** Data-repository DOI registrants → the repository, for the reader of this file. */
+/** Data-host DOI registrants → the host, for the reader of this file. */
 export const DATA_REPOSITORY_REGISTRANTS: ReadonlyMap<string, string> = new Map([
   ['10.5281', 'Zenodo'],
   ['10.6084', 'figshare'],
@@ -28,17 +27,35 @@ export const DATA_REPOSITORY_REGISTRANTS: ReadonlyMap<string, string> = new Map(
   ['10.17605', 'OSF'],
   ['10.5524', 'GigaDB'],
   ['10.1594', 'PANGAEA'],
+  ['10.57967', 'Hugging Face'],
+  ['10.34740', 'Kaggle'],
+  ['10.7303', 'Synapse'],
+  ['10.24433', 'Code Ocean'],
 ]);
 
 export type DoiRelation = 'own' | 'publication';
 
 /**
- * `own` when the DOI's registrant is a data repository, `publication` for any other DOI,
- * and null when there is no DOI at all (or the value is not one).
+ * Reduce a DOI however it was written (a doi.org URL on any host form, a `doi:` or `DOI:`
+ * prefix, percent-encoded) to its bare lowercase form, or null when the value is not a DOI.
+ * One normaliser for every field the API joins on, so two spellings of one DOI compare equal.
+ */
+export function bareDoi(value: string | null | undefined): string | null {
+  if (!value) return null;
+  let v = value.trim();
+  try { v = decodeURIComponent(v); } catch { /* a stray % is not an encoding; keep the text */ }
+  v = v.toLowerCase()
+    .replace(/^(?:https?:\/\/)?(?:www\.|dx\.)?doi\.org\//, '')
+    .replace(/^doi:\s*/, '');
+  return /^10\.\d{4,9}\/\S+$/.test(v) ? v : null;
+}
+
+/**
+ * `own` when the DOI's registrant is a data host, `publication` for any other DOI, and null
+ * when there is no DOI at all (or the value is not one).
  */
 export function doiRelation(doi: string | null | undefined): DoiRelation | null {
-  const key = doiKey(doi);
-  if (!key || !/^10\.\d{4,9}\//.test(key)) return null;
-  const registrant = key.slice(0, key.indexOf('/'));
-  return DATA_REPOSITORY_REGISTRANTS.has(registrant) ? 'own' : 'publication';
+  const key = bareDoi(doi);
+  if (!key) return null;
+  return DATA_REPOSITORY_REGISTRANTS.has(key.slice(0, key.indexOf('/'))) ? 'own' : 'publication';
 }

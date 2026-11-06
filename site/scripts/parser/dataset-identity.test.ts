@@ -24,11 +24,14 @@ describe('rowIdentity: the Paper cell', () => {
       .toBe('10.64898/2026.05.20.726299');
   });
 
+  it('keeps a DOI that contains parentheses', () => {
+    expect(rowIdentity({ Paper: '[DOI](https://doi.org/10.1016/S0092-8674(20)30001-1)' }).paperDoi)
+      .toBe('10.1016/s0092-8674(20)30001-1');
+  });
+
   it('gives no DOI for "none named", a non-DOI link, or a table with no Paper column', () => {
     expect(rowIdentity({ Paper: 'none named' }).paperDoi).toBeNull();
     expect(rowIdentity({ Paper: '[preprint](https://example.org/paper)' }).paperDoi).toBeNull();
-    expect(rowIdentity({ Resource: 'x', 'DOI / URL': '[10.5281/zenodo.1](https://doi.org/10.5281/zenodo.1)' }).paperDoi)
-      .toBeNull();
   });
 });
 
@@ -65,6 +68,9 @@ describe('rowIdentity: the Data cell', () => {
       Data: '[Dataverse](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/XNFVTS)',
     }).dataDoi).toBe('10.7910/dvn/xnfvts');
     expect(rowIdentity({ Data: '[Mendeley](https://data.mendeley.com/datasets/cp2hdhkys3/6)' }).dataDoi).toBeNull();
+    expect(rowIdentity({
+      Data: '[Dataverse](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi%3A10.7910%2FDVN%2FXNFVTS)',
+    }).dataDoi).toBe('10.7910/dvn/xnfvts');
   });
 
   it('reads the two status words, with no accession, link or DOI', () => {
@@ -82,9 +88,30 @@ describe('rowIdentity: the Data cell', () => {
     expect(rowIdentity({ Data: '' })).toMatchObject({ dataStatus: null });
   });
 
-  it('gives all-null data fields for a table with no Data column', () => {
-    expect(rowIdentity({ Resource: 'x', 'DOI / URL': '[GitHub](https://github.com/a/b)' })).toEqual({
+  it('gives all-null fields for a table with neither a Data nor a DOI / URL column', () => {
+    expect(rowIdentity({ Resource: 'x', Scope: 'y' })).toEqual({
       paperDoi: null, dataStatus: null, accession: null, dataUrl: null, dataDoi: null,
+    });
+  });
+});
+
+describe('rowIdentity: the CrossSpecies DOI / URL cell', () => {
+  it('reads a data-repository DOI as the deposit itself', () => {
+    expect(rowIdentity({ 'DOI / URL': '[10.5281/zenodo.19339684](https://doi.org/10.5281/zenodo.19339684)' })).toEqual({
+      paperDoi: null, dataStatus: 'deposit', accession: null,
+      dataUrl: 'https://doi.org/10.5281/zenodo.19339684', dataDoi: '10.5281/zenodo.19339684',
+    });
+  });
+
+  it('reads a journal DOI as the paper, with the deposit left unstated', () => {
+    expect(rowIdentity({ 'DOI / URL': '[10.1186/s12915-019-0726-5](https://doi.org/10.1186/s12915-019-0726-5)' })).toEqual({
+      paperDoi: '10.1186/s12915-019-0726-5', dataStatus: null, accession: null, dataUrl: null, dataDoi: null,
+    });
+  });
+
+  it('reads a non-DOI link as where the data sit', () => {
+    expect(rowIdentity({ 'DOI / URL': '[GitHub](https://github.com/sezinata/FoodML)' })).toEqual({
+      paperDoi: null, dataStatus: 'deposit', accession: null, dataUrl: 'https://github.com/sezinata/FoodML', dataDoi: null,
     });
   });
 });
@@ -97,6 +124,18 @@ describe('inventory identity — real corpus', () => {
 
   it('gives every row with a Data column a status', () => {
     for (const r of rows.filter((x) => 'Data' in x.columns)) expect(r.dataStatus, r.id).not.toBeNull();
+  });
+
+  it('gives every row whose Paper cell is a link a DOI, so a silent null cannot ship', () => {
+    for (const r of rows.filter((x) => /^\[(?:DOI|preprint)\]\(/.test(x.columns.Paper ?? ''))) {
+      expect(r.paperDoi, r.id).not.toBeNull();
+    }
+  });
+
+  it('gives every CrossSpecies row a DOI or a data link from its DOI / URL cell', () => {
+    for (const r of rows.filter((x) => 'DOI / URL' in x.columns)) {
+      expect(r.paperDoi ?? r.dataUrl, r.id).not.toBeNull();
+    }
   });
 
   it('gives every deposit row a link, and an accession or a DOI only alongside one', () => {

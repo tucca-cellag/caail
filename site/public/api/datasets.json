@@ -8810,10 +8810,10 @@
         "https://doi.org/10.5281/zenodo.19339684"
       ],
       "paperDoi": null,
-      "dataStatus": null,
+      "dataStatus": "deposit",
       "accession": null,
-      "dataUrl": null,
-      "dataDoi": null,
+      "dataUrl": "https://doi.org/10.5281/zenodo.19339684",
+      "dataDoi": "10.5281/zenodo.19339684",
       "topics": [
         {
           "slug": "growth-factors",
@@ -8846,10 +8846,10 @@
         "https://doi.org/10.5281/zenodo.11357327"
       ],
       "paperDoi": null,
-      "dataStatus": null,
+      "dataStatus": "deposit",
       "accession": null,
-      "dataUrl": null,
-      "dataDoi": null,
+      "dataUrl": "https://doi.org/10.5281/zenodo.11357327",
+      "dataDoi": "10.5281/zenodo.11357327",
       "topics": [
         {
           "slug": "mass-spectrometry",
@@ -8902,9 +8902,9 @@
         "https://github.com/sezinata/FoodML"
       ],
       "paperDoi": null,
-      "dataStatus": null,
+      "dataStatus": "deposit",
       "accession": null,
-      "dataUrl": null,
+      "dataUrl": "https://github.com/sezinata/FoodML",
       "dataDoi": null,
       "topics": [
         {
@@ -8931,7 +8931,7 @@
       "links": [
         "https://doi.org/10.1186/s12915-019-0726-5"
       ],
-      "paperDoi": null,
+      "paperDoi": "10.1186/s12915-019-0726-5",
       "dataStatus": null,
       "accession": null,
       "dataUrl": null,
@@ -8961,7 +8961,7 @@
       "links": [
         "https://doi.org/10.1186/s12864-020-07078-9"
       ],
-      "paperDoi": null,
+      "paperDoi": "10.1186/s12864-020-07078-9",
       "dataStatus": null,
       "accession": null,
       "dataUrl": null,
@@ -8987,9 +8987,9 @@
         "https://github.com/LivingMatterLab/CANN/tree/main/ARTMEAT/FungiSteak"
       ],
       "paperDoi": null,
-      "dataStatus": null,
+      "dataStatus": "deposit",
       "accession": null,
-      "dataUrl": null,
+      "dataUrl": "https://github.com/LivingMatterLab/CANN/tree/main/ARTMEAT/FungiSteak",
       "dataDoi": null,
       "topics": [
         {
@@ -9033,9 +9033,9 @@
         "https://github.com/LivingMatterLab/CANN/tree/main/ARTMEAT/LionsManeMushroomSteak"
       ],
       "paperDoi": null,
-      "dataStatus": null,
+      "dataStatus": "deposit",
       "accession": null,
-      "dataUrl": null,
+      "dataUrl": "https://github.com/LivingMatterLab/CANN/tree/main/ARTMEAT/LionsManeMushroomSteak",
       "dataDoi": null,
       "topics": [
         {
