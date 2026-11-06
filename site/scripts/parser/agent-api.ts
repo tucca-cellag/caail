@@ -32,7 +32,7 @@ import { fileURLToPath } from 'node:url';
 
 import { assertValid, buildOpenApiDocument, OPENAPI_FILE } from './openapi.js';
 import { MATRIX_SECTION } from './types.js';
-import type { Catalog, CatalogEntry, DatasetInventory, PapersData } from './types.js';
+import type { Catalog, CatalogEntry, DatasetInventory, DoiRelation, PapersData } from './types.js';
 import { isUnderBase, RETIRED_BASES, SITE_BASE, SITE_URL } from '../../src/content/site-config.ts';
 import { CATALOG_SOURCES } from './catalog.js';
 import { dedicatedLink, GITHUB_BLOB_BASE } from '../dedicated-links.ts';
@@ -456,6 +456,7 @@ export function buildCatalogIndex(catalog: unknown, corpusDate: string): unknown
     group?: string;
     url?: string | null;
     doi?: string | null;
+    doiRelation?: DoiRelation | null;
     tier?: string | null;
   };
   const cat = catalog as { software?: Entry[]; databases?: Entry[] } | null;
@@ -476,6 +477,7 @@ export function buildCatalogIndex(catalog: unknown, corpusDate: string): unknown
           group: e.group ?? '',
           url: e.url ?? null,
           doi: e.doi ?? null,
+          doiRelation: e.doiRelation ?? null,
           tier: e.tier ?? null,
         })),
     );
@@ -555,7 +557,7 @@ export function buildManifest(
       { path: 'matrix.json', use: 'All method×area cells, empties included. Use to ask what has and has not been indexed — then read `matrixNote` in papers-index.json before reading a silence as an absence.' },
       { path: 'papers-index.json', use: 'START HERE for papers. Every reference, one compact row: id, title, year, first author, section, methods, areas, DOI, code/data flags. A sixth the size of papers.json, so it survives a fetch tool that truncates. Enumerate here, then fetch full records.' },
       { path: 'papers.json', use: 'Full records for the references you selected. Large (~554 KB): if your fetch summarises rather than returning bytes, a "not found" from this file is not evidence of absence.' },
-      { path: 'catalog-index.json', use: 'START HERE for software and databases. One compact row each: slug, name, kind, group, URL, DOI, license tier. A tenth the size of catalog.json.' },
+      { path: 'catalog-index.json', use: 'START HERE for software and databases. One compact row each: slug, name, kind, group, URL, DOI, whether that DOI is the item\'s own or its describing paper\'s (`doiRelation`), license tier. A tenth the size of catalog.json.' },
       { path: 'catalog.json', use: 'Full records with summaries. Large (~576 KB), two thirds of it the same summary prose as Markdown and as HTML; same truncation caveat as papers.json.' },
       {
         path: 'datasets.json',
@@ -566,7 +568,26 @@ export function buildManifest(
           'inventory rows (kind "inventory") — the per-study deposits with accession, tissue, ' +
           'assay type and size, keyed by the source page\'s own column labels. Filter either by ' +
           '`page` (e.g. "Cow", "Benchmarks"). Use the inventory rows for "what could I combine ' +
-          'my own run with", and page "Benchmarks" for "what could I evaluate a model against".',
+          'my own run with", and page "Benchmarks" for "what could I evaluate a model against". ' +
+          'To tell whether a dataset find is already held, match the find\'s own identifier ' +
+          'against the inventory rows\' `accession`, `dataDoi`, `dataUrl` and `links` (every URL ' +
+          'in the row, secondary deposits included; keep a URL\'s query string, many name their ' +
+          'record there), and against the entries\' `url`, and their `doi` where `doiRelation` is ' +
+          '"own" (a data host\'s DOI, naming the item itself). Compare DOIs as bare lowercase ' +
+          'strings and accessions case-insensitively, ignoring a version suffix (SRA051669.1 is ' +
+          'SRA051669). Some deposits have only a `dataUrl`. ' +
+          'A row\'s `paperDoi`, and an entry\'s `doi` where `doiRelation` is "publication", name ' +
+          'the paper that describes the item, not the item. A match there means CAAIL holds data ' +
+          'from that paper, not that it holds your find: one paper can describe several ' +
+          'deposits, and whether CAAIL holds the paper itself is for papers-index.json to say. ' +
+          '`links` carries the row\'s paper link too, so a URL that resolves to its `paperDoi` is ' +
+          'that same paper match. Use `id` only to re-find an item you already recorded, since an ' +
+          'id can be minted from data a row merely mentions. ' +
+          '`accession` is the primary deposit as the Data cell\'s badge names it, served as ' +
+          'written. Secondary deposits are named only in the row\'s prose (Description), and on ' +
+          'page "CrossSpecies", which has no Data column, a row\'s own deposits can be named ' +
+          'only in its Scope. One accession can sit on several rows, on one page or several, ' +
+          'when more than one study uses a deposit.',
       },
       { path: 'reports.json', use: 'Field reports: recurring institutional state-of-field surveys (GFI State of the Industry and the like), one record per edition. When recommending one, use the record with `current: true` for its series and treat any record with a `supersededBy` id as historical only; `seriesEditions` walks the history. The latest edition is derived, so it stays correct as new editions land.' },
       { path: 'topics.json', use: 'Subject tree plus an inverted index: topic → items across all content types. Start here for "what should I use for X".' },

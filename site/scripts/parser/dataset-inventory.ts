@@ -27,6 +27,8 @@ import { fileURLToPath } from 'node:url';
 import { toString as mdastToString } from 'mdast-util-to-string';
 
 import { ACCESSION, idAccession } from '../db/lib.js';
+import { bareDoi, doiRelation } from './doi-relation.js';
+import type { DoiRelation } from './types.js';
 import { extractInventory } from '../db/extract.js';
 import { parseMarkdown } from './markdown.js';
 import { topicsByItemId } from './topics.js';
@@ -108,6 +110,106 @@ export function rowLinks(cells: readonly string[]): string[] {
   return out;
 }
 
+/** The identity a row carries, read from its Paper and Data cells (tucca-cellag/caail-planning#367). */
+export interface RowIdentity {
+  /** bare lowercase DOI of the row's paper or preprint; null for "none named" or no Paper column */
+  paperDoi: string | null;
+  /** what the Data cell holds; null when the table has no Data column or the cell is off-schema */
+  dataStatus: 'deposit' | 'supplementary' | 'unavailable' | null;
+  /** the deposit's accession, as its badge names it; null for a named-repository link or no deposit */
+  accession: string | null;
+  /** the deposit's link; null when there is no deposit */
+  dataUrl: string | null;
+  /** the deposit's DOI where its link states one; never derived from a record URL */
+  dataDoi: string | null;
+}
+
+const NO_IDENTITY: RowIdentity = { paperDoi: null, dataStatus: null, accession: null, dataUrl: null, dataDoi: null };
+
+/**
+ * A markdown link's destination. CommonMark allows balanced parentheses inside one, and
+ * DOIs use them (`10.1016/S0092-8674(20)30001-1`), so `[^)]+` would cut such a DOI short
+ * and the anchored match below would then fail silently.
+ */
+const DEST = String.raw`((?:[^()\s]|\([^()\s]*\))+)`;
+const PAPER_LINK = new RegExp(String.raw`^\[(?:DOI|preprint)\]\(${DEST}\)$`);
+const BADGE_LINK = new RegExp('^\\[`([^`]+)`\\]\\(' + DEST + '\\)$');
+const NAMED_LINK = new RegExp('^\\[[^\\]`]+\\]\\(' + DEST + '\\)$');
+
+/**
+ * The DOI a link states outright: a doi.org link on any host form (its path, cut at any
+ * query string or fragment, decoded once; `bareDoi`'s shape check rejects every other host,
+ * so no host list is kept here), or a literal `doi:` token anywhere in the URL (Dataverse's
+ * `persistentId=doi:…`, Dryad's `/dataset/doi:…`). Never derived from a DOI-shaped path that
+ * carries no such token, such as bioRxiv's `/content/10.1101/…`: that would be a guess about
+ * the host.
+ */
+function statedDoi(url: string): string | null {
+  let base = url.split(/[?#]/)[0]!.replace(/\/+$/, '');
+  try { base = decodeURIComponent(base); } catch { /* keep the raw text */ }
+  const direct = bareDoi(base);
+  if (direct) return direct;
+  let whole = url;
+  try { whole = decodeURIComponent(whole); } catch { /* keep the raw text */ }
+  const token = whole.match(/\bdoi:\s*(10\.[^&#?\s]+)/i);
+  return token ? bareDoi(token[1]!.replace(/\/+$/, '')) : null;
+}
+
+/** A stated DOI, only when its relation is the one asked for (`publication` for a paper, `own` for a deposit). */
+function statedDoiAs(url: string, relation: DoiRelation): string | null {
+  const doi = statedDoi(url);
+  return doi && doiRelation(doi) === relation ? doi : null;
+}
+
+/**
+ * Read a row's identity from its cells, by header label (multi-species pages insert a
+ * Species column, so positions differ). The shapes are the ones Datasets/CLAUDE.md allows:
+ *
+ * - **Paper**: a `[DOI](https://doi.org/…)` or `[preprint](…)` link, or `none named`.
+ * - **Data**: an accession badge (`` [`GSE…`](url) ``), a named-repository link
+ *   (`[Zenodo](url)`), or one of the status words `supplementary` and `unavailable`.
+ * - **DOI / URL** (CrossSpecies, which has neither column above): one link. A stated DOI
+ *   whose registrant is a data host is the deposit itself; any other DOI is the paper, with
+ *   the deposit left unstated; a link with no DOI is where the data sit.
+ *
+ * The accession comes from the Data cell ONLY, never from the row's id: an id can be
+ * minted from data a row merely mentions (tucca-cellag/caail-planning#715), which is the claim this field
+ * exists to keep apart. A `dataDoi` is served only when it is a data host's DOI, and a Data
+ * cell that links a paper's DOI is treated as off-schema. A cell outside these shapes yields nulls rather than throwing, since a throw here
+ * would take the build down for a curation typo. Nothing rejects such a cell yet: the
+ * Data-cell guard is planned for db:check (tucca-cellag/caail-planning#740), and until it lands the corpus
+ * tests in dataset-identity.test.ts are what catch a silent null.
+ */
+export function rowIdentity(columns: Readonly<Record<string, string>>): RowIdentity {
+  const paperLink = (columns['Paper']?.trim() ?? '').match(PAPER_LINK);
+  const paperDoi = paperLink ? statedDoiAs(paperLink[1]!, 'publication') : null;
+
+  if ('Data' in columns) {
+    const data = columns['Data']!.trim();
+    if (data === 'supplementary' || data === 'unavailable') return { ...NO_IDENTITY, paperDoi, dataStatus: data };
+    const badge = data.match(BADGE_LINK);
+    const named = badge ? null : data.match(NAMED_LINK);
+    const url = badge?.[2] ?? named?.[1];
+    if (!url) return { ...NO_IDENTITY, paperDoi };
+    // A Data cell linking a paper's DOI points at an article, not a deposit: off-schema (the
+    // schema's word for that is `supplementary`), so it yields no deposit fields at all and
+    // the corpus test that every Data column has a status flags it.
+    const doi = statedDoi(url);
+    if (doi && doiRelation(doi) === 'publication') return { ...NO_IDENTITY, paperDoi };
+    return { paperDoi, dataStatus: 'deposit', accession: badge ? badge[1]!.trim() : null, dataUrl: url, dataDoi: doi };
+  }
+
+  if ('DOI / URL' in columns) {
+    const link = columns['DOI / URL']!.trim().match(NAMED_LINK);
+    if (!link) return { ...NO_IDENTITY, paperDoi };
+    const doi = statedDoi(link[1]!);
+    if (doi && doiRelation(doi) === 'publication') return { ...NO_IDENTITY, paperDoi: paperDoi ?? doi };
+    return { paperDoi, dataStatus: 'deposit', accession: null, dataUrl: link[1]!, dataDoi: doi };
+  }
+
+  return { ...NO_IDENTITY, paperDoi };
+}
+
 /**
  * Flatten a raw markdown cell to plain text — the same round-trip `catalogNameKey` uses,
  * so `` `GSE169291` `` and `[Title](url)` reduce to what a reader sees rather than to
@@ -183,13 +285,15 @@ export function buildDatasetInventory(
             `Markdown have diverged — re-run \`pnpm db:bootstrap\`.`,
         );
       }
+      const columns = Object.fromEntries(header.map((h, i) => [h, cells[i]!]));
       inventory.push({
         id: r.item_id,
         kind: 'inventory',
         page,
         name: cellText(cells[0] ?? ''),
-        columns: Object.fromEntries(header.map((h, i) => [h, cells[i]!])),
+        columns,
         links: rowLinks(cells),
+        ...rowIdentity(columns),
         topics: byId.get(r.item_id) ?? [],
         // Filled in below: resolution needs every page's rows to exist first.
         subseries: [],

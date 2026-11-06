@@ -38,6 +38,7 @@ import { buildDatasetsModel } from './datasets-entries.js';
 import { buildDatasetInventory } from './dataset-inventory.js';
 import { buildTopicsModel } from './topics.js';
 import { buildTaxonomyModel } from './taxonomy.js';
+import { ApiCatalogIndexRowSchema, DatasetEntrySchema, DatasetInventoryRowSchema } from './types.js';
 import { buildApiTaxonomy } from './search-terms.js';
 import { buildReportsModel } from './reports.js';
 import { extractInventory } from '../db/extract.js';
@@ -136,6 +137,22 @@ describe('matrix.json', () => {
 describe('index.json manifest', () => {
   const matrix = buildMatrix(papers, DATE);
   const manifest = buildManifest(papers, matrix, DATE) as any;
+
+  it('names only fields the schemas serve, so a renamed key cannot linger in the guidance', () => {
+    // The held-check guidance tells agents which keys to match on; each must exist.
+    const noteFor = (path: string): string =>
+      (manifest.endpoints as { path: string; use: string }[]).find((e) => e.path === path)!.use;
+    const ticked = (text: string): string[] => [...text.matchAll(/`([A-Za-z]+)`/g)].map((m) => m[1]!);
+    const datasetKeys = new Set([
+      'entries', 'inventory',
+      ...Object.keys(DatasetEntrySchema.shape), ...Object.keys(DatasetInventoryRowSchema.shape),
+    ]);
+    const datasetFields = ticked(noteFor('datasets.json'));
+    expect(datasetFields).toEqual(expect.arrayContaining(['accession', 'dataDoi', 'paperDoi', 'dataUrl', 'links', 'doiRelation']));
+    for (const f of datasetFields) expect(datasetKeys, f).toContain(f);
+    const indexKeys = new Set(Object.keys(ApiCatalogIndexRowSchema.shape));
+    for (const f of ticked(noteFor('catalog-index.json'))) expect(indexKeys, f).toContain(f);
+  });
 
   it('labels counts with their population, so "348 papers" cannot be quoted as the matrix corpus', () => {
     const bySection = manifest.counts.papersBySection as Record<string, number>;

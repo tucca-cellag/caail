@@ -30,6 +30,7 @@
       "tier": "permissive",
       "doi": "10.1038/s41586-021-03819-2",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 46199,
       "citationSources": 1,
       "citationDois": [
@@ -66,6 +67,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -100,6 +102,7 @@
       "tier": "copyleft",
       "doi": "10.1038/s41587-023-01773-0",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 2472,
       "citationSources": 1,
       "citationDois": [
@@ -136,6 +139,7 @@
       "tier": "permissive",
       "doi": "10.1093/bioinformatics/btag607",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 0,
       "citationSources": 1,
       "citationDois": [
@@ -172,6 +176,7 @@
       "tier": "permissive",
       "doi": "10.1126/science.ade2574",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 5200,
       "citationSources": 1,
       "citationDois": [
@@ -208,6 +213,7 @@
       "tier": "permissive",
       "doi": "10.1038/s41592-022-01488-1",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 9879,
       "citationSources": 1,
       "citationDois": [
@@ -244,6 +250,7 @@
       "tier": "permissive",
       "doi": "10.1101/2022.07.21.500999",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 413,
       "citationSources": 1,
       "citationDois": [
@@ -280,6 +287,7 @@
       "tier": "permissive",
       "doi": "10.1038/s41586-023-06415-8",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 2082,
       "citationSources": 1,
       "citationDois": [
@@ -316,6 +324,7 @@
       "tier": "permissive",
       "doi": "10.1126/science.add2187",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 1953,
       "citationSources": 1,
       "citationDois": [
@@ -352,6 +361,7 @@
       "tier": "permissive",
       "doi": "10.1101/2023.09.11.556673",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 160,
       "citationSources": 1,
       "citationDois": [
@@ -388,6 +398,7 @@
       "tier": "permissive",
       "doi": "10.1101/2024.11.19.624167",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 439,
       "citationSources": 1,
       "citationDois": [
@@ -424,6 +435,7 @@
       "tier": "permissive",
       "doi": "10.1101/2024.10.10.615955",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 388,
       "citationSources": 1,
       "citationDois": [
@@ -460,6 +472,7 @@
       "tier": "restricted",
       "doi": "10.1038/s41467-023-38063-x",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 322,
       "citationSources": 1,
       "citationDois": [
@@ -496,6 +509,7 @@
       "tier": "permissive",
       "doi": "10.1093/bioadv/vbac046",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 198,
       "citationSources": 1,
       "citationDois": [
@@ -522,6 +536,7 @@
       "tier": "permissive",
       "doi": "10.48550/arxiv.1910.06403",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 204,
       "citationSources": 1,
       "citationDois": [
@@ -548,6 +563,7 @@
       "tier": "permissive",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -572,6 +588,7 @@
       "tier": "unknown",
       "doi": "10.1038/s41467-025-61113-5",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 26,
       "citationSources": 1,
       "citationDois": [
@@ -603,6 +620,7 @@
       "tier": "copyleft",
       "doi": "10.1063/1.168744",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 5335,
       "citationSources": 1,
       "citationDois": [
@@ -634,6 +652,7 @@
       "tier": "permissive",
       "doi": "10.1016/b978-0-12-388403-9.00013-8",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 566,
       "citationSources": 1,
       "citationDois": [
@@ -665,6 +684,7 @@
       "tier": "unknown",
       "doi": "10.1371/journal.pcbi.1005991",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 0,
       "citationSources": 1,
       "citationDois": [
@@ -696,6 +716,7 @@
       "tier": "permissive",
       "doi": "10.1093/bioinformatics/btt772",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 363,
       "citationSources": 1,
       "citationDois": [
@@ -727,6 +748,7 @@
       "tier": "permissive",
       "doi": "10.1002/elsc.202000088",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 29,
       "citationSources": 1,
       "citationDois": [
@@ -758,6 +780,7 @@
       "tier": "permissive",
       "doi": "10.1101/2025.05.06.652335",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -787,6 +810,7 @@
       "tier": "permissive",
       "doi": "10.48550/arxiv.2410.22093",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 2,
       "citationSources": 1,
       "citationDois": [
@@ -818,6 +842,7 @@
       "tier": "restricted",
       "doi": "10.5281/zenodo.23124562",
       "doiSource": "manual",
+      "doiRelation": "own",
       "citationCount": 0,
       "citationSources": 1,
       "citationDois": [
@@ -849,6 +874,7 @@
       "tier": "copyleft",
       "doi": "10.1186/1752-0509-7-74",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 1543,
       "citationSources": 1,
       "citationDois": [
@@ -880,6 +906,7 @@
       "tier": "copyleft",
       "doi": "10.1038/s41596-018-0098-2",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 1383,
       "citationSources": 1,
       "citationDois": [
@@ -911,6 +938,7 @@
       "tier": "permissive",
       "doi": "10.1038/s41587-020-0446-y",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 562,
       "citationSources": 1,
       "citationDois": [
@@ -942,6 +970,7 @@
       "tier": "permissive",
       "doi": "10.1371/journal.pcbi.1004321",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 443,
       "citationSources": 1,
       "citationDois": [
@@ -973,6 +1002,7 @@
       "tier": "permissive",
       "doi": "10.1093/bioinformatics/btl485",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 2710,
       "citationSources": 1,
       "citationDois": [
@@ -1004,6 +1034,7 @@
       "tier": "permissive",
       "doi": "10.1016/j.biosystems.2018.07.006",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 188,
       "citationSources": 1,
       "citationDois": [
@@ -1035,6 +1066,7 @@
       "tier": "copyleft",
       "doi": "10.1371/journal.pcbi.1006541",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 394,
       "citationSources": 1,
       "citationDois": [
@@ -1066,6 +1098,7 @@
       "tier": "permissive",
       "doi": "10.1093/bioinformatics/btac632",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 30,
       "citationSources": 1,
       "citationDois": [
@@ -1097,6 +1130,7 @@
       "tier": "permissive",
       "doi": "10.1093/bioinformatics/btab828",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 28,
       "citationSources": 1,
       "citationDois": [
@@ -1128,6 +1162,7 @@
       "tier": "copyleft",
       "doi": "10.3390/metabo12040275",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 8,
       "citationSources": 1,
       "citationDois": [
@@ -1159,6 +1194,7 @@
       "tier": "copyleft",
       "doi": "10.1093/nargab/lqae010",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 9,
       "citationSources": 1,
       "citationDois": [
@@ -1190,6 +1226,7 @@
       "tier": "permissive",
       "doi": "10.1093/nar/gky537",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 797,
       "citationSources": 1,
       "citationDois": [
@@ -1221,6 +1258,7 @@
       "tier": "copyleft",
       "doi": "10.1186/s13059-021-02295-1",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 318,
       "citationSources": 1,
       "citationDois": [
@@ -1252,6 +1290,7 @@
       "tier": "permissive",
       "doi": "10.1021/acssynbio.7b00423",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 79,
       "citationSources": 1,
       "citationDois": [
@@ -1283,6 +1322,7 @@
       "tier": "permissive",
       "doi": "10.1038/s41467-022-31421-1",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 148,
       "citationSources": 1,
       "citationDois": [
@@ -1314,6 +1354,7 @@
       "tier": "copyleft",
       "doi": "10.1093/bioinformatics/btab013",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 32,
       "citationSources": 1,
       "citationDois": [
@@ -1345,6 +1386,7 @@
       "tier": "permissive",
       "doi": "10.1093/bioinformatics/bty499",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 117,
       "citationSources": 1,
       "citationDois": [
@@ -1376,6 +1418,7 @@
       "tier": "permissive",
       "doi": "10.1371/journal.pcbi.1008208",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 45,
       "citationSources": 1,
       "citationDois": [
@@ -1402,6 +1445,7 @@
       "tier": "permissive",
       "doi": "10.1371/journal.pcbi.1007099",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 100,
       "citationSources": 1,
       "citationDois": [
@@ -1428,6 +1472,7 @@
       "tier": "unknown",
       "doi": "10.1038/s41467-026-68978-0",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 3,
       "citationSources": 1,
       "citationDois": [
@@ -1454,6 +1499,7 @@
       "tier": "copyleft",
       "doi": "10.1038/s41467-024-50194-3",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 85,
       "citationSources": 1,
       "citationDois": [
@@ -1480,6 +1526,7 @@
       "tier": "permissive",
       "doi": "10.1038/s41592-021-01346-6",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 805,
       "citationSources": 1,
       "citationDois": [
@@ -1506,6 +1553,7 @@
       "tier": "copyleft",
       "doi": "10.1038/s41467-021-21246-9",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 8565,
       "citationSources": 1,
       "citationDois": [
@@ -1532,6 +1580,7 @@
       "tier": "permissive",
       "doi": "10.1038/s41592-025-02817-w",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 27,
       "citationSources": 1,
       "citationDois": [
@@ -1558,6 +1607,7 @@
       "tier": "permissive",
       "doi": "10.1038/s41587-025-02694-w",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 32,
       "citationSources": 1,
       "citationDois": [
@@ -1584,6 +1634,7 @@
       "tier": "permissive",
       "doi": "10.1016/j.cell.2018.03.034",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 2380,
       "citationSources": 1,
       "citationDois": [
@@ -1610,6 +1661,7 @@
       "tier": "unknown",
       "doi": "10.1242/jcs.261255",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 61,
       "citationSources": 1,
       "citationDois": [
@@ -1641,6 +1693,7 @@
       "tier": "permissive",
       "doi": "10.1038/s41592-024-02197-7",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 65,
       "citationSources": 1,
       "citationDois": [
@@ -1672,6 +1725,7 @@
       "tier": "unknown",
       "doi": "10.1038/s41587-023-01690-2",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 1182,
       "citationSources": 1,
       "citationDois": [
@@ -1703,6 +1757,7 @@
       "tier": "restricted",
       "doi": "10.1038/nmeth.3393",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 3454,
       "citationSources": 1,
       "citationDois": [
@@ -1734,6 +1789,7 @@
       "tier": "permissive",
       "doi": "10.1021/ac400515s",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 127,
       "citationSources": 1,
       "citationDois": [
@@ -1765,6 +1821,7 @@
       "tier": "copyleft",
       "doi": "10.1021/ac051437y",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 5298,
       "citationSources": 1,
       "citationDois": [
@@ -1796,6 +1853,7 @@
       "tier": "unknown",
       "doi": "10.1038/nbt.2377",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 4374,
       "citationSources": 1,
       "citationDois": [
@@ -1827,6 +1885,7 @@
       "tier": "restricted",
       "doi": "10.1038/s41592-019-0344-8",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 2094,
       "citationSources": 1,
       "citationDois": [
@@ -1858,6 +1917,7 @@
       "tier": "copyleft",
       "doi": "10.1186/s13321-016-0115-9",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 1103,
       "citationSources": 1,
       "citationDois": [
@@ -1889,6 +1949,7 @@
       "tier": "permissive",
       "doi": "10.1038/s41467-023-37446-4",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 106,
       "citationSources": 1,
       "citationDois": [
@@ -1920,6 +1981,7 @@
       "tier": "permissive",
       "doi": "10.1021/acs.analchem.6b00770",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 688,
       "citationSources": 1,
       "citationDois": [
@@ -1951,6 +2013,7 @@
       "tier": "unknown",
       "doi": "10.1038/nbt.3597",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 4696,
       "citationSources": 1,
       "citationDois": [
@@ -1982,6 +2045,7 @@
       "tier": "unknown",
       "doi": "10.1021/acs.jproteome.5b00354",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 1754,
       "citationSources": 1,
       "citationDois": [
@@ -2013,6 +2077,7 @@
       "tier": "copyleft",
       "doi": "10.1093/nar/gkae253",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 2109,
       "citationSources": 1,
       "citationDois": [
@@ -2044,6 +2109,7 @@
       "tier": "unknown",
       "doi": "10.1371/journal.pcbi.1005752",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 4003,
       "citationSources": 1,
       "citationDois": [
@@ -2075,6 +2141,7 @@
       "tier": "copyleft",
       "doi": "10.1111/j.1745-459x.2007.00137.x",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 185,
       "citationSources": 1,
       "citationDois": [
@@ -2106,6 +2173,7 @@
       "tier": "permissive",
       "doi": "10.21105/joss.02411",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 131,
       "citationSources": 1,
       "citationDois": [
@@ -2137,6 +2205,7 @@
       "tier": "unknown",
       "doi": "10.1093/bioinformatics/btq054",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 5009,
       "citationSources": 1,
       "citationDois": [
@@ -2168,6 +2237,7 @@
       "tier": "unknown",
       "doi": "10.1038/s41467-023-39889-1",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 66,
       "citationSources": 1,
       "citationDois": [
@@ -2199,6 +2269,7 @@
       "tier": "permissive",
       "doi": "10.21105/joss.06802",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 5,
       "citationSources": 1,
       "citationDois": [
@@ -2230,6 +2301,7 @@
       "tier": "permissive",
       "doi": "10.1021/acs.analchem.4c00383",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 69,
       "citationSources": 1,
       "citationDois": [
@@ -2261,6 +2333,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkae335",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 32,
       "citationSources": 1,
       "citationDois": [
@@ -2287,6 +2360,7 @@
       "tier": "permissive",
       "doi": "10.1038/s41592-020-01018-x",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 4497,
       "citationSources": 1,
       "citationDois": [
@@ -2313,6 +2387,7 @@
       "tier": "permissive",
       "doi": "10.1186/s12859-021-04344-9",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 2235,
       "citationSources": 1,
       "citationDois": [
@@ -2339,6 +2414,7 @@
       "tier": "permissive",
       "doi": "10.1007/978-3-030-00934-2_30",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 1587,
       "citationSources": 1,
       "citationDois": [
@@ -2365,6 +2441,7 @@
       "tier": "copyleft",
       "doi": "10.1091/mbc.e21-11-0592",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 29,
       "citationSources": 1,
       "citationDois": [
@@ -2396,6 +2473,7 @@
       "tier": "permissive",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -2425,6 +2503,7 @@
       "tier": "permissive",
       "doi": "10.1038/s41597-024-04051-z",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 15,
       "citationSources": 1,
       "citationDois": [
@@ -2456,6 +2535,7 @@
       "tier": "copyleft",
       "doi": "10.1038/s41598-019-43664-y",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 78,
       "citationSources": 1,
       "citationDois": [
@@ -2487,6 +2567,7 @@
       "tier": "unknown",
       "doi": "10.1371/journal.pcbi.1013602",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 9,
       "citationSources": 1,
       "citationDois": [
@@ -2518,6 +2599,7 @@
       "tier": "permissive",
       "doi": "10.1038/s41538-026-00942-0",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 0,
       "citationSources": 1,
       "citationDois": [
@@ -2544,6 +2626,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -2578,6 +2661,7 @@
       "tier": "unknown",
       "doi": "10.1093/bioinformatics/btu813",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 468,
       "citationSources": 1,
       "citationDois": [
@@ -2604,6 +2688,7 @@
       "tier": "permissive",
       "doi": "10.1186/s13321-023-00724-w",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 33,
       "citationSources": 1,
       "citationDois": [
@@ -2630,6 +2715,7 @@
       "tier": "unknown",
       "doi": "10.3389/fmicb.2020.550420",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 392,
       "citationSources": 1,
       "citationDois": [
@@ -2656,6 +2742,7 @@
       "tier": "unknown",
       "doi": "10.1093/nargab/lqac007",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 112,
       "citationSources": 1,
       "citationDois": [
@@ -2687,6 +2774,7 @@
       "tier": "permissive",
       "doi": "10.48550/arxiv.2509.23426",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 6,
       "citationSources": 1,
       "citationDois": [
@@ -2718,6 +2806,7 @@
       "tier": "permissive",
       "doi": "10.1126/science.adz4351",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 25,
       "citationSources": 1,
       "citationDois": [
@@ -2749,6 +2838,7 @@
       "tier": "permissive",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -2778,6 +2868,7 @@
       "tier": "permissive",
       "doi": "10.1093/bioinformatics/btaf159",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 10,
       "citationSources": 1,
       "citationDois": [
@@ -2809,6 +2900,7 @@
       "tier": "permissive",
       "doi": "10.48550/arxiv.2508.02276",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 2,
       "citationSources": 1,
       "citationDois": [
@@ -2840,6 +2932,7 @@
       "tier": "unknown",
       "doi": "10.48550/arxiv.2408.06292",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 110,
       "citationSources": 1,
       "citationDois": [
@@ -2871,6 +2964,7 @@
       "tier": "permissive",
       "doi": "10.48550/arxiv.2312.07559",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 52,
       "citationSources": 1,
       "citationDois": [
@@ -2902,6 +2996,7 @@
       "tier": "permissive",
       "doi": "10.48550/arxiv.2412.21154",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 9,
       "citationSources": 1,
       "citationDois": [
@@ -2933,6 +3028,7 @@
       "tier": "permissive",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -2962,6 +3058,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -2991,6 +3088,7 @@
       "tier": "permissive",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -3020,6 +3118,7 @@
       "tier": "permissive",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -3049,6 +3148,7 @@
       "tier": "permissive",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -3078,6 +3178,7 @@
       "tier": "restricted",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -3107,6 +3208,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -3136,6 +3238,7 @@
       "tier": "permissive",
       "doi": "10.48550/arxiv.2506.01883",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -3165,6 +3268,7 @@
       "tier": "permissive",
       "doi": "10.1126/science.aec8514",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 6,
       "citationSources": 1,
       "citationDois": [
@@ -3196,6 +3300,7 @@
       "tier": "permissive",
       "doi": "10.1038/s41586-023-06139-9",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 1106,
       "citationSources": 1,
       "citationDois": [
@@ -3227,6 +3332,7 @@
       "tier": "permissive",
       "doi": "10.1038/s41592-024-02201-0",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 1135,
       "citationSources": 1,
       "citationDois": [
@@ -3258,6 +3364,7 @@
       "tier": "copyleft",
       "doi": "10.1038/s42256-022-00534-z",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 612,
       "citationSources": 1,
       "citationDois": [
@@ -3289,6 +3396,7 @@
       "tier": "permissive",
       "doi": "10.1038/s41592-024-02305-7",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 502,
       "citationSources": 1,
       "citationDois": [
@@ -3320,6 +3428,7 @@
       "tier": "permissive",
       "doi": "10.1101/2023.11.28.568918",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 163,
       "citationSources": 1,
       "citationDois": [
@@ -3351,6 +3460,7 @@
       "tier": "copyleft",
       "doi": "10.1016/j.isci.2023.106536",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 60,
       "citationSources": 1,
       "citationDois": [
@@ -3387,6 +3497,7 @@
       "tier": "permissive",
       "doi": "10.1101/2025.04.14.648850",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 32,
       "citationSources": 1,
       "citationDois": [
@@ -3418,6 +3529,7 @@
       "tier": "permissive",
       "doi": "10.1038/s41587-023-01905-6",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 320,
       "citationSources": 1,
       "citationDois": [
@@ -3449,6 +3561,7 @@
       "tier": "restricted",
       "doi": "10.1101/2025.06.26.661135",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 68,
       "citationSources": 1,
       "citationDois": [
@@ -3480,6 +3593,7 @@
       "tier": "permissive",
       "doi": "10.48550/arxiv.2405.17631",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 16,
       "citationSources": 1,
       "citationDois": [
@@ -3511,6 +3625,7 @@
       "tier": "permissive",
       "doi": "10.1038/s42003-025-07764-y",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 17,
       "citationSources": 1,
       "citationDois": [
@@ -3542,6 +3657,7 @@
       "tier": "unknown",
       "doi": "10.1038/s41587-025-02900-9",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 4,
       "citationSources": 1,
       "citationDois": [
@@ -3573,6 +3689,7 @@
       "tier": "permissive",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -3602,6 +3719,7 @@
       "tier": "permissive",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -3631,6 +3749,7 @@
       "tier": "permissive",
       "doi": "10.1038/s41586-025-09442-9",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 115,
       "citationSources": 1,
       "citationDois": [
@@ -3662,6 +3781,7 @@
       "tier": "restricted",
       "doi": "10.1038/s41586-023-06792-0",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 888,
       "citationSources": 1,
       "citationDois": [
@@ -3693,6 +3813,7 @@
       "tier": "unknown",
       "doi": "10.1093/bioinformatics/btg015",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 3160,
       "citationSources": 1,
       "citationDois": [
@@ -3719,6 +3840,7 @@
       "tier": "unknown",
       "doi": "10.1093/gigascience/giaf152",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 5,
       "citationSources": 1,
       "citationDois": [
@@ -3750,6 +3872,7 @@
       "tier": "permissive",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -3774,6 +3897,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -3798,6 +3922,7 @@
       "tier": "permissive",
       "doi": "10.1186/1471-2105-11-5",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 236,
       "citationSources": 1,
       "citationDois": [
@@ -3824,6 +3949,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkac446",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 375,
       "citationSources": 2,
       "citationDois": [
@@ -3851,6 +3977,7 @@
       "tier": "unknown",
       "doi": "10.1007/s00894-014-2278-5",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 2006,
       "citationSources": 2,
       "citationDois": [
@@ -3878,6 +4005,7 @@
       "tier": "unknown",
       "doi": "10.1093/bioinformatics/btt619",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 762,
       "citationSources": 1,
       "citationDois": [
@@ -3904,6 +4032,7 @@
       "tier": "copyleft",
       "doi": "10.1093/bib/bbaa294",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 1145,
       "citationSources": 2,
       "citationDois": [
@@ -3931,6 +4060,7 @@
       "tier": "unknown",
       "doi": "10.1186/1471-2105-5-133",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 180,
       "citationSources": 1,
       "citationDois": [
@@ -3957,6 +4087,7 @@
       "tier": "permissive",
       "doi": "10.1016/j.jbi.2022.104217",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 28,
       "citationSources": 1,
       "citationDois": [
@@ -3983,6 +4114,7 @@
       "tier": "unknown",
       "doi": "10.1186/s12859-025-06302-1",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 4,
       "citationSources": 1,
       "citationDois": [
@@ -4009,6 +4141,7 @@
       "tier": "permissive",
       "doi": "10.1093/biomethods/bpaf040",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 5,
       "citationSources": 1,
       "citationDois": [
@@ -4035,6 +4168,7 @@
       "tier": "unknown",
       "doi": "10.1093/bioadv/vbad151",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -4059,6 +4193,7 @@
       "tier": "unknown",
       "doi": "10.1016/j.compbiomed.2021.104746",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -4083,6 +4218,7 @@
       "tier": "permissive",
       "doi": "10.1021/acssuschemeng.9b07040",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 172,
       "citationSources": 1,
       "citationDois": [
@@ -4109,6 +4245,7 @@
       "tier": "permissive",
       "doi": "10.1039/d2ew00455k",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 31,
       "citationSources": 1,
       "citationDois": [
@@ -4135,6 +4272,7 @@
       "tier": "permissive",
       "doi": "10.21105/joss.00236",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 569,
       "citationSources": 1,
       "citationDois": [
@@ -4161,6 +4299,7 @@
       "tier": "copyleft",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -4185,6 +4324,7 @@
       "tier": "copyleft",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -4209,6 +4349,7 @@
       "tier": "restricted",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -4233,6 +4374,7 @@
       "tier": "restricted",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -4257,6 +4399,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -4283,6 +4426,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gks1193",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 30266,
       "citationSources": 7,
       "citationDois": [
@@ -4315,6 +4459,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkab1053",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 4463,
       "citationSources": 3,
       "citationDois": [
@@ -4343,6 +4488,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkad903",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 16892,
       "citationSources": 25,
       "citationDois": [
@@ -4393,6 +4539,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkad1049",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 21797,
       "citationSources": 19,
       "citationDois": [
@@ -4437,6 +4584,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkx965",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 5775,
       "citationSources": 13,
       "citationDois": [
@@ -4475,6 +4623,7 @@
       "tier": "permissive",
       "doi": "10.1093/nar/gkaa921",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 1252,
       "citationSources": 6,
       "citationDois": [
@@ -4506,6 +4655,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkac1051",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 2192,
       "citationSources": 17,
       "citationDois": [
@@ -4548,6 +4698,7 @@
       "tier": "unknown",
       "doi": "10.1016/j.gpb.2021.08.001",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 1918,
       "citationSources": 1,
       "citationDois": [
@@ -4579,6 +4730,7 @@
       "tier": "permissive",
       "doi": "10.1093/nar/gkab1030",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 2483,
       "citationSources": 6,
       "citationDois": [
@@ -4610,6 +4762,7 @@
       "tier": "unknown",
       "doi": "10.1038/s41588-025-02121-5",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 51,
       "citationSources": 1,
       "citationDois": [
@@ -4636,6 +4789,7 @@
       "tier": "unknown",
       "doi": "10.1038/s41588-023-01585-7",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 270,
       "citationSources": 1,
       "citationDois": [
@@ -4667,6 +4821,7 @@
       "tier": "unknown",
       "doi": "10.1038/s41588-025-02155-9",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 65,
       "citationSources": 1,
       "citationDois": [
@@ -4698,6 +4853,7 @@
       "tier": "unknown",
       "doi": "10.1038/s41588-022-01153-5",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 347,
       "citationSources": 1,
       "citationDois": [
@@ -4724,6 +4880,7 @@
       "tier": "unknown",
       "doi": "10.1101/2025.11.03.686346",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 4,
       "citationSources": 1,
       "citationDois": [
@@ -4750,6 +4907,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -4774,6 +4932,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkad1080",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 76,
       "citationSources": 1,
       "citationDois": [
@@ -4800,6 +4959,7 @@
       "tier": "unknown",
       "doi": "10.1186/s13059-020-02197-8",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 193,
       "citationSources": 1,
       "citationDois": [
@@ -4826,6 +4986,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -4850,6 +5011,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -4874,6 +5036,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -4898,6 +5061,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkab1116",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 2142,
       "citationSources": 6,
       "citationDois": [
@@ -4934,6 +5098,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkaa793",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 437,
       "citationSources": 3,
       "citationDois": [
@@ -4967,6 +5132,7 @@
       "tier": "restricted",
       "doi": "10.1093/nar/gkaf982",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 2,
       "citationSources": 1,
       "citationDois": [
@@ -4998,6 +5164,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -5027,6 +5194,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkac803",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 81,
       "citationSources": 1,
       "citationDois": [
@@ -5058,6 +5226,7 @@
       "tier": "unknown",
       "doi": "10.1371/journal.pone.0103548",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 32,
       "citationSources": 1,
       "citationDois": [
@@ -5084,6 +5253,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkae1010",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 55865,
       "citationSources": 17,
       "citationDois": [
@@ -5126,6 +5296,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkad1020",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 1185,
       "citationSources": 6,
       "citationDois": [
@@ -5157,6 +5328,7 @@
       "tier": "permissive",
       "doi": "10.1093/nar/gkab1061",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 10699,
       "citationSources": 4,
       "citationDois": [
@@ -5186,6 +5358,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/28.1.235",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 58087,
       "citationSources": 11,
       "citationDois": [
@@ -5222,6 +5395,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkae1082",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 16895,
       "citationSources": 13,
       "citationDois": [
@@ -5265,6 +5439,7 @@
       "tier": "unknown",
       "doi": "10.1126/science.1260419",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 24112,
       "citationSources": 8,
       "citationDois": [
@@ -5298,6 +5473,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkac1000",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 72860,
       "citationSources": 12,
       "citationDois": [
@@ -5335,6 +5511,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkae1011",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 22928,
       "citationSources": 8,
       "citationDois": [
@@ -5368,6 +5545,7 @@
       "tier": "unknown",
       "doi": "10.1038/nbt.2839",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 2892,
       "citationSources": 1,
       "citationDois": [
@@ -5394,6 +5572,7 @@
       "tier": "unknown",
       "doi": "10.1093/glycob/cwz080",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 209,
       "citationSources": 1,
       "citationDois": [
@@ -5420,6 +5599,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkv1041",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 347,
       "citationSources": 3,
       "citationDois": [
@@ -5448,6 +5628,7 @@
       "tier": "permissive",
       "doi": "10.1021/acs.jproteome.8b00766",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 132,
       "citationSources": 1,
       "citationDois": [
@@ -5479,6 +5660,7 @@
       "tier": "unknown",
       "doi": "10.7171/jbt.18-2902-002",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 849,
       "citationSources": 1,
       "citationDois": [
@@ -5515,6 +5697,7 @@
       "tier": "restricted",
       "doi": "10.7554/elife.27041",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 2400,
       "citationSources": 1,
       "citationDois": [
@@ -5551,6 +5734,7 @@
       "tier": "unknown",
       "doi": "10.1126/science.abl4896",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 1030,
       "citationSources": 1,
       "citationDois": [
@@ -5587,6 +5771,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkae1142",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 559,
       "citationSources": 2,
       "citationDois": [
@@ -5624,6 +5809,7 @@
       "tier": "unknown",
       "doi": "10.1101/2025.02.27.640494",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 30,
       "citationSources": 1,
       "citationDois": [
@@ -5650,6 +5836,7 @@
       "tier": "restricted",
       "doi": "10.1186/s13395-019-0196-z",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 16,
       "citationSources": 1,
       "citationDois": [
@@ -5676,6 +5863,7 @@
       "tier": "unknown",
       "doi": "10.1186/s12920-020-0712-3",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 12,
       "citationSources": 1,
       "citationDois": [
@@ -5702,6 +5890,7 @@
       "tier": "permissive",
       "doi": "10.1093/nar/gkx1042",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 1852,
       "citationSources": 5,
       "citationDois": [
@@ -5732,6 +5921,7 @@
       "tier": "permissive",
       "doi": "10.1186/s13059-020-01990-9",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 411,
       "citationSources": 1,
       "citationDois": [
@@ -5758,6 +5948,7 @@
       "tier": "permissive",
       "doi": "10.1038/s41467-022-32552-1",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 998,
       "citationSources": 1,
       "citationDois": [
@@ -5784,6 +5975,7 @@
       "tier": "unknown",
       "doi": "10.1038/cddis.2015.414",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 90,
       "citationSources": 1,
       "citationDois": [
@@ -5810,6 +6002,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkm700",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 243,
       "citationSources": 1,
       "citationDois": [
@@ -5836,6 +6029,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkv529",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 140,
       "citationSources": 1,
       "citationDois": [
@@ -5862,6 +6056,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkx921",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 43,
       "citationSources": 1,
       "citationDois": [
@@ -5888,6 +6083,7 @@
       "tier": "unknown",
       "doi": "10.1074/mcp.m111.014647",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 1364,
       "citationSources": 1,
       "citationDois": [
@@ -5914,6 +6110,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkac1009",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 557,
       "citationSources": 2,
       "citationDois": [
@@ -5941,6 +6138,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkae1088",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 502,
       "citationSources": 5,
       "citationDois": [
@@ -5971,6 +6169,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/28.1.292",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 1394,
       "citationSources": 2,
       "citationDois": [
@@ -5998,6 +6197,7 @@
       "tier": "unknown",
       "doi": "10.1016/j.jmb.2019.04.021",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 194,
       "citationSources": 1,
       "citationDois": [
@@ -6024,6 +6224,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkv1309",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 2083,
       "citationSources": 2,
       "citationDois": [
@@ -6056,6 +6257,7 @@
       "tier": "restricted",
       "doi": "10.1093/nar/gku893",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 126,
       "citationSources": 1,
       "citationDois": [
@@ -6082,6 +6284,7 @@
       "tier": "unknown",
       "doi": "10.1038/s41538-018-0032-6",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 361,
       "citationSources": 1,
       "citationDois": [
@@ -6108,6 +6311,7 @@
       "tier": "unknown",
       "doi": "10.1186/s13326-016-0088-7",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 372,
       "citationSources": 1,
       "citationDois": [
@@ -6139,6 +6343,7 @@
       "tier": "restricted",
       "doi": "10.1093/nar/gkac963",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 133329,
       "citationSources": 15,
       "citationDois": [
@@ -6184,6 +6389,7 @@
       "tier": "permissive",
       "doi": "10.1093/nar/gkad1025",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 22277,
       "citationSources": 10,
       "citationDois": [
@@ -6224,6 +6430,7 @@
       "tier": "permissive",
       "doi": "10.1093/nar/gkad960",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 4123,
       "citationSources": 6,
       "citationDois": [
@@ -6260,6 +6467,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkz861",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 190,
       "citationSources": 2,
       "citationDois": [
@@ -6292,6 +6500,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkab1062",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 14229,
       "citationSources": 5,
       "citationDois": [
@@ -6327,6 +6536,7 @@
       "tier": "unknown",
       "doi": "10.3390/metabo10060233",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 126,
       "citationSources": 1,
       "citationDois": [
@@ -6358,6 +6568,7 @@
       "tier": "permissive",
       "doi": "10.1093/nar/gkaa1025",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 5031,
       "citationSources": 12,
       "citationDois": [
@@ -6400,6 +6611,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkx1065",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 616,
       "citationSources": 5,
       "citationDois": [
@@ -6435,6 +6647,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkt1067",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 883,
       "citationSources": 2,
       "citationDois": [
@@ -6467,6 +6680,7 @@
       "tier": "restricted",
       "doi": "10.1093/nar/gkz862",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 12150,
       "citationSources": 13,
       "citationDois": [
@@ -6510,6 +6724,7 @@
       "tier": "restricted",
       "doi": "10.1093/nar/gkv1049",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 1929,
       "citationSources": 3,
       "citationDois": [
@@ -6543,6 +6758,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkaa992",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 384,
       "citationSources": 3,
       "citationDois": [
@@ -6576,6 +6792,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkz1055",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 2190,
       "citationSources": 5,
       "citationDois": [
@@ -6611,6 +6828,7 @@
       "tier": "permissive",
       "doi": "10.1093/nar/gkab1016",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 577,
       "citationSources": 5,
       "citationDois": [
@@ -6646,6 +6864,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gky992",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 429,
       "citationSources": 1,
       "citationDois": [
@@ -6682,6 +6901,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkv1042",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 996,
       "citationSources": 1,
       "citationDois": [
@@ -6713,6 +6933,7 @@
       "tier": "unknown",
       "doi": "10.1002/jms.1777",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 2546,
       "citationSources": 1,
       "citationDois": [
@@ -6744,6 +6965,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -6778,6 +7000,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkz1019",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 1770,
       "citationSources": 3,
       "citationDois": [
@@ -6811,6 +7034,7 @@
       "tier": "unknown",
       "doi": "10.1038/nbt.3597",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 4696,
       "citationSources": 1,
       "citationDois": [
@@ -6842,6 +7066,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -6871,6 +7096,7 @@
       "tier": "unknown",
       "doi": "10.1097/01.ftd.0000179845.53213.39",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 2233,
       "citationSources": 1,
       "citationDois": [
@@ -6902,6 +7128,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -6931,6 +7158,7 @@
       "tier": "restricted",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -6960,6 +7188,7 @@
       "tier": "permissive",
       "doi": "10.1107/s1600576719004229",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 61,
       "citationSources": 1,
       "citationDois": [
@@ -6996,6 +7225,7 @@
       "tier": "unknown",
       "doi": "10.1093/bioinformatics/bti236",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 1413,
       "citationSources": 1,
       "citationDois": [
@@ -7022,6 +7252,7 @@
       "tier": "copyleft",
       "doi": "10.1093/nar/gkad1004",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 12278,
       "citationSources": 5,
       "citationDois": [
@@ -7052,6 +7283,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkac956",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 20189,
       "citationSources": 7,
       "citationDois": [
@@ -7084,6 +7316,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkad976",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 21445,
       "citationSources": 6,
       "citationDois": [
@@ -7115,6 +7348,7 @@
       "tier": "unknown",
       "doi": "10.1021/ed100697w",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 1251,
       "citationSources": 1,
       "citationDois": [
@@ -7141,6 +7375,7 @@
       "tier": "permissive",
       "doi": "10.1093/nar/gkv1031",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 3264,
       "citationSources": 4,
       "citationDois": [
@@ -7170,6 +7405,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gku1004",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 169,
       "citationSources": 2,
       "citationDois": [
@@ -7197,6 +7433,7 @@
       "tier": "permissive",
       "doi": "10.1186/s13321-020-00478-9",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 661,
       "citationSources": 1,
       "citationDois": [
@@ -7228,6 +7465,7 @@
       "tier": "restricted",
       "doi": "10.1093/nar/gkx957",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 236,
       "citationSources": 2,
       "citationDois": [
@@ -7260,6 +7498,7 @@
       "tier": "restricted",
       "doi": "10.1093/nar/gkr755",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 554,
       "citationSources": 3,
       "citationDois": [
@@ -7293,6 +7532,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -7322,6 +7562,7 @@
       "tier": "unknown",
       "doi": "10.1016/s0167-4501(98)80029-0",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 92,
       "citationSources": 1,
       "citationDois": [
@@ -7353,6 +7594,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -7382,6 +7624,7 @@
       "tier": "restricted",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -7411,6 +7654,7 @@
       "tier": "permissive",
       "doi": "10.1016/j.fochms.2022.100090",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 40,
       "citationSources": 1,
       "citationDois": [
@@ -7442,6 +7686,7 @@
       "tier": "restricted",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -7471,6 +7716,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkab763",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 69,
       "citationSources": 1,
       "citationDois": [
@@ -7502,6 +7748,7 @@
       "tier": "unknown",
       "doi": "10.1021/acs.jcim.4c02394",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 3,
       "citationSources": 1,
       "citationDois": [
@@ -7543,6 +7790,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -7572,6 +7820,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -7601,6 +7850,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -7625,6 +7875,7 @@
       "tier": "unknown",
       "doi": "10.1093/nar/gkl838",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 2890,
       "citationSources": 5,
       "citationDois": [
@@ -7655,6 +7906,7 @@
       "tier": "unknown",
       "doi": "10.1093/bioinformatics/btv285",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 162,
       "citationSources": 1,
       "citationDois": [
@@ -7681,6 +7933,7 @@
       "tier": "unknown",
       "doi": "10.4052/tigg.12.175",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 68,
       "citationSources": 1,
       "citationDois": [
@@ -7712,6 +7965,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -7736,6 +7990,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -7760,6 +8015,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -7784,6 +8040,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -7808,6 +8065,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -7832,6 +8090,7 @@
       "tier": "copyleft",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -7856,6 +8115,7 @@
       "tier": "copyleft",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -7880,6 +8140,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -7904,6 +8165,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -7928,6 +8190,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -7952,6 +8215,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -7976,6 +8240,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -8000,6 +8265,7 @@
       "tier": "unknown",
       "doi": "10.2903/j.efsa.2017.e15011",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 49,
       "citationSources": 1,
       "citationDois": [
@@ -8026,6 +8292,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -8050,6 +8317,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -8074,6 +8342,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -8098,6 +8367,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -8122,6 +8392,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -8146,6 +8417,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -8170,6 +8442,7 @@
       "tier": "unknown",
       "doi": "10.1038/s43016-020-0077-y",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 227,
       "citationSources": 1,
       "citationDois": [
@@ -8201,6 +8474,7 @@
       "tier": "permissive",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -8230,6 +8504,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -8259,6 +8534,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -8288,6 +8564,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -8317,6 +8594,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -8346,6 +8624,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -8370,6 +8649,7 @@
       "tier": "unknown",
       "doi": "10.1111/all.70166",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 421,
       "citationSources": 3,
       "citationDois": [
@@ -8398,6 +8678,7 @@
       "tier": "unknown",
       "doi": "10.1002/mnfr.201500769",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 227,
       "citationSources": 1,
       "citationDois": [
@@ -8424,6 +8705,7 @@
       "tier": "unknown",
       "doi": "10.3389/falgy.2021.700533",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 65,
       "citationSources": 1,
       "citationDois": [
@@ -8450,6 +8732,7 @@
       "tier": "unknown",
       "doi": "10.1016/j.jacig.2023.100162",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 281,
       "citationSources": 2,
       "citationDois": [
@@ -8477,6 +8760,7 @@
       "tier": "restricted",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -8501,6 +8785,7 @@
       "tier": "unknown",
       "doi": "10.1016/j.jaci.2008.01.025",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 504,
       "citationSources": 1,
       "citationDois": [
@@ -8527,6 +8812,7 @@
       "tier": "restricted",
       "doi": "10.1007/s11367-016-1087-8",
       "doiSource": "manual",
+      "doiRelation": "publication",
       "citationCount": 5352,
       "citationSources": 1,
       "citationDois": [
@@ -8553,6 +8839,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -8577,6 +8864,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -8601,6 +8889,7 @@
       "tier": "restricted",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -8625,6 +8914,7 @@
       "tier": "unknown",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -8649,6 +8939,7 @@
       "tier": "restricted",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -8673,6 +8964,7 @@
       "tier": "restricted",
       "doi": null,
       "doiSource": null,
+      "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []

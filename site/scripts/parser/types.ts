@@ -56,6 +56,10 @@ export type TopicRef = z.infer<typeof TopicRefSchema>;
 
 /** Coarse license/access tier — the unified 4-tier axis (see src/lib/licenses.ts). */
 export const LicenseTierSchema = z.enum(['permissive', 'copyleft', 'restricted', 'unknown']);
+
+/** Whether a DOI names the item itself (`own`) or the paper describing it (`publication`). */
+export const DoiRelationSchema = z.enum(['own', 'publication']);
+export type DoiRelation = z.infer<typeof DoiRelationSchema>;
 /** The license fields folded onto every card: raw token, provenance, derived tier. */
 export const LicenseFieldsSchema = z.object({
   /** SPDX-ish token or manual string; null = unknown/not detected */
@@ -173,9 +177,13 @@ export const CatalogEntrySchema = z.object({
   license: z.string().nullable().default(null),
   licenseSource: z.enum(['auto', 'manual']).nullable().default(null),
   tier: LicenseTierSchema.default('unknown'),
-  /** DB-owned associated-publication DOI + provenance, folded from the catalog NDJSON */
+  /** DB-owned DOI + provenance, folded from the catalog NDJSON: usually the associated
+   *  publication's, sometimes the item's own (see `doiRelation`) */
   doi: z.string().nullable().default(null),
   doiSource: z.enum(['auto', 'manual']).nullable().default(null),
+  /** `own` when `doi` is a data repository's (the item itself), `publication` when it is the
+   *  describing paper's, null with no DOI. Derived by registrant in doi-relation.ts (tucca-cellag/caail-planning#367). */
+  doiRelation: DoiRelationSchema.nullable().default(null),
   /** OpenAlex cited_by_count summed over `doi` + its sibling version DOIs; null when unknown */
   citationCount: z.number().int().nonnegative().nullable().default(null),
   /** number of papers the count aggregates (1 = single paper; >1 = versioned resource, #102) */
@@ -210,9 +218,13 @@ export const DatasetEntrySchema = z.object({
   license: z.string().nullable().default(null),
   licenseSource: z.enum(['auto', 'manual']).nullable().default(null),
   tier: LicenseTierSchema.default('unknown'),
-  /** DB-owned associated-publication DOI + provenance, folded from dataset_entries NDJSON */
+  /** DB-owned DOI + provenance, folded from dataset_entries NDJSON: usually the associated
+   *  publication's, sometimes the item's own (see `doiRelation`) */
   doi: z.string().nullable().default(null),
   doiSource: z.enum(['auto', 'manual']).nullable().default(null),
+  /** `own` when `doi` is a data repository's (the item itself), `publication` when it is the
+   *  describing paper's, null with no DOI. Derived by registrant in doi-relation.ts (tucca-cellag/caail-planning#367). */
+  doiRelation: DoiRelationSchema.nullable().default(null),
   /** OpenAlex cited_by_count summed over `doi` + its sibling version DOIs; null when unknown */
   citationCount: z.number().int().nonnegative().nullable().default(null),
   /** number of papers the count aggregates (1 = single paper; >1 = versioned resource, #102) */
@@ -295,6 +307,20 @@ export const DatasetInventoryRowSchema = z.object({
   columns: z.record(z.string(), z.string()),
   /** every URL appearing in the row, in document order, deduped */
   links: z.array(z.string()),
+  /** bare lowercase DOI of the row's paper or preprint (its Paper cell, or a CrossSpecies DOI / URL
+   *  cell holding a journal DOI); null when none is named */
+  paperDoi: z.string().nullable().default(null),
+  /** what the row says about its data: from the Data cell, or `deposit` for a CrossSpecies DOI / URL
+   *  link to the data itself; null when it states none (tucca-cellag/caail-planning#367) */
+  dataStatus: z.enum(['deposit', 'supplementary', 'unavailable']).nullable().default(null),
+  /** the identifier the Data cell's badge names, served as written and never read from the id:
+   *  usually an archive accession (GSE…, PRJNA…, SRA…, versioned where the badge is), sometimes
+   *  a repository's own id (OpenML-505) or name; null with no badge */
+  accession: z.string().nullable().default(null),
+  /** the deposit's link; null when there is no deposit */
+  dataUrl: z.string().nullable().default(null),
+  /** the deposit's DOI where its link states one (a doi.org link or `doi:` parameter); null otherwise */
+  dataDoi: z.string().nullable().default(null),
   /** two-tier subject tags, folded in from the committed topic NDJSON */
   topics: z.array(TopicRefSchema).default([]),
   /**
@@ -1084,6 +1110,8 @@ export const ApiCatalogIndexRowSchema = z.strictObject({
   group: z.string(),
   url: z.string().nullable(),
   doi: z.string().nullable(),
+  /** whether `doi` is the item's own (a data repository's) or its describing paper's (tucca-cellag/caail-planning#367) */
+  doiRelation: DoiRelationSchema.nullable(),
   tier: z.string().nullable(),
 });
 

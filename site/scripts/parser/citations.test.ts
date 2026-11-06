@@ -62,6 +62,10 @@ describe('doiKey', () => {
   });
   it('strips a bare doi: prefix', () => {
     expect(doiKey('doi:10.5/xyz')).toBe('10.5/xyz');
+    expect(doiKey('DOI: 10.5/XYZ')).toBe('10.5/xyz');
+    expect(doiKey('https://www.doi.org/10.5/xyz')).toBe('10.5/xyz');
+    expect(doiKey('doi.org/10.5/xyz')).toBe('10.5/xyz');
+    expect(doiKey('doi:https://doi.org/10.5/XYZ')).toBe('10.5/xyz');
   });
   it('passes through an already-bare DOI (lowercased)', () => {
     expect(doiKey('10.1/Foo')).toBe('10.1/foo');
