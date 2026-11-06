@@ -16,7 +16,9 @@
 import { readFileSync } from 'node:fs';
 import { parseMarkdown } from '../parser/markdown.js';
 import { entryHeadingDepth, isEntryHeading } from '../parser/datasets.js';
-import { inlineMd, flat, extractInventory } from './extract.js';
+import {
+  inlineMd, flat, extractInventory, ON_REQUEST_COLUMNS, ON_REQUEST_HEADING, onRequestPaperCell,
+} from './extract.js';
 import type { Db } from './lib.js';
 
 // A NUL delimiter for the matrix cell-map key, so a method label ending in a space can
@@ -229,6 +231,8 @@ export function emitDatasetPage(db: Db, srcPath: string, page: string): string {
     { cells_json: string }[];
   const entries = db.prepare('SELECT heading_md,body_md FROM dataset_entries WHERE page=? ORDER BY ordinal').all(page) as
     { heading_md: string; body_md: string }[];
+  const onRequest = db.prepare('SELECT doi,study,statement FROM datasets_on_request WHERE page=? ORDER BY ordinal').all(page) as
+    { doi: string; study: string; statement: string }[];
 
   // The entry splice is POSITIONAL: the Nth non-inventory H3 in the source ↔ the Nth DB
   // entry for this page (both document-ordered). If those counts disagree — a stale source
@@ -258,8 +262,35 @@ export function emitDatasetPage(db: Db, srcPath: string, page: string): string {
   let section = '';
   let invEmitted = false; // only the FIRST table in the inventory section is DB-owned
   let entryIdx = 0;
+  let onRequestEmitted = false;
   for (let i = 0; i < blocks.length; ) {
     const b = blocks[i];
+    // `## Data on request` (tucca-cellag/caail-planning#750) is DB-owned: its table is
+    // regenerated, prose between the heading and the table is kept, and the whole section
+    // goes when the page has no rows left. It holds no entry-depth heading by design, so
+    // the entry count above never sees it.
+    if (b.type === 'heading' && b.depth === 2 && flat(b).trim() === ON_REQUEST_HEADING) {
+      i++;
+      const body: string[] = [];
+      let tabled = false;
+      while (i < blocks.length && !(blocks[i].type === 'heading' && blocks[i].depth <= 2)) {
+        if (blocks[i].type === 'table' && !tabled) { body.push(onRequestTable(onRequest)); tabled = true; }
+        else body.push(sliceOf(blocks[i]));
+        i++;
+      }
+      if (onRequest.length > 0) {
+        if (!tabled) body.push(onRequestTable(onRequest));
+        out.push(sliceOf(b), ...body);
+        onRequestEmitted = true;
+      }
+      section = ON_REQUEST_HEADING;
+      continue;
+    }
+    // A page with rows but no section yet gets one just before its `## Further reading`.
+    if (b.type === 'heading' && b.depth === 2 && flat(b).trim() === 'Further reading' && onRequest.length > 0 && !onRequestEmitted) {
+      out.push(...newOnRequestSection(onRequest));
+      onRequestEmitted = true;
+    }
     // A curated dataset entry (a heading at the page's entry depth that introduces a
     // dataset) — DB-owned. The count assertion above guarantees `entries[entryIdx]` is
     // defined here. Tested BEFORE the section branch: on an H2-entry page the two would
@@ -295,5 +326,25 @@ export function emitDatasetPage(db: Db, srcPath: string, page: string): string {
     }
     out.push(sliceOf(b)); i++;
   }
+  // No `## Further reading` to sit before: the section closes the page.
+  if (onRequest.length > 0 && !onRequestEmitted) out.push(...newOnRequestSection(onRequest));
   return out.join('\n\n') + '\n';
+}
+
+/** A page's `## Data on request` table, in the form extractOnRequest reads back. */
+function onRequestTable(rows: readonly { doi: string; study: string; statement: string }[]): string {
+  const lines = [`| ${ON_REQUEST_COLUMNS.join(' | ')} |`, `|${'---|'.repeat(ON_REQUEST_COLUMNS.length)}`];
+  for (const r of rows) lines.push(`| ${r.study} | ${onRequestPaperCell(r.doi)} | "${r.statement}" |`);
+  return lines.join('\n');
+}
+
+/** A new `## Data on request` section: heading, one sentence saying what the list is, and the table. */
+function newOnRequestSection(rows: readonly { doi: string; study: string; statement: string }[]): string[] {
+  return [
+    `## ${ON_REQUEST_HEADING}`,
+    'Studies whose own data availability statement says their data are shared only on request. ' +
+      'They have no public deposit or supplementary results table, so they are not counted as datasets; ' +
+      'they are listed so the work stays findable.',
+    onRequestTable(rows),
+  ];
 }

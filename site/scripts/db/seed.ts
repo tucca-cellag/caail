@@ -14,11 +14,11 @@
 import { join } from 'node:path';
 import { existsSync, readFileSync } from 'node:fs';
 import type { PapersData } from '../parser/types.js';
-import { INVENTORY_PAGES, REFERENCE_PAGES, BENCHMARKS_PAGE } from '../parser/datasets.js';
+import { INVENTORY_PAGES, REFERENCE_PAGES, BENCHMARKS_PAGE, ON_REQUEST_PAGES } from '../parser/datasets.js';
 import { REPO_ROOT, SITE_ROOT, assignId, frozenSlug, type Db } from './lib.js';
 import {
   extractCatalogEntries, extractInventory, extractMatrixHeaders, extractPaperBlockquotes,
-  extractDatasetEntries, extractReports, type CatalogRaw, type ReportRaw,
+  extractDatasetEntries, extractOnRequest, extractReports, type CatalogRaw, type ReportRaw,
 } from './extract.js';
 
 // --- papers ----------------------------------------------------------------
@@ -173,6 +173,22 @@ export function seedDatasets(db: Db): { rows: Record<string, number>; entries: n
   }
   const entries = seedDatasetEntries(db, seen);
   return { rows, entries };
+}
+
+/**
+ * Seed the studies whose data are shared only on request (tucca-cellag/caail-planning#750) from
+ * each page's `## Data on request` table. They are not items, so they take no ds: id and
+ * share nothing with the `seen` set. Returns the row count.
+ */
+export function seedOnRequest(db: Db, repoRoot: string = REPO_ROOT): number {
+  const ins = db.prepare('INSERT INTO datasets_on_request(doi,page,study,statement,ordinal) VALUES(?,?,?,?,?)');
+  let ordinal = 0;
+  for (const page of ON_REQUEST_PAGES) {
+    const path = join(repoRoot, 'Datasets', `${page}.md`);
+    if (!existsSync(path)) continue;
+    for (const r of extractOnRequest(path) ?? []) ins.run(r.doi, page, r.study, r.statement, ordinal++);
+  }
+  return ordinal;
 }
 
 // --- topics (deterministic two-tier auto-tag seed) -------------------------

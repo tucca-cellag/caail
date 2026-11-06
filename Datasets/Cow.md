@@ -83,6 +83,14 @@ A curated snapshot. NCBI accessions are the canonical living source — fetch th
 
 > **Curation source:** The cultured-cell and developmental deposits above were initially curated from the supplemental Table 1 of Todhunter et al. 2024 ([Papers.md ref #132](../Papers.md#132)); subsequent additions come from CAAIL contributors. The postmortem proteome & meat-quality entries were curated by walking the cited references of the *Encyclopedia of Meat Sciences* (2024) reviews on proteomics ([Gagaoua et al. 2024](https://doi.org/10.1016/B978-0-323-85125-1.00123-X)) and metabolomics ([Kiyimba et al. 2024](https://doi.org/10.1016/B978-0-323-85125-1.00057-0)) in meat research.
 
+## Data on request
+
+Studies whose own data availability statement says their data are shared only on request. They have no public deposit or supplementary results table, so they are not counted as datasets; they are listed so the work stays findable.
+
+| Study | Paper | Data availability statement |
+|---|---|---|
+| miR-10167-3p targets TCF7L1 to inhibit bovine adipocyte differentiation and promote bovine adipocyte proliferation (Hu et al. 2024) | [DOI](https://doi.org/10.1016/j.ygeno.2024.110903) | "Data will be made available on request." |
+
 ## Further reading
 
 - Adjacent research areas: [Cellular Engineering](../ResearchAreas/CellEngineering.md), [Media Optimization](../ResearchAreas/MediaOptimization.md) (the FBS-replacement problem that motivates much cultivated-beef media work), [Bioprocess Control](../ResearchAreas/Bioprocess.md), [Metabolic Modeling](../ResearchAreas/MetabolicModeling.md).

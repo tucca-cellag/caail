@@ -282,6 +282,49 @@ export function extractReports(path: string): ReportRaw[] {
   return out;
 }
 
+/** The heading of a page's list of studies whose data are shared only on request (tucca-cellag/caail-planning#750). */
+export const ON_REQUEST_HEADING = 'Data on request';
+/** That list's columns, in the order db:emit writes them. */
+export const ON_REQUEST_COLUMNS: readonly string[] = ['Study', 'Paper', 'Data availability statement'];
+
+/** One study on a page's `## Data on request` list. */
+export interface OnRequestRow { study: string; doi: string; statement: string; }
+
+const ON_REQUEST_PAPER = /^\[DOI\]\(https:\/\/doi\.org\/(\S+)\)$/;
+const ON_REQUEST_STATEMENT = /^"(.+)"$/s;
+
+/** The Paper cell db:emit writes for a DOI. */
+export const onRequestPaperCell = (doi: string): string => `[DOI](https://doi.org/${doi})`;
+
+/**
+ * A page's `## Data on request` table, read back into rows; null when the page has no such
+ * section. The section is DB-owned, so its table must be in the form db:emit writes: the
+ * three ON_REQUEST_COLUMNS, a Paper cell `[DOI](https://doi.org/<doi>)`, and the statement in
+ * straight double quotes. Anything else throws naming the page, since a hand edit that
+ * changed the shape would otherwise be dropped without a word on the next emit.
+ */
+export function extractOnRequest(path: string): OnRequestRow[] | null {
+  const src = readFileSync(path, 'utf-8');
+  const sec = sectionsAfter(parseMarkdown(src), 2).find((s) => s.heading.trim() === ON_REQUEST_HEADING);
+  if (!sec) return null;
+  const page = pageFromPath(path);
+  const table = sec.nodes.find((n: any) => n.type === 'table') as Table | undefined;
+  if (!table) throw new Error(`extractOnRequest(${page}): "## ${ON_REQUEST_HEADING}" has no table`);
+  const cellMd = (c: TableCell) => (c.children as any[]).map(inlineMd).join('').trim();
+  const [header, ...rows] = (table.children as TableRow[]).map((r) => (r.children as TableCell[]).map(cellMd));
+  if (header!.join(' | ') !== ON_REQUEST_COLUMNS.join(' | ')) {
+    throw new Error(`extractOnRequest(${page}): columns are "${header!.join(' | ')}", expected "${ON_REQUEST_COLUMNS.join(' | ')}"`);
+  }
+  return rows.map(([study, paper, statement], i) => {
+    const doi = paper?.match(ON_REQUEST_PAPER)?.[1];
+    const said = statement?.match(ON_REQUEST_STATEMENT)?.[1];
+    if (!study || !doi || !said) {
+      throw new Error(`extractOnRequest(${page}): row ${i + 1} is not "| study | [DOI](https://doi.org/…) | \\"statement\\" |"`);
+    }
+    return { study, doi, statement: said };
+  });
+}
+
 export interface Inventory { header: string[]; rows: string[][]; }
 
 /** A page's `## Complete data inventory` GFM table as markdown cell rows. */

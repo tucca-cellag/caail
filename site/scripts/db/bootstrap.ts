@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 import { buildPapersModel } from '../parser/papers.js';
 import { openDb, exportNdjson, REPO_ROOT, NDJSON_DIR, type Db } from './lib.js';
 import { extractCatalogEntries, extractReports } from './extract.js';
-import { seedPapers, seedCatalog, seedReports, seedDatasets, seedTopics, seedLicenses, seedDois, seedRelatedDois, seedSubseries } from './seed.js';
+import { seedPapers, seedCatalog, seedReports, seedDatasets, seedOnRequest, seedTopics, seedLicenses, seedDois, seedRelatedDois, seedSubseries } from './seed.js';
 
 /**
  * Preserve retired paper-id tombstones across a re-bootstrap. They aren't in the
@@ -190,6 +190,7 @@ export function main(): void {
   const reportCount = existsSync(reportsPath) ? seedReports(db, extractReports(reportsPath)) : 0;
 
   const dsCounts = seedDatasets(db);
+  seedOnRequest(db);
   seedTopics(db);
   const preservedTopics = preserveCuratedTopics(db);
   const preservedTags = preserveCuratedItemTopics(db);
@@ -208,6 +209,7 @@ export function main(): void {
   console.log(`  field reports ${reportCount} entries`);
   console.log(`  datasets      ${counts.dataset_rows} inventory rows across ${Object.keys(dsCounts.rows).length} pages`);
   console.log(`  dataset entr. ${counts.dataset_entries} curated entries (atlases / GEMs / reference)`);
+  console.log(`  on request    ${counts.datasets_on_request} studies whose data are shared only on request (not datasets)`);
   console.log(`  curated topics ${preservedTopics} minted fine tag(s) preserved from committed NDJSON`);
   // Counts derived from the exported rows, not the pre-fold seed summary, so the printed totals
   // match what actually landed in the NDJSON (curated tags folded in, curated item_topics preserved).

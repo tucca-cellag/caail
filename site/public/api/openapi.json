@@ -131,7 +131,7 @@
       "get": {
         "operationId": "getDatasets",
         "summary": "Curated dataset entries and per-species inventory",
-        "description": "Two arrays. `entries` are the curated portals, atlases and GEMs. `inventory` are the per-study deposits — accession, assay type, tissue, size — keyed by the source page's own column labels, since the tables differ per page. Filter either by `page`. Use `inventory` for \"what could I combine my own run with\". When an inventory row's deposit is a SuperSeries, its `subseries` lists the member accessions: a SuperSeries accession is a container that resolves to no analysable data, so the parent row alone will not tell you the assay or design of anything you could actually use. Each member carries the `id` of its own inventory row where one exists, and null where it is recorded here only.",
+        "description": "Two arrays. `entries` are the curated portals, atlases and GEMs. `inventory` are the per-study deposits — accession, assay type, tissue, size — keyed by the source page's own column labels, since the tables differ per page. Filter either by `page`. Use `inventory` for \"what could I combine my own run with\". When an inventory row's deposit is a SuperSeries, its `subseries` lists the member accessions: a SuperSeries accession is a container that resolves to no analysable data, so the parent row alone will not tell you the assay or design of anything you could actually use. Each member carries the `id` of its own inventory row where one exists, and null where it is recorded here only. `onRequest` lists studies whose own data availability statement says their data are shared only on request: not datasets, so they carry no id and are not in the manifest's `datasetsTotal`, listed so the work stays findable.",
         "responses": {
           "200": {
             "description": "Curated dataset entries and per-species inventory",
@@ -310,6 +310,11 @@
                 "minimum": 0,
                 "maximum": 9007199254740991
               },
+              "datasetsOnRequest": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
               "fieldReportEditions": {
                 "type": "integer",
                 "minimum": 0,
@@ -329,6 +334,7 @@
               "datasetsCurated",
               "datasetsInventoryRows",
               "datasetsTotal",
+              "datasetsOnRequest",
               "fieldReportEditions"
             ],
             "additionalProperties": false
@@ -593,6 +599,12 @@
               "$ref": "#/components/schemas/DatasetInventoryRow"
             }
           },
+          "onRequest": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OnRequestStudy"
+            }
+          },
           "corpusDate": {
             "type": "string",
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
@@ -601,6 +613,7 @@
         "required": [
           "entries",
           "inventory",
+          "onRequest",
           "corpusDate"
         ],
         "additionalProperties": false
@@ -1852,6 +1865,35 @@
           "dataDoi",
           "topics",
           "subseries"
+        ],
+        "additionalProperties": false
+      },
+      "OnRequestStudy": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "string"
+          },
+          "study": {
+            "type": "string"
+          },
+          "paperDoi": {
+            "type": "string"
+          },
+          "statement": {
+            "type": "string"
+          },
+          "dataStatus": {
+            "type": "string",
+            "const": "on-request"
+          }
+        },
+        "required": [
+          "page",
+          "study",
+          "paperDoi",
+          "statement",
+          "dataStatus"
         ],
         "additionalProperties": false
       },

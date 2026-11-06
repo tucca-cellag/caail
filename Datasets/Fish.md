@@ -71,6 +71,14 @@ A curated snapshot spanning many finfish species. NCBI / EBI / Mendeley accessio
 
 > **Curation source:** The deposit entries above were initially curated from the supplemental Table 1 of Todhunter et al. 2024 ([Papers.md ref #132](../Papers.md#132)). Subsequent additions come from CAAIL contributors.
 
+## Data on request
+
+Studies whose own data availability statement says their data are shared only on request. They have no public deposit or supplementary results table, so they are not counted as datasets; they are listed so the work stays findable.
+
+| Study | Paper | Data availability statement |
+|---|---|---|
+| Establishment and Characterization of Continuous Satellite Muscle Cells from Olive Flounder (*Paralichthys olivaceus*): Isolation, Culture Conditions, and Myogenic Protein Expression (Krishnan et al. 2023) | [DOI](https://doi.org/10.3390/cells12182325) | "The datasets used or analyzed during the current study are available from the corresponding author upon reasonable request." |
+
 ## Further reading
 
 - Adjacent research areas: [Cellular Engineering](../ResearchAreas/CellEngineering.md), [Media Optimization](../ResearchAreas/MediaOptimization.md), [Bioprocess Control](../ResearchAreas/Bioprocess.md), [Sensory Prediction](../ResearchAreas/SensoryPrediction.md) (hyperspectral off-flavor profiling in cultured salmonids), [Metabolic Modeling](../ResearchAreas/MetabolicModeling.md).

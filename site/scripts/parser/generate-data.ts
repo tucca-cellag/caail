@@ -35,6 +35,9 @@ import { buildTopicsModel, unresolvedTopicItems, catalogJoinKey } from './topics
 import { buildDatasetsModel } from './datasets-entries.js';
 import { buildReportsModel } from './reports.js';
 import { buildDatasetInventory } from './dataset-inventory.js';
+import { buildOnRequestStudies } from './datasets-on-request.js';
+import { ON_REQUEST_PAGES } from './datasets.js';
+import { extractOnRequest } from '../db/extract.js';
 import { writeLlmsFull } from './llms-full.js';
 import { buildAgentApi, writeAgentApi, publishSkillDoc } from './agent-api.js';
 import {
@@ -67,6 +70,9 @@ import {
 export const DEFAULT_OUT_DIR: string = fileURLToPath(
   new URL('../../src/content/data/', import.meta.url),
 );
+
+/** The repository root (parser/ → scripts/ → site/ → root), where the canonical Datasets/ pages live. */
+const REPO_ROOT_DIR: string = fileURLToPath(new URL('../../../', import.meta.url));
 
 /**
  * Where the agent-facing static API is emitted. Under `public/`, so Astro copies it
@@ -233,6 +239,16 @@ export function generateData(
   // API only, NOT folded into `datasets` above: three Preact islands import the site's
   // datasets.json, so these would be shipped to the browser for nothing.
   const inventory = buildDatasetInventory();
+
+  // Studies whose data are shared only on request (tucca-cellag/caail-planning#750), read from
+  // the DB NDJSON for the API. Not datasets: kept out of `datasets`, the inventory and every
+  // count above, and checked against the rows the pages' `## Data on request` tables hold.
+  const onRequest = buildOnRequestStudies();
+  const onRequestWritten = ON_REQUEST_PAGES.reduce((n, page) => {
+    const path = join(REPO_ROOT_DIR, 'Datasets', `${page}.md`);
+    return n + (existsSync(path) ? extractOnRequest(path)?.length ?? 0 : 0);
+  }, 0);
+  assertCountsMatch('Data on request rows served == rows in the pages', onRequest.length, onRequestWritten);
 
   // Metrics runs LAST of the model builders: its topic / license / citation panels are
   // rolled up from the catalog, topic and dataset-entry models above, so that a
@@ -515,6 +531,7 @@ export function generateData(
     catalog,
     datasets,
     inventory,
+    onRequest,
     topics,
     taxonomy: apiTaxonomy,
     reports,

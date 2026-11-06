@@ -39,6 +39,7 @@ Markdown-era workflow did.
 | Database / lookup resource | `database` | `db:<slug>` | `catalog` | `Databases.md` |
 | Dataset inventory row | `dataset` | `ds:<slug>` | `dataset_rows` | `Datasets/<page>.md` |
 | Dataset curated entry (atlas / GEM / reference) | `dataset` | `ds:<slug>` | `dataset_entries` | `Datasets/<page>.md` |
+| Study with data on request (not a dataset) | — (not an item) | — (keyed by DOI) | `datasets_on_request` | `Datasets/<page>.md` (`## Data on request`) |
 | Topic (subject tag) | `topic` | `topic:<slug>` | `topics`, `item_topics`, `aliases` | — (surfaced as card chips + the `/topics/` hub) |
 
 A `dataset` item is an inventory row **or** a curated entry, never both (they share the `ds:` id
@@ -47,6 +48,16 @@ namespace; `db:check` enforces exactly-one). A curated entry is any `### …` he
 entry. It carries `section` + `kind` (atlas/gem/other); its `url` is nullable (unlinked GEM headings).
 Entries are topic-tagged, rendered as `.ds-card`s with chips on `/datasets/<page>/`, and appear as
 linkable items in the `/topics/` hub; inventory rows stay count-only.
+
+**A study whose data are shared only on request** gets no inventory row or entry. If its own data
+availability statement says the data are available on request, add it to the page's **Data on
+request** list: one line in `site/db/ndjson/datasets_on_request.ndjson` with `doi` (bare, lowercase),
+`page` (any dataset page but `Benchmarks`), `study` (title, then `(Author et al. YEAR)`), `statement`
+(the paper's own words, verbatim, without quotes) and `ordinal` (document order across pages), then
+`db:emit`, `db:check` and `db:verify`. These rows are not items, so `db:add` and `db:remove` do not
+handle them; deleting a line and re-emitting removes the study, and removing a page's last one
+removes its section. Read the statement from the paper itself (verify-citations), never from a
+summary.
 
 **Licenses** are a coarse DB-owned tier axis (permissive/copyleft/restricted/unknown), NOT a table:
 `catalog` + `dataset_entries` carry `license` + `license_source` (`auto`|`manual`). Like topics they

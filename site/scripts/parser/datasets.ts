@@ -48,6 +48,13 @@ export const REFERENCE_PAGES: readonly string[] = [
 /** The benchmarks page, whose datasets are counted as `##` (H2) entries. */
 export const BENCHMARKS_PAGE = 'Benchmarks';
 
+/**
+ * Pages that may carry a `## Data on request` list (tucca-cellag/caail-planning#750): every
+ * dataset page but Benchmarks, whose H2s are entries, so the list's heading would count there
+ * as a dataset.
+ */
+export const ON_REQUEST_PAGES: readonly string[] = [...INVENTORY_PAGES, ...REFERENCE_PAGES];
+
 const INVENTORY_HEADING = 'Complete data inventory';
 
 /**

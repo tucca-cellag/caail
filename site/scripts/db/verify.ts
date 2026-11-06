@@ -4,7 +4,7 @@
  * and asserts the regenerated model matches the original per the fidelity bar:
  *   - Papers:  JSON-identical PapersData + lint 0 errors
  *   - Catalog: {name,url,group,summary,summaryHtml} identical
- *   - Datasets: inventory row-set identical
+ *   - Datasets: inventory row-set, curated entries and Data on request rows identical
  * Never writes canonical files. Exit 1 on any mismatch.
  *
  *   NODE_OPTIONS='--experimental-sqlite --no-warnings' pnpm --dir site db:verify
@@ -19,7 +19,7 @@ import { parseCatalogFile } from '../parser/catalog.js';
 import { INVENTORY_PAGES, REFERENCE_PAGES, BENCHMARKS_PAGE } from '../parser/datasets.js';
 import { existsSync } from 'node:fs';
 import { importNdjson, REPO_ROOT, type Db } from './lib.js';
-import { extractInventory, extractDatasetEntries, extractReports } from './extract.js';
+import { extractInventory, extractDatasetEntries, extractOnRequest, extractReports } from './extract.js';
 import { emitPapersFile, emitCatalogFile, emitDatasetPage, emitReportsFile } from './emit.js';
 
 let failures = 0;
@@ -66,25 +66,33 @@ function verifyDatasets(db: Db): void {
   // leaving it out meant the emit path with a non-default entry depth had no round-trip
   // oracle at all — which is how its 17 datasets stayed missing from the DB unnoticed (#156).
   const pages = [...INVENTORY_PAGES, ...REFERENCE_PAGES, BENCHMARKS_PAGE];
-  let seen = 0, invOk = 0, entOk = 0, entryTotal = 0;
+  let seen = 0, invOk = 0, entOk = 0, entryTotal = 0, reqOk = 0, reqTotal = 0;
   for (const page of pages) {
     const src = join(REPO_ROOT, 'Datasets', `${page}.md`);
     if (!existsSync(src)) continue;
     seen++;
     const origInv = extractInventory(src);
     const origEntries = extractDatasetEntries(src);
+    const origReq = extractOnRequest(src);
     entryTotal += origEntries.length;
+    reqTotal += origReq?.length ?? 0;
     const regenPath = join(TMP, `${page}.md`);
     writeFileSync(regenPath, emitDatasetPage(db, src, page));
     const regInv = extractInventory(regenPath);
     const regEntries = extractDatasetEntries(regenPath);
+    const regReq = extractOnRequest(regenPath);
     if (JSON.stringify(origInv) === JSON.stringify(regInv)) invOk++;
     else check(`${page}.md inventory identical`, false, firstDiff(JSON.stringify(origInv), JSON.stringify(regInv ?? {})));
     if (JSON.stringify(origEntries) === JSON.stringify(regEntries)) entOk++;
     else check(`${page}.md entries identical`, false, firstDiff(JSON.stringify(origEntries), JSON.stringify(regEntries)));
+    // The Data on request list (tucca-cellag/caail-planning#750): a page whose Markdown lacks
+    // the rows the DB holds, or keeps rows the DB dropped, fails here, so db:emit was not run.
+    if (JSON.stringify(origReq) === JSON.stringify(regReq)) reqOk++;
+    else check(`${page}.md Data on request identical`, false, firstDiff(JSON.stringify(origReq), JSON.stringify(regReq)));
   }
   check(`all ${seen} dataset pages: inventory round-trips identically`, invOk === seen, `${invOk}/${seen} ok`);
   check(`all ${seen} dataset pages: ${entryTotal} curated entries round-trip identically`, entOk === seen, `${entOk}/${seen} ok`);
+  check(`all ${seen} dataset pages: ${reqTotal} Data on request rows round-trip identically`, reqOk === seen, `${reqOk}/${seen} ok`);
 }
 
 function verifyReports(db: Db): void {

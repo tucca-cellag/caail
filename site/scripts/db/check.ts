@@ -29,6 +29,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { importNdjson, ACCESSION_EXACT, idAccession, REPO_ROOT, SITE_ROOT, type Db } from './lib.js';
 import { THEME_SLUGS, THEMES, FINE_TAGS } from './seed.js';
+import { ON_REQUEST_PAGES } from '../parser/datasets.js';
 import { buildTaxonomyModel } from '../parser/taxonomy.js';
 import { AREAS } from '../parser/areas.js';
 import { MATRIX_SECTION } from '../parser/types.js';
@@ -557,6 +558,31 @@ export function checkSubseries(db: Db, subseriesPath: string = SUBSERIES_PATH): 
 export const INVENTORY_CELLS_LABEL =
   `dataset_rows: every Data cell is ${DATA_CELL_FORMS} (CrossSpecies: its DOI / URL cell is a link)`;
 
+export const ON_REQUEST_LABEL =
+  'datasets_on_request: every row has a bare DOI, a non-Benchmarks dataset page, a study and a statement that fit a table cell';
+
+/**
+ * Shape of the Data on request list (tucca-cellag/caail-planning#750): a bare lowercase DOI (the
+ * key, and the Paper cell's target), a page from ON_REQUEST_PAGES whose Markdown exists
+ * (never Benchmarks, whose H2s are entries, so a `## Data on request` there would count as a
+ * dataset), and a non-empty study and statement with no `|` or line break, either of which
+ * would break the emitted table. It checks shape, not the statement's truth.
+ */
+export function checkOnRequest(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
+  const rows = db.prepare('SELECT doi, page, study, statement FROM datasets_on_request ORDER BY ordinal, doi')
+    .all() as { doi: string; page: string; study: string; statement: string }[];
+  const problems: string[] = [];
+  const unsafe = (s: string): boolean => /[|\r\n]/.test(s);
+  for (const r of rows) {
+    if (!DOI_SHAPE.test(r.doi) || r.doi !== r.doi.toLowerCase()) problems.push(`${r.doi}: not a bare lowercase DOI`);
+    if (!ON_REQUEST_PAGES.includes(r.page)) problems.push(`${r.doi}: page "${r.page}" cannot carry a Data on request list`);
+    else if (!existsSync(join(repoRoot, 'Datasets', `${r.page}.md`))) problems.push(`${r.doi}: Datasets/${r.page}.md does not exist`);
+    if (!r.study.trim() || unsafe(r.study)) problems.push(`${r.doi}: study is empty or holds a | or line break`);
+    if (!r.statement.trim() || unsafe(r.statement)) problems.push(`${r.doi}: statement is empty or holds a | or line break`);
+  }
+  return [ok(ON_REQUEST_LABEL, problems.length === 0, `${problems.length} problem(s): ${problems.slice(0, 10).join('; ')}`)];
+}
+
 /** How many problems one failing run names; the count always covers them all. */
 export const INVENTORY_CELLS_SHOWN = 10;
 
@@ -915,7 +941,7 @@ export function runChecks(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
     ...checkTopicTiers(db), ...checkAxisBijection(db, repoRoot),
     ...checkCatalogHeadings(db), ...checkLicenses(db), ...checkManualLicenseKeys(db),
     ...checkDois(db), ...checkManualDoiKeys(db), ...checkRelatedDois(db), ...checkSubseries(db),
-    ...checkInventoryCells(db, repoRoot),
+    ...checkInventoryCells(db, repoRoot), ...checkOnRequest(db, repoRoot),
     ...checkSeries(db), ...checkFineTagSeedDrift(db), ...checkRowTagParity(db)];
 }
 
