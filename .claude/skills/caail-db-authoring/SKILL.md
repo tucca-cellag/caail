@@ -58,7 +58,7 @@ page's table, counting from 0; renumber only that page's later rows, as `db:boot
 `db:check` fails), then `db:emit`, `db:check` and `db:verify`. The page renders the statement as
 Markdown while the API serves it as stored, so `db:check` refuses one whose rendered text would differ
 (emphasis, code, a backslash escape, an entity reference that decodes, a link or a tag; a bare URL,
-email address or `&` is fine) and one stored as a single quoted span, straight or curly. The site
+email address or `&` is fine) and one stored as a single quoted span, in double or single quotes, straight or curly. The site
 also curls quotes and dashes on every page, which changes glyphs, not words, and is not checked.
 A statement whose own words hold such syntax is a curator call:
 raise it rather than editing the words. These rows are not items, so `db:add` and `db:remove` do not

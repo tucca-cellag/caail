@@ -568,8 +568,12 @@ export const ON_REQUEST_LABEL =
   'statement that fit a table cell, a statement that renders as stored, and an ordinal counting its page\'s ' +
   'list from 0';
 
-/** A statement that is one quoted span: `"…"` with no inner `"`, or `“…”` with no inner curly double quote. */
-const WRAPPED_IN_QUOTES = /^(?:"[^"]*"|“[^“”]*”)$/;
+/**
+ * A statement that is one quoted span: it opens and closes with a mark of one family, double
+ * (`"` `“` `”` `„`) or single (`'` `‘` `’`), matched or not, and holds no other mark of that
+ * family. `"Raw" counts and "processed"` holds inner marks, so it is the paper's own quoting.
+ */
+const WRAPPED_IN_QUOTES = /^(?:["“„][^"“”„]*["“”]|['‘][^'‘’]*['’])$/;
 
 /**
  * Whether a statement renders as the words stored. db:emit writes it into a table cell between
@@ -596,12 +600,22 @@ export function statementRendersAsStored(statement: string, definitions = ''): b
   return !hasHtml(node) && mdastToString(node) === cell;
 }
 
-/** The source of a page's link reference and footnote definitions, one per paragraph; '' when it has none. */
+/**
+ * A stand-in for every link reference and footnote definition on a page, wherever it sits
+ * (GFM resolves one nested in a blockquote or list item document-wide), one per paragraph;
+ * '' when it has none. Each is rebuilt from its label alone, since whether a `[1]` or `[^1]`
+ * resolves, not where it points, is what changes how a statement renders.
+ */
 export function pageDefinitions(src: string): string {
-  return parseMarkdown(src).children
-    .filter((n) => n.type === 'definition' || n.type === 'footnoteDefinition')
-    .map((n) => src.slice(n.position!.start.offset, n.position!.end.offset))
-    .join('\n\n');
+  const out: string[] = [];
+  const walk = (n: { type: string; label?: string | null; identifier?: string; children?: unknown[] }): void => {
+    const label = n.label ?? n.identifier;
+    if (n.type === 'definition' && label) out.push(`[${label}]: x`);
+    else if (n.type === 'footnoteDefinition' && label) out.push(`[^${label}]: x`);
+    for (const c of n.children ?? []) walk(c as typeof n);
+  };
+  walk(parseMarkdown(src));
+  return out.join('\n\n');
 }
 
 /**
@@ -614,8 +628,8 @@ export function pageDefinitions(src: string): string {
  *
  * The statement is the paper's own words, served verbatim by the API and written raw into the
  * page, so it must also render there as stored (`statementRendersAsStored`), and must not be
- * stored as one quoted span, straight `"…"` or curly `“…”`, since the page adds a pair and
- * would show two. A statement that only starts or ends with a quoted word passes.
+ * stored as one quoted span (`WRAPPED_IN_QUOTES`), since the page adds a pair and would show
+ * two. A statement that only starts or ends with a quoted word passes.
  *
  * Ordinals count each page's list from 0 in table order, which is what `db:bootstrap` writes
  * from the pages, so adding a row to one page renumbers no other. A hand-typed ordinal that
@@ -662,12 +676,9 @@ export function checkOnRequest(db: Db, repoRoot: string = REPO_ROOT): CheckResul
   const expected = pageOrdinals(rows.map((r) => r.page));
   const definitions = new Map<string, string>();
   rows.forEach((r, i) => {
-    const holders = held.get(r.doi);
-    if (holders) {
-      const [one, ...more] = [...holders];
-      problems.push(more.length === 0
-        ? `${r.doi}: also the paper of ${one}, which holds public data, so it does not belong on this list`
-        : `${r.doi}: also the paper of ${[one, ...more].join(' and ')}, which hold public data, so it does not belong on this list`);
+    const holders = [...(held.get(r.doi) ?? [])];
+    if (holders.length > 0) {
+      problems.push(`${r.doi}: also the paper of ${holders.join(' and ')}, which ${holders.length > 1 ? 'hold' : 'holds'} public data, so it does not belong on this list`);
     }
     if (!DOI_SHAPE.test(r.doi) || r.doi !== r.doi.toLowerCase()) problems.push(`${r.doi}: not a bare lowercase DOI`);
     else if (unsafe(r.doi)) problems.push(`${r.doi}: holds a |, which would split its row of the page's table`);

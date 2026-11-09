@@ -187,7 +187,7 @@ describe('one section per page, one page per study', () => {
     const src = join(TMP, 'Two.md');
     writeFileSync(src, two);
     expect(() => extractOnRequest(src)).toThrow(/2 "## Data on request" sections/);
-    expect(() => emitFixture('Two', two, [ROW])).toThrow(/2 "## Data on request" sections/);
+    expect(() => emitFixture('Two', two, [ROW])).toThrow(/Two\.md: 2 "## Data on request" sections; a page holds one, so merge them/);
     const twice = join(TMP, 'Twice.md');
     writeFileSync(twice, `# Twice\n\n## Data on request\n\n${TABLE}${line('10.1000/a')}${line('10.1000/a')}`);
     expect(() => extractOnRequest(twice)).toThrow(/10\.1000\/a is listed twice/);
@@ -346,8 +346,13 @@ describe('held DOIs, link-safe DOIs and statements that render as stored', () =>
     expect(result(dbWith('Cow', [{ ...ROW, statement: 'Ask a.b@uni.edu or see https://zenodo.org/r/1 and data_v1_final.' }])).ok).toBe(true);
   });
 
-  it('refuses a statement stored inside its own quotes, straight or curly, which the page would show doubled', () => {
-    for (const statement of ['"Data will be made available on request."', '“Data will be made available on request.”']) {
+  it('refuses a statement stored inside its own quotes, double or single, matched or not, which the page would show doubled', () => {
+    const wrapped = [
+      '"Data will be made available on request."', '“Data will be made available on request.”',
+      '"Data will be made available on request.”', '„Data will be made available on request.“',
+      '‘Data will be made available on request.’', "'Data will be made available on request.'",
+    ];
+    for (const statement of wrapped) {
       const r = result(dbWith('Cow', [{ ...ROW, statement }]));
       expect(r.ok, statement).toBe(false);
       expect(r.detail, statement).toContain(`${ROW.doi}: statement is stored inside its own quotes`);
@@ -355,7 +360,7 @@ describe('held DOIs, link-safe DOIs and statements that render as stored', () =>
   });
 
   it('passes a statement that only starts or ends with a quoted word', () => {
-    for (const statement of ['"Raw" data will be made available on request.', '"Raw" counts and "processed"']) {
+    for (const statement of ['"Raw" data will be made available on request.', '"Raw" counts and "processed"', "Ask the authors' lab."]) {
       expect(result(dbWith('Cow', [{ ...ROW, statement }])).ok, statement).toBe(true);
     }
   });
@@ -396,8 +401,11 @@ describe('a pipe in the DOI, every holder named, and the page\'s own definitions
       return root;
     };
     const defined = rootWith('# Cow\n\nIntro.\n\n[1]: https://x.org/one\n\n[^n]: A note.\n');
-    for (const statement of ['See [1] on request.', 'Ask the author[^n].']) {
-      const r = result(dbWith('Cow', [{ ...ROW, statement }]), defined);
+    // GFM resolves a definition nested in a blockquote or a list item document-wide.
+    const nested = rootWith('# Cow\n\n> A quote.\n>\n> [2]: https://x.org/two\n\n- An item.\n\n  [3]: https://x.org/three\n');
+    for (const [statement, root] of [['See [1] on request.', defined], ['Ask the author[^n].', defined],
+      ['See [2] on request.', nested], ['See [3] on request.', nested]] as const) {
+      const r = result(dbWith('Cow', [{ ...ROW, statement }]), root);
       expect(r.ok, statement).toBe(false);
       expect(r.detail, statement).toContain(`${ROW.doi}: statement holds Markdown or HTML`);
     }
@@ -470,6 +478,8 @@ describe('a section on a page no page list names', () => {
 
   it('has bootstrap and parse refuse it on a new dataset page or the index, rather than ignore it', () => {
     expect(() => readPagesOnRequest(rootWith('Rabbit.md', `# Rabbit\n\n${SECTION}`))).toThrow(/Rabbit\.md has a "## Data on request" section/);
+    // ON_REQUEST_PAGES is derived, so the message names the lists a page is added to.
+    expect(() => readPagesOnRequest(rootWith('Rabbit.md', `# Rabbit\n\n${SECTION}`))).toThrow(/SPECIES_PAGES or REFERENCE_PAGES/);
     expect(() => seedOnRequest(openDb(), rootWith('Rabbit.md', `# Rabbit\n\n${SECTION}`))).toThrow(/Rabbit\.md/);
     expect(() => readPagesOnRequest(rootWith('README.md', `# Datasets\n\n${SECTION}`))).toThrow(/README\.md has a "## Data on request" section/);
   });

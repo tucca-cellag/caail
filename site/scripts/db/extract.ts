@@ -326,33 +326,33 @@ export function extractOnRequest(path: string): OnRequestTableRow[] | null {
 /** extractOnRequest on a page already read and parsed, so db:emit checks the tree it has. */
 export function readOnRequestSection(src: string, tree: Root, page: string): OnRequestTableRow[] | null {
   const secs = sectionsAfter(tree, 2).filter((s) => isOnRequestHeading(s.heading));
-  if (secs.length > 1) throw new Error(`extractOnRequest(${page}): ${secs.length} "## ${ON_REQUEST_HEADING}" sections; a page holds one`);
+  if (secs.length > 1) throw new Error(`${page}.md: ${secs.length} "## ${ON_REQUEST_HEADING}" sections; a page holds one, so merge them`);
   const sec = secs[0];
   if (!sec) return null;
   const tables = sec.nodes.filter((n: any) => n.type === 'table') as Table[];
-  if (tables.length > 1) throw new Error(`extractOnRequest(${page}): "## ${ON_REQUEST_HEADING}" holds ${tables.length} tables; it holds one`);
+  if (tables.length > 1) throw new Error(`${page}.md: "## ${ON_REQUEST_HEADING}" holds ${tables.length} tables; it holds one`);
   const table = tables[0];
-  if (!table) throw new Error(`extractOnRequest(${page}): "## ${ON_REQUEST_HEADING}" has no table`);
+  if (!table) throw new Error(`${page}.md: "## ${ON_REQUEST_HEADING}" has no table`);
   // A cell's source span includes its bounding pipes; the guard keeps `|` out of the text itself.
   const rawCell = (c: TableCell) =>
     src.slice(c.position!.start.offset, c.position!.end.offset).replace(/^\|/, '').replace(/\|$/, '').trim();
   const [header, ...rows] = (table.children as TableRow[]).map((r) => (r.children as TableCell[]).map(rawCell));
   if (header!.join(' | ') !== ON_REQUEST_COLUMNS.join(' | ')) {
-    throw new Error(`extractOnRequest(${page}): columns are "${header!.join(' | ')}", expected "${ON_REQUEST_COLUMNS.join(' | ')}"`);
+    throw new Error(`${page}.md: columns are "${header!.join(' | ')}", expected "${ON_REQUEST_COLUMNS.join(' | ')}"`);
   }
   const seen = new Set<string>();
   return rows.map((cells, i) => {
     // The parser keeps a cell beyond the header's width, so a fourth cell is seen here.
     if (cells.length !== ON_REQUEST_COLUMNS.length) {
-      throw new Error(`extractOnRequest(${page}): row ${i + 1} has ${cells.length} cells, expected ${ON_REQUEST_COLUMNS.length}`);
+      throw new Error(`${page}.md: row ${i + 1} has ${cells.length} cells, expected ${ON_REQUEST_COLUMNS.length}`);
     }
     const [study, paper, statement] = cells;
     const doi = paper?.match(ON_REQUEST_PAPER)?.[1];
     const said = statement?.match(ON_REQUEST_STATEMENT)?.[1];
     if (!study || !doi || !said) {
-      throw new Error(`extractOnRequest(${page}): row ${i + 1} is not "| study | [DOI](https://doi.org/…) | \\"statement\\" |"`);
+      throw new Error(`${page}.md: row ${i + 1} is not "| study | [DOI](https://doi.org/…) | \\"statement\\" |"`);
     }
-    if (seen.has(doi)) throw new Error(`extractOnRequest(${page}): ${doi} is listed twice`);
+    if (seen.has(doi)) throw new Error(`${page}.md: ${doi} is listed twice`);
     seen.add(doi);
     return { study, doi, statement: said };
   });
@@ -374,7 +374,7 @@ export function refuseUnlistedOnRequest(repoRoot: string, who: string): void {
     if (extractOnRequest(join(dir, file)) === null) continue;
     const why = file === `${BENCHMARKS_PAGE}.md` || file === 'README.md'
       ? 'and that page carries none'
-      : 'and only a page in ON_REQUEST_PAGES (site/scripts/parser/datasets.ts) carries one; list the page there first';
+      : 'and only a page in ON_REQUEST_PAGES carries one; that list is built from SPECIES_PAGES or REFERENCE_PAGES in site/scripts/parser/datasets.ts, so add the page to one of those first';
     throw new Error(`${who}: ${file} has a "## ${ON_REQUEST_HEADING}" section, ${why}`);
   }
 }
