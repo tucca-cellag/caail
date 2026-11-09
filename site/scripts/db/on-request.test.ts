@@ -370,6 +370,42 @@ describe('held DOIs, link-safe DOIs and statements that render as stored', () =>
   });
 });
 
+describe('a pipe in the DOI, every holder named, and the page\'s own definitions', () => {
+  it('refuses a DOI holding a |, which would split its row of the emitted table', () => {
+    const r = result(dbWith('Cow', [{ ...ROW, doi: '10.1000/a|b' }]));
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('10.1000/a|b: holds a |, which would split its row of the page\'s table');
+  });
+
+  it('names every holder of a DOI, not only the last one read', () => {
+    const db = dbWith('Cow', [ROW]);
+    db.exec('PRAGMA foreign_keys = OFF');
+    db.prepare("INSERT INTO dataset_rows(item_id,page,cells_json,subseries,ordinal) VALUES('ds:held-row','Cow',?,NULL,0)")
+      .run(JSON.stringify(['Held', '[DOI](https://doi.org/10.1000/abc)', 'supplementary', 'x', 'x', 'x', 'x', 'x']));
+    db.prepare("INSERT INTO dataset_entries(item_id,name,url,page,section,kind,heading_md,body_md,doi,doi_source,ordinal) VALUES('ds:held-entry','E',NULL,'Cow','S','other','E','b','10.1000/abc','manual',0)").run();
+    const detail = result(db).detail;
+    expect(detail).toContain('ds:held-row');
+    expect(detail).toContain('ds:held-entry');
+  });
+
+  it('refuses a statement a link reference or footnote defined on its page would turn into a link', () => {
+    const rootWith = (page: string): string => {
+      const root = mkdtempSync(join(tmpdir(), 'caail-onreq-defs-'));
+      mkdirSync(join(root, 'Datasets'));
+      writeFileSync(join(root, 'Datasets', 'Cow.md'), page);
+      return root;
+    };
+    const defined = rootWith('# Cow\n\nIntro.\n\n[1]: https://x.org/one\n\n[^n]: A note.\n');
+    for (const statement of ['See [1] on request.', 'Ask the author[^n].']) {
+      const r = result(dbWith('Cow', [{ ...ROW, statement }]), defined);
+      expect(r.ok, statement).toBe(false);
+      expect(r.detail, statement).toContain(`${ROW.doi}: statement holds Markdown or HTML`);
+    }
+    const bare = rootWith('# Cow\n\nIntro.\n');
+    expect(result(dbWith('Cow', [{ ...ROW, statement: 'See [1] on request.' }]), bare).ok).toBe(true);
+  });
+});
+
 describe('ordinals number each page\'s list on its own', () => {
   const insert = (db: Db, rows: [string, string, number][]) => {
     const ins = db.prepare('INSERT INTO datasets_on_request(doi,page,study,statement,ordinal) VALUES(?,?,?,?,?)');

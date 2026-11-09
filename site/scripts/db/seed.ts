@@ -176,26 +176,39 @@ export function seedDatasets(db: Db): { rows: Record<string, number>; entries: n
 }
 
 /**
+ * The Data on request ordinal for each of `pages` in order: its place in its own page's list,
+ * counting from 0. db:bootstrap assigns these and db:check holds the stored ones to them, so
+ * the rule is written once.
+ */
+export function pageOrdinals(pages: readonly string[]): number[] {
+  const next = new Map<string, number>();
+  return pages.map((page) => {
+    const n = next.get(page) ?? 0;
+    next.set(page, n + 1);
+    return n;
+  });
+}
+
+/**
  * Seed the studies whose data are shared only on request (tucca-cellag/caail-planning#750) from
  * each page's `## Data on request` table. They are not items, so they take no ds: id and
  * share nothing with the `seen` set. Returns the row count.
  *
  * The table is keyed by DOI, so a study goes on one page. One listed on two throws naming
  * both, rather than dying on the table's UNIQUE constraint. Each page's rows are numbered
- * from 0 in table order, so a row added to one page renumbers no other.
+ * from 0 in table order (`pageOrdinals`), so a row added to one page renumbers no other.
  */
 export function seedOnRequest(db: Db, repoRoot: string = REPO_ROOT): number {
   const ins = db.prepare('INSERT INTO datasets_on_request(doi,page,study,statement,ordinal) VALUES(?,?,?,?,?)');
   const pageOf = new Map<string, string>();
-  const nextOrdinal = new Map<string, number>();
-  for (const r of readPagesOnRequest(repoRoot)) {
+  const rows = readPagesOnRequest(repoRoot);
+  const ordinals = pageOrdinals(rows.map((r) => r.page));
+  rows.forEach((r, i) => {
     const first = pageOf.get(r.doi);
     if (first) throw new Error(`seedOnRequest: ${r.doi} is listed on ${first} and ${r.page}; a study goes on one page`);
     pageOf.set(r.doi, r.page);
-    const ordinal = nextOrdinal.get(r.page) ?? 0;
-    nextOrdinal.set(r.page, ordinal + 1);
-    ins.run(r.doi, r.page, r.study, r.statement, ordinal);
-  }
+    ins.run(r.doi, r.page, r.study, r.statement, ordinals[i]);
+  });
   return pageOf.size;
 }
 
