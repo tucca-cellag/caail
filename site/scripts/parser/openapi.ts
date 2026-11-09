@@ -45,6 +45,7 @@ import {
   CellSchema,
   DatasetEntrySchema,
   DatasetInventoryRowSchema,
+  OnRequestStudySchema,
   ReferenceSchema,
   ReportSchema,
   TopicNodeSchema,
@@ -165,7 +166,7 @@ export const API_ENDPOINTS: readonly ApiEndpointSpec[] = [
     schema: ApiDatasetsSchema,
     summary: 'Curated dataset entries and per-species inventory',
     description:
-      'Two arrays. `entries` are the curated portals, atlases and GEMs. `inventory` are the ' +
+      'Two arrays of datasets, and one of studies that are not. `entries` are the curated portals, atlases and GEMs. `inventory` are the ' +
       'per-study deposits — accession, assay type, tissue, size — keyed by the source page\'s ' +
       'own column labels, since the tables differ per page. Filter either by `page`. Use ' +
       '`inventory` for "what could I combine my own run with". ' +
@@ -173,7 +174,10 @@ export const API_ENDPOINTS: readonly ApiEndpointSpec[] = [
       'accessions: a SuperSeries accession is a container that resolves to no analysable ' +
       'data, so the parent row alone will not tell you the assay or design of anything you ' +
       'could actually use. Each member carries the `id` of its own inventory row where one ' +
-      'exists, and null where it is recorded here only.',
+      'exists, and null where it is recorded here only. ' +
+      'The third array, `onRequest`, lists studies whose own data availability statement says their data are ' +
+      'shared only on request: not datasets, so they carry no id and are not in the manifest\'s ' +
+      '`datasetsTotal`, listed so the work stays findable.',
   },
   {
     file: 'reports.json',
@@ -325,6 +329,7 @@ const SHARED_SCHEMAS: ReadonlyArray<readonly [string, z.ZodType]> = [
   ['CatalogIndexRow', ApiCatalogIndexRowSchema],
   ['DatasetEntry', DatasetEntrySchema],
   ['DatasetInventoryRow', DatasetInventoryRowSchema],
+  ['OnRequestStudy', OnRequestStudySchema],
   ['Report', ReportSchema],
 ];
 

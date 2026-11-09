@@ -5,12 +5,15 @@
  * sqlite-replatform extractGroupEntries / extractInventory / inlineMd.
  */
 
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { parseMarkdown, sectionsAfter } from '../parser/markdown.js';
-import { entryHeadingDepth, isEntryHeading, pageFromPath } from '../parser/datasets.js';
+import {
+  BENCHMARKS_PAGE, entryHeadingDepth, isEntryHeading, isOnRequestHeading, ON_REQUEST_HEADING, ON_REQUEST_PAGES, pageFromPath,
+} from '../parser/datasets.js';
 import { isEditionSort, invalidEditionSort } from '../parser/reports.js';
 import { slugify } from './lib.js';
-import type { Table, TableRow, TableCell } from 'mdast';
+import type { Root, Table, TableRow, TableCell } from 'mdast';
 
 /**
  * Per-reference trailing blockquote run: the verbatim `> …` blockquote block(s)
@@ -280,6 +283,95 @@ export function extractReports(path: string): ReportRaw[] {
     });
   }
   return out;
+}
+
+/** The heading of a page's list of studies whose data are shared only on request (tucca-cellag/caail-planning#750). */
+export { ON_REQUEST_HEADING };
+/** That list's columns, in the order db:emit writes them. */
+export const ON_REQUEST_COLUMNS: readonly string[] = ['Study', 'Paper', 'Data availability statement'];
+
+/** One study as a page's `## Data on request` table holds it. */
+export interface OnRequestTableRow { study: string; doi: string; statement: string; }
+
+const ON_REQUEST_PAPER = /^\[DOI\]\(https:\/\/doi\.org\/(\S+)\)$/;
+const ON_REQUEST_STATEMENT = /^"(.+)"$/s;
+
+/** The Paper cell db:emit writes for a DOI. */
+export const onRequestPaperCell = (doi: string): string => `[DOI](https://doi.org/${doi})`;
+
+/**
+ * A page's `## Data on request` table, read back into rows; null when the page has no such
+ * section. The section is DB-owned, so its table must be in the form db:emit writes: the
+ * three ON_REQUEST_COLUMNS and exactly three cells a row, a Paper cell
+ * `[DOI](https://doi.org/<doi>)`, and the statement in straight double quotes. Anything else
+ * throws naming the page, and db:emit reads an existing section through this before
+ * replacing it, so a hand edit that changed the shape stops the emit instead of vanishing.
+ * A well-formed row added by hand is a different case: emit overwrites it from the DB, as it
+ * does an inventory row, and the CI sync guard (db:emit, then `git diff`) is what flags it.
+ *
+ * Cells are read as their raw source text, not re-rendered through `inlineMd`: a statement
+ * is the paper's own words, and rendering would turn an email address or URL in it into link
+ * syntax and `_x_` into `*x*`, so a bootstrap would quietly rewrite what the paper said.
+ *
+ * A second section, a second table in the section, or a DOI listed twice in the table, throws
+ * too: each would pass a round trip that compared one table's rows, while the page showed a
+ * list the DB, db:check and the API know nothing about.
+ */
+export function extractOnRequest(path: string): OnRequestTableRow[] | null {
+  const src = readFileSync(path, 'utf-8');
+  return readOnRequestSection(src, parseMarkdown(src), pageFromPath(path));
+}
+
+/** extractOnRequest on a page already read and parsed, so db:emit checks the tree it has. */
+export function readOnRequestSection(src: string, tree: Root, page: string): OnRequestTableRow[] | null {
+  const secs = sectionsAfter(tree, 2).filter((s) => isOnRequestHeading(s.heading));
+  if (secs.length > 1) throw new Error(`extractOnRequest(${page}): ${secs.length} "## ${ON_REQUEST_HEADING}" sections; a page holds one`);
+  const sec = secs[0];
+  if (!sec) return null;
+  const tables = sec.nodes.filter((n: any) => n.type === 'table') as Table[];
+  if (tables.length > 1) throw new Error(`extractOnRequest(${page}): "## ${ON_REQUEST_HEADING}" holds ${tables.length} tables; it holds one`);
+  const table = tables[0];
+  if (!table) throw new Error(`extractOnRequest(${page}): "## ${ON_REQUEST_HEADING}" has no table`);
+  // A cell's source span includes its bounding pipes; the guard keeps `|` out of the text itself.
+  const rawCell = (c: TableCell) =>
+    src.slice(c.position!.start.offset, c.position!.end.offset).replace(/^\|/, '').replace(/\|$/, '').trim();
+  const [header, ...rows] = (table.children as TableRow[]).map((r) => (r.children as TableCell[]).map(rawCell));
+  if (header!.join(' | ') !== ON_REQUEST_COLUMNS.join(' | ')) {
+    throw new Error(`extractOnRequest(${page}): columns are "${header!.join(' | ')}", expected "${ON_REQUEST_COLUMNS.join(' | ')}"`);
+  }
+  const seen = new Set<string>();
+  return rows.map((cells, i) => {
+    // The parser keeps a cell beyond the header's width, so a fourth cell is seen here.
+    if (cells.length !== ON_REQUEST_COLUMNS.length) {
+      throw new Error(`extractOnRequest(${page}): row ${i + 1} has ${cells.length} cells, expected ${ON_REQUEST_COLUMNS.length}`);
+    }
+    const [study, paper, statement] = cells;
+    const doi = paper?.match(ON_REQUEST_PAPER)?.[1];
+    const said = statement?.match(ON_REQUEST_STATEMENT)?.[1];
+    if (!study || !doi || !said) {
+      throw new Error(`extractOnRequest(${page}): row ${i + 1} is not "| study | [DOI](https://doi.org/…) | \\"statement\\" |"`);
+    }
+    if (seen.has(doi)) throw new Error(`extractOnRequest(${page}): ${doi} is listed twice`);
+    seen.add(doi);
+    return { study, doi, statement: said };
+  });
+}
+
+/**
+ * Every Data on request row the dataset pages hold, each tagged with its page, in
+ * ON_REQUEST_PAGES order then table order: the population db:bootstrap seeds and `pnpm parse`
+ * checks the DB against. A section on Benchmarks, which may carry none, throws rather than
+ * being skipped, since bootstrap would otherwise drop it and the next emit delete it unseen.
+ */
+export function readPagesOnRequest(repoRoot: string): (OnRequestTableRow & { page: string })[] {
+  const benchmarks = join(repoRoot, 'Datasets', `${BENCHMARKS_PAGE}.md`);
+  if (existsSync(benchmarks) && extractOnRequest(benchmarks) !== null) {
+    throw new Error(`readPagesOnRequest: ${BENCHMARKS_PAGE}.md has a "## ${ON_REQUEST_HEADING}" section, and that page carries none`);
+  }
+  return ON_REQUEST_PAGES.flatMap((page) => {
+    const path = join(repoRoot, 'Datasets', `${page}.md`);
+    return (existsSync(path) ? extractOnRequest(path) ?? [] : []).map((r) => ({ ...r, page }));
+  });
 }
 
 export interface Inventory { header: string[]; rows: string[][]; }

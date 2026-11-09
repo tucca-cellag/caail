@@ -42,6 +42,15 @@ This section holds CHO bioprocess measurements at the resolution constraint-base
 
 Uptake and secretion rates from a CHO-VRC01 flux study spanning fed-batch and perfusion process modes across bioreactor pH, media supplementation, and feeding strategies (Venkatarama Reddy et al. 2026, *Metabolic Engineering*), paired with a kinetically constrained dynamic flux balance analysis model that regresses kinetic parameters across amino-acid metabolism and cell growth. Raw data and model code are available from the authors on request; the supplementary file (`mmc1.docx`) gives, in Table S1, uptake and secretion rates per metabolite at pH 6.75, 7 and 7.25 across three culture phases, the kind of rates that parameterize GEMs for cell-ag digital twins. Published: [`10.1016/j.ymben.2026.102552`](https://doi.org/10.1016/j.ymben.2026.102552) (preprint [`10.64898/2026.01.11.698917`](https://doi.org/10.64898/2026.01.11.698917)).
 
+## Data on request
+
+Studies whose own data availability statement says their data are shared only on request. They have no public deposit or supplementary results table, so they are not counted as datasets; they are listed so the work stays findable.
+
+| Study | Paper | Data availability statement |
+|---|---|---|
+| Pseudo Perfusion of Chinese Hamster Ovary (CHO) Cells as a Reliable Platform for Data Generation to Model and Guide Continuous Perfusion Biomanufacturing (Malinov et al. 2026) | [DOI](https://doi.org/10.1002/bit.70190) | "Data will be made available upon reasonable request." |
+| Comprehensive modeling of cell culture profile using Raman spectroscopy and machine learning (Tanemura et al. 2023) | [DOI](https://doi.org/10.1038/s41598-023-49257-0) | "The data that support the findings of this study are available from the corresponding author upon reasonable request. Additional data are available in the supplementary material of this article." |
+
 ## Further reading
 
 - CHO-focused metabolic-modeling methodology: [Papers.md ref #59](../Papers.md#59) (Antonakoudis & Richelle 2026, data-driven GEM reduction for bioprocess modeling) — a CHO case study whose reduction approach is directly applicable to cell-ag digital twins.

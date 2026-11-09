@@ -60,6 +60,7 @@ export const TABLES_PK: Record<string, string> = {
   catalog: 'ordinal,item_id',
   dataset_rows: 'ordinal,item_id',
   dataset_entries: 'ordinal,item_id',
+  datasets_on_request: 'ordinal,doi',
   reports: 'ordinal,item_id',
   topics: 'slug',
   item_topics: 'item_id,topic_id',

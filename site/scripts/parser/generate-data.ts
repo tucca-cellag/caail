@@ -35,6 +35,9 @@ import { buildTopicsModel, unresolvedTopicItems, catalogJoinKey } from './topics
 import { buildDatasetsModel } from './datasets-entries.js';
 import { buildReportsModel } from './reports.js';
 import { buildDatasetInventory } from './dataset-inventory.js';
+import { buildOnRequestStudies, onRequestDrift, readOnRequestRows } from './datasets-on-request.js';
+import { readPagesOnRequest } from '../db/extract.js';
+import { REPO_ROOT } from '../db/lib.js';
 import { writeLlmsFull } from './llms-full.js';
 import { buildAgentApi, writeAgentApi, publishSkillDoc } from './agent-api.js';
 import {
@@ -233,6 +236,15 @@ export function generateData(
   // API only, NOT folded into `datasets` above: three Preact islands import the site's
   // datasets.json, so these would be shipped to the browser for nothing.
   const inventory = buildDatasetInventory();
+
+  // Studies whose data are shared only on request (tucca-cellag/caail-planning#750), read from
+  // the DB NDJSON for the API. Not datasets: kept out of `datasets`, the inventory and every
+  // count above, and checked against the rows the pages' `## Data on request` tables hold.
+  const onRequestRows = readOnRequestRows();
+  const onRequest = buildOnRequestStudies(onRequestRows);
+  const onRequestWritten = readPagesOnRequest(REPO_ROOT);
+  const onRequestDrifted = onRequestDrift(onRequestRows, onRequestWritten);
+  if (onRequestDrifted) throw new Error(`Data on request: the DB and the pages disagree: ${onRequestDrifted}`);
 
   // Metrics runs LAST of the model builders: its topic / license / citation panels are
   // rolled up from the catalog, topic and dataset-entry models above, so that a
@@ -515,6 +527,7 @@ export function generateData(
     catalog,
     datasets,
     inventory,
+    onRequest,
     topics,
     taxonomy: apiTaxonomy,
     reports,

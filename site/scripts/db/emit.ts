@@ -15,8 +15,10 @@
 
 import { readFileSync } from 'node:fs';
 import { parseMarkdown } from '../parser/markdown.js';
-import { entryHeadingDepth, isEntryHeading } from '../parser/datasets.js';
-import { inlineMd, flat, extractInventory } from './extract.js';
+import { entryHeadingDepth, isEntryHeading, isFurtherReadingHeading, isOnRequestHeading } from '../parser/datasets.js';
+import {
+  inlineMd, flat, extractInventory, readOnRequestSection, ON_REQUEST_COLUMNS, ON_REQUEST_HEADING, onRequestPaperCell,
+} from './extract.js';
 import type { Db } from './lib.js';
 
 // A NUL delimiter for the matrix cell-map key, so a method label ending in a space can
@@ -222,13 +224,31 @@ export function emitReportsFile(db: Db, srcPath: string): string {
  */
 export function emitDatasetPage(db: Db, srcPath: string, page: string): string {
   const src = readFileSync(srcPath, 'utf-8');
-  const blocks = parseMarkdown(src).children as any[];
+  const tree = parseMarkdown(src);
+  const blocks = tree.children as any[];
   const sliceOf = (b: any) => src.slice(b.position.start.offset, b.position.end.offset);
   const inv = extractInventory(srcPath);
   const rows = db.prepare('SELECT cells_json FROM dataset_rows WHERE page=? ORDER BY ordinal').all(page) as
     { cells_json: string }[];
   const entries = db.prepare('SELECT heading_md,body_md FROM dataset_entries WHERE page=? ORDER BY ordinal').all(page) as
     { heading_md: string; body_md: string }[];
+  // `doi` breaks an ordinal tie, as the NDJSON export's sort does, so two rows given one
+  // ordinal by hand still emit in one order on every run.
+  const onRequest = db.prepare('SELECT doi,study,statement FROM datasets_on_request WHERE page=? ORDER BY ordinal, doi').all(page) as
+    { doi: string; study: string; statement: string }[];
+  // An existing section is regenerated where it stands; a new one is created only when none
+  // exists anywhere on the page, so a section placed after the footer is never duplicated.
+  // A page with two would have both filled with one table, and extractOnRequest reads only
+  // one, so it is refused here as it is there.
+  const onRequestSections = blocks.filter((b) => b.type === 'heading' && b.depth === 2 && isOnRequestHeading(flat(b))).length;
+  if (onRequestSections > 1) {
+    throw new Error(`emitDatasetPage(${page}): ${onRequestSections} "## Data on request" sections; a page holds one. Merge them.`);
+  }
+  const hasOnRequestSection = onRequestSections === 1;
+  // Read an existing section's table before replacing it: a hand edit that changed its shape
+  // (a column renamed, a cell added, a second table, a statement unquoted) throws here rather
+  // than vanishing. Read from the tree parsed above, not the file again.
+  if (hasOnRequestSection) readOnRequestSection(src, tree, page);
 
   // The entry splice is POSITIONAL: the Nth non-inventory H3 in the source ↔ the Nth DB
   // entry for this page (both document-ordered). If those counts disagree — a stale source
@@ -258,8 +278,37 @@ export function emitDatasetPage(db: Db, srcPath: string, page: string): string {
   let section = '';
   let invEmitted = false; // only the FIRST table in the inventory section is DB-owned
   let entryIdx = 0;
+  let onRequestEmitted = false;
   for (let i = 0; i < blocks.length; ) {
     const b = blocks[i];
+    // `## Data on request` (tucca-cellag/caail-planning#750) is DB-owned: its table is
+    // regenerated, prose between the heading and the table is kept, and the whole section
+    // goes when the page has no rows left. It holds no entry-depth heading by design, so
+    // the entry count above never sees it.
+    if (b.type === 'heading' && b.depth === 2 && isOnRequestHeading(flat(b))) {
+      i++;
+      const body: string[] = [];
+      let tabled = false;
+      while (i < blocks.length && !(blocks[i].type === 'heading' && blocks[i].depth <= 2)) {
+        if (blocks[i].type === 'table' && !tabled) { body.push(onRequestTable(onRequest)); tabled = true; }
+        else body.push(sliceOf(blocks[i]));
+        i++;
+      }
+      // The shape check above guarantees the section held a table, so `body` has the new one.
+      if (onRequest.length > 0) {
+        out.push(sliceOf(b), ...body);
+        onRequestEmitted = true;
+      }
+      section = ON_REQUEST_HEADING;
+      continue;
+    }
+    // A page with rows but no section yet gets one just before its `## Further reading`,
+    // matched without regard to case, as isEntryHeading matches the footer.
+    if (b.type === 'heading' && b.depth === 2 && isFurtherReadingHeading(flat(b))
+      && onRequest.length > 0 && !onRequestEmitted && !hasOnRequestSection) {
+      out.push(...newOnRequestSection(onRequest));
+      onRequestEmitted = true;
+    }
     // A curated dataset entry (a heading at the page's entry depth that introduces a
     // dataset) — DB-owned. The count assertion above guarantees `entries[entryIdx]` is
     // defined here. Tested BEFORE the section branch: on an H2-entry page the two would
@@ -295,5 +344,25 @@ export function emitDatasetPage(db: Db, srcPath: string, page: string): string {
     }
     out.push(sliceOf(b)); i++;
   }
+  // No `## Further reading` to sit before: the section closes the page.
+  if (onRequest.length > 0 && !onRequestEmitted) out.push(...newOnRequestSection(onRequest));
   return out.join('\n\n') + '\n';
+}
+
+/** A page's `## Data on request` table, in the form extractOnRequest reads back. */
+function onRequestTable(rows: readonly { doi: string; study: string; statement: string }[]): string {
+  const lines = [`| ${ON_REQUEST_COLUMNS.join(' | ')} |`, `|${'---|'.repeat(ON_REQUEST_COLUMNS.length)}`];
+  for (const r of rows) lines.push(`| ${r.study} | ${onRequestPaperCell(r.doi)} | "${r.statement}" |`);
+  return lines.join('\n');
+}
+
+/** A new `## Data on request` section: heading, one sentence saying what the list is, and the table. */
+function newOnRequestSection(rows: readonly { doi: string; study: string; statement: string }[]): string[] {
+  return [
+    `## ${ON_REQUEST_HEADING}`,
+    'Studies whose own data availability statement says their data are shared only on request. ' +
+      'They have no public deposit or supplementary results table, so they are not counted as datasets; ' +
+      'they are listed so the work stays findable.',
+    onRequestTable(rows),
+  ];
 }

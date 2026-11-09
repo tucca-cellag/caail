@@ -144,6 +144,22 @@ CREATE TABLE dataset_entries (
   ordinal    INTEGER NOT NULL          -- document order across all dataset pages
 );
 
+-- Studies whose data are shared only on request (tucca-cellag/caail-planning#750). They get
+-- no inventory row or curated entry, so without this list a study cited nowhere else in
+-- CAAIL would vanish from the library. Deliberately NOT items: no `items` row, no `ds:` id,
+-- no topics and no part of `counts.datasets`, so nothing a consumer joins on can read an
+-- on-request study as a held dataset. Keyed by the paper's DOI, so a study goes on one
+-- page; `db:bootstrap` and `pnpm parse` refuse one listed on two. `db:emit` writes each
+-- page's rows as the table under a `## Data on request` heading, which it creates just
+-- before `## Further reading` and afterwards regenerates where it stands.
+CREATE TABLE datasets_on_request (
+  doi       TEXT PRIMARY KEY,          -- the paper's bare lowercase DOI
+  page      TEXT NOT NULL,             -- dataset page basename ('Cow', 'CHOReference')
+  study     TEXT NOT NULL,             -- the Study cell: the study as a reader names it, with authors and year
+  statement TEXT NOT NULL,             -- the paper's own data availability statement, verbatim, without quotes
+  ordinal   INTEGER NOT NULL           -- document order across all dataset pages
+);
+
 -- Field reports — recurring institutional state-of-field surveys (GFI State of the
 -- Industry, the Rethink Priorities landscape report) promoted to first-class, queryable
 -- records (tucca-cellag/caail-planning#331). Catalog-shaped and link-headed like `dataset_entries`: `heading_md`

@@ -1034,6 +1034,8 @@ export const ApiManifestSchema = z.strictObject({
     datasetsInventoryRows: z.number().int().nonnegative(),
     /** the two above, which are disjoint and exhaustive — == the library total */
     datasetsTotal: z.number().int().nonnegative(),
+    /** studies whose data are shared only on request: listed, never part of datasetsTotal */
+    datasetsOnRequest: z.number().int().nonnegative(),
     /** field-report editions across all series (one record per edition, current + superseded) */
     fieldReportEditions: z.number().int().nonnegative(),
   }),
@@ -1122,8 +1124,29 @@ export const ApiCatalogIndexSchema = z.strictObject({
   entries: z.array(ApiCatalogIndexRowSchema),
 });
 
+/**
+ * A study whose data are shared only on request (tucca-cellag/caail-planning#750). It has no
+ * public deposit or supplementary results table, so it is not a dataset and carries no id:
+ * it is listed so the work stays findable, never counted in `datasetsTotal`.
+ */
+export const OnRequestStudySchema = z.strictObject({
+  /** the dataset page that lists it ('Cow', 'CHOReference') */
+  page: z.string(),
+  /** the study as the page names it, as plain text: title, then authors and year */
+  study: z.string(),
+  /** bare lowercase DOI of the paper */
+  paperDoi: z.string(),
+  /** the paper's own data availability statement, verbatim */
+  statement: z.string(),
+  /** always "on-request": the data are available only by asking the authors */
+  dataStatus: z.literal('on-request'),
+});
+export type OnRequestStudy = z.infer<typeof OnRequestStudySchema>;
+
 export const ApiDatasetsSchema = DatasetsDataSchema.extend({
   inventory: z.array(DatasetInventoryRowSchema),
+  /** studies whose data are shared only on request; not datasets, and not in `datasetsTotal` */
+  onRequest: z.array(OnRequestStudySchema),
   corpusDate: CorpusDateSchema,
 }).strict();
 

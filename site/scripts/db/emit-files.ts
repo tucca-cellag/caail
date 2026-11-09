@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 import { INVENTORY_PAGES, REFERENCE_PAGES, BENCHMARKS_PAGE } from '../parser/datasets.js';
 import { importNdjson, REPO_ROOT, type Db } from './lib.js';
 import { emitPapersFile, emitCatalogFile, emitDatasetPage, emitReportsFile } from './emit.js';
-import { extractInventory, extractDatasetEntries } from './extract.js';
+import { extractInventory, extractDatasetEntries, extractOnRequest } from './extract.js';
 
 /**
  * Write every DB-owned canonical file from `db`. Returns the repo-relative paths.
@@ -42,18 +42,31 @@ export function emitAll(db: Db, root: string = REPO_ROOT): string[] {
   if (existsSync(reportsSrc)) {
     files.push({ rel: 'FieldReports.md', text: emitReportsFile(db, reportsSrc) });
   }
-  // A dataset page is DB-owned if it has an inventory table OR curated `### …` entries —
-  // so reference pages (no inventory, entries only) are emitted too. Mirror seed.ts's
-  // ENTRY_PAGES exactly (incl. BENCHMARKS_PAGE) so a page that ever gains H3 entries can't
-  // be seeded-but-never-emitted (which would pass the sync guard for the wrong reason).
+  // Mirror seed.ts's ENTRY_PAGES exactly (incl. BENCHMARKS_PAGE) so a page that ever gains
+  // H3 entries can't be seeded-but-never-emitted (which would pass the sync guard for the
+  // wrong reason).
   for (const page of [...INVENTORY_PAGES, ...REFERENCE_PAGES, BENCHMARKS_PAGE]) {
     const src = join(root, 'Datasets', `${page}.md`);
-    if (existsSync(src) && (extractInventory(src) || extractDatasetEntries(src).length > 0)) {
+    if (existsSync(src) && isDbOwnedDatasetPage(db, src, page)) {
       files.push({ rel: `Datasets/${page}.md`, text: emitDatasetPage(db, src, page) });
     }
   }
   for (const f of files) writeFileSync(join(root, f.rel), f.text);
   return files.map((f) => f.rel);
+}
+
+/**
+ * Whether db:emit owns any part of an existing dataset page. An inventory table or curated
+ * `### …` entries make it so, which is why reference pages (entries only) are emitted too.
+ * So does a Data on request list (tucca-cellag/caail-planning#750), whether the DB holds rows
+ * for the page (so a page with nothing else gains its section) or the page still shows a
+ * section (so removing its last row removes the section).
+ */
+export function isDbOwnedDatasetPage(db: Db, src: string, page: string): boolean {
+  // The DB lookup first: it costs no parse of the page.
+  return db.prepare('SELECT 1 FROM datasets_on_request WHERE page=? LIMIT 1').get(page) !== undefined
+    || Boolean(extractInventory(src)) || extractDatasetEntries(src).length > 0
+    || extractOnRequest(src) !== null;
 }
 
 function main(): void {

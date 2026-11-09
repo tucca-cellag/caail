@@ -48,6 +48,27 @@ export const REFERENCE_PAGES: readonly string[] = [
 /** The benchmarks page, whose datasets are counted as `##` (H2) entries. */
 export const BENCHMARKS_PAGE = 'Benchmarks';
 
+/**
+ * Pages that may carry a `## Data on request` list (tucca-cellag/caail-planning#750): every
+ * dataset page but Benchmarks. `db:check` refuses a row on any other page, and `db:emit`
+ * removes a stray section from a page with no rows.
+ */
+export const ON_REQUEST_PAGES: readonly string[] = [...INVENTORY_PAGES, ...REFERENCE_PAGES];
+
+/** The heading of a page's list of studies whose data are shared only on request. */
+export const ON_REQUEST_HEADING = 'Data on request';
+
+/** Whether a `##` heading's text is the Data on request list's, matched without regard to case. */
+export const isOnRequestHeading = (text: string): boolean =>
+  text.trim().toLowerCase() === ON_REQUEST_HEADING.toLowerCase();
+
+/** Every dataset page's closing `##` section. */
+const FURTHER_READING_HEADING = 'Further reading';
+
+/** Whether a `##` heading's text is the page footer's, matched without regard to case. */
+export const isFurtherReadingHeading = (text: string): boolean =>
+  text.trim().toLowerCase() === FURTHER_READING_HEADING.toLowerCase();
+
 const INVENTORY_HEADING = 'Complete data inventory';
 
 /**
@@ -56,7 +77,9 @@ const INVENTORY_HEADING = 'Complete data inventory';
  * anything. Without this, adding a `## Further reading` footer to Benchmarks — which
  * every other page already has — would silently count as an 18th benchmark dataset.
  */
-const NON_ENTRY_H2 = new Set(['further reading', INVENTORY_HEADING.toLowerCase()]);
+const NON_ENTRY_H2 = new Set([
+  FURTHER_READING_HEADING.toLowerCase(), INVENTORY_HEADING.toLowerCase(), ON_REQUEST_HEADING.toLowerCase(),
+]);
 
 /**
  * The heading depth marking one curated dataset entry on a page.
@@ -96,9 +119,12 @@ export function pageFromPath(path: string): string {
  * silently promoting it to a dataset because of one capital letter is not a useful reading.
  */
 export function isEntryHeading(page: string, label: string, section: string): boolean {
+  // Neither the inventory section nor the Data on request list (tucca-cellag/caail-planning#750)
+  // holds entries: a `###` under either is a sub-heading of that section, never a dataset.
+  const s = section.trim().toLowerCase();
   return entryHeadingDepth(page) === 2
     ? !NON_ENTRY_H2.has(label.trim().toLowerCase())
-    : section.trim().toLowerCase() !== INVENTORY_HEADING.toLowerCase();
+    : s !== INVENTORY_HEADING.toLowerCase() && s !== ON_REQUEST_HEADING.toLowerCase();
 }
 
 // ---------------------------------------------------------------------------

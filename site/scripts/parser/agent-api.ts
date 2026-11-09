@@ -32,7 +32,7 @@ import { fileURLToPath } from 'node:url';
 
 import { assertValid, buildOpenApiDocument, OPENAPI_FILE } from './openapi.js';
 import { MATRIX_SECTION } from './types.js';
-import type { Catalog, CatalogEntry, DatasetInventory, DoiRelation, PapersData } from './types.js';
+import type { Catalog, CatalogEntry, DatasetInventory, DoiRelation, OnRequestStudy, PapersData } from './types.js';
 import { isUnderBase, RETIRED_BASES, SITE_BASE, SITE_URL } from '../../src/content/site-config.ts';
 import { CATALOG_SOURCES } from './catalog.js';
 import { dedicatedLink, GITHUB_BLOB_BASE } from '../dedicated-links.ts';
@@ -188,6 +188,8 @@ export interface AgentApiInputs {
    * without these the endpoint contradicts its own manifest, which is what #151 was.
    */
   inventory?: DatasetInventory;
+  /** Studies whose data are shared only on request (tucca-cellag/caail-planning#750): served, never counted as datasets. */
+  onRequest?: OnRequestStudy[];
   topics: unknown;
   taxonomy: unknown;
   /** The field-report records (buildReportsModel): `{ reports: Report[] }` with derived recency. */
@@ -497,7 +499,7 @@ export function buildManifest(
   papers: PapersData,
   matrix: ReturnType<typeof buildMatrix>,
   corpusDate: string,
-  datasets: { curated: number; inventory: number } = { curated: 0, inventory: 0 },
+  datasets: { curated: number; inventory: number; onRequest: number } = { curated: 0, inventory: 0, onRequest: 0 },
   catalog: { software: number; databases: number } = { software: 0, databases: 0 },
   reports: { count: number } = { count: 0 },
 ): unknown {
@@ -536,6 +538,9 @@ export function buildManifest(
       datasetsCurated: datasets.curated,
       datasetsInventoryRows: datasets.inventory,
       datasetsTotal: datasets.curated + datasets.inventory,
+      // A third population, kept out of the total on purpose: studies whose data are shared
+      // only on request have no public data to combine with, so they are listed, not counted.
+      datasetsOnRequest: datasets.onRequest,
       // The catalogue, counted here for the same reason as everything above it, and added
       // after an agent pointed out it could not do the check this manifest tells it to do.
       // The skill sends a reader here to compare against the rows they actually parsed,
@@ -562,7 +567,7 @@ export function buildManifest(
       {
         path: 'datasets.json',
         use:
-          'Two arrays, together the whole dataset corpus. `entries` = curated dataset entries ' +
+          'Two arrays of datasets, together the whole dataset corpus, and one of studies that are not. `entries` = curated dataset entries ' +
           '(portals, atlases, GEMs, reference corpora, and the AI/ML benchmark and evaluation ' +
           'datasets on page "Benchmarks"; kind atlas/gem/other). `inventory` = the per-species ' +
           'inventory rows (kind "inventory") — the per-study deposits with accession, tissue, ' +
@@ -587,7 +592,11 @@ export function buildManifest(
           'written. Secondary deposits are named only in the row\'s prose (Description), and on ' +
           'page "CrossSpecies", which has no Data column, a row\'s own deposits can be named ' +
           'only in its Scope. One accession can sit on several rows, on one page or several, ' +
-          'when more than one study uses a deposit.',
+          'when more than one study uses a deposit. ' +
+          'A third array, `onRequest`, lists studies whose own data availability statement ' +
+          'says their data are shared only on request, each with its `paperDoi` and ' +
+          '`statement`. They are not datasets: they carry no id, are not in `datasetsTotal`, ' +
+          'and a match on one means CAAIL lists the study, not that it holds any data from it.',
       },
       { path: 'reports.json', use: 'Field reports: recurring institutional state-of-field surveys (GFI State of the Industry and the like), one record per edition. When recommending one, use the record with `current: true` for its series and treat any record with a `supersededBy` id as historical only; `seriesEditions` walks the history. The latest edition is derived, so it stays correct as new editions land.' },
       { path: 'topics.json', use: 'Subject tree plus an inverted index: topic → items across all content types. Start here for "what should I use for X".' },
@@ -608,6 +617,7 @@ export function buildAgentApi(inputs: AgentApiInputs): ApiFile[] {
   const datasetCounts = {
     curated: ((inputs.datasets as { entries?: unknown[] } | null)?.entries ?? []).length,
     inventory: (inputs.inventory?.inventory ?? []).length,
+    onRequest: (inputs.onRequest ?? []).length,
   };
   const cat = inputs.catalog as { software?: unknown[]; databases?: unknown[] } | null;
   const catalogCounts = {
@@ -630,6 +640,7 @@ export function buildAgentApi(inputs: AgentApiInputs): ApiFile[] {
       body: {
         ...(inputs.datasets as object),
         inventory: inputs.inventory?.inventory ?? [],
+        onRequest: inputs.onRequest ?? [],
         corpusDate,
       },
     },

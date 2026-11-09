@@ -133,6 +133,14 @@ const NO_IDENTITY: RowIdentity = { paperDoi: null, dataStatus: null, accession: 
  */
 const DEST = String.raw`((?:[^()\s]|\([^()\s]*\))+)`;
 const PAPER_LINK = new RegExp(String.raw`^\[(?:DOI|preprint)\]\(${DEST}\)$`);
+
+/**
+ * Every markdown link destination in a cell, in order, read with `DEST` so a DOI holding
+ * balanced parentheses comes back whole.
+ */
+export function linkDestinations(cell: string): string[] {
+  return [...cell.matchAll(new RegExp(String.raw`\]\(${DEST}\)`, 'g'))].map((m) => m[1]!);
+}
 const BADGE_LINK = new RegExp('^\\[`([^`]+)`\\]\\(' + DEST + '\\)$');
 /** A link whose text is plain words: group 1 is the text, group 2 the destination. */
 const NAMED_LINK = new RegExp('^\\[([^\\]`]+)\\]\\(' + DEST + '\\)$');
@@ -145,7 +153,7 @@ const NAMED_LINK = new RegExp('^\\[([^\\]`]+)\\]\\(' + DEST + '\\)$');
  * carries no such token, such as bioRxiv's `/content/10.1101/…`: that would be a guess about
  * the host.
  */
-function statedDoi(url: string): string | null {
+export function statedDoi(url: string): string | null {
   let base = url.split(/[?#]/)[0]!.replace(/\/+$/, '');
   try { base = decodeURIComponent(base); } catch { /* keep the raw text */ }
   const direct = bareDoi(base);
