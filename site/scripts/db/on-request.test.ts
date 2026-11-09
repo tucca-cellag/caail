@@ -166,7 +166,7 @@ describe('edges: entry counting, verbatim text, row order, placement, drift and 
 
   it('refuses a DOI its [DOI](…) link could not hold: an angle bracket or an unbalanced parenthesis', () => {
     for (const doi of ['10.1000/a<b>c', '10.1000/a(b', '10.1000/a)b']) {
-      expect(result(dbWith('Cow', [{ ...ROW, doi }])).detail, doi).toContain('angle bracket or unbalanced parentheses');
+      expect(result(dbWith('Cow', [{ ...ROW, doi }])).detail, doi).toContain(`${doi}: cannot sit whole in its [DOI](https://doi.org/…) link`);
     }
     expect(result(dbWith('Cow', [{ ...ROW, doi: '10.1000/a(b)c' }])).ok).toBe(true);
   });
@@ -316,6 +316,46 @@ describe('seedOnRequest and checkOnRequest', () => {
   it('refuses a row whose page has no Markdown file', () => {
     const empty = mkdtempSync(join(tmpdir(), 'caail-onreq-empty-'));
     expect(result(dbWith('Cow', [ROW]), empty).detail).toContain('does not exist');
+  });
+});
+
+describe('held DOIs, link-safe DOIs and statements the page shows as stored', () => {
+  it('refuses an on-request DOI that a curated entry\'s heading links, when its doi column is empty', () => {
+    const db = dbWith('Cow', [ROW]);
+    db.exec('PRAGMA foreign_keys = OFF');
+    db.prepare("INSERT INTO dataset_entries(item_id,name,url,page,section,kind,heading_md,body_md,doi,doi_source,ordinal) VALUES('ds:linked-entry','E','https://doi.org/10.1000/ABC','Cow','S','other','[E](https://doi.org/10.1000/ABC)','b',NULL,NULL,0)").run();
+    expect(result(db).detail).toContain('also the paper of ds:linked-entry');
+  });
+
+  it('refuses a DOI whose [DOI](…) link would resolve to another one: a ?, #, % or backslash', () => {
+    for (const doi of ['10.1000/a?b', '10.1000/a#b', '10.1000/a%41', '10.1000/a\\_b']) {
+      const r = result(dbWith('Cow', [{ ...ROW, doi }]));
+      expect(r.ok, doi).toBe(false);
+      expect(r.detail, doi).toContain(`${doi}: cannot sit whole in its [DOI](https://doi.org/…) link`);
+    }
+  });
+
+  it('refuses a statement holding Markdown or HTML the page would render differently from the stored words', () => {
+    const altered = [
+      'See *Table 1*.', 'the _final_ data', 'Data ~~withdrawn~~ on request.', 'Ask the author<sup>1</sup>.',
+      'Data \\* on request.', 'Use `code`.', 'R&amp;D data.', 'See [here](https://x.org).', 'See <https://x.org>.',
+    ];
+    for (const statement of altered) {
+      const r = result(dbWith('Cow', [{ ...ROW, statement }]));
+      expect(r.ok, statement).toBe(false);
+      expect(r.detail, statement).toContain(`${ROW.doi}: statement holds Markdown or HTML`);
+    }
+  });
+
+  it('passes a statement whose bare URL or email address the page links but shows unchanged', () => {
+    expect(result(dbWith('Cow', [{ ...ROW, statement: 'Ask a.b@uni.edu or see https://zenodo.org/r/1 and data_v1_final.' }])).ok).toBe(true);
+  });
+
+  it('refuses a statement stored inside its own quotes, which the page would show doubled', () => {
+    const r = result(dbWith('Cow', [{ ...ROW, statement: '"Data will be made available on request."' }]));
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain(`${ROW.doi}: statement is stored inside its own quotes`);
+    expect(result(dbWith('Cow', [{ ...ROW, statement: '"Raw" data will be made available on request.' }])).ok).toBe(true);
   });
 });
 

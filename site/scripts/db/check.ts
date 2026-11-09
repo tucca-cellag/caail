@@ -36,8 +36,11 @@ import { MATRIX_SECTION } from '../parser/types.js';
 import { seriesRecency, EDITION_SORT_RULE } from '../parser/reports.js';
 import type { TaxonomyData } from '../parser/types.js';
 import { bareDoi, DOI_SHAPE } from '../parser/doi-relation.js';
+import { parseMarkdown } from '../parser/markdown.js';
+import { toString as mdastToString } from 'mdast-util-to-string';
 import {
-  DATA_CELL_FORMS, labelCells, parseRowCells, readDataCell, readInventoryHeader, readLinkCell, statedDoi, linkDestinations,
+  DATA_CELL_FORMS, fitsDoiLink, labelCells, parseRowCells, readDataCell, readInventoryHeader, readLinkCell, statedDoi,
+  linkDestinations,
   type InventoryHeader,
 } from '../parser/dataset-inventory.js';
 
@@ -561,22 +564,39 @@ export const INVENTORY_CELLS_LABEL =
 
 export const ON_REQUEST_LABEL =
   'datasets_on_request: every row has a bare DOI that fits a link and that no inventory row\'s Paper or DOI / URL ' +
-  'cell links and no curated entry\'s doi names, a non-Benchmarks dataset page, a study and statement that fit a ' +
-  'table cell, and an ordinal in the order db:bootstrap writes';
+  'cell links and no curated entry\'s doi or heading link names, a non-Benchmarks dataset page, a study and a ' +
+  'statement that fit a table cell, a statement the page shows as stored, and an ordinal in the order ' +
+  'db:bootstrap writes';
 
 /**
- * A DOI that can sit in the emitted `[DOI](https://doi.org/…)` link: no angle bracket, and
- * parentheses only in balanced pairs, the shape a link destination (and `DEST`) reads whole.
+ * Whether a statement shows on the page as the words stored. db:emit writes it into a table
+ * cell between straight quotes, so that cell is parsed as the page parses it, and it must come
+ * back as the same text holding no raw HTML. Emphasis, strikethrough, code, a backslash
+ * escape, an entity, a link or an image fails, since each shows different words or markup
+ * from the ones the API serves. A bare URL or email address passes: GFM links it, but the
+ * page still shows it as written.
  */
-const LINK_SAFE_DOI = /^(?:[^()<>\s]|\([^()<>\s]*\))+$/;
+export function statementShowsAsStored(statement: string): boolean {
+  const cell = `"${statement}"`;
+  const table = parseMarkdown(`| s |\n|---|\n| ${cell} |\n`).children[0];
+  const node = table?.type === 'table' ? table.children[1]?.children[0] : undefined;
+  if (!node) return false;
+  const hasHtml = (n: { type: string; children?: unknown[] }): boolean =>
+    n.type === 'html' || (n.children ?? []).some((c) => hasHtml(c as { type: string; children?: unknown[] }));
+  return !hasHtml(node) && mdastToString(node) === cell;
+}
 
 /**
  * Shape of the Data on request list (tucca-cellag/caail-planning#750): a bare lowercase DOI (the
- * key, and the Paper cell's target) that fits a link, a page from ON_REQUEST_PAGES whose
- * Markdown exists (never Benchmarks), and a non-empty study and statement with no `|` or line
- * break, either of which would break the emitted table. The study also has no leading or
+ * key, and the Paper cell's target) that `fitsDoiLink` accepts, a page from ON_REQUEST_PAGES
+ * whose Markdown exists (never Benchmarks), and a non-empty study and statement with no `|` or
+ * line break, either of which would break the emitted table. The study also has no leading or
  * trailing whitespace, since the page's table trims its cells and the stored row would then
  * never match the page.
+ *
+ * The statement is the paper's own words, served verbatim by the API and written raw into the
+ * page, so it must also show there as stored (`statementShowsAsStored`), and must not be
+ * stored inside its own straight quotes, since the page adds a pair and would show two.
  *
  * Ordinals run 0..n-1 page by page in ON_REQUEST_PAGES order, then in table order, which is
  * what `db:bootstrap` writes from the pages. A hand-typed ordinal that breaks it fails here
@@ -584,10 +604,10 @@ const LINK_SAFE_DOI = /^(?:[^()<>\s]|\([^()<>\s]*\))+$/;
  *
  * It also refuses a DOI that any link in an inventory row's Paper cell (or CrossSpecies' DOI /
  * URL cell) states, whatever its registrant, or that a curated entry carries in its `doi`
- * column, since that study holds public data. Only those places are read, and only for that
- * exact DOI: a row whose Paper cell links the preprint while the list names the journal
- * version, or an entry that mentions the DOI only in its prose, gets past it. It does not
- * check the statement against the paper.
+ * column or its heading link, since that study holds public data. Only those places are read,
+ * and only for that exact DOI: a row whose Paper cell links the preprint while the list names
+ * the journal version, or an entry that mentions the DOI only in its prose, gets past it. It
+ * does not check the statement against the paper.
  */
 export function checkOnRequest(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
   const rows = db.prepare('SELECT doi, page, study, statement, ordinal FROM datasets_on_request ORDER BY ordinal, doi')
@@ -613,14 +633,18 @@ export function checkOnRequest(db: Db, repoRoot: string = REPO_ROOT): CheckResul
       }
     }
   }
-  for (const e of db.prepare('SELECT item_id, doi FROM dataset_entries WHERE doi IS NOT NULL').all() as { item_id: string; doi: string }[]) {
-    const doi = bareDoi(e.doi);
-    if (doi) held.set(doi, e.item_id);
+  // An entry can name its paper in its `doi` column, in the doi.org link its heading is built
+  // on, or both. The column is filled only by the dois-manual.json fold, not by db:add, so an
+  // entry added with a doi.org heading has an empty column until that file gains it.
+  for (const e of db.prepare('SELECT item_id, doi, url FROM dataset_entries').all() as { item_id: string; doi: string | null; url: string | null }[]) {
+    for (const doi of [bareDoi(e.doi), e.url ? statedDoi(e.url) : null]) if (doi) held.set(doi, e.item_id);
   }
   rows.forEach((r, i) => {
     if (held.has(r.doi)) problems.push(`${r.doi}: also the paper of ${held.get(r.doi)}, which holds public data, so it does not belong on this list`);
     if (!DOI_SHAPE.test(r.doi) || r.doi !== r.doi.toLowerCase()) problems.push(`${r.doi}: not a bare lowercase DOI`);
-    else if (!LINK_SAFE_DOI.test(r.doi)) problems.push(`${r.doi}: holds an angle bracket or unbalanced parentheses, which would break its [DOI](…) link`);
+    else if (!fitsDoiLink(r.doi)) {
+      problems.push(`${r.doi}: cannot sit whole in its [DOI](https://doi.org/…) link, which takes no <, >, \\, ?, # or % and only balanced parentheses`);
+    }
     const before = rows[i - 1];
     if (r.ordinal !== i || (before && ON_REQUEST_PAGES.indexOf(r.page) < ON_REQUEST_PAGES.indexOf(before.page))) {
       problems.push(`${r.doi}: ordinal ${r.ordinal} is out of place; number the list 0..n-1 page by page in ON_REQUEST_PAGES order, as db:bootstrap does`);
@@ -630,6 +654,11 @@ export function checkOnRequest(db: Db, repoRoot: string = REPO_ROOT): CheckResul
     if (!r.study.trim() || unsafe(r.study)) problems.push(`${r.doi}: study is empty or holds a | or line break`);
     else if (r.study !== r.study.trim()) problems.push(`${r.doi}: study starts or ends with whitespace, which the page's table trims away`);
     if (!r.statement.trim() || unsafe(r.statement)) problems.push(`${r.doi}: statement is empty or holds a | or line break`);
+    else if (r.statement.startsWith('"') && r.statement.endsWith('"')) {
+      problems.push(`${r.doi}: statement is stored inside its own quotes, and the page adds a pair, so it would show two`);
+    } else if (!statementShowsAsStored(r.statement)) {
+      problems.push(`${r.doi}: statement holds Markdown or HTML, so the page would show different words or markup from the ones the API serves`);
+    }
   });
   return [ok(ON_REQUEST_LABEL, problems.length === 0, `${problems.length} problem(s): ${problems.slice(0, 10).join('; ')}`)];
 }
