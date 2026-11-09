@@ -12,20 +12,24 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { NDJSON_DIR } from '../db/lib.js';
 import { cellText } from './dataset-inventory.js';
+import { ON_REQUEST_PAGES } from './datasets.js';
 import { OnRequestStudySchema, type OnRequestStudy } from './types.js';
 
 /** One stored row, as the NDJSON (and the page's table) holds it. */
 export interface OnRequestRow { doi: string; page: string; study: string; statement: string; ordinal: number }
 
 /**
- * The stored rows, in the order db:emit writes them: ordinal, then DOI compared code unit by
- * code unit, as SQLite's default BINARY collation does (localeCompare would not).
+ * The stored rows, page by page in ON_REQUEST_PAGES order (the order every dataset walk uses),
+ * and within a page in the order db:emit writes its table: ordinal, then DOI compared code unit
+ * by code unit, as SQLite's default BINARY collation does (localeCompare would not).
  */
 export function readOnRequestRows(ndjsonDir: string = NDJSON_DIR): OnRequestRow[] {
   const path = join(ndjsonDir, 'datasets_on_request.ndjson');
   const text = existsSync(path) ? readFileSync(path, 'utf-8').trim() : '';
   const rows = text ? text.split('\n').map((l) => JSON.parse(l) as OnRequestRow) : [];
-  return rows.sort((a, b) => a.ordinal - b.ordinal || (a.doi < b.doi ? -1 : a.doi > b.doi ? 1 : 0));
+  const place = (page: string): number => ON_REQUEST_PAGES.indexOf(page);
+  return rows.sort((a, b) => place(a.page) - place(b.page) || a.ordinal - b.ordinal
+    || (a.doi < b.doi ? -1 : a.doi > b.doi ? 1 : 0));
 }
 
 /**

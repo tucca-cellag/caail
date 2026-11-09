@@ -10,11 +10,11 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { openDb, importNdjson, REPO_ROOT, type Db } from './lib.js';
+import { openDb, importNdjson, exportNdjson, REPO_ROOT, type Db } from './lib.js';
 import { emitDatasetPage } from './emit.js';
 import { isDbOwnedDatasetPage } from './emit-files.js';
 import { extractOnRequest, ON_REQUEST_HEADING, readPagesOnRequest } from './extract.js';
@@ -171,15 +171,10 @@ describe('edges: entry counting, verbatim text, row order, placement, drift and 
     expect(result(dbWith('Cow', [{ ...ROW, doi: '10.1000/a(b)c' }])).ok).toBe(true);
   });
 
-  it('refuses ordinals db:bootstrap would not write: a gap, or a page out of ON_REQUEST_PAGES order', () => {
+  it('refuses a page\'s first row numbered anything but 0', () => {
     const db = openDb();
-    const ins = db.prepare('INSERT INTO datasets_on_request(doi,page,study,statement,ordinal) VALUES(?,?,?,?,?)');
-    ins.run('10.1000/fish', 'Fish', 'S', 'Ask.', 0);
-    ins.run('10.1000/cow', 'Cow', 'S', 'Ask.', 1);
-    expect(result(db).detail).toContain('10.1000/cow: ordinal 1 is out of place');
-    const gap = openDb();
-    gap.prepare('INSERT INTO datasets_on_request(doi,page,study,statement,ordinal) VALUES(?,?,?,?,?)').run('10.1000/a', 'Cow', 'S', 'Ask.', 5);
-    expect(result(gap).detail).toContain('ordinal 5 is out of place');
+    db.prepare('INSERT INTO datasets_on_request(doi,page,study,statement,ordinal) VALUES(?,?,?,?,?)').run('10.1000/a', 'Cow', 'S', 'Ask.', 5);
+    expect(result(db).detail).toContain('10.1000/a: ordinal 5 is out of place');
   });
 });
 
@@ -359,6 +354,59 @@ describe('held DOIs, link-safe DOIs and statements the page shows as stored', ()
   });
 });
 
+describe('ordinals number each page\'s list on its own', () => {
+  const insert = (db: Db, rows: [string, string, number][]) => {
+    const ins = db.prepare('INSERT INTO datasets_on_request(doi,page,study,statement,ordinal) VALUES(?,?,?,?,?)');
+    for (const [doi, page, ordinal] of rows) ins.run(doi, page, 'S', 'Ask.', ordinal);
+    return db;
+  };
+
+  it('passes a row added on one page without renumbering another', () => {
+    const db = insert(openDb(), [['10.1000/cow-a', 'Cow', 0], ['10.1000/cow-b', 'Cow', 1], ['10.1000/fish', 'Fish', 0]]);
+    expect(result(db).ok).toBe(true);
+  });
+
+  it('refuses an ordinal out of place on its own page: a gap, or two rows given one ordinal', () => {
+    const gap = insert(openDb(), [['10.1000/a', 'Cow', 0], ['10.1000/b', 'Cow', 2], ['10.1000/fish', 'Fish', 0]]);
+    expect(result(gap).detail).toContain('10.1000/b: ordinal 2 is out of place');
+    expect(result(gap).detail).not.toContain('10.1000/fish');
+    const tie = insert(openDb(), [['10.1000/a', 'Cow', 0], ['10.1000/b', 'Cow', 0]]);
+    expect(result(tie).detail).toContain('10.1000/b: ordinal 0 is out of place');
+  });
+
+  it('has bootstrap number each page\'s rows from 0, in table order', () => {
+    const root = mkdtempSync(join(tmpdir(), 'caail-onreq-per-page-'));
+    mkdirSync(join(root, 'Datasets'));
+    const table = (dois: string[]) => '# P\n\n## Data on request\n\n| Study | Paper | Data availability statement |\n|---|---|---|\n' +
+      dois.map((d) => `| S | [DOI](https://doi.org/${d}) | "Ask." |\n`).join('');
+    writeFileSync(join(root, 'Datasets', 'Cow.md'), table(['10.1000/cow']));
+    writeFileSync(join(root, 'Datasets', 'Fish.md'), table(['10.1000/fish-a', '10.1000/fish-b']));
+    const db = openDb();
+    seedOnRequest(db, root);
+    expect(db.prepare('SELECT doi,page,ordinal FROM datasets_on_request ORDER BY page, ordinal').all()).toEqual([
+      { doi: '10.1000/cow', page: 'Cow', ordinal: 0 },
+      { doi: '10.1000/fish-a', page: 'Fish', ordinal: 0 },
+      { doi: '10.1000/fish-b', page: 'Fish', ordinal: 1 },
+    ]);
+  });
+
+  it('serves the rows in ON_REQUEST_PAGES order, then each page\'s own order', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'caail-onreq-api-order-'));
+    const rows = [['10.1000/a', 'CHOReference', 0], ['10.1000/b', 'Cow', 0], ['10.1000/c', 'Cow', 1]] as const;
+    writeFileSync(join(dir, 'datasets_on_request.ndjson'),
+      rows.map(([doi, page, ordinal]) => JSON.stringify({ doi, page, study: 'S', statement: 'Ask.', ordinal })).join('\n') + '\n');
+    expect(readOnRequestRows(dir).map((r) => r.doi)).toEqual(['10.1000/b', '10.1000/c', '10.1000/a']);
+  });
+
+  it('exports the NDJSON grouped by page, so a row added on one page moves no other page\'s lines', () => {
+    const db = insert(openDb(), [['10.1000/cow-a', 'Cow', 0], ['10.1000/fish', 'Fish', 0], ['10.1000/cow-b', 'Cow', 1]]);
+    const dir = mkdtempSync(join(tmpdir(), 'caail-onreq-export-'));
+    exportNdjson(db, dir);
+    const lines = readFileSync(join(dir, 'datasets_on_request.ndjson'), 'utf-8').trim().split('\n');
+    expect(lines.map((l) => (JSON.parse(l) as { doi: string }).doi)).toEqual(['10.1000/cow-a', '10.1000/cow-b', '10.1000/fish']);
+  });
+});
+
 describe('a section on a page no page list names', () => {
   const SECTION = '## Data on request\n\n| Study | Paper | Data availability statement |\n|---|---|---|\n| S | [DOI](https://doi.org/10.1000/a) | "Ask." |\n';
   const rootWith = (name: string, text: string): string => {
@@ -389,6 +437,15 @@ describe('the Data on request list on the real corpus', () => {
       writeFileSync(out, emitDatasetPage(db, src, page));
       expect(extractOnRequest(out), page).toEqual(extractOnRequest(src));
     }
+  });
+
+  it('is what a fresh seed from the pages writes, ordinals included', () => {
+    const db = openDb();
+    seedOnRequest(db, REPO_ROOT);
+    type Placed = { page: string; ordinal: number };
+    const byPlace = (a: Placed, b: Placed): number => a.page.localeCompare(b.page) || a.ordinal - b.ordinal;
+    const seeded = db.prepare('SELECT doi, page, study, statement, ordinal FROM datasets_on_request').all() as Placed[];
+    expect(seeded.sort(byPlace)).toEqual(readOnRequestRows().sort(byPlace));
   });
 
   it('serves every committed row through the parser, in order, marked on-request and never as a dataset id', () => {

@@ -60,7 +60,9 @@ export const TABLES_PK: Record<string, string> = {
   catalog: 'ordinal,item_id',
   dataset_rows: 'ordinal,item_id',
   dataset_entries: 'ordinal,item_id',
-  datasets_on_request: 'ordinal,doi',
+  // ordinal counts each page's list from 0, so the export groups by page: a row added to one
+  // page moves no other page's lines.
+  datasets_on_request: 'page,ordinal,doi',
   reports: 'ordinal,item_id',
   topics: 'slug',
   item_topics: 'item_id,topic_id',

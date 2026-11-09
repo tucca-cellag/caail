@@ -565,8 +565,8 @@ export const INVENTORY_CELLS_LABEL =
 export const ON_REQUEST_LABEL =
   'datasets_on_request: every row has a bare DOI that fits a link and that no inventory row\'s Paper or DOI / URL ' +
   'cell links and no curated entry\'s doi or heading link names, a non-Benchmarks dataset page, a study and a ' +
-  'statement that fit a table cell, a statement the page shows as stored, and an ordinal in the order ' +
-  'db:bootstrap writes';
+  'statement that fit a table cell, a statement the page shows as stored, and an ordinal counting its page\'s ' +
+  'list from 0';
 
 /**
  * Whether a statement shows on the page as the words stored. db:emit writes it into a table
@@ -598,9 +598,9 @@ export function statementShowsAsStored(statement: string): boolean {
  * page, so it must also show there as stored (`statementShowsAsStored`), and must not be
  * stored inside its own straight quotes, since the page adds a pair and would show two.
  *
- * Ordinals run 0..n-1 page by page in ON_REQUEST_PAGES order, then in table order, which is
- * what `db:bootstrap` writes from the pages. A hand-typed ordinal that breaks it fails here
- * rather than reordering the API and churning the NDJSON on the next bootstrap.
+ * Ordinals count each page's list from 0 in table order, which is what `db:bootstrap` writes
+ * from the pages, so adding a row to one page renumbers no other. A hand-typed ordinal that
+ * leaves a gap or repeats one fails here rather than reordering the page on the next emit.
  *
  * It also refuses a DOI that any link in an inventory row's Paper cell (or CrossSpecies' DOI /
  * URL cell) states, whatever its registrant, or that a curated entry carries in its `doi`
@@ -610,7 +610,7 @@ export function statementShowsAsStored(statement: string): boolean {
  * does not check the statement against the paper.
  */
 export function checkOnRequest(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
-  const rows = db.prepare('SELECT doi, page, study, statement, ordinal FROM datasets_on_request ORDER BY ordinal, doi')
+  const rows = db.prepare('SELECT doi, page, study, statement, ordinal FROM datasets_on_request ORDER BY page, ordinal, doi')
     .all() as { doi: string; page: string; study: string; statement: string; ordinal: number }[];
   const problems: string[] = [];
   const unsafe = (s: string): boolean => /[|\r\n]/.test(s);
@@ -639,15 +639,17 @@ export function checkOnRequest(db: Db, repoRoot: string = REPO_ROOT): CheckResul
   for (const e of db.prepare('SELECT item_id, doi, url FROM dataset_entries').all() as { item_id: string; doi: string | null; url: string | null }[]) {
     for (const doi of [bareDoi(e.doi), e.url ? statedDoi(e.url) : null]) if (doi) held.set(doi, e.item_id);
   }
-  rows.forEach((r, i) => {
+  const nextOrdinal = new Map<string, number>();
+  rows.forEach((r) => {
     if (held.has(r.doi)) problems.push(`${r.doi}: also the paper of ${held.get(r.doi)}, which holds public data, so it does not belong on this list`);
     if (!DOI_SHAPE.test(r.doi) || r.doi !== r.doi.toLowerCase()) problems.push(`${r.doi}: not a bare lowercase DOI`);
     else if (!fitsDoiLink(r.doi)) {
       problems.push(`${r.doi}: cannot sit whole in its [DOI](https://doi.org/…) link, which takes no <, >, \\, ?, # or % and only balanced parentheses`);
     }
-    const before = rows[i - 1];
-    if (r.ordinal !== i || (before && ON_REQUEST_PAGES.indexOf(r.page) < ON_REQUEST_PAGES.indexOf(before.page))) {
-      problems.push(`${r.doi}: ordinal ${r.ordinal} is out of place; number the list 0..n-1 page by page in ON_REQUEST_PAGES order, as db:bootstrap does`);
+    const expected = nextOrdinal.get(r.page) ?? 0;
+    nextOrdinal.set(r.page, expected + 1);
+    if (r.ordinal !== expected) {
+      problems.push(`${r.doi}: ordinal ${r.ordinal} is out of place; number each page's list 0..n-1 in table order, as db:bootstrap does`);
     }
     if (!ON_REQUEST_PAGES.includes(r.page)) problems.push(`${r.doi}: page "${r.page}" cannot carry a Data on request list`);
     else if (!existsSync(join(repoRoot, 'Datasets', `${r.page}.md`))) problems.push(`${r.doi}: Datasets/${r.page}.md does not exist`);

@@ -181,19 +181,22 @@ export function seedDatasets(db: Db): { rows: Record<string, number>; entries: n
  * share nothing with the `seen` set. Returns the row count.
  *
  * The table is keyed by DOI, so a study goes on one page. One listed on two throws naming
- * both, rather than dying on the table's UNIQUE constraint.
+ * both, rather than dying on the table's UNIQUE constraint. Each page's rows are numbered
+ * from 0 in table order, so a row added to one page renumbers no other.
  */
 export function seedOnRequest(db: Db, repoRoot: string = REPO_ROOT): number {
   const ins = db.prepare('INSERT INTO datasets_on_request(doi,page,study,statement,ordinal) VALUES(?,?,?,?,?)');
   const pageOf = new Map<string, string>();
-  let ordinal = 0;
+  const nextOrdinal = new Map<string, number>();
   for (const r of readPagesOnRequest(repoRoot)) {
     const first = pageOf.get(r.doi);
     if (first) throw new Error(`seedOnRequest: ${r.doi} is listed on ${first} and ${r.page}; a study goes on one page`);
     pageOf.set(r.doi, r.page);
-    ins.run(r.doi, r.page, r.study, r.statement, ordinal++);
+    const ordinal = nextOrdinal.get(r.page) ?? 0;
+    nextOrdinal.set(r.page, ordinal + 1);
+    ins.run(r.doi, r.page, r.study, r.statement, ordinal);
   }
-  return ordinal;
+  return pageOf.size;
 }
 
 // --- topics (deterministic two-tier auto-tag seed) -------------------------
