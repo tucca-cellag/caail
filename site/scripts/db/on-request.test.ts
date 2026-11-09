@@ -319,6 +319,27 @@ describe('seedOnRequest and checkOnRequest', () => {
   });
 });
 
+describe('a section on a page no page list names', () => {
+  const SECTION = '## Data on request\n\n| Study | Paper | Data availability statement |\n|---|---|---|\n| S | [DOI](https://doi.org/10.1000/a) | "Ask." |\n';
+  const rootWith = (name: string, text: string): string => {
+    const root = mkdtempSync(join(tmpdir(), 'caail-onreq-unlisted-'));
+    mkdirSync(join(root, 'Datasets'));
+    writeFileSync(join(root, 'Datasets', name), text);
+    return root;
+  };
+
+  it('has bootstrap and parse refuse it on a new dataset page or the index, rather than ignore it', () => {
+    expect(() => readPagesOnRequest(rootWith('Rabbit.md', `# Rabbit\n\n${SECTION}`))).toThrow(/Rabbit\.md has a "## Data on request" section/);
+    expect(() => seedOnRequest(openDb(), rootWith('Rabbit.md', `# Rabbit\n\n${SECTION}`))).toThrow(/Rabbit\.md/);
+    expect(() => readPagesOnRequest(rootWith('README.md', `# Datasets\n\n${SECTION}`))).toThrow(/README\.md has a "## Data on request" section/);
+  });
+
+  it('leaves the directory\'s CLAUDE.md and a private .local.md alone, since neither is a published page', () => {
+    expect(readPagesOnRequest(rootWith('CLAUDE.md', `# Schema\n\n${SECTION}`))).toEqual([]);
+    expect(readPagesOnRequest(rootWith('Rabbit.local.md', `# Notes\n\n${SECTION}`))).toEqual([]);
+  });
+});
+
 describe('the Data on request list on the real corpus', () => {
   it('round-trips every page that may carry one', () => {
     const db = importNdjson();

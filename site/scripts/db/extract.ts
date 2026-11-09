@@ -5,8 +5,9 @@
  * sqlite-replatform extractGroupEntries / extractInventory / inlineMd.
  */
 
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { isPublishedMarkdown } from '../../src/lib/canonical-files.js';
 import { parseMarkdown, sectionsAfter } from '../parser/markdown.js';
 import {
   BENCHMARKS_PAGE, entryHeadingDepth, isEntryHeading, isOnRequestHeading, ON_REQUEST_HEADING, ON_REQUEST_PAGES, pageFromPath,
@@ -360,13 +361,22 @@ export function readOnRequestSection(src: string, tree: Root, page: string): OnR
 /**
  * Every Data on request row the dataset pages hold, each tagged with its page, in
  * ON_REQUEST_PAGES order then table order: the population db:bootstrap seeds and `pnpm parse`
- * checks the DB against. A section on Benchmarks, which may carry none, throws rather than
- * being skipped, since bootstrap would otherwise drop it and the next emit delete it unseen.
+ * checks the DB against. A section on any other published page in `Datasets/` throws rather
+ * than being skipped: Benchmarks and the README carry none, and a new page that no page list
+ * names yet is read by no gate, so bootstrap would drop its section unseen. The directory is
+ * listed rather than the page lists, since an unlisted page is the case being caught.
  */
 export function readPagesOnRequest(repoRoot: string): (OnRequestTableRow & { page: string })[] {
-  const benchmarks = join(repoRoot, 'Datasets', `${BENCHMARKS_PAGE}.md`);
-  if (existsSync(benchmarks) && extractOnRequest(benchmarks) !== null) {
-    throw new Error(`readPagesOnRequest: ${BENCHMARKS_PAGE}.md has a "## ${ON_REQUEST_HEADING}" section, and that page carries none`);
+  const dir = join(repoRoot, 'Datasets');
+  const unlisted = existsSync(dir)
+    ? readdirSync(dir).filter((f) => isPublishedMarkdown(f) && !ON_REQUEST_PAGES.includes(f.replace(/\.md$/, '')))
+    : [];
+  for (const file of unlisted) {
+    if (extractOnRequest(join(dir, file)) === null) continue;
+    const why = file === `${BENCHMARKS_PAGE}.md` || file === 'README.md'
+      ? 'and that page carries none'
+      : 'and only a page in ON_REQUEST_PAGES (site/scripts/parser/datasets.ts) carries one; list the page there first';
+    throw new Error(`readPagesOnRequest: ${file} has a "## ${ON_REQUEST_HEADING}" section, ${why}`);
   }
   return ON_REQUEST_PAGES.flatMap((page) => {
     const path = join(repoRoot, 'Datasets', `${page}.md`);
