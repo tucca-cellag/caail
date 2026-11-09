@@ -39,7 +39,7 @@ Markdown-era workflow did.
 | Database / lookup resource | `database` | `db:<slug>` | `catalog` | `Databases.md` |
 | Dataset inventory row | `dataset` | `ds:<slug>` | `dataset_rows` | `Datasets/<page>.md` |
 | Dataset curated entry (atlas / GEM / reference) | `dataset` | `ds:<slug>` | `dataset_entries` | `Datasets/<page>.md` |
-| Study with data on request (not a dataset) | — (not an item) | — (keyed by DOI) | `datasets_on_request` | `Datasets/<page>.md` (`## Data on request`) |
+| Study with data on request (not a dataset) | none (not an item) | none (keyed by DOI) | `datasets_on_request` | `Datasets/<page>.md` (`## Data on request`) |
 | Topic (subject tag) | `topic` | `topic:<slug>` | `topics`, `item_topics`, `aliases` | — (surfaced as card chips + the `/topics/` hub) |
 
 A `dataset` item is an inventory row **or** a curated entry, never both (they share the `ds:` id
@@ -53,7 +53,9 @@ linkable items in the `/topics/` hub; inventory rows stay count-only.
 availability statement says the data are available on request, add it to the page's **Data on
 request** list: one line in `site/db/ndjson/datasets_on_request.ndjson` with `doi` (bare, lowercase),
 `page` (any dataset page but `Benchmarks`), `study` (title, then `(Author et al. YEAR)`), `statement`
-(the paper's own words, verbatim, without quotes) and `ordinal` (document order across pages), then
+(the paper's own words, verbatim, without quotes) and `ordinal` (its place in document order, counting through
+the pages as `ON_REQUEST_PAGES` lists them: species pages, CrossSpecies, then reference pages; renumber the rows
+after it, since `db:bootstrap` numbers them that way and the API serves them in that order), then
 `db:emit`, `db:check` and `db:verify`. These rows are not items, so `db:add` and `db:remove` do not
 handle them; deleting a line and re-emitting removes the study, and removing a page's last one
 removes its section. Read the statement from the paper itself (verify-citations), never from a

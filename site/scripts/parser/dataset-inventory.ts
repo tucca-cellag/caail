@@ -145,7 +145,7 @@ const NAMED_LINK = new RegExp('^\\[([^\\]`]+)\\]\\(' + DEST + '\\)$');
  * carries no such token, such as bioRxiv's `/content/10.1101/…`: that would be a guess about
  * the host.
  */
-function statedDoi(url: string): string | null {
+export function statedDoi(url: string): string | null {
   let base = url.split(/[?#]/)[0]!.replace(/\/+$/, '');
   try { base = decodeURIComponent(base); } catch { /* keep the raw text */ }
   const direct = bareDoi(base);

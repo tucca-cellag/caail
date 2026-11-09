@@ -17,7 +17,7 @@ import { readFileSync } from 'node:fs';
 import { parseMarkdown } from '../parser/markdown.js';
 import { entryHeadingDepth, isEntryHeading, isFurtherReadingHeading, isOnRequestHeading } from '../parser/datasets.js';
 import {
-  inlineMd, flat, extractInventory, ON_REQUEST_COLUMNS, ON_REQUEST_HEADING, onRequestPaperCell,
+  inlineMd, flat, extractInventory, extractOnRequest, ON_REQUEST_COLUMNS, ON_REQUEST_HEADING, onRequestPaperCell,
 } from './extract.js';
 import type { Db } from './lib.js';
 
@@ -244,6 +244,9 @@ export function emitDatasetPage(db: Db, srcPath: string, page: string): string {
     throw new Error(`emitDatasetPage(${page}): ${onRequestSections} "## Data on request" sections; a page holds one. Merge them.`);
   }
   const hasOnRequestSection = onRequestSections === 1;
+  // Read an existing section's table before replacing it: a hand edit that changed its shape
+  // (a column renamed, a cell added, a statement unquoted) throws here rather than vanishing.
+  if (hasOnRequestSection) extractOnRequest(srcPath);
 
   // The entry splice is POSITIONAL: the Nth non-inventory H3 in the source ↔ the Nth DB
   // entry for this page (both document-ordered). If those counts disagree — a stale source
@@ -289,8 +292,8 @@ export function emitDatasetPage(db: Db, srcPath: string, page: string): string {
         else body.push(sliceOf(blocks[i]));
         i++;
       }
+      // The shape check above guarantees the section held a table, so `body` has the new one.
       if (onRequest.length > 0) {
-        if (!tabled) body.push(onRequestTable(onRequest));
         out.push(sliceOf(b), ...body);
         onRequestEmitted = true;
       }

@@ -150,8 +150,8 @@ CREATE TABLE dataset_entries (
 -- no topics and no part of `counts.datasets`, so nothing a consumer joins on can read an
 -- on-request study as a held dataset. Keyed by the paper's DOI, so a study goes on one
 -- page; `db:bootstrap` and `pnpm parse` refuse one listed on two. `db:emit` writes each
--- page's rows as the table under a `## Data on request` heading, just before
--- `## Further reading`.
+-- page's rows as the table under a `## Data on request` heading, which it creates just
+-- before `## Further reading` and afterwards regenerates where it stands.
 CREATE TABLE datasets_on_request (
   doi       TEXT PRIMARY KEY,          -- the paper's bare lowercase DOI
   page      TEXT NOT NULL,             -- dataset page basename ('Cow', 'CHOReference')

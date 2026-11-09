@@ -144,6 +144,16 @@ describe('edges: entry counting, verbatim text, row order, placement, drift and 
     inEntry.prepare("INSERT INTO dataset_entries(item_id,name,url,page,section,kind,heading_md,body_md,doi,doi_source,ordinal) VALUES('ds:held-entry','E',NULL,'Cow','S','other','E','b','10.1000/abc','manual',0)").run();
     expect(result(inEntry).detail).toContain('also the paper of ds:held-entry');
   });
+
+  it('refuses an on-request DOI that a Paper cell links even when a data host registered it', () => {
+    // 10.17605 is OSF's registrant, so the row's identity reads it as the item's own DOI, not a paper's.
+    const osf = '10.17605/osf.io/abcd';
+    const db = dbWith('Cow', [{ ...ROW, doi: osf }]);
+    db.exec('PRAGMA foreign_keys = OFF');
+    db.prepare("INSERT INTO dataset_rows(item_id,page,cells_json,subseries,ordinal) VALUES('ds:osf-row','Cow',?,NULL,0)")
+      .run(JSON.stringify(['Held', `[preprint](https://doi.org/${osf})`, 'supplementary', 'x', 'x', 'x', 'x', 'x']));
+    expect(result(db).detail).toContain('also the paper of ds:osf-row');
+  });
 });
 
 describe('one section per page, one page per study', () => {
@@ -159,6 +169,13 @@ describe('one section per page, one page per study', () => {
     const twice = join(TMP, 'Twice.md');
     writeFileSync(twice, `# Twice\n\n## Data on request\n\n${TABLE}${line('10.1000/a')}${line('10.1000/a')}`);
     expect(() => extractOnRequest(twice)).toThrow(/10\.1000\/a is listed twice/);
+  });
+
+  it('has db:emit refuse a section whose shape was changed by hand, rather than overwrite it', () => {
+    const renamed = `# Renamed\n\n## Data on request\n\n| Study | Paper | Note |\n|---|---|---|\n| S | [DOI](https://doi.org/10.1000/a) | "Ask." |\n`;
+    expect(() => emitFixture('Renamed', renamed, [ROW])).toThrow(/columns are/);
+    const extra = `# Extra\n\n## Data on request\n\n${TABLE}| S | [DOI](https://doi.org/10.1000/a) | "Ask." | a note |\n`;
+    expect(() => emitFixture('Extra', extra, [ROW])).toThrow(/row 1 has 4 cells/);
   });
 
   it('refuses one study on two pages, naming both, in bootstrap and in the parse check', () => {
@@ -211,6 +228,8 @@ describe('extractOnRequest', () => {
     expect(() => extractOnRequest(page('| Study | Paper | Data availability statement |\n|---|---|---|\n| a | [DOI](https://doi.org/10.1/x) | s |')))
       .toThrow(/row 1/);
     expect(() => extractOnRequest(page('Prose but no table.'))).toThrow(/no table/);
+    expect(() => extractOnRequest(page('| Study | Paper | Data availability statement |\n|---|---|---|\n| a | [DOI](https://doi.org/10.1/x) | "s" | extra |')))
+      .toThrow(/row 1 has 4 cells/);
   });
 });
 
@@ -241,6 +260,7 @@ describe('seedOnRequest and checkOnRequest', () => {
       ['unknown page', 'Narnia', ROW],
       ['pipe in statement', 'Cow', { ...ROW, statement: 'a | b' }],
       ['line break in study', 'Cow', { ...ROW, study: 'a\nb' }],
+      ['trailing space in study', 'Cow', { ...ROW, study: 'A study (Author et al. 2024) ' }],
       ['empty statement', 'Cow', { ...ROW, statement: '  ' }],
     ];
     for (const [why, page, row] of bad) {
@@ -280,6 +300,6 @@ describe('the Data on request list on the real corpus', () => {
     const dir = mkdtempSync(join(tmpdir(), 'caail-onreq-plain-'));
     writeFileSync(join(dir, 'datasets_on_request.ndjson'),
       JSON.stringify({ doi: '10.1000/abc', page: 'Fish', study: 'Cells from flounder (*Paralichthys olivaceus*)', statement: 'Ask.', ordinal: 0 }) + '\n');
-    expect(buildOnRequestStudies(dir)[0]!.study).toBe('Cells from flounder (Paralichthys olivaceus)');
+    expect(buildOnRequestStudies(readOnRequestRows(dir))[0]!.study).toBe('Cells from flounder (Paralichthys olivaceus)');
   });
 });

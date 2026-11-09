@@ -31,10 +31,11 @@ export function readOnRequestRows(ndjsonDir: string = NDJSON_DIR): OnRequestRow[
 /**
  * Every on-request study for the API. `study` is served as plain text, the title as a
  * reader sees it (the page's cell can carry Markdown such as an italic species name);
- * `statement` is served as stored, the paper's own words.
+ * `statement` is served as stored, the paper's own words. Takes the stored rows, so a caller
+ * that also checks them against the pages reads the NDJSON once.
  */
-export function buildOnRequestStudies(ndjsonDir: string = NDJSON_DIR): OnRequestStudy[] {
-  return readOnRequestRows(ndjsonDir).map((r) => OnRequestStudySchema.parse({
+export function buildOnRequestStudies(rows: readonly OnRequestRow[] = readOnRequestRows()): OnRequestStudy[] {
+  return rows.map((r) => OnRequestStudySchema.parse({
     page: r.page,
     study: cellText(r.study),
     paperDoi: r.doi,

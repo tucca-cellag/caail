@@ -241,12 +241,13 @@ export function generateData(
   // Studies whose data are shared only on request (tucca-cellag/caail-planning#750), read from
   // the DB NDJSON for the API. Not datasets: kept out of `datasets`, the inventory and every
   // count above, and checked against the rows the pages' `## Data on request` tables hold.
-  const onRequest = buildOnRequestStudies();
+  const onRequestRows = readOnRequestRows();
+  const onRequest = buildOnRequestStudies(onRequestRows);
   const onRequestWritten = ON_REQUEST_PAGES.flatMap((page) => {
     const path = join(REPO_ROOT, 'Datasets', `${page}.md`);
     return (existsSync(path) ? extractOnRequest(path) ?? [] : []).map((r) => ({ ...r, page }));
   });
-  const onRequestDrifted = onRequestDrift(readOnRequestRows(), onRequestWritten);
+  const onRequestDrifted = onRequestDrift(onRequestRows, onRequestWritten);
   if (onRequestDrifted) throw new Error(`Data on request: the DB and the pages disagree: ${onRequestDrifted}`);
 
   // Metrics runs LAST of the model builders: its topic / license / citation panels are

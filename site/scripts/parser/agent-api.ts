@@ -567,7 +567,7 @@ export function buildManifest(
       {
         path: 'datasets.json',
         use:
-          'Two arrays, together the whole dataset corpus. `entries` = curated dataset entries ' +
+          'Two arrays of datasets, together the whole dataset corpus, and one of studies that are not. `entries` = curated dataset entries ' +
           '(portals, atlases, GEMs, reference corpora, and the AI/ML benchmark and evaluation ' +
           'datasets on page "Benchmarks"; kind atlas/gem/other). `inventory` = the per-species ' +
           'inventory rows (kind "inventory") — the per-study deposits with accession, tissue, ' +

@@ -299,9 +299,12 @@ export const onRequestPaperCell = (doi: string): string => `[DOI](https://doi.or
 /**
  * A page's `## Data on request` table, read back into rows; null when the page has no such
  * section. The section is DB-owned, so its table must be in the form db:emit writes: the
- * three ON_REQUEST_COLUMNS, a Paper cell `[DOI](https://doi.org/<doi>)`, and the statement in
- * straight double quotes. Anything else throws naming the page, since a hand edit that
- * changed the shape would otherwise be dropped without a word on the next emit.
+ * three ON_REQUEST_COLUMNS and exactly three cells a row, a Paper cell
+ * `[DOI](https://doi.org/<doi>)`, and the statement in straight double quotes. Anything else
+ * throws naming the page, and db:emit reads an existing section through this before
+ * replacing it, so a hand edit that changed the shape stops the emit instead of vanishing.
+ * A well-formed row added by hand is a different case: emit overwrites it from the DB, as it
+ * does an inventory row, and the CI sync guard (db:emit, then `git diff`) is what flags it.
  *
  * Cells are read as their raw source text, not re-rendered through `inlineMd`: a statement
  * is the paper's own words, and rendering would turn an email address or URL in it into link
@@ -327,7 +330,12 @@ export function extractOnRequest(path: string): OnRequestTableRow[] | null {
     throw new Error(`extractOnRequest(${page}): columns are "${header!.join(' | ')}", expected "${ON_REQUEST_COLUMNS.join(' | ')}"`);
   }
   const seen = new Set<string>();
-  return rows.map(([study, paper, statement], i) => {
+  return rows.map((cells, i) => {
+    // The parser keeps a cell beyond the header's width, so a fourth cell is seen here.
+    if (cells.length !== ON_REQUEST_COLUMNS.length) {
+      throw new Error(`extractOnRequest(${page}): row ${i + 1} has ${cells.length} cells, expected ${ON_REQUEST_COLUMNS.length}`);
+    }
+    const [study, paper, statement] = cells;
     const doi = paper?.match(ON_REQUEST_PAPER)?.[1];
     const said = statement?.match(ON_REQUEST_STATEMENT)?.[1];
     if (!study || !doi || !said) {
