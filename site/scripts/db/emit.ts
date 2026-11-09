@@ -238,17 +238,11 @@ export function emitDatasetPage(db: Db, srcPath: string, page: string): string {
     { doi: string; study: string; statement: string }[];
   // An existing section is regenerated where it stands; a new one is created only when none
   // exists anywhere on the page, so a section placed after the footer is never duplicated.
-  // A page with two would have both filled with one table, and extractOnRequest reads only
-  // one, so it is refused here as it is there.
-  const onRequestSections = blocks.filter((b) => b.type === 'heading' && b.depth === 2 && isOnRequestHeading(flat(b))).length;
-  if (onRequestSections > 1) {
-    throw new Error(`emitDatasetPage(${page}): ${onRequestSections} "## Data on request" sections; a page holds one. Merge them.`);
-  }
-  const hasOnRequestSection = onRequestSections === 1;
-  // Read an existing section's table before replacing it: a hand edit that changed its shape
-  // (a column renamed, a cell added, a second table, a statement unquoted) throws here rather
-  // than vanishing. Read from the tree parsed above, not the file again.
-  if (hasOnRequestSection) readOnRequestSection(src, tree, page);
+  // It is read before it is replaced, through the reader db:verify and db:bootstrap use, so a
+  // hand edit that changed its shape (a second section, a second table, a column renamed, a
+  // cell added, a statement unquoted) throws here rather than vanishing. Read from the tree
+  // parsed above, not the file again.
+  const hasOnRequestSection = readOnRequestSection(src, tree, page) !== null;
 
   // The entry splice is POSITIONAL: the Nth non-inventory H3 in the source ↔ the Nth DB
   // entry for this page (both document-ordered). If those counts disagree — a stale source
