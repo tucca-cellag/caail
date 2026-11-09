@@ -37,7 +37,7 @@ import { seriesRecency, EDITION_SORT_RULE } from '../parser/reports.js';
 import type { TaxonomyData } from '../parser/types.js';
 import { bareDoi, DOI_SHAPE } from '../parser/doi-relation.js';
 import {
-  DATA_CELL_FORMS, labelCells, parseRowCells, readDataCell, readInventoryHeader, readLinkCell, statedDoi,
+  DATA_CELL_FORMS, labelCells, parseRowCells, readDataCell, readInventoryHeader, readLinkCell, statedDoi, linkDestinations,
   type InventoryHeader,
 } from '../parser/dataset-inventory.js';
 
@@ -560,18 +560,27 @@ export const INVENTORY_CELLS_LABEL =
   `dataset_rows: every Data cell is ${DATA_CELL_FORMS} (CrossSpecies: its DOI / URL cell is a link)`;
 
 export const ON_REQUEST_LABEL =
-  'datasets_on_request: every row has a bare DOI that no inventory row\'s Paper or DOI / URL cell links and no ' +
-  'curated entry\'s doi names, a non-Benchmarks dataset page, and a study and statement that fit a table cell';
+  'datasets_on_request: every row has a bare DOI that fits a link and that no inventory row\'s Paper or DOI / URL ' +
+  'cell links and no curated entry\'s doi names, a non-Benchmarks dataset page, a study and statement that fit a ' +
+  'table cell, and an ordinal in the order db:bootstrap writes';
 
-/** Every link destination in a Markdown cell (`[label](url)`), in order. */
-const LINK_DESTINATIONS = /\]\(([^)\s]+)\)/g;
+/**
+ * A DOI that can sit in the emitted `[DOI](https://doi.org/…)` link: no angle bracket, and
+ * parentheses only in balanced pairs, the shape a link destination (and `DEST`) reads whole.
+ */
+const LINK_SAFE_DOI = /^(?:[^()<>\s]|\([^()<>\s]*\))+$/;
 
 /**
  * Shape of the Data on request list (tucca-cellag/caail-planning#750): a bare lowercase DOI (the
- * key, and the Paper cell's target), a page from ON_REQUEST_PAGES whose Markdown exists
- * (never Benchmarks), and a non-empty study and statement with no `|` or line break, either of
- * which would break the emitted table. The study also has no leading or trailing whitespace,
- * since the page's table trims its cells and the stored row would then never match the page.
+ * key, and the Paper cell's target) that fits a link, a page from ON_REQUEST_PAGES whose
+ * Markdown exists (never Benchmarks), and a non-empty study and statement with no `|` or line
+ * break, either of which would break the emitted table. The study also has no leading or
+ * trailing whitespace, since the page's table trims its cells and the stored row would then
+ * never match the page.
+ *
+ * Ordinals run 0..n-1 page by page in ON_REQUEST_PAGES order, then in table order, which is
+ * what `db:bootstrap` writes from the pages. A hand-typed ordinal that breaks it fails here
+ * rather than reordering the API and churning the NDJSON on the next bootstrap.
  *
  * It also refuses a DOI that any link in an inventory row's Paper cell (or CrossSpecies' DOI /
  * URL cell) states, whatever its registrant, or that a curated entry carries in its `doi`
@@ -581,8 +590,8 @@ const LINK_DESTINATIONS = /\]\(([^)\s]+)\)/g;
  * check the statement against the paper.
  */
 export function checkOnRequest(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
-  const rows = db.prepare('SELECT doi, page, study, statement FROM datasets_on_request ORDER BY ordinal, doi')
-    .all() as { doi: string; page: string; study: string; statement: string }[];
+  const rows = db.prepare('SELECT doi, page, study, statement, ordinal FROM datasets_on_request ORDER BY ordinal, doi')
+    .all() as { doi: string; page: string; study: string; statement: string; ordinal: number }[];
   const problems: string[] = [];
   const unsafe = (s: string): boolean => /[|\r\n]/.test(s);
   // A study with public data has an inventory row or a curated entry. Listing it as on request
@@ -598,8 +607,8 @@ export function checkOnRequest(db: Db, repoRoot: string = REPO_ROOT): CheckResul
     const parsed = parseRowCells(d.cells_json);
     const cols = 'header' in h && 'cells' in parsed ? labelCells(h.header, parsed.cells) : null;
     for (const cell of [cols?.['Paper'], cols?.['DOI / URL']]) {
-      for (const m of (cell ?? '').matchAll(LINK_DESTINATIONS)) {
-        const doi = statedDoi(m[1]!);
+      for (const url of linkDestinations(cell ?? '')) {
+        const doi = statedDoi(url);
         if (doi) held.set(doi, d.item_id);
       }
     }
@@ -608,15 +617,20 @@ export function checkOnRequest(db: Db, repoRoot: string = REPO_ROOT): CheckResul
     const doi = bareDoi(e.doi);
     if (doi) held.set(doi, e.item_id);
   }
-  for (const r of rows) {
+  rows.forEach((r, i) => {
     if (held.has(r.doi)) problems.push(`${r.doi}: also the paper of ${held.get(r.doi)}, which holds public data, so it does not belong on this list`);
     if (!DOI_SHAPE.test(r.doi) || r.doi !== r.doi.toLowerCase()) problems.push(`${r.doi}: not a bare lowercase DOI`);
+    else if (!LINK_SAFE_DOI.test(r.doi)) problems.push(`${r.doi}: holds an angle bracket or unbalanced parentheses, which would break its [DOI](…) link`);
+    const before = rows[i - 1];
+    if (r.ordinal !== i || (before && ON_REQUEST_PAGES.indexOf(r.page) < ON_REQUEST_PAGES.indexOf(before.page))) {
+      problems.push(`${r.doi}: ordinal ${r.ordinal} is out of place; number the list 0..n-1 page by page in ON_REQUEST_PAGES order, as db:bootstrap does`);
+    }
     if (!ON_REQUEST_PAGES.includes(r.page)) problems.push(`${r.doi}: page "${r.page}" cannot carry a Data on request list`);
     else if (!existsSync(join(repoRoot, 'Datasets', `${r.page}.md`))) problems.push(`${r.doi}: Datasets/${r.page}.md does not exist`);
     if (!r.study.trim() || unsafe(r.study)) problems.push(`${r.doi}: study is empty or holds a | or line break`);
     else if (r.study !== r.study.trim()) problems.push(`${r.doi}: study starts or ends with whitespace, which the page's table trims away`);
     if (!r.statement.trim() || unsafe(r.statement)) problems.push(`${r.doi}: statement is empty or holds a | or line break`);
-  }
+  });
   return [ok(ON_REQUEST_LABEL, problems.length === 0, `${problems.length} problem(s): ${problems.slice(0, 10).join('; ')}`)];
 }
 

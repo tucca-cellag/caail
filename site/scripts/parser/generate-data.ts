@@ -36,8 +36,7 @@ import { buildDatasetsModel } from './datasets-entries.js';
 import { buildReportsModel } from './reports.js';
 import { buildDatasetInventory } from './dataset-inventory.js';
 import { buildOnRequestStudies, onRequestDrift, readOnRequestRows } from './datasets-on-request.js';
-import { ON_REQUEST_PAGES } from './datasets.js';
-import { extractOnRequest } from '../db/extract.js';
+import { readPagesOnRequest } from '../db/extract.js';
 import { REPO_ROOT } from '../db/lib.js';
 import { writeLlmsFull } from './llms-full.js';
 import { buildAgentApi, writeAgentApi, publishSkillDoc } from './agent-api.js';
@@ -243,10 +242,7 @@ export function generateData(
   // count above, and checked against the rows the pages' `## Data on request` tables hold.
   const onRequestRows = readOnRequestRows();
   const onRequest = buildOnRequestStudies(onRequestRows);
-  const onRequestWritten = ON_REQUEST_PAGES.flatMap((page) => {
-    const path = join(REPO_ROOT, 'Datasets', `${page}.md`);
-    return (existsSync(path) ? extractOnRequest(path) ?? [] : []).map((r) => ({ ...r, page }));
-  });
+  const onRequestWritten = readPagesOnRequest(REPO_ROOT);
   const onRequestDrifted = onRequestDrift(onRequestRows, onRequestWritten);
   if (onRequestDrifted) throw new Error(`Data on request: the DB and the pages disagree: ${onRequestDrifted}`);
 

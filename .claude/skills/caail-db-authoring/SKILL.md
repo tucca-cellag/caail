@@ -55,7 +55,7 @@ request** list: one line in `site/db/ndjson/datasets_on_request.ndjson` with `do
 `page` (any dataset page but `Benchmarks`), `study` (title, then `(Author et al. YEAR)`), `statement`
 (the paper's own words, verbatim, without quotes) and `ordinal` (its place in document order, counting through
 the pages as `ON_REQUEST_PAGES` lists them: species pages, CrossSpecies, then reference pages; renumber the rows
-after it, since `db:bootstrap` numbers them that way and the API serves them in that order), then
+after it, as `db:bootstrap` would, or `db:check` fails), then
 `db:emit`, `db:check` and `db:verify`. These rows are not items, so `db:add` and `db:remove` do not
 handle them; deleting a line and re-emitting removes the study, and removing a page's last one
 removes its section. Read the statement from the paper itself (verify-citations), never from a

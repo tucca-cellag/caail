@@ -17,7 +17,7 @@ import { readFileSync } from 'node:fs';
 import { parseMarkdown } from '../parser/markdown.js';
 import { entryHeadingDepth, isEntryHeading, isFurtherReadingHeading, isOnRequestHeading } from '../parser/datasets.js';
 import {
-  inlineMd, flat, extractInventory, extractOnRequest, ON_REQUEST_COLUMNS, ON_REQUEST_HEADING, onRequestPaperCell,
+  inlineMd, flat, extractInventory, readOnRequestSection, ON_REQUEST_COLUMNS, ON_REQUEST_HEADING, onRequestPaperCell,
 } from './extract.js';
 import type { Db } from './lib.js';
 
@@ -224,7 +224,8 @@ export function emitReportsFile(db: Db, srcPath: string): string {
  */
 export function emitDatasetPage(db: Db, srcPath: string, page: string): string {
   const src = readFileSync(srcPath, 'utf-8');
-  const blocks = parseMarkdown(src).children as any[];
+  const tree = parseMarkdown(src);
+  const blocks = tree.children as any[];
   const sliceOf = (b: any) => src.slice(b.position.start.offset, b.position.end.offset);
   const inv = extractInventory(srcPath);
   const rows = db.prepare('SELECT cells_json FROM dataset_rows WHERE page=? ORDER BY ordinal').all(page) as
@@ -245,8 +246,9 @@ export function emitDatasetPage(db: Db, srcPath: string, page: string): string {
   }
   const hasOnRequestSection = onRequestSections === 1;
   // Read an existing section's table before replacing it: a hand edit that changed its shape
-  // (a column renamed, a cell added, a statement unquoted) throws here rather than vanishing.
-  if (hasOnRequestSection) extractOnRequest(srcPath);
+  // (a column renamed, a cell added, a second table, a statement unquoted) throws here rather
+  // than vanishing. Read from the tree parsed above, not the file again.
+  if (hasOnRequestSection) readOnRequestSection(src, tree, page);
 
   // The entry splice is POSITIONAL: the Nth non-inventory H3 in the source ↔ the Nth DB
   // entry for this page (both document-ordered). If those counts disagree — a stale source

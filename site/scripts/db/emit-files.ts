@@ -63,8 +63,9 @@ export function emitAll(db: Db, root: string = REPO_ROOT): string[] {
  * section (so removing its last row removes the section).
  */
 export function isDbOwnedDatasetPage(db: Db, src: string, page: string): boolean {
-  return Boolean(extractInventory(src)) || extractDatasetEntries(src).length > 0
-    || db.prepare('SELECT 1 FROM datasets_on_request WHERE page=? LIMIT 1').get(page) !== undefined
+  // The DB lookup first: it costs no parse of the page.
+  return db.prepare('SELECT 1 FROM datasets_on_request WHERE page=? LIMIT 1').get(page) !== undefined
+    || Boolean(extractInventory(src)) || extractDatasetEntries(src).length > 0
     || extractOnRequest(src) !== null;
 }
 

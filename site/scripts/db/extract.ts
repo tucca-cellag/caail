@@ -5,12 +5,15 @@
  * sqlite-replatform extractGroupEntries / extractInventory / inlineMd.
  */
 
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { parseMarkdown, sectionsAfter } from '../parser/markdown.js';
-import { entryHeadingDepth, isEntryHeading, isOnRequestHeading, ON_REQUEST_HEADING, pageFromPath } from '../parser/datasets.js';
+import {
+  BENCHMARKS_PAGE, entryHeadingDepth, isEntryHeading, isOnRequestHeading, ON_REQUEST_HEADING, ON_REQUEST_PAGES, pageFromPath,
+} from '../parser/datasets.js';
 import { isEditionSort, invalidEditionSort } from '../parser/reports.js';
 import { slugify } from './lib.js';
-import type { Table, TableRow, TableCell } from 'mdast';
+import type { Root, Table, TableRow, TableCell } from 'mdast';
 
 /**
  * Per-reference trailing blockquote run: the verbatim `> …` blockquote block(s)
@@ -310,17 +313,24 @@ export const onRequestPaperCell = (doi: string): string => `[DOI](https://doi.or
  * is the paper's own words, and rendering would turn an email address or URL in it into link
  * syntax and `_x_` into `*x*`, so a bootstrap would quietly rewrite what the paper said.
  *
- * A second section, or a DOI listed twice in the table, throws too: either would pass a
- * round trip that compared one section's rows, while the page showed the list twice.
+ * A second section, a second table in the section, or a DOI listed twice in the table, throws
+ * too: each would pass a round trip that compared one table's rows, while the page showed a
+ * list the DB, db:check and the API know nothing about.
  */
 export function extractOnRequest(path: string): OnRequestTableRow[] | null {
   const src = readFileSync(path, 'utf-8');
-  const page = pageFromPath(path);
-  const secs = sectionsAfter(parseMarkdown(src), 2).filter((s) => isOnRequestHeading(s.heading));
+  return readOnRequestSection(src, parseMarkdown(src), pageFromPath(path));
+}
+
+/** extractOnRequest on a page already read and parsed, so db:emit checks the tree it has. */
+export function readOnRequestSection(src: string, tree: Root, page: string): OnRequestTableRow[] | null {
+  const secs = sectionsAfter(tree, 2).filter((s) => isOnRequestHeading(s.heading));
   if (secs.length > 1) throw new Error(`extractOnRequest(${page}): ${secs.length} "## ${ON_REQUEST_HEADING}" sections; a page holds one`);
   const sec = secs[0];
   if (!sec) return null;
-  const table = sec.nodes.find((n: any) => n.type === 'table') as Table | undefined;
+  const tables = sec.nodes.filter((n: any) => n.type === 'table') as Table[];
+  if (tables.length > 1) throw new Error(`extractOnRequest(${page}): "## ${ON_REQUEST_HEADING}" holds ${tables.length} tables; it holds one`);
+  const table = tables[0];
   if (!table) throw new Error(`extractOnRequest(${page}): "## ${ON_REQUEST_HEADING}" has no table`);
   // A cell's source span includes its bounding pipes; the guard keeps `|` out of the text itself.
   const rawCell = (c: TableCell) =>
@@ -344,6 +354,23 @@ export function extractOnRequest(path: string): OnRequestTableRow[] | null {
     if (seen.has(doi)) throw new Error(`extractOnRequest(${page}): ${doi} is listed twice`);
     seen.add(doi);
     return { study, doi, statement: said };
+  });
+}
+
+/**
+ * Every Data on request row the dataset pages hold, each tagged with its page, in
+ * ON_REQUEST_PAGES order then table order: the population db:bootstrap seeds and `pnpm parse`
+ * checks the DB against. A section on Benchmarks, which may carry none, throws rather than
+ * being skipped, since bootstrap would otherwise drop it and the next emit delete it unseen.
+ */
+export function readPagesOnRequest(repoRoot: string): (OnRequestTableRow & { page: string })[] {
+  const benchmarks = join(repoRoot, 'Datasets', `${BENCHMARKS_PAGE}.md`);
+  if (existsSync(benchmarks) && extractOnRequest(benchmarks) !== null) {
+    throw new Error(`readPagesOnRequest: ${BENCHMARKS_PAGE}.md has a "## ${ON_REQUEST_HEADING}" section, and that page carries none`);
+  }
+  return ON_REQUEST_PAGES.flatMap((page) => {
+    const path = join(repoRoot, 'Datasets', `${page}.md`);
+    return (existsSync(path) ? extractOnRequest(path) ?? [] : []).map((r) => ({ ...r, page }));
   });
 }
 

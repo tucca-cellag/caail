@@ -14,11 +14,11 @@
 import { join } from 'node:path';
 import { existsSync, readFileSync } from 'node:fs';
 import type { PapersData } from '../parser/types.js';
-import { INVENTORY_PAGES, REFERENCE_PAGES, BENCHMARKS_PAGE, ON_REQUEST_PAGES } from '../parser/datasets.js';
+import { INVENTORY_PAGES, REFERENCE_PAGES, BENCHMARKS_PAGE } from '../parser/datasets.js';
 import { REPO_ROOT, SITE_ROOT, assignId, frozenSlug, type Db } from './lib.js';
 import {
   extractCatalogEntries, extractInventory, extractMatrixHeaders, extractPaperBlockquotes,
-  extractDatasetEntries, extractOnRequest, extractReports, type CatalogRaw, type ReportRaw,
+  extractDatasetEntries, extractReports, readPagesOnRequest, type CatalogRaw, type ReportRaw,
 } from './extract.js';
 
 // --- papers ----------------------------------------------------------------
@@ -187,15 +187,11 @@ export function seedOnRequest(db: Db, repoRoot: string = REPO_ROOT): number {
   const ins = db.prepare('INSERT INTO datasets_on_request(doi,page,study,statement,ordinal) VALUES(?,?,?,?,?)');
   const pageOf = new Map<string, string>();
   let ordinal = 0;
-  for (const page of ON_REQUEST_PAGES) {
-    const path = join(repoRoot, 'Datasets', `${page}.md`);
-    if (!existsSync(path)) continue;
-    for (const r of extractOnRequest(path) ?? []) {
-      const first = pageOf.get(r.doi);
-      if (first) throw new Error(`seedOnRequest: ${r.doi} is listed on ${first} and ${page}; a study goes on one page`);
-      pageOf.set(r.doi, page);
-      ins.run(r.doi, page, r.study, r.statement, ordinal++);
-    }
+  for (const r of readPagesOnRequest(repoRoot)) {
+    const first = pageOf.get(r.doi);
+    if (first) throw new Error(`seedOnRequest: ${r.doi} is listed on ${first} and ${r.page}; a study goes on one page`);
+    pageOf.set(r.doi, r.page);
+    ins.run(r.doi, r.page, r.study, r.statement, ordinal++);
   }
   return ordinal;
 }

@@ -17,7 +17,7 @@ import { join } from 'node:path';
 import { openDb, importNdjson, REPO_ROOT, type Db } from './lib.js';
 import { emitDatasetPage } from './emit.js';
 import { isDbOwnedDatasetPage } from './emit-files.js';
-import { extractOnRequest, ON_REQUEST_HEADING } from './extract.js';
+import { extractOnRequest, ON_REQUEST_HEADING, readPagesOnRequest } from './extract.js';
 import { seedOnRequest } from './seed.js';
 import { checkOnRequest, ON_REQUEST_LABEL } from './check.js';
 import { isEntryHeading, ON_REQUEST_PAGES } from '../parser/datasets.js';
@@ -154,6 +154,33 @@ describe('edges: entry counting, verbatim text, row order, placement, drift and 
       .run(JSON.stringify(['Held', `[preprint](https://doi.org/${osf})`, 'supplementary', 'x', 'x', 'x', 'x', 'x']));
     expect(result(db).detail).toContain('also the paper of ds:osf-row');
   });
+
+  it('reads a Paper cell DOI that holds parentheses whole', () => {
+    const doi = '10.1016/s0092-8674(20)30001-1';
+    const db = dbWith('Cow', [{ ...ROW, doi }]);
+    db.exec('PRAGMA foreign_keys = OFF');
+    db.prepare("INSERT INTO dataset_rows(item_id,page,cells_json,subseries,ordinal) VALUES('ds:paren-row','Cow',?,NULL,0)")
+      .run(JSON.stringify(['Held', `[DOI](https://doi.org/${doi})`, 'supplementary', 'x', 'x', 'x', 'x', 'x']));
+    expect(result(db).detail).toContain('also the paper of ds:paren-row');
+  });
+
+  it('refuses a DOI its [DOI](…) link could not hold: an angle bracket or an unbalanced parenthesis', () => {
+    for (const doi of ['10.1000/a<b>c', '10.1000/a(b', '10.1000/a)b']) {
+      expect(result(dbWith('Cow', [{ ...ROW, doi }])).detail, doi).toContain('angle bracket or unbalanced parentheses');
+    }
+    expect(result(dbWith('Cow', [{ ...ROW, doi: '10.1000/a(b)c' }])).ok).toBe(true);
+  });
+
+  it('refuses ordinals db:bootstrap would not write: a gap, or a page out of ON_REQUEST_PAGES order', () => {
+    const db = openDb();
+    const ins = db.prepare('INSERT INTO datasets_on_request(doi,page,study,statement,ordinal) VALUES(?,?,?,?,?)');
+    ins.run('10.1000/fish', 'Fish', 'S', 'Ask.', 0);
+    ins.run('10.1000/cow', 'Cow', 'S', 'Ask.', 1);
+    expect(result(db).detail).toContain('10.1000/cow: ordinal 1 is out of place');
+    const gap = openDb();
+    gap.prepare('INSERT INTO datasets_on_request(doi,page,study,statement,ordinal) VALUES(?,?,?,?,?)').run('10.1000/a', 'Cow', 'S', 'Ask.', 5);
+    expect(result(gap).detail).toContain('ordinal 5 is out of place');
+  });
 });
 
 describe('one section per page, one page per study', () => {
@@ -169,6 +196,22 @@ describe('one section per page, one page per study', () => {
     const twice = join(TMP, 'Twice.md');
     writeFileSync(twice, `# Twice\n\n## Data on request\n\n${TABLE}${line('10.1000/a')}${line('10.1000/a')}`);
     expect(() => extractOnRequest(twice)).toThrow(/10\.1000\/a is listed twice/);
+  });
+
+  it('refuses a second table in the section, in extract and in emit', () => {
+    const two = `# TwoTables\n\n## Data on request\n\n${TABLE}${line('10.1000/a')}\n${TABLE}${line('10.1000/b')}`;
+    const src = join(TMP, 'TwoTables.md');
+    writeFileSync(src, two);
+    expect(() => extractOnRequest(src)).toThrow(/holds 2 tables/);
+    expect(() => emitFixture('TwoTables', two, [ROW])).toThrow(/holds 2 tables/);
+  });
+
+  it('has bootstrap and parse refuse a Data on request section on Benchmarks, rather than drop it', () => {
+    const root = mkdtempSync(join(tmpdir(), 'caail-onreq-bench-'));
+    mkdirSync(join(root, 'Datasets'));
+    writeFileSync(join(root, 'Datasets', 'Benchmarks.md'), `# Benchmarks\n\n## Data on request\n\n${TABLE}${line('10.1000/a')}`);
+    expect(() => readPagesOnRequest(root)).toThrow(/Benchmarks\.md has a "## Data on request" section/);
+    expect(() => seedOnRequest(openDb(), root)).toThrow(/Benchmarks\.md/);
   });
 
   it('has db:emit refuse a section whose shape was changed by hand, rather than overwrite it', () => {
