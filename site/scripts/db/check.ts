@@ -565,18 +565,24 @@ export const INVENTORY_CELLS_LABEL =
 export const ON_REQUEST_LABEL =
   'datasets_on_request: every row has a bare DOI that fits a link and that no inventory row\'s Paper or DOI / URL ' +
   'cell links and no curated entry\'s doi or heading link names, a non-Benchmarks dataset page, a study and a ' +
-  'statement that fit a table cell, a statement the page shows as stored, and an ordinal counting its page\'s ' +
+  'statement that fit a table cell, a statement that renders as stored, and an ordinal counting its page\'s ' +
   'list from 0';
 
+/** A statement that is one quoted span: `"…"` with no inner `"`, or `“…”` with no inner curly double quote. */
+const WRAPPED_IN_QUOTES = /^(?:"[^"]*"|“[^“”]*”)$/;
+
 /**
- * Whether a statement shows on the page as the words stored. db:emit writes it into a table
- * cell between straight quotes, so that cell is parsed as the page parses it, and it must come
- * back as the same text holding no raw HTML. Emphasis, strikethrough, code, a backslash
- * escape, an entity, a link or an image fails, since each shows different words or markup
- * from the ones the API serves. A bare URL or email address passes: GFM links it, but the
- * page still shows it as written.
+ * Whether a statement renders as the words stored. db:emit writes it into a table cell between
+ * straight quotes, so that cell is parsed with GFM, as GitHub renders the page, and must come
+ * back as the same text holding no raw HTML. The test is whether the rendered text changes:
+ * emphasis, strikethrough, code, a backslash escape, an entity reference that decodes, a link
+ * or an image fails, since each shows different words or markup from the ones the API serves.
+ * A backslash before a letter, a bare `&`, and a bare URL or email address all pass (GFM links
+ * the last two, but shows them as written). The site adds smart punctuation to every page,
+ * turning straight quotes, `--` and `...` into typographic ones; that changes glyphs, never
+ * words, and this does not model it.
  */
-export function statementShowsAsStored(statement: string): boolean {
+export function statementRendersAsStored(statement: string): boolean {
   const cell = `"${statement}"`;
   const table = parseMarkdown(`| s |\n|---|\n| ${cell} |\n`).children[0];
   const node = table?.type === 'table' ? table.children[1]?.children[0] : undefined;
@@ -595,8 +601,9 @@ export function statementShowsAsStored(statement: string): boolean {
  * never match the page.
  *
  * The statement is the paper's own words, served verbatim by the API and written raw into the
- * page, so it must also show there as stored (`statementShowsAsStored`), and must not be
- * stored inside its own straight quotes, since the page adds a pair and would show two.
+ * page, so it must also render there as stored (`statementRendersAsStored`), and must not be
+ * stored as one quoted span, straight `"…"` or curly `“…”`, since the page adds a pair and
+ * would show two. A statement that only starts or ends with a quoted word passes.
  *
  * Ordinals count each page's list from 0 in table order, which is what `db:bootstrap` writes
  * from the pages, so adding a row to one page renumbers no other. A hand-typed ordinal that
@@ -656,9 +663,9 @@ export function checkOnRequest(db: Db, repoRoot: string = REPO_ROOT): CheckResul
     if (!r.study.trim() || unsafe(r.study)) problems.push(`${r.doi}: study is empty or holds a | or line break`);
     else if (r.study !== r.study.trim()) problems.push(`${r.doi}: study starts or ends with whitespace, which the page's table trims away`);
     if (!r.statement.trim() || unsafe(r.statement)) problems.push(`${r.doi}: statement is empty or holds a | or line break`);
-    else if (r.statement.startsWith('"') && r.statement.endsWith('"')) {
+    else if (WRAPPED_IN_QUOTES.test(r.statement)) {
       problems.push(`${r.doi}: statement is stored inside its own quotes, and the page adds a pair, so it would show two`);
-    } else if (!statementShowsAsStored(r.statement)) {
+    } else if (!statementRendersAsStored(r.statement)) {
       problems.push(`${r.doi}: statement holds Markdown or HTML, so the page would show different words or markup from the ones the API serves`);
     }
   });

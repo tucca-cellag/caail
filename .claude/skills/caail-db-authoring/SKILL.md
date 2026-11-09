@@ -55,10 +55,12 @@ request** list: one line in `site/db/ndjson/datasets_on_request.ndjson` with `do
 `page` (any dataset page but `Benchmarks`), `study` (title, then `(Author et al. YEAR)`), `statement`
 (the paper's own words, verbatim, without the quotes the page adds) and `ordinal` (its place in its own
 page's table, counting from 0; renumber only that page's later rows, as `db:bootstrap` would, or
-`db:check` fails), then `db:emit`, `db:check` and `db:verify`. The page shows the statement as
-Markdown while the API serves it as stored, so `db:check` refuses one that would render differently
-(emphasis, code, a backslash, an entity, a link or a tag; a bare URL or email address is fine) and
-one stored inside its own quotes. A statement whose own words hold such syntax is a curator call:
+`db:check` fails), then `db:emit`, `db:check` and `db:verify`. The page renders the statement as
+Markdown while the API serves it as stored, so `db:check` refuses one whose rendered text would differ
+(emphasis, code, a backslash escape, an entity reference that decodes, a link or a tag; a bare URL,
+email address or `&` is fine) and one stored as a single quoted span, straight or curly. The site
+also curls quotes and dashes on every page, which changes glyphs, not words, and is not checked.
+A statement whose own words hold such syntax is a curator call:
 raise it rather than editing the words. These rows are not items, so `db:add` and `db:remove` do not
 handle them; deleting a line and re-emitting removes the study, and removing a page's last one
 removes its section. Read the statement from the paper itself (verify-citations), never from a

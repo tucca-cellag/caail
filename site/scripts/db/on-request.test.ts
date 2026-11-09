@@ -314,7 +314,7 @@ describe('seedOnRequest and checkOnRequest', () => {
   });
 });
 
-describe('held DOIs, link-safe DOIs and statements the page shows as stored', () => {
+describe('held DOIs, link-safe DOIs and statements that render as stored', () => {
   it('refuses an on-request DOI that a curated entry\'s heading links, when its doi column is empty', () => {
     const db = dbWith('Cow', [ROW]);
     db.exec('PRAGMA foreign_keys = OFF');
@@ -346,11 +346,27 @@ describe('held DOIs, link-safe DOIs and statements the page shows as stored', ()
     expect(result(dbWith('Cow', [{ ...ROW, statement: 'Ask a.b@uni.edu or see https://zenodo.org/r/1 and data_v1_final.' }])).ok).toBe(true);
   });
 
-  it('refuses a statement stored inside its own quotes, which the page would show doubled', () => {
-    const r = result(dbWith('Cow', [{ ...ROW, statement: '"Data will be made available on request."' }]));
-    expect(r.ok).toBe(false);
-    expect(r.detail).toContain(`${ROW.doi}: statement is stored inside its own quotes`);
-    expect(result(dbWith('Cow', [{ ...ROW, statement: '"Raw" data will be made available on request.' }])).ok).toBe(true);
+  it('refuses a statement stored inside its own quotes, straight or curly, which the page would show doubled', () => {
+    for (const statement of ['"Data will be made available on request."', '“Data will be made available on request.”']) {
+      const r = result(dbWith('Cow', [{ ...ROW, statement }]));
+      expect(r.ok, statement).toBe(false);
+      expect(r.detail, statement).toContain(`${ROW.doi}: statement is stored inside its own quotes`);
+    }
+  });
+
+  it('passes a statement that only starts or ends with a quoted word', () => {
+    for (const statement of ['"Raw" data will be made available on request.', '"Raw" counts and "processed"']) {
+      expect(result(dbWith('Cow', [{ ...ROW, statement }])).ok, statement).toBe(true);
+    }
+  });
+
+  it('refuses a DOI holding an entity reference, which the link destination decodes', () => {
+    for (const doi of ['10.1000/a&amp;b', '10.1000/a&#38;b', '10.1000/a&#x26;b']) {
+      const r = result(dbWith('Cow', [{ ...ROW, doi }]));
+      expect(r.ok, doi).toBe(false);
+      expect(r.detail, doi).toContain(`${doi}: cannot sit whole in its [DOI](https://doi.org/…) link`);
+    }
+    expect(result(dbWith('Cow', [{ ...ROW, doi: '10.1000/a&b' }])).ok).toBe(true);
   });
 });
 
