@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 import { INVENTORY_PAGES, REFERENCE_PAGES, BENCHMARKS_PAGE } from '../parser/datasets.js';
 import { importNdjson, REPO_ROOT, type Db } from './lib.js';
 import { emitPapersFile, emitCatalogFile, emitDatasetPage, emitReportsFile } from './emit.js';
-import { extractInventory, extractDatasetEntries, extractOnRequest } from './extract.js';
+import { extractInventory, extractDatasetEntries, extractOnRequest, refuseUnlistedOnRequest } from './extract.js';
 
 /**
  * Write every DB-owned canonical file from `db`. Returns the repo-relative paths.
@@ -29,6 +29,9 @@ export function emitAll(db: Db, root: string = REPO_ROOT): string[] {
   // before a single write — then write them all. So a failure genuinely leaves nothing on
   // disk (not just when the failing emitter happens to run first), which is why the db:add /
   // db:remove CLIs run emitAll before exportNdjson: a throw can't desync NDJSON vs Markdown.
+  // A Data on request section on a page that carries none (Benchmarks, which is emitted
+  // below, or an unlisted page) stops the emit rather than being deleted with no word.
+  refuseUnlistedOnRequest(root, 'db:emit');
   const files: Array<{ rel: string; text: string }> = [
     { rel: 'Papers.md', text: emitPapersFile(db, join(root, 'Papers.md')) },
     { rel: 'Software.md', text: emitCatalogFile(db, join(root, 'Software.md'), 'software') },

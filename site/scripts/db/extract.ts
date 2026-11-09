@@ -359,14 +359,13 @@ export function readOnRequestSection(src: string, tree: Root, page: string): OnR
 }
 
 /**
- * Every Data on request row the dataset pages hold, each tagged with its page, in
- * ON_REQUEST_PAGES order then table order: the population db:bootstrap seeds and `pnpm parse`
- * checks the DB against. A section on any other published page in `Datasets/` throws rather
- * than being skipped: Benchmarks and the README carry none, and a new page that no page list
- * names yet is read by no gate, so bootstrap would drop its section unseen. The directory is
- * listed rather than the page lists, since an unlisted page is the case being caught.
+ * Throw if any published page in `Datasets/` outside ON_REQUEST_PAGES has a `## Data on
+ * request` section. Benchmarks and the README carry none, and a new page that no page list
+ * names yet is read by no gate, so bootstrap would drop its section unseen and db:emit would
+ * delete it from Benchmarks. The directory is listed rather than the page lists, since an
+ * unlisted page is the case being caught. `who` names the caller in the message.
  */
-export function readPagesOnRequest(repoRoot: string): (OnRequestTableRow & { page: string })[] {
+export function refuseUnlistedOnRequest(repoRoot: string, who: string): void {
   const dir = join(repoRoot, 'Datasets');
   const unlisted = existsSync(dir)
     ? readdirSync(dir).filter((f) => isPublishedMarkdown(f) && !ON_REQUEST_PAGES.includes(f.replace(/\.md$/, '')))
@@ -376,8 +375,18 @@ export function readPagesOnRequest(repoRoot: string): (OnRequestTableRow & { pag
     const why = file === `${BENCHMARKS_PAGE}.md` || file === 'README.md'
       ? 'and that page carries none'
       : 'and only a page in ON_REQUEST_PAGES (site/scripts/parser/datasets.ts) carries one; list the page there first';
-    throw new Error(`readPagesOnRequest: ${file} has a "## ${ON_REQUEST_HEADING}" section, ${why}`);
+    throw new Error(`${who}: ${file} has a "## ${ON_REQUEST_HEADING}" section, ${why}`);
   }
+}
+
+/**
+ * Every Data on request row the dataset pages hold, each tagged with its page, in
+ * ON_REQUEST_PAGES order then table order: the population db:bootstrap seeds and `pnpm parse`
+ * checks the DB against. A section on any other published page throws rather than being
+ * skipped (`refuseUnlistedOnRequest`).
+ */
+export function readPagesOnRequest(repoRoot: string): (OnRequestTableRow & { page: string })[] {
+  refuseUnlistedOnRequest(repoRoot, 'readPagesOnRequest');
   return ON_REQUEST_PAGES.flatMap((page) => {
     const path = join(repoRoot, 'Datasets', `${page}.md`);
     return (existsSync(path) ? extractOnRequest(path) ?? [] : []).map((r) => ({ ...r, page }));

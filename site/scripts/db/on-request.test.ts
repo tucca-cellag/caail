@@ -10,13 +10,13 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { openDb, importNdjson, exportNdjson, REPO_ROOT, type Db } from './lib.js';
 import { emitDatasetPage } from './emit.js';
-import { isDbOwnedDatasetPage } from './emit-files.js';
+import { emitAll, isDbOwnedDatasetPage } from './emit-files.js';
 import { extractOnRequest, ON_REQUEST_HEADING, readPagesOnRequest } from './extract.js';
 import { seedOnRequest } from './seed.js';
 import { checkOnRequest, ON_REQUEST_LABEL } from './check.js';
@@ -436,6 +436,18 @@ describe('a section on a page no page list names', () => {
     expect(() => readPagesOnRequest(rootWith('Rabbit.md', `# Rabbit\n\n${SECTION}`))).toThrow(/Rabbit\.md has a "## Data on request" section/);
     expect(() => seedOnRequest(openDb(), rootWith('Rabbit.md', `# Rabbit\n\n${SECTION}`))).toThrow(/Rabbit\.md/);
     expect(() => readPagesOnRequest(rootWith('README.md', `# Datasets\n\n${SECTION}`))).toThrow(/README\.md has a "## Data on request" section/);
+  });
+
+  it('has db:emit refuse one on Benchmarks before writing anything, rather than delete it', () => {
+    const root = mkdtempSync(join(tmpdir(), 'caail-onreq-emit-'));
+    mkdirSync(join(root, 'Datasets'));
+    for (const f of ['Papers.md', 'Software.md', 'Databases.md']) copyFileSync(join(REPO_ROOT, f), join(root, f));
+    const bench = readFileSync(join(REPO_ROOT, 'Datasets', 'Benchmarks.md'), 'utf-8');
+    writeFileSync(join(root, 'Datasets', 'Benchmarks.md'), bench);
+    expect(() => emitAll(importNdjson(), root)).not.toThrow();
+    writeFileSync(join(root, 'Datasets', 'Benchmarks.md'), `${bench}\n${SECTION}`);
+    expect(() => emitAll(importNdjson(), root)).toThrow(/Benchmarks\.md has a "## Data on request" section/);
+    expect(readFileSync(join(root, 'Datasets', 'Benchmarks.md'), 'utf-8')).toContain(SECTION);
   });
 
   it('leaves the directory\'s CLAUDE.md and a private .local.md alone, since neither is a published page', () => {
