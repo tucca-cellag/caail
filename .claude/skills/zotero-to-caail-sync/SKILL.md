@@ -59,7 +59,7 @@ skill (Phase 4) and its `caail-classification-reviewer` subagent instead.
 | Journal **editorial / news / News & Views** (e.g. Nature `d41586-` DOIs, usually unsigned) | `OtherResources.md` `## Editorials & Opinion` — **never** `Papers.md` |
 | Software / model / framework (`computerProgram`, or a paper whose subject is a tool that is *not* an AI method) | `Software.md` |
 | Vendor **documentation** webpage | fold as a link into the existing `Software.md` entry for that tool — no standalone entry |
-| Train-on data artifact | the `Datasets/` directory — route to the matching species page, or to `HumanReference.md` / `CHOReference.md` / `Benchmarks.md` (see `Datasets/CLAUDE.md`) |
+| Train-on data artifact | the `Datasets/` directory — route to the matching species page, to a reference page (`REFERENCE_PAGES` in `site/scripts/parser/datasets.ts`), or to `Benchmarks.md` (see `Datasets/CLAUDE.md`) |
 | Repository / ontology / registry / directory / "database" | `Databases.md` |
 | Initiative / program / video / course | `OtherResources.md` |
 

@@ -115,7 +115,7 @@ Datasets/              Train-on data artifacts, organized into per-species pages
   README.md            Directory landing page + species index
   CLAUDE.md            Per-page schema + curation conventions
   Cow.md / Pig.md / Chicken.md / Fish.md / ...   Per-species data pages
-  HumanReference.md / CHOReference.md            Cross-species & biopharma reference
+  HumanReference.md / CrossSpecies.md / ...      Reference pages of curated entries (REFERENCE_PAGES)
   Benchmarks.md        AI/ML benchmark & evaluation datasets
 Databases.md           Query/lookup resources (repositories, ontologies, directories)
 FieldReports.md        Recurring institutional field-report surveys (DB-owned; GFI State of the Industry, RP landscape)
@@ -211,11 +211,11 @@ Summary: <1–3 sentences describing what it is and how it applies to cell-ag.>
 
 ### The `Datasets/` directory
 
-`Datasets/` is *not* a flat file — it is a directory organized **by species**: one page per cell-ag-relevant species (`Cow.md`, `Pig.md`, `Chicken.md`, `Fish.md`, `Crustacean.md`, `Mollusk.md`, plus sparse extension stubs), two reference pages (`HumanReference.md`, `CHOReference.md`), and one topical page (`Benchmarks.md`). Each per-species page follows a narrative-plus-table schema (editorial intro → featured atlases → GEMs → thematic clusters → complete data-inventory table → curation note → further reading). The directory's own [`Datasets/CLAUDE.md`](./Datasets/CLAUDE.md) is the authoritative description of that schema; [`Datasets/README.md`](./Datasets/README.md) is the landing page and species index.
+`Datasets/` is *not* a flat file — it is a directory organized **by species**: one page per cell-ag-relevant species (`Cow.md`, `Pig.md`, `Chicken.md`, `Fish.md`, `Crustacean.md`, `Mollusk.md`, plus sparse extension stubs), the reference pages, whose datasets are curated entries rather than table rows (the list is `REFERENCE_PAGES` in `site/scripts/parser/datasets.ts`), and `Benchmarks.md`. Each per-species page follows a narrative-plus-table schema (editorial intro → featured atlases → GEMs → thematic clusters → complete data-inventory table → curation note → further reading). The directory's own [`Datasets/CLAUDE.md`](./Datasets/CLAUDE.md) is the authoritative description of that schema; [`Datasets/README.md`](./Datasets/README.md) is the landing page and species index.
 
 **The Datasets/ / Databases.md / OtherResources.md split.** CAAIL distinguishes train-on artifacts from query/lookup resources from non-cataloguing context. The categorization rules (also in CONTRIBUTING.md):
 
-1. **Train-on artifacts → the `Datasets/` directory** — ML pretraining corpora, perturbation atlases, GEM model files, and per-species sequencing deposits. Within `Datasets/`, route each entry to its species page (`Cow.md`, `Pig.md`, …), to `HumanReference.md` / `CHOReference.md` for cross-species reference substrate, or to `Benchmarks.md` for AI/ML benchmark datasets.
+1. **Train-on artifacts → the `Datasets/` directory** — ML pretraining corpora, perturbation atlases, GEM model files, and per-species sequencing deposits. Within `Datasets/`, route each entry to its species page (`Cow.md`, `Pig.md`, …), to a reference page (`REFERENCE_PAGES` in `site/scripts/parser/datasets.ts`) for cross-species, host-organism and topical reference substrate, or to `Benchmarks.md` for AI/ML benchmark datasets.
 2. **Query/lookup resources → `Databases.md`** — repositories, ontologies, spectral libraries, structure/compound/pathway databases.
 3. **"Database" in the name or any directory/registry/tracker → `Databases.md`** — even when the content is people, companies, or regulation rather than scientific data.
 4. **Funding → `Funding.md`** — funding organizations and funding opportunities (grant programs, research-portfolio mechanisms).
