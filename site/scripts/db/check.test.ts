@@ -1059,6 +1059,29 @@ describe('checkEntryRowTwins (tucca-cellag/caail-planning#752)', () => {
     expect(r.detail).toContain('and accession GSE1');
   });
 
+  it("fails an entry whose data link names a row's badge accession as a whole token", () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-o', 'Cow', `https://doi.org/${PAPER}`, PAPER, { dataLinks: ['https://www.ncbi.nlm.nih.gov/sra/SRR1234567'] });
+    row(db, 'ds:row-o', 'Cow', { Data: '[`SRR1234567`](https://trace.ncbi.nlm.nih.gov/Traces/?run=SRR1234567)' });
+    const r = result(db);
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('ds:entry-o and ds:row-o on Cow both name accession SRR1234567');
+  });
+
+  it("fails an entry whose accession a row's deposit link names", () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-p', 'Cow', `https://doi.org/${PAPER}`, PAPER, { accessions: ['PRJEB14330'] });
+    row(db, 'ds:row-p', 'Cow', { Data: '[ENA](https://www.ebi.ac.uk/ena/browser/view/PRJEB14330)' });
+    expect(result(db).detail).toContain('ds:entry-p and ds:row-p on Cow both name accession PRJEB14330');
+  });
+
+  it('passes a link that holds an accession only inside a longer one', () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-q', 'Cow', `https://doi.org/${PAPER}`, PAPER, { dataLinks: ['https://www.ncbi.nlm.nih.gov/sra/SRR12345678'] });
+    row(db, 'ds:row-q', 'Cow', { Data: '[`SRR1234567`](https://trace.ncbi.nlm.nih.gov/Traces/?run=SRR1234567)' });
+    expect(result(db).ok).toBe(true);
+  });
+
   it('passes an entry and a row that share only their paper, since one paper can describe several deposits', () => {
     const db = miniDb();
     entry(db, 'ds:entry-k', 'Cow', `https://doi.org/${PAPER}`, PAPER, { dataLinks: [REPO] });
@@ -1269,6 +1292,23 @@ describe('checkDataLinks (tucca-cellag/caail-planning#752)', () => {
     }
     const whole = 'https://github.com/a/b';
     expect(result(withEntry(JSON.stringify([whole]), PAPER, body), fileWith({ [ENTRY]: [whole] })).ok).toBe(true);
+  });
+
+  it('refuses a link naming an accession dataset-accessions.json takes, in any case, and passes others', () => {
+    const at = (link: string) => result(withEntry(JSON.stringify([link]), PAPER, `At [the archive](${link}).`), fileWith({ [ENTRY]: [link] }));
+    for (const [link, accession] of [
+      ['https://www.ebi.ac.uk/ena/browser/view/PRJEB27455', 'PRJEB27455'],
+      ['https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=gse12345', 'GSE12345'],
+    ] as const) {
+      const r = at(link);
+      expect(r.ok, link).toBe(false);
+      expect(r.detail, link).toContain(`names ${accession}`);
+      expect(r.detail, link).toContain(`list ${accession} there instead`);
+    }
+    // An archive the families leave out, and a family prefix inside a longer word, are links.
+    for (const link of ['https://www.ncbi.nlm.nih.gov/sra/SRR1234567', 'https://github.com/example/gsm8k-data']) {
+      expect(at(link).ok, link).toBe(true);
+    }
   });
 
   it('rejects a link listed twice, however its case or trailing slash, and an empty list', () => {
