@@ -980,6 +980,15 @@ describe('checkInventoryPages (tucca-cellag/caail-planning#752)', () => {
   it('passes an inventory table on an inventory page, and a reference page of entries only', () => {
     expect(result(rootWith({ Cow: TABLE, CrossSpecies: '## Section\n\n### An entry\n\nProse.\n' })).ok).toBe(true);
   });
+
+  it('says what becomes of the rows, which differs between a page of entries and a page in no list', () => {
+    const lines = result(rootWith({ CrossSpecies: TABLE, Brandnew: TABLE })).detail.split('; ');
+    const cross = lines.find((l) => l.includes('CrossSpecies.md'))!;
+    const unlisted = lines.find((l) => l.includes('Brandnew.md'))!;
+    expect(cross).toContain('db:emit would regenerate the table empty');
+    expect(unlisted).toContain('in no page list');
+    expect(unlisted).not.toContain('db:emit would regenerate');
+  });
 });
 
 describe('checkEntryRowTwins (tucca-cellag/caail-planning#752)', () => {
