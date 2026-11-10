@@ -1,11 +1,12 @@
 /** @jsxImportSource preact */
 /**
- * CaailChatWidget — a small floating "Ask CAAIL" button (bottom-right, every page)
- * that expands into a minimal chat panel. Pure UI: all retrieval + generation happens
- * server-side at PUBLIC_CAAIL_CHAT_API, POST { query } -> { answer }. No API key, no
- * embeddings, no llms-full.txt handling here.
+ * CaailChatWidget: a small floating "Ask CAAIL" button (bottom-right) that expands
+ * into a minimal chat panel. Pure UI: all retrieval + generation happens server-side at
+ * PUBLIC_CAAIL_CHAT_API, POST { query } -> { answer }. No API key, no embeddings, no
+ * llms-full.txt handling here.
  *
- * Mounted once per page from Footer.astro, but rendered through a PORTAL into
+ * Offered only in a build given that endpoint (src/lib/chat-config.ts): Footer.astro then
+ * mounts it once per page, and without one no page has it. It renders through a PORTAL into
  * document.body rather than in place. Its DOM location very much does matter:
  * Starlight's `.main-pane` sets `isolation: isolate`, which creates a stacking
  * context, and the footer lives inside it. Rendered in place, the widget's
@@ -67,7 +68,8 @@ export default function CaailChatWidget() {
 
   const count = wordCount(query);
   const overLimit = count > WORD_LIMIT;
-  const canSubmit = status !== 'loading' && count > 0 && !overLimit && !!CHAT_API;
+  // No endpoint check here: the widget renders nothing without one (below).
+  const canSubmit = status !== 'loading' && count > 0 && !overLimit;
 
   function closeAndReset() {
     setOpen(false);
@@ -90,6 +92,7 @@ export default function CaailChatWidget() {
 
   async function handleSubmit(event: Event) {
     event.preventDefault();
+    // `!CHAT_API` never fires once rendered; it narrows the type for fetch below.
     if (!canSubmit || !CHAT_API) return;
     setStatus('loading');
     setErrorMessage(null);

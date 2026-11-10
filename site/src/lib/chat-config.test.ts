@@ -26,4 +26,18 @@ describe('chat-config: the one switch for the Ask CAAIL box (tucca-cellag/caail-
     const c = await configWith(undefined);
     expect(c.CHAT_ENABLED).toBe(false);
   });
+
+  it('hides it when the value is whitespace or not an http(s) URL, since the box could not answer', async () => {
+    for (const value of ['   ', 'not a url', 'chat.invalid/caail/ask', 'ftp://chat.invalid/caail/ask']) {
+      const c = await configWith(value);
+      expect(c.CHAT_ENABLED, JSON.stringify(value)).toBe(false);
+      expect(c.CHAT_API, JSON.stringify(value)).toBeUndefined();
+    }
+  });
+
+  it('trims stray whitespace around a real endpoint', async () => {
+    const c = await configWith('  https://chat.invalid/caail/ask\n');
+    expect(c.CHAT_ENABLED).toBe(true);
+    expect(c.CHAT_API).toBe('https://chat.invalid/caail/ask');
+  });
 });
