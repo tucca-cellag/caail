@@ -740,11 +740,11 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
   const SPECIES = ['Study', 'Paper', 'Data', 'Type', 'Tissue', 'Description', 'Size', 'Area of research'];
   // Data at a position no real page uses, so reading the cell by index rather than by label fails.
   const SHIFTED = ['Study', 'Species', 'Paper', 'Data', 'Description'];
-  const CROSS = ['Resource', 'Year', 'Format', 'Scope', 'DOI / URL', 'License'];
-  // A table carrying both a Paper and a DOI / URL column: the guard must judge the DOI / URL cell itself.
-  const BOTH = ['Resource', 'Paper', 'DOI / URL'];
+  // The table CrossSpecies carried before its rows went (tucca-cellag/caail-planning#752): a link
+  // column, but no Data column, which no page may use now.
+  const LINK_ONLY = ['Resource', 'Year', 'Format', 'Scope', 'DOI / URL', 'License'];
   const headers: Record<string, string[]> = {
-    Cow: SPECIES, Shifted: SHIFTED, CrossSpecies: CROSS, Both: BOTH, Odd: ['Study', 'Notes'],
+    Cow: SPECIES, Shifted: SHIFTED, LinkOnly: LINK_ONLY, Odd: ['Study', 'Notes'],
   };
   const headerFor = (page: string) => (headers[page] ? { header: headers[page]! } : { problem: `Datasets/${page}.md does not exist` });
   const BADGE = '[`GSE1`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE1)';
@@ -826,13 +826,6 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
     expect(r.detail).toContain('bare word "supplementary"');
   });
 
-  it('lets a CrossSpecies link to a supplement stand, since that page has no status word, but refuses none named', () => {
-    for (const link of ['[Supplementary data](https://example.org/s1.xlsx)', '[supplementary](https://example.org/s1.xlsx)']) {
-      expect(withRow('CrossSpecies', { 'DOI / URL': link }).ok, link).toBe(true);
-    }
-    expect(withRow('CrossSpecies', { 'DOI / URL': '[none named](https://example.org)' }).ok).toBe(false);
-  });
-
   it('judges any other label by shape alone, words inside it included', () => {
     // A word rule refused real deposits ("request via DAC") while passing "Embargoed"; the
     // guard checks shape, not truth, so these pass and curation catches the mislabelled ones.
@@ -842,7 +835,6 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
     ]) {
       expect(withRow('Cow', { Data: data }).ok, data).toBe(true);
     }
-    expect(withRow('CrossSpecies', { 'DOI / URL': '[https://www.ebi.ac.uk/none](https://www.ebi.ac.uk/none)' }).ok).toBe(true);
   });
 
   it('rejects a badge whose text is more than one identifier', () => {
@@ -860,12 +852,10 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
     ]) {
       expect(withRow('Cow', { Data: data }).detail, data).toContain('is not one link in a form the parser reads');
     }
-    expect(withRow('CrossSpecies', { 'DOI / URL': '[GitHub](https://github.com/a b)' }).detail).toContain('one [text](address) link');
   });
 
-  it('calls an empty label an empty label, in either kind of link cell', () => {
+  it('calls an empty label an empty label', () => {
     expect(withRow('Cow', { Data: '[](https://zenodo.org/records/1)' }).detail).toContain('is a link with no text');
-    expect(withRow('CrossSpecies', { 'DOI / URL': '[](https://example.org)' }).detail).toContain('is a link with no text');
   });
 
   it('reports cell-count mismatches once per page, with the number of rows', () => {
@@ -877,10 +867,6 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
   it('rejects a link with blank text, or to an address with no host', () => {
     expect(withRow('Cow', { Data: '[ ](https://example.org)' }).detail).toContain('no text');
     expect(withRow('Cow', { Data: '[Zenodo](https://)' }).detail).toContain('with a host');
-  });
-
-  it('names a code-styled badge in a CrossSpecies DOI / URL cell for what it is', () => {
-    expect(withRow('CrossSpecies', { 'DOI / URL': '[`10.5281/zenodo.1`](https://doi.org/10.5281/zenodo.1)' }).detail).toContain('badge');
   });
 
   it('says when cells_json is not an array, rather than reporting a count mismatch', () => {
@@ -928,19 +914,6 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
     expect(withRow('Shifted', { Paper: 'none named', Data: BADGE }).ok).toBe(true);
   });
 
-  it('requires a CrossSpecies DOI / URL cell to be a link to an http(s) address, and takes no status word there', () => {
-    expect(withRow('CrossSpecies', { 'DOI / URL': 'supplementary' }).ok).toBe(false);
-    expect(withRow('CrossSpecies', { 'DOI / URL': 'on request' }).ok).toBe(false);
-    expect(withRow('CrossSpecies', { 'DOI / URL': '[contact](mailto:author@example.org)' }).ok).toBe(false);
-    for (const link of ['[10.5281/zenodo.1](https://doi.org/10.5281/zenodo.1)', '[10.1186/x](https://doi.org/10.1186/x)', '[GitHub](https://github.com/a/b)']) {
-      expect(withRow('CrossSpecies', { 'DOI / URL': link }).ok, link).toBe(true);
-    }
-  });
-
-  it('judges the DOI / URL cell itself, even when a Paper cell supplies a DOI', () => {
-    expect(withRow('Both', { Paper: '[DOI](https://doi.org/10.1038/x)', 'DOI / URL': 'on request' }).ok).toBe(false);
-  });
-
   it(`names up to ${INVENTORY_CELLS_SHOWN} problems and counts them all`, () => {
     const db = miniDb();
     for (let i = 0; i < 12; i++) insRow(db, `ds:study-${String(i).padStart(2, '0')}`, 'Cow', cellsFor(SPECIES, { Data: 'on request' }));
@@ -966,10 +939,16 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
     expect(r.detail).toContain('repeats a column label');
   });
 
-  it('fails a page whose inventory has neither a Data nor a DOI / URL column, rather than skipping it', () => {
+  it('fails a page whose inventory has no Data column, rather than skipping it', () => {
     const r = withRow('Odd', {});
     expect(r.ok).toBe(false);
-    expect(r.detail).toContain('Odd');
+    expect(r.detail).toContain('page Odd: has no Data column');
+  });
+
+  it('fails a link-column table with no Data column, the shape CrossSpecies carried, however good its link', () => {
+    const r = withRow('LinkOnly', { 'DOI / URL': '[10.5281/zenodo.1](https://doi.org/10.5281/zenodo.1)' });
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('page LinkOnly: has no Data column');
   });
 
   it('fails a row on a page with no inventory table, and a row whose cell count differs from its header', () => {

@@ -292,9 +292,9 @@ export type ReportsData = z.infer<typeof ReportsDataSchema>;
  * deliberately and whose manifest already advertises them.
  *
  * `columns` is keyed by the page's own header labels because the tables genuinely differ
- * — the species pages use Study/Paper/Data/Type/Tissue/…, Fish and the invertebrates add
- * a Species column, and CrossSpecies is a different table entirely. A positional array
- * would be unreadable without fetching the Markdown, which is the cost this removes.
+ * — the species pages use Study/Paper/Data/Type/Tissue/…, and Fish and the invertebrates add
+ * a Species column. A positional array would be unreadable without fetching the Markdown,
+ * which is the cost this removes.
  * Values are the RAW markdown cell, so nothing is lost; `links` is the convenience
  * extraction of the URLs inside them.
  */
@@ -311,11 +311,10 @@ export const DatasetInventoryRowSchema = z.object({
   columns: z.record(z.string(), z.string()),
   /** every URL appearing in the row, in document order, deduped */
   links: z.array(z.string()),
-  /** bare lowercase DOI of the row's paper or preprint (its Paper cell, or a CrossSpecies DOI / URL
-   *  cell holding a journal DOI); null when none is named */
+  /** bare lowercase DOI of the row's paper or preprint, from its Paper cell; null when none is named */
   paperDoi: z.string().nullable().default(null),
-  /** what the row says about its data: from the Data cell, or `deposit` for a CrossSpecies DOI / URL
-   *  link to the data itself; null when it states none (tucca-cellag/caail-planning#367) */
+  /** what the row's Data cell says about its data; null when it states none
+   *  (tucca-cellag/caail-planning#367) */
   dataStatus: z.enum(['deposit', 'supplementary', 'unavailable']).nullable().default(null),
   /** the identifier the Data cell's badge names, served as written and never read from the id:
    *  usually an archive accession (GSE…, PRJNA…, SRA…, versioned where the badge is), sometimes

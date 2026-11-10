@@ -45,7 +45,7 @@ import { toString as mdastToString } from 'mdast-util-to-string';
 import { visit } from 'unist-util-visit';
 import type { Definition, FootnoteDefinition } from 'mdast';
 import {
-  DATA_CELL_FORMS, fitsDoiLink, labelCells, parseRowCells, readDataCell, readInventoryHeader, readLinkCell, statedDoi,
+  DATA_CELL_FORMS, fitsDoiLink, labelCells, parseRowCells, readDataCell, readInventoryHeader, statedDoi,
   linkDestinations,
   type InventoryHeader,
 } from '../parser/dataset-inventory.js';
@@ -566,10 +566,10 @@ export function checkSubseries(db: Db, subseriesPath: string = SUBSERIES_PATH): 
 }
 
 export const INVENTORY_CELLS_LABEL =
-  `dataset_rows: every Data cell is ${DATA_CELL_FORMS} (CrossSpecies: its DOI / URL cell is a link)`;
+  `dataset_rows: every Data cell is ${DATA_CELL_FORMS}`;
 
 export const ON_REQUEST_LABEL =
-  'datasets_on_request: every row has a bare DOI that fits a link and that no inventory row\'s Paper or DOI / URL ' +
+  'datasets_on_request: every row has a bare DOI that fits a link and that no inventory row\'s Paper ' +
   'cell links and no curated entry\'s doi or heading link names, a non-Benchmarks dataset page, a study and a ' +
   'statement that fit a table cell, a statement that renders as stored, and an ordinal counting its page\'s ' +
   'list from 0';
@@ -701,8 +701,8 @@ export function pageDefinitions(src: string): string {
  * from the pages, so adding a row to one page renumbers no other. A hand-typed ordinal that
  * leaves a gap or repeats one fails here rather than reordering the page on the next emit.
  *
- * It also refuses a DOI that any link in an inventory row's Paper cell (or CrossSpecies' DOI /
- * URL cell) states, whatever its registrant, or that a curated entry carries in its `doi`
+ * It also refuses a DOI that any link in an inventory row's Paper cell states, whatever its
+ * registrant, or that a curated entry carries in its `doi`
  * column or its heading link, since that study holds public data. Only those places are read,
  * and only for that exact DOI: a row whose Paper cell links the preprint while the list names
  * the journal version, or an entry that mentions the DOI only in its prose, gets past it. It
@@ -726,11 +726,9 @@ export function checkOnRequest(db: Db, repoRoot: string = REPO_ROOT): CheckResul
     const h = headers.get(d.page)!;
     const parsed = parseRowCells(d.cells_json);
     const cols = 'header' in h && 'cells' in parsed ? labelCells(h.header, parsed.cells) : null;
-    for (const cell of [cols?.['Paper'], cols?.['DOI / URL']]) {
-      for (const url of linkDestinations(cell ?? '')) {
-        const doi = statedDoi(url);
-        if (doi) hold(doi, d.item_id);
-      }
+    for (const url of linkDestinations(cols?.['Paper'] ?? '')) {
+      const doi = statedDoi(url);
+      if (doi) hold(doi, d.item_id);
     }
   }
   // An entry can name its paper in its `doi` column, in the doi.org link its heading is built
@@ -854,10 +852,8 @@ export const INVENTORY_CELLS_SHOWN = 10;
  * API build uses, which trims labels and refuses a repeated one, and a cell that is not a string is
  * refused before either reader sees it.
  *
- * `CrossSpecies.md` has no Data column. Its `DOI / URL` cell is read by `readLinkCell` and must be a
- * link to an http(s) address (the paper, a deposit's DOI, or where the data sit); it takes no status
- * word, since a resource with nothing to link has no row. A page with neither column, or no table,
- * fails rather than being skipped, so a new table shape cannot drop out of the check.
+ * A page with no Data column, or no table, fails rather than being skipped, so a new table shape
+ * cannot drop out of the check.
  */
 export function checkInventoryCells(
   db: Db,
@@ -892,11 +888,8 @@ export function checkInventoryCells(
     if ('Data' in columns) {
       const data = readDataCell(columns['Data']!);
       if (data.kind === 'off-schema') problems.push(`${r.item_id}: Data cell ${shown(columns['Data']!)} ${data.reason}`);
-    } else if ('DOI / URL' in columns) {
-      const link = readLinkCell(columns['DOI / URL']!);
-      if (link.kind === 'off-schema') problems.push(`${r.item_id}: DOI / URL cell ${shown(columns['DOI / URL']!)} ${link.reason}`);
     } else {
-      pageProblem(r.page, 'has neither a Data nor a DOI / URL column', r.item_id);
+      pageProblem(r.page, 'has no Data column', r.item_id);
     }
   }
   // One line per page however many rows disagree, so a header edit cannot crowd out the rest.
