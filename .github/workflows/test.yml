@@ -306,9 +306,10 @@ jobs:
         run: pnpm --dir site build
         env:
           # The chat widget reads PUBLIC_CAAIL_CHAT_API at BUILD time (Astro
-          # inlines it), and `canSubmit` ends in `&& !!CHAT_API`. Without a value
-          # the submit path is unreachable, so e2e/chat-widget.spec.ts could only
-          # ever test the closed button. A placeholder makes it reachable.
+          # inlines it), and without a value no page mounts it at all
+          # (src/lib/chat-config.ts), so e2e/chat-widget.spec.ts would have nothing
+          # to test. A placeholder builds the widget; the e2e step below is told
+          # the same value, so the specs know which build they are testing.
           #
           # `.invalid` is reserved by RFC 2606 and never resolves, and every
           # request is stubbed with page.route(), so no service is contacted — and
@@ -325,6 +326,11 @@ jobs:
 
       - name: End-to-end + accessibility tests
         run: pnpm --dir site test:e2e
+        env:
+          # The same value the Build step used: e2e/chat-build.ts reads it to
+          # choose between the widget specs and the hidden-state spec, and a run
+          # told something the build did not do fails in either direction.
+          PUBLIC_CAAIL_CHAT_API: https://chat.invalid/caail/ask
 
       - name: Upload Playwright report on failure
         if: failure()

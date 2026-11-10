@@ -1,28 +1,27 @@
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { NOTICE_FACTS } from '../src/content/ask-caail-disclosure';
+import { CHAT_BUILT } from './chat-build';
 
 /**
  * Ask CAAIL widget.
  *
- * The widget ships on every page (mounted from Footer.astro) but had no test of
- * any kind: no spec referenced it, and `PUBLIC_CAAIL_CHAT_API` is **build-time
- * inlined**, so a build without it leaves `canSubmit` permanently false and the
- * submit path unreachable. The eleven axe-asserting specs therefore only ever
- * saw the *closed* floating button.
+ * The widget is mounted from Footer.astro on every page, but only in a build given
+ * `PUBLIC_CAAIL_CHAT_API` (src/lib/chat-config.ts): the variable is **build-time
+ * inlined**, and without it no page carries the widget at all
+ * (tucca-cellag/caail-planning#763). So the two builds are tested by two files. This one
+ * covers a build with an endpoint, and runs only when the e2e run is told so
+ * (e2e/chat-build.ts); chat-widget-hidden.spec.ts covers a build without one.
  *
- * These cover both builds honestly. The open/close/reset/a11y tests run always.
- * The submit tests need a configured endpoint, so they assert graceful
- * degradation when there isn't one instead of silently skipping — an
- * unconfigured build is a state worth testing, not a hole to paper over.
- *
- * To exercise the submit path locally:
+ * To run these locally, give the build and the run the same placeholder:
  *   PUBLIC_CAAIL_CHAT_API=https://chat.invalid/caail/ask pnpm --dir site build
- *   pnpm --dir site test:e2e chat-widget
+ *   PUBLIC_CAAIL_CHAT_API=https://chat.invalid/caail/ask pnpm --dir site test:e2e chat-widget
  * CI does exactly this (see .github/workflows/test.yml). No live service is ever
  * contacted: every request is stubbed with page.route(), and the `.invalid` TLD
  * is reserved by RFC 2606 so a missed stub fails loudly instead of escaping.
  */
+
+test.skip(!CHAT_BUILT, 'this run was told the build has no endpoint; chat-widget-hidden.spec.ts runs instead');
 
 const ENDPOINT = '**/caail/ask*';
 
@@ -42,10 +41,13 @@ async function openPanel(page: Page) {
   await expect(page.getByRole('dialog', { name: 'Ask CAAIL' })).toBeVisible();
 }
 
-/** Whether this build has an endpoint compiled in (canSubmit ends in `&& !!CHAT_API`). */
-async function isConfigured(page: Page): Promise<boolean> {
+/**
+ * Type a question and require the submit button to be live. This file runs only on a build
+ * with an endpoint, so a disabled button here is a defect, never a reason to skip.
+ */
+async function typeQuestion(page: Page) {
   await page.locator('.chat-panel-input').fill('a question');
-  return page.locator('.chat-panel-submit').isEnabled();
+  await expect(page.locator('.chat-panel-submit'), 'built with an endpoint, but submit stays disabled').toBeEnabled();
 }
 
 /** Stub the backend with a fixed status + payload. */
@@ -56,7 +58,7 @@ async function stub(page: Page, status: number, body: unknown) {
 }
 
 // ---------------------------------------------------------------------------
-// Always available — no endpoint required
+// Opening, closing and the notice
 // ---------------------------------------------------------------------------
 
 // One test per route rather than a loop inside one test: the button is on every
@@ -190,22 +192,13 @@ test('the open panel has no serious/critical a11y violations', async ({ page }) 
 });
 
 // ---------------------------------------------------------------------------
-// Submit path — needs an endpoint compiled in
+// Submit path
 // ---------------------------------------------------------------------------
-
-test('an unconfigured build degrades gracefully instead of erroring', async ({ page }) => {
-  await page.goto('./');
-  await openPanel(page);
-  test.skip(await isConfigured(page), 'endpoint is configured — submit path covered below');
-  // No endpoint: the button stays disabled with valid input, and nothing throws.
-  await expect(page.locator('.chat-panel-submit')).toBeDisabled();
-  await expect(page.locator('.chat-panel-status--error')).toHaveCount(0);
-});
 
 test('a successful answer renders as formatted HTML', async ({ page }) => {
   await page.goto('./');
   await openPanel(page);
-  test.skip(!(await isConfigured(page)), 'no endpoint compiled in — see the header comment');
+  await typeQuestion(page);
 
   await stub(page, 200, { answer: '**Bold** and a [link](https://doi.org/10.1038/x).' });
   await page.locator('.chat-panel-submit').click();
@@ -219,7 +212,7 @@ test('a successful answer renders as formatted HTML', async ({ page }) => {
 test('the request carries the typed question as JSON', async ({ page }) => {
   await page.goto('./');
   await openPanel(page);
-  test.skip(!(await isConfigured(page)), 'no endpoint compiled in — see the header comment');
+  await typeQuestion(page);
 
   let body: unknown = null;
   await page.route(ENDPOINT, (route) => {
@@ -237,7 +230,7 @@ test('a hostile answer cannot inject an executable link (#125 end-to-end)', asyn
   // actually wired into the render path the user sees.
   await page.goto('./');
   await openPanel(page);
-  test.skip(!(await isConfigured(page)), 'no endpoint compiled in — see the header comment');
+  await typeQuestion(page);
 
   await stub(page, 200, {
     answer: '[click me](javascript:alert(1)) and <img src=x onerror=alert(1)>',
@@ -255,7 +248,7 @@ test('a hostile answer cannot inject an executable link (#125 end-to-end)', asyn
 test('a quota response shows the quota message, not the generic one', async ({ page }) => {
   await page.goto('./');
   await openPanel(page);
-  test.skip(!(await isConfigured(page)), 'no endpoint compiled in — see the header comment');
+  await typeQuestion(page);
 
   await stub(page, 429, { error: 'quota_exceeded' });
   await page.locator('.chat-panel-submit').click();
@@ -265,7 +258,7 @@ test('a quota response shows the quota message, not the generic one', async ({ p
 test('a server error shows the generic message', async ({ page }) => {
   await page.goto('./');
   await openPanel(page);
-  test.skip(!(await isConfigured(page)), 'no endpoint compiled in — see the header comment');
+  await typeQuestion(page);
 
   await stub(page, 500, { error: 'boom' });
   await page.locator('.chat-panel-submit').click();
@@ -275,7 +268,7 @@ test('a server error shows the generic message', async ({ page }) => {
 test('a network failure is caught rather than surfacing as an unhandled rejection', async ({ page }) => {
   await page.goto('./');
   await openPanel(page);
-  test.skip(!(await isConfigured(page)), 'no endpoint compiled in — see the header comment');
+  await typeQuestion(page);
 
   await page.route(ENDPOINT, (route) => route.abort('failed'));
   await page.locator('.chat-panel-submit').click();
@@ -285,7 +278,7 @@ test('a network failure is caught rather than surfacing as an unhandled rejectio
 test('the open panel with an answer rendered has no serious/critical a11y violations', async ({ page }) => {
   await page.goto('./');
   await openPanel(page);
-  test.skip(!(await isConfigured(page)), 'no endpoint compiled in — see the header comment');
+  await typeQuestion(page);
 
   await stub(page, 200, { answer: '## Heading\n\n- one\n- two\n\n[link](https://example.org)' });
   await page.locator('.chat-panel-submit').click();
@@ -408,7 +401,7 @@ for (const vp of VIEWPORTS) {
     test('a long answer scrolls the panel instead of overflowing it', async ({ page }) => {
       await page.goto('./');
       await openPanel(page);
-      test.skip(!(await isConfigured(page)), 'no endpoint compiled in — see the header comment');
+      await typeQuestion(page);
 
       await stub(page, 200, {
         answer:
