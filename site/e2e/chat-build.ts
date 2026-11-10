@@ -20,12 +20,17 @@ import { chatEndpoint } from '../src/lib/chat-endpoint';
 
 const SITE = fileURLToPath(new URL('../', import.meta.url));
 const KEY = 'PUBLIC_CAAIL_CHAT_API';
-/** A line that sets the variable; a commented-out line does not. */
-const SETS_KEY = new RegExp(`^\\s*(?:export\\s+)?${KEY}\\s*=`, 'm');
+/**
+ * A line giving the variable a value. A commented-out line, or an empty assignment (which means
+ * no endpoint to the build and to this run alike), does not count.
+ */
+const SETS_KEY = new RegExp(`^[ \\t]*(?:export[ \\t]+)?${KEY}[ \\t]*=[ \\t]*[^\\s#]`, 'm');
+/** `astro build` runs in production mode, so Vite reads `.env`, `.env.local` and `.env.production*`. */
+const readByBuild = (f: string): boolean => f === '.env' || f === '.env.local' || f.startsWith('.env.production');
 
 if (process.env[KEY] === undefined) {
   const file = readdirSync(SITE).find(
-    (f) => f.startsWith('.env') && f !== '.env.example' && SETS_KEY.test(readFileSync(join(SITE, f), 'utf-8')),
+    (f) => readByBuild(f) && SETS_KEY.test(readFileSync(join(SITE, f), 'utf-8')),
   );
   if (file) {
     throw new Error(

@@ -23,6 +23,9 @@ for (const route of ['./', './software/', './papers/explorer/', './privacy/']) {
       if (r.url().includes('CaailChatWidget')) widgetRequests.push(r.url());
     });
     await page.goto(route, { waitUntil: 'load' });
+    // A `client:idle` island fetches its script in an idle callback it queues before `load`.
+    // One more queued now runs after it, so by then any widget script has been requested.
+    await page.evaluate(() => new Promise<void>((resolve) => requestIdleCallback(() => resolve())));
     // The island is the load-bearing check (see CHAT_ISLAND); the button and wrapper checks
     // only confirm nothing else drew one.
     await expect(page.locator(CHAT_ISLAND), BUILD_MISMATCH).toHaveCount(0);
