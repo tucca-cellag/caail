@@ -216,7 +216,7 @@ export type DatasetSourceKind = 'inventory' | 'curated' | 'reference' | 'benchma
 export interface DatasetBreakdown {
   /** total catalogued datasets across the whole Datasets/ directory */
   total: number;
-  /** inventory-table rows over INVENTORY_PAGES (species + CrossSpecies) */
+  /** inventory-table rows over INVENTORY_PAGES (the species pages) */
   speciesRows: number;
   /** curated H3 entries (featured atlases, GEMs) ON the inventory pages */
   curatedEntries: number;
