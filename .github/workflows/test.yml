@@ -277,6 +277,18 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    env:
+      # The chat widget reads PUBLIC_CAAIL_CHAT_API at BUILD time (Astro inlines
+      # it), and without an endpoint no page mounts it (src/lib/chat-config.ts).
+      # A placeholder builds the widget so e2e/chat-widget.spec.ts has one to
+      # test, and setting it once here gives the build and the e2e run the same
+      # value: e2e/chat-build.ts reads it to know which build it is testing.
+      #
+      # `.invalid` is reserved by RFC 2606 and never resolves, and every request
+      # is stubbed with page.route(), so no service is contacted, and a missed
+      # stub fails loudly instead of escaping to a real endpoint. The production
+      # URL is injected separately in docs.yml from a repository variable.
+      PUBLIC_CAAIL_CHAT_API: https://chat.invalid/caail/ask
     steps:
       - uses: actions/checkout@v6
         with:
@@ -304,18 +316,6 @@ jobs:
       # earlier build left the artifacts behind.
       - name: Build
         run: pnpm --dir site build
-        env:
-          # The chat widget reads PUBLIC_CAAIL_CHAT_API at BUILD time (Astro
-          # inlines it), and `canSubmit` ends in `&& !!CHAT_API`. Without a value
-          # the submit path is unreachable, so e2e/chat-widget.spec.ts could only
-          # ever test the closed button. A placeholder makes it reachable.
-          #
-          # `.invalid` is reserved by RFC 2606 and never resolves, and every
-          # request is stubbed with page.route(), so no service is contacted — and
-          # if a stub is ever missed the test fails loudly instead of escaping to
-          # a real endpoint. The production URL is injected separately in
-          # docs.yml from a repository variable.
-          PUBLIC_CAAIL_CHAT_API: https://chat.invalid/caail/ask
 
       - name: Unit + parser tests
         run: pnpm --dir site test
@@ -325,6 +325,23 @@ jobs:
 
       - name: End-to-end + accessibility tests
         run: pnpm --dir site test:e2e
+
+      # The deploy builds without an endpoint whenever the repo variable is
+      # unset, which is how the chat box is hidden, so that build gets the whole
+      # suite too; the chat specs pick their own side through e2e/chat-build.ts.
+      # From a clean dist, since an incremental build can zero-fill pagefind's
+      # files (site/CLAUDE.md), and with the variable empty for both steps, as an
+      # unset repo variable is. `astro build` alone: the parser's output does not
+      # depend on the variable, and the first build already wrote it.
+      - name: Build without a chat endpoint
+        run: rm -rf site/dist && pnpm --dir site exec astro build
+        env:
+          PUBLIC_CAAIL_CHAT_API: ''
+
+      - name: End-to-end + accessibility tests, built without a chat endpoint
+        run: pnpm --dir site test:e2e
+        env:
+          PUBLIC_CAAIL_CHAT_API: ''
 
       - name: Upload Playwright report on failure
         if: failure()

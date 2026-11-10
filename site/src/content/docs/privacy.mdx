@@ -3,6 +3,8 @@ title: Privacy Statement
 description: The Personal Data CAAIL collects, the purposes for which it is processed, the recipients it is shared with, and how to exercise your privacy rights.
 ---
 
+import { CHAT_ENABLED } from '../../lib/chat-config';
+
 **Effective date:** October 2026
 
 This Privacy Statement describes how the Tufts University Center for Cellular Agriculture
@@ -33,6 +35,14 @@ resulting reports.
 **Data collected by our hosting provider.** GitHub receives your IP address and user agent in the
 ordinary course of serving the pages, as any web host does. That processing is governed by
 [GitHub's privacy statement](https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement).
+
+{/* Rendered from the same switch that mounts the chat box (src/lib/chat-config.ts), so this
+    sentence and the site cannot disagree about whether the feature is offered. */}
+{!CHAT_ENABLED && (
+  <p id="ask-caail-not-offered"><strong>"Ask CAAIL" is not offered at present.</strong> The site
+  shows no "Ask CAAIL" box and sends nothing to the services named for it below. The parts of this
+  statement about that feature describe it for when it is offered again.</p>
+)}
 
 **Data you provide voluntarily.** Where you submit a question through the optional "Ask CAAIL"
 feature, we collect the text you submit. See
@@ -147,7 +157,7 @@ by the user. They are not transmitted to us or to any third party.
 | `caail-nav-collapsed` | Records that you collapsed the sidebar | Local | Until cleared |
 | `caail-toc-collapsed` | Records that you collapsed the "On this page" panel | Local | Until cleared |
 | `caail-tableview` | Records your table or card display preference | Local | Until cleared |
-| `caail-chat-dismissed` | Records that you hid the "Ask CAAIL" button | Session | End of session |
+| `caail-chat-dismissed` | Records that you hid the "Ask CAAIL" button, and is set only while that feature is offered | Session | End of session |
 
 Because no consent is required for the foregoing, no consent banner is presented. Should we
 introduce any technology requiring consent, we will update this Statement and obtain consent before

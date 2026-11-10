@@ -142,7 +142,7 @@ would one day contradict the dialog the reader is looking at. Read it off the sc
 
 ## Step 2: confirm it works
 
-Ask CAAIL something that requires the corpus rather than general knowledge:
+Ask your agent something only CAAIL's corpus can answer, not general knowledge:
 
 > Which AI methods has CAAIL indexed for scaffolding, and which method cells are empty?
 
