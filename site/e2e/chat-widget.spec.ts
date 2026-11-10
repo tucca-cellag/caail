@@ -10,18 +10,18 @@ import { CHAT_BUILT } from './chat-build';
  * `PUBLIC_CAAIL_CHAT_API` (src/lib/chat-config.ts): the variable is **build-time
  * inlined**, and without it no page carries the widget at all
  * (tucca-cellag/caail-planning#763). So the two builds are tested by two files. This one
- * covers a build with an endpoint, and runs only when the e2e run is told so
- * (e2e/chat-build.ts); chat-widget-hidden.spec.ts covers a build without one.
+ * covers a build with an endpoint, and runs only when e2e/chat-build.ts reads one from
+ * where the build read it; chat-widget-hidden.spec.ts covers a build without one.
  *
- * To run these locally, give the build and the run the same placeholder:
+ * To run these locally, set the placeholder for both commands (or put it in site/.env):
  *   PUBLIC_CAAIL_CHAT_API=https://chat.invalid/caail/ask pnpm --dir site build
  *   PUBLIC_CAAIL_CHAT_API=https://chat.invalid/caail/ask pnpm --dir site test:e2e chat-widget
- * CI does exactly this (see .github/workflows/test.yml). No live service is ever
+ * CI does this, then builds again without it (see .github/workflows/test.yml). No live service is ever
  * contacted: every request is stubbed with page.route(), and the `.invalid` TLD
  * is reserved by RFC 2606 so a missed stub fails loudly instead of escaping.
  */
 
-test.skip(!CHAT_BUILT, 'this run was told the build has no endpoint; chat-widget-hidden.spec.ts runs instead');
+test.skip(!CHAT_BUILT, 'built without a chat endpoint; chat-widget-hidden.spec.ts runs instead');
 
 const ENDPOINT = '**/caail/ask*';
 
@@ -151,6 +151,14 @@ test('the notice links to the privacy statement', async ({ page }) => {
   // level 1: the page also carries an h2 "Changes to This Privacy Statement",
   // which makes an unqualified name match ambiguous under strict mode.
   await expect(page.getByRole('heading', { level: 1, name: 'Privacy Statement' })).toBeVisible();
+});
+
+test('the privacy statement carries no "not offered" notice while the box is offered', async ({ page }) => {
+  // The other direction of chat-widget-hidden.spec.ts: the notice follows the same switch,
+  // so a build with an endpoint must not tell readers the feature is unavailable.
+  await page.goto('./privacy/');
+  await expect(page.getByRole('heading', { level: 1, name: 'Privacy Statement' })).toBeVisible();
+  await expect(page.locator('#ask-caail-not-offered')).toHaveCount(0);
 });
 
 test('closing clears the typed question, via either control', async ({ page }) => {

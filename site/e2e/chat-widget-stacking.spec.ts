@@ -3,7 +3,7 @@ import { CHAT_BUILT } from './chat-build';
 
 // The widget exists only in a build given a chat endpoint; chat-widget-hidden.spec.ts
 // covers a build without one.
-test.skip(!CHAT_BUILT, 'this run was told the build has no endpoint; chat-widget-hidden.spec.ts runs instead');
+test.skip(!CHAT_BUILT, 'built without a chat endpoint; chat-widget-hidden.spec.ts runs instead');
 
 /**
  * The chat button is position:fixed inside Starlight's `.main-pane`, which sets

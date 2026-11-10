@@ -7,19 +7,18 @@ import { CHAT_BUILT } from './chat-build';
  *
  * Without PUBLIC_CAAIL_CHAT_API the footer mounts no widget (src/lib/chat-config.ts), so no
  * page carries its markup or loads its script, and the privacy statement says the feature is
- * not offered. These run when the e2e run is told the build has no endpoint (e2e/chat-build.ts);
- * chat-widget.spec.ts and chat-widget-stacking.spec.ts cover the other state.
+ * not offered. These run when e2e/chat-build.ts reads no endpoint from where the build read
+ * it; chat-widget.spec.ts and chat-widget-stacking.spec.ts cover the other state.
  */
 
-test.skip(CHAT_BUILT, 'this run was told the build has an endpoint; chat-widget.spec.ts runs instead');
+test.skip(CHAT_BUILT, 'built with a chat endpoint; chat-widget.spec.ts runs instead');
 
 for (const route of ['./', './software/', './papers/explorer/', './privacy/']) {
   test(`no widget and no widget island on ${route}`, async ({ page }) => {
     await page.goto(route);
     // The island itself, not only the button: an island left in the markup still loads the
-    // widget's script and hydrates it.
+    // widget's script and hydrates it, and with no island nothing can render the button.
     await expect(page.locator('astro-island[component-url*="CaailChatWidget"]')).toHaveCount(0);
-    await page.waitForLoadState('networkidle');
     await expect(page.locator('.chat-fab')).toHaveCount(0);
     await expect(page.locator('.chat-widget')).toHaveCount(0);
   });
