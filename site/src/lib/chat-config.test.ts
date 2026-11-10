@@ -33,8 +33,10 @@ describe('chat-config: the one switch for the Ask CAAIL box (tucca-cellag/caail-
       '   ', 'not a url', 'chat.invalid/caail/ask', 'ftp://chat.invalid/caail/ask',
       // site/.env.example's placeholder, copied as-is
       'https://<backend-host>/caail/ask',
-      // plain http to a real host is mixed content on the HTTPS site, so the browser blocks it
-      'http://chat.example/caail/ask',
+      // plain http is mixed content on the HTTPS site, and on localhost it is each visitor's own machine
+      'http://chat.example/caail/ask', 'http://localhost:8787/caail/ask', 'http://127.0.0.1:8787/caail/ask',
+      // fetch refuses a URL carrying credentials, which would also sit in the public bundle
+      'https://key:secret@chat.example/caail/ask', 'https://key@chat.example/caail/ask',
     ];
     for (const value of unusable) {
       const c = await configWith(value);
@@ -49,9 +51,7 @@ describe('chat-config: the one switch for the Ask CAAIL box (tucca-cellag/caail-
     expect(c.CHAT_API).toBe('https://chat.invalid/caail/ask');
   });
 
-  it('accepts an upper-case scheme, and plain http only to a local backend', async () => {
-    for (const value of ['HTTPS://chat.invalid/caail/ask', 'http://localhost:8787/caail/ask', 'http://127.0.0.1:8787/caail/ask']) {
-      expect((await configWith(value)).CHAT_ENABLED, value).toBe(true);
-    }
+  it('accepts an upper-case scheme', async () => {
+    expect((await configWith('HTTPS://chat.invalid/caail/ask')).CHAT_ENABLED).toBe(true);
   });
 });
