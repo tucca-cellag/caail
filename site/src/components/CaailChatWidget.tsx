@@ -23,8 +23,7 @@ import './chat-widget.css';
 import { useEffect, useId, useState } from 'preact/hooks';
 import { createPortal } from 'preact/compat';
 import { renderMarkdown } from '../lib/markdown';
-
-const CHAT_API = import.meta.env.PUBLIC_CAAIL_CHAT_API as string | undefined;
+import { CHAT_API, CHAT_ENABLED } from '../lib/chat-config';
 const WORD_LIMIT = 200;
 /**
  * BASE_URL may or may not end in a slash (under a subpath base an island gets
@@ -120,8 +119,10 @@ export default function CaailChatWidget() {
 
   // Nothing is server-rendered here (the portal needs document.body), so a plain
   // `return null` genuinely removes the widget — there is no adopted SSR markup
-  // for a null vdom to leave stranded.
-  if (!mounted || dismissed) return null;
+  // for a null vdom to leave stranded. Footer.astro does not mount the widget at all
+  // without an endpoint; CHAT_ENABLED here keeps any other mount from showing a box
+  // that cannot answer.
+  if (!CHAT_ENABLED || !mounted || dismissed) return null;
 
   return createPortal(
     <div class="chat-widget">
