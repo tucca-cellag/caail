@@ -22,6 +22,8 @@
  *    Research-area axis only; the method-row axis is deliberately not gated.
  *  - inventory Data cells: a deposit link, `supplementary` or `unavailable`, read by the
  *    parser's own `readDataCell` (checkInventoryCells).
+ *  - twins: no curated entry and inventory row on one page name the same DOI or deposit link
+ *    (checkEntryRowTwins).
  */
 
 import { readFileSync, existsSync } from 'node:fs';
@@ -570,6 +572,9 @@ export const ON_REQUEST_LABEL =
   'statement that fit a table cell, a statement that renders as stored, and an ordinal counting its page\'s ' +
   'list from 0';
 
+export const ENTRY_ROW_TWINS_LABEL =
+  'dataset_entries x dataset_rows: no curated entry and inventory row on one page name the same DOI or deposit link';
+
 /**
  * A statement stored inside its own quotes: it opens and closes with a mark of one family,
  * matched or not. Double (`"` `“` `”` `„` `«` `»`): only when no other double mark sits inside,
@@ -708,6 +713,69 @@ export function checkOnRequest(db: Db, repoRoot: string = REPO_ROOT): CheckResul
     }
   });
   return [ok(ON_REQUEST_LABEL, problems.length === 0, `${problems.length} problem(s): ${problems.slice(0, 10).join('; ')}`)];
+}
+
+/**
+ * Twin guard (tucca-cellag/caail-planning#752). A curated entry and an inventory row on the same page
+ * that name the same DOI, or link the same deposit, list one dataset twice, and the datasets total and
+ * `api/datasets.json` count it twice. The integrity check cannot see this: it asserts a dataset id sits
+ * in exactly one of the two tables, and twins carry different ids. CrossSpecies held seven such pairs.
+ *
+ * An entry is read from its `doi` column and its heading link (a doi.org link as its DOI, any other
+ * link as a deposit). A row is read from its Paper, DOI / URL and Data cells, link by link, as
+ * `checkOnRequest` reads them, and from CrossSpecies' Scope cell, which is where that page names a
+ * row's paper, since it has no Paper column: four of its seven twins met only there. A species page's
+ * Description is not read, since that names data a study reuses rather than its own. A link is
+ * compared without a trailing slash and case-insensitively.
+ *
+ * It compares within a page only. A resource that covers several species counts once for each species
+ * (Benji, 2026-11-10, #791), so the same DOI on two species pages is not a twin. Two inventory rows on
+ * one page that share a deposit are #715's case, not this one. A row whose cells cannot be read is
+ * skipped here, because `checkInventoryCells` already fails it.
+ */
+export function checkEntryRowTwins(
+  db: Db,
+  repoRoot: string = REPO_ROOT,
+  headerFor: (page: string) => InventoryHeader = (page) => readInventoryHeader(page, repoRoot),
+): CheckResult[] {
+  const keyOf = (url: string): string => {
+    const doi = statedDoi(url);
+    return doi ? `DOI ${doi}` : `link ${url.replace(/\/+$/, '').toLowerCase()}`;
+  };
+  /** page -> key -> ids of the rows on that page naming it. */
+  const rowKeys = new Map<string, Map<string, Set<string>>>();
+  const headers = new Map<string, InventoryHeader>();
+  for (const d of db.prepare('SELECT item_id, page, cells_json FROM dataset_rows ORDER BY page, ordinal, item_id')
+    .all() as { item_id: string; page: string; cells_json: string }[]) {
+    if (!headers.has(d.page)) headers.set(d.page, headerFor(d.page));
+    const h = headers.get(d.page)!;
+    const parsed = parseRowCells(d.cells_json);
+    const cols = 'header' in h && 'cells' in parsed ? labelCells(h.header, parsed.cells) : null;
+    if (!cols) continue;
+    const keys = rowKeys.get(d.page) ?? new Map<string, Set<string>>();
+    rowKeys.set(d.page, keys);
+    for (const cell of [cols['Paper'], cols['DOI / URL'], cols['Data'], cols['Scope']]) {
+      for (const url of linkDestinations(cell ?? '')) {
+        const k = keyOf(url);
+        keys.set(k, (keys.get(k) ?? new Set()).add(d.item_id));
+      }
+    }
+  }
+  const problems: string[] = [];
+  for (const e of db.prepare('SELECT item_id, page, url, doi FROM dataset_entries ORDER BY page, ordinal, item_id')
+    .all() as { item_id: string; page: string; url: string | null; doi: string | null }[]) {
+    const own = new Set<string>();
+    const doi = bareDoi(e.doi);
+    if (doi) own.add(`DOI ${doi}`);
+    if (e.url) own.add(keyOf(e.url));
+    for (const k of own) {
+      const twins = [...(rowKeys.get(e.page)?.get(k) ?? [])];
+      if (twins.length > 0) {
+        problems.push(`${e.item_id} and ${twins.join(', ')} on ${e.page} both name ${k}, so one dataset is listed twice; keep one copy`);
+      }
+    }
+  }
+  return [ok(ENTRY_ROW_TWINS_LABEL, problems.length === 0, `${problems.length} twin(s): ${problems.slice(0, 10).join('; ')}`)];
 }
 
 /** How many problems one failing run names; the count always covers them all. */
@@ -1068,7 +1136,7 @@ export function runChecks(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
     ...checkTopicTiers(db), ...checkAxisBijection(db, repoRoot),
     ...checkCatalogHeadings(db), ...checkLicenses(db), ...checkManualLicenseKeys(db),
     ...checkDois(db), ...checkManualDoiKeys(db), ...checkRelatedDois(db), ...checkSubseries(db),
-    ...checkInventoryCells(db, repoRoot), ...checkOnRequest(db, repoRoot),
+    ...checkInventoryCells(db, repoRoot), ...checkOnRequest(db, repoRoot), ...checkEntryRowTwins(db, repoRoot),
     ...checkSeries(db), ...checkFineTagSeedDrift(db), ...checkRowTagParity(db)];
 }
 

@@ -12,7 +12,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { openDb, importNdjson, REPO_ROOT, type Db } from './lib.js';
-import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkAxisBijection, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, checkRowTagParity, checkFineTagSeedDrift, checkInventoryCells, INVENTORY_CELLS_LABEL, INVENTORY_CELLS_SHOWN, runChecks } from './check.js';
+import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkAxisBijection, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, checkRowTagParity, checkFineTagSeedDrift, checkInventoryCells, INVENTORY_CELLS_LABEL, INVENTORY_CELLS_SHOWN, checkEntryRowTwins, ENTRY_ROW_TWINS_LABEL, runChecks } from './check.js';
 import { NON_DEPOSIT_LABELS, parseRowCells, readInventoryHeader, STATUS_WORDS, SUPPLEMENT_PREFIX } from '../parser/dataset-inventory.js';
 import { THEME_SLUGS, FINE_TAGS } from './seed.js';
 
@@ -977,6 +977,82 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
     expect(result(noTable).ok).toBe(false);
     const short = miniDb(); insRow(short, 'ds:study-c', 'Cow', [BADGE]);
     expect(result(short).ok).toBe(false);
+  });
+});
+
+describe('checkEntryRowTwins (tucca-cellag/caail-planning#752)', () => {
+  const SPECIES = ['Study', 'Paper', 'Data', 'Type', 'Tissue', 'Description', 'Size', 'Area of research'];
+  const CROSS = ['Resource', 'Year', 'Format', 'Scope', 'DOI / URL', 'License'];
+  const headers: Record<string, string[]> = { Cow: SPECIES, Pig: SPECIES, CrossSpecies: CROSS };
+  const headerFor = (page: string) => (headers[page] ? { header: headers[page]! } : { problem: `Datasets/${page}.md does not exist` });
+  const PAPER = '10.1038/s41586-020-0001-1';
+  const DEPOSIT = 'https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE1';
+  const row = (db: Db, id: string, page: string, cells: Record<string, string>): void => {
+    db.prepare("INSERT INTO items(id,type,slug) VALUES(?,'dataset',?)").run(id, id.slice(3));
+    db.prepare('INSERT INTO dataset_rows(item_id,page,cells_json,subseries,ordinal) VALUES(?,?,?,NULL,0)')
+      .run(id, page, JSON.stringify(headers[page]!.map((h) => cells[h] ?? 'x')));
+  };
+  const entry = (db: Db, id: string, page: string, url: string | null, doi: string | null): void => {
+    db.prepare("INSERT INTO items(id,type,slug) VALUES(?,'dataset',?)").run(id, id.slice(3));
+    db.prepare(`INSERT INTO dataset_entries(item_id,name,url,page,section,kind,heading_md,body_md,doi,doi_source,ordinal)
+      VALUES(?,'An entry',?,?,'S','other',?,'body',?,?,0)`)
+      .run(id, url, page, url ? `[An entry](${url})` : 'An entry', doi, doi ? 'manual' : null);
+  };
+  const result = (db: Db) => checkEntryRowTwins(db, undefined, headerFor).find((r) => r.label === ENTRY_ROW_TWINS_LABEL)!;
+
+  it('fails a curated entry and an inventory row on one page that name the same paper DOI, naming both', () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-a', 'Cow', 'https://example.org/atlas', PAPER);
+    row(db, 'ds:row-a', 'Cow', { Paper: `[DOI](https://doi.org/${PAPER})`, Data: `[\`GSE1\`](${DEPOSIT})` });
+    const r = result(db);
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('ds:entry-a');
+    expect(r.detail).toContain('ds:row-a');
+  });
+
+  it("fails CrossSpecies' shape: an entry's doi.org heading against a row's DOI / URL cell", () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-b', 'CrossSpecies', `https://doi.org/${PAPER}`, null);
+    row(db, 'ds:row-b', 'CrossSpecies', { 'DOI / URL': `[${PAPER}](https://doi.org/${PAPER})` });
+    expect(result(db).ok).toBe(false);
+  });
+
+  it("fails CrossSpecies' other shape: the paper DOI in a row's Scope, its deposit in DOI / URL", () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-g', 'CrossSpecies', `https://doi.org/${PAPER}`, PAPER);
+    row(db, 'ds:row-g', 'CrossSpecies', {
+      Scope: `A texture reference. Smith et al. 2026 ([${PAPER}](https://doi.org/${PAPER}))`,
+      'DOI / URL': '[GitHub](https://github.com/example/data)',
+    });
+    expect(result(db).ok).toBe(false);
+  });
+
+  it("fails an entry whose heading links a row's deposit, whatever the trailing slash or case", () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-c', 'Cow', `${DEPOSIT.toUpperCase()}/`, null);
+    row(db, 'ds:row-c', 'Cow', { Data: `[\`GSE1\`](${DEPOSIT})` });
+    expect(result(db).ok).toBe(false);
+  });
+
+  it('passes the same DOI on two species pages, since a multi-species resource counts once per species (#791)', () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-d', 'Pig', 'https://example.org/atlas', PAPER);
+    row(db, 'ds:row-d', 'Cow', { Paper: `[DOI](https://doi.org/${PAPER})` });
+    expect(result(db).ok).toBe(true);
+  });
+
+  it('passes an entry and a row on one page that share neither a DOI nor a deposit link', () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-e', 'Cow', 'https://example.org/atlas', '10.1000/other');
+    row(db, 'ds:row-e', 'Cow', { Paper: `[DOI](https://doi.org/${PAPER})`, Data: `[\`GSE1\`](${DEPOSIT})` });
+    expect(result(db).ok).toBe(true);
+  });
+
+  it("passes a DOI a row only mentions in its Description, which names data it reuses, not its own", () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-f', 'Cow', 'https://example.org/atlas', PAPER);
+    row(db, 'ds:row-f', 'Cow', { Description: `reuses [their data](https://doi.org/${PAPER})`, Data: `[\`GSE1\`](${DEPOSIT})` });
+    expect(result(db).ok).toBe(true);
   });
 });
 
