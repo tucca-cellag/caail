@@ -33,8 +33,11 @@ describe('chat-config: the one switch for the Ask CAAIL box (tucca-cellag/caail-
       '   ', 'not a url', 'chat.invalid/caail/ask', 'ftp://chat.invalid/caail/ask',
       // site/.env.example's placeholder, copied as-is
       'https://<backend-host>/caail/ask',
-      // plain http is mixed content on the HTTPS site, and on localhost it is each visitor's own machine
-      'http://chat.example/caail/ask', 'http://localhost:8787/caail/ask', 'http://127.0.0.1:8787/caail/ask',
+      // plain http is mixed content on the HTTPS site
+      'http://chat.example/caail/ask',
+      // a loopback host, on any scheme, is each visitor's own machine
+      'http://localhost:8787/caail/ask', 'https://localhost:8787/caail/ask', 'https://127.0.0.1/caail/ask',
+      'https://127.1.2.3/caail/ask', 'https://[::1]/caail/ask', 'https://app.localhost/caail/ask', 'https://0.0.0.0/caail/ask',
       // fetch refuses a URL carrying credentials, which would also sit in the public bundle
       'https://key:secret@chat.example/caail/ask', 'https://key@chat.example/caail/ask',
     ];
