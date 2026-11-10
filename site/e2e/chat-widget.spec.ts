@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { NOTICE_FACTS } from '../src/content/ask-caail-disclosure';
-import { CHAT_BUILT, CHAT_ISLAND } from './chat-build';
+import { BUILD_MISMATCH, CHAT_BUILT, CHAT_ISLAND } from './chat-build';
 
 /**
  * Ask CAAIL widget.
@@ -10,10 +10,11 @@ import { CHAT_BUILT, CHAT_ISLAND } from './chat-build';
  * `PUBLIC_CAAIL_CHAT_API` (src/lib/chat-config.ts): the variable is **build-time
  * inlined**, and without it no page carries the widget at all
  * (tucca-cellag/caail-planning#763). So the two builds are tested by two files. This one
- * covers a build with an endpoint, and runs only when e2e/chat-build.ts reads one from
- * where the build read it; chat-widget-hidden.spec.ts covers a build without one.
+ * covers a build with an endpoint, and runs only when the e2e run's environment names one
+ * (e2e/chat-build.ts); chat-widget-hidden.spec.ts covers a build without one.
  *
- * To run these locally, set the placeholder for both commands (or put it in site/.env):
+ * To run these locally, set the placeholder in the shell for both commands (not in
+ * site/.env, which the build reads and the e2e run refuses to guess at):
  *   PUBLIC_CAAIL_CHAT_API=https://chat.invalid/caail/ask pnpm --dir site build
  *   PUBLIC_CAAIL_CHAT_API=https://chat.invalid/caail/ask pnpm --dir site test:e2e chat-widget
  * CI does this, then builds again without it (see .github/workflows/test.yml). No live service is ever
@@ -159,7 +160,7 @@ test('each page carries exactly one widget island, the selector the hidden-state
   // still mounts the widget. Here it has to find the island.
   for (const route of ['./', './privacy/']) {
     await page.goto(route);
-    await expect(page.locator(CHAT_ISLAND), route).toHaveCount(1);
+    await expect(page.locator(CHAT_ISLAND), `${route}: ${BUILD_MISMATCH}`).toHaveCount(1);
   }
 });
 

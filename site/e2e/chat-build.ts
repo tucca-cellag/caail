@@ -3,36 +3,39 @@
  *
  * The "Ask CAAIL" box is offered only when PUBLIC_CAAIL_CHAT_API names an endpoint at build
  * time (src/lib/chat-config.ts). Without one, pages carry no widget at all, so the chat specs
- * have two honest states to check and need to know which one the build is in. The build
- * cannot be asked, so this reads the value from where the build read it: Vite's env files for
- * production mode in `site/`, in Vite's order, parsed with Node's dotenv parser, with the
- * process environment taking priority, and judges it with the build's own rule
- * (src/lib/chat-endpoint.ts). CI sets it in the job's environment, so a build and the e2e run
- * after it see one value (.github/workflows/test.yml). A run that reads one thing about a build
- * that did the other fails, in either direction, rather than passing for the wrong reason.
+ * have two honest states to check and need to know which one the build is in.
+ *
+ * This takes the value from the process environment only, judged by the build's own rule
+ * (src/lib/chat-endpoint.ts), so a build and an e2e run started with the same environment
+ * agree. CI sets it once for the job (.github/workflows/test.yml). The build also reads
+ * site/.env files and this does not try to: re-implementing Vite's env loading (its file order,
+ * its variable expansion) was the source of every disagreement found in review. So when a
+ * site/.env* file sets the variable and the environment does not, this refuses to run, naming
+ * the file, rather than guess what the build saw.
  */
-import { existsSync, readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseEnv } from 'node:util';
 import { chatEndpoint } from '../src/lib/chat-endpoint';
 
 const SITE = fileURLToPath(new URL('../', import.meta.url));
 const KEY = 'PUBLIC_CAAIL_CHAT_API';
-/** The files Vite loads for `astro build` (production mode), lowest priority first. */
-const ENV_FILES = ['.env', '.env.local', '.env.production', '.env.production.local'];
+/** A line that sets the variable; a commented-out line does not. */
+const SETS_KEY = new RegExp(`^\\s*(?:export\\s+)?${KEY}\\s*=`, 'm');
 
-function builtValue(): string | undefined {
-  if (process.env[KEY] !== undefined) return process.env[KEY];
-  let value: string | undefined;
-  for (const file of ENV_FILES) {
-    const path = join(SITE, file);
-    if (existsSync(path)) value = parseEnv(readFileSync(path, 'utf-8'))[KEY] ?? value;
+if (process.env[KEY] === undefined) {
+  const file = readdirSync(SITE).find(
+    (f) => f.startsWith('.env') && f !== '.env.example' && SETS_KEY.test(readFileSync(join(SITE, f), 'utf-8')),
+  );
+  if (file) {
+    throw new Error(
+      `site/${file} sets ${KEY}, which the build reads and this e2e run does not. ` +
+        `Set it in the shell for both the build and the e2e run instead, and remove it from site/${file}.`,
+    );
   }
-  return value;
 }
 
-export const CHAT_BUILT: boolean = chatEndpoint(builtValue()) !== undefined;
+export const CHAT_BUILT: boolean = chatEndpoint(process.env[KEY]) !== undefined;
 
 /**
  * The widget's island. The load-bearing check for "no widget": the button itself appears only
@@ -41,3 +44,8 @@ export const CHAT_BUILT: boolean = chatEndpoint(builtValue()) !== undefined;
  * finds exactly one island in a build with an endpoint, so it cannot pass by matching nothing.
  */
 export const CHAT_ISLAND = 'astro-island[component-url*="CaailChatWidget"]';
+
+/** What to say when the island count disagrees with what this run read. */
+export const BUILD_MISMATCH =
+  `the island count does not match ${KEY} in this run's environment. If the build was started ` +
+  'with a different value, build and test with the same one; otherwise the widget is mounted wrongly';
