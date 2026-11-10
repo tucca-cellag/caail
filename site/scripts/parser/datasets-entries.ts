@@ -43,7 +43,8 @@ export function parseDataLinks(id: string, raw: string | null | undefined): stri
 
 function parseStringList(id: string, column: string, raw: string | null | undefined): string[] {
   if (raw === null || raw === undefined) return [];
-  const list: unknown = JSON.parse(raw);
+  let list: unknown;
+  try { list = JSON.parse(raw); } catch { throw new Error(`${id}: ${column} is not JSON: ${raw}`); }
   if (!Array.isArray(list) || !list.every((a) => typeof a === 'string')) {
     throw new Error(`${id}: ${column} is not a JSON array of strings: ${raw}`);
   }

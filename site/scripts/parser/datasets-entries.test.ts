@@ -96,7 +96,7 @@ describe('dataLinks (tucca-cellag/caail-planning#752)', () => {
   });
 
   it('throws on a value that is not an array of strings, naming the entry and the column', () => {
-    for (const raw of ['"https://github.com/a/b"', '{"a":1}', '[1]']) {
+    for (const raw of ['"https://github.com/a/b"', '{"a":1}', '[1]', '["https://x"']) {
       expect(() => parseDataLinks('ds:bad', raw), raw).toThrow(/ds:bad: data_links/);
     }
   });
