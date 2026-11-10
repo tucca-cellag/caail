@@ -622,9 +622,9 @@ export const MetricsSpeciesSchema = z.object({
 export const MetricsDatasetsSchema = z.object({
   /** == counts.datasets; the sum of the four parts below */
   total: z.number().int().nonnegative(),
-  /** `## Complete data inventory` rows over the species pages */
+  /** `## Complete data inventory` rows over the inventory pages (`INVENTORY_PAGES`) */
   speciesRows: z.number().int().nonnegative(),
-  /** curated `###` entries (featured atlases, GEMs) ON the species pages */
+  /** curated `###` entries (featured atlases, GEMs) ON the inventory pages (`INVENTORY_PAGES`) */
   curatedEntries: z.number().int().nonnegative(),
   /** `###` dataset entries over the reference pages */
   referenceEntries: z.number().int().nonnegative(),

@@ -37,7 +37,10 @@ export const SPECIES_PAGES: readonly string[] = [
   'Goat', 'Mollusk', 'Pig', 'Sheep', 'Turkey',
 ];
 
-/** Pages whose datasets are counted as `## Complete data inventory` table rows. */
+/**
+ * Pages whose datasets are counted as `## Complete data inventory` table rows: the species pages,
+ * and any other page with an inventory table, which joins here rather than SPECIES_PAGES.
+ */
 export const INVENTORY_PAGES: readonly string[] = [...SPECIES_PAGES];
 
 /**
@@ -216,7 +219,7 @@ export type DatasetSourceKind = 'inventory' | 'curated' | 'reference' | 'benchma
 export interface DatasetBreakdown {
   /** total catalogued datasets across the whole Datasets/ directory */
   total: number;
-  /** inventory-table rows over INVENTORY_PAGES (the species pages) */
+  /** inventory-table rows over INVENTORY_PAGES */
   speciesRows: number;
   /** curated H3 entries (featured atlases, GEMs) ON the inventory pages */
   curatedEntries: number;

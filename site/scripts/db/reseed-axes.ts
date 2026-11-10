@@ -1,7 +1,7 @@
 /**
- * reseed-axes.ts — fold ONLY the DB-owned side axes (license, DOI, related DOIs and
- * SuperSeries membership) from their committed inputs into the NDJSON, without going
- * through `db:bootstrap`.
+ * reseed-axes.ts — fold ONLY the DB-owned side axes (license, DOI, related DOIs, SuperSeries
+ * membership, and curated entries' own accessions and data links) from their committed inputs
+ * into the NDJSON, without going through `db:bootstrap`.
  *
  *   NODE_OPTIONS='--experimental-sqlite --no-warnings' pnpm --dir site db:reseed-axes
  *
@@ -13,9 +13,9 @@
  * This command instead materializes the committed NDJSON as-is and re-runs the axis
  * seeders (idempotent UPDATEs keyed by url / ds: id), then exports. The diff is confined
  * to `license` / `doi` (and their `_source`), `related_dois` on catalog + dataset_entries,
- * and `subseries` on dataset_rows — topics, ordinals, and all Markdown are untouched. This
- * is the fold step for the license/DOI/subseries curation workflow (see the
- * `caail-db-authoring` skill).
+ * `accessions` and `data_links` on dataset_entries, and `subseries` on dataset_rows — topics,
+ * ordinals, and all Markdown are untouched. This is the fold step for the license, DOI,
+ * subseries and entry-deposit curation workflow (see the `caail-db-authoring` skill).
  *
  * Keep this list in step with `reseedAxes` below. It has already gone stale once: the
  * subseries axis was added to the clear-and-reseed while three separate comments and the
