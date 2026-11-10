@@ -1090,12 +1090,15 @@ describe('checkEntryRowTwins (tucca-cellag/caail-planning#752)', () => {
 
 describe('checkAccessions (tucca-cellag/caail-planning#752)', () => {
   const ENTRY = 'ds:atlas-a';
-  const withEntry = (stored: string | null): Db => {
+  const withEntry = (
+    stored: string | null,
+    body = 'Deposited at ENA (PRJEB27455, PRJEB27111), ArrayExpress E-MTAB-9622 and GEO `GSE1`.',
+  ): Db => {
     const db = miniDb();
     db.prepare("INSERT INTO items(id,type,slug) VALUES(?,'dataset','atlas-a')").run(ENTRY);
     db.prepare(`INSERT INTO dataset_entries(item_id,name,url,page,section,kind,heading_md,body_md,accessions,ordinal)
       VALUES(?,'An atlas',NULL,'Cow','S','atlas','An atlas',?,?,0)`)
-      .run(ENTRY, 'Deposited at ENA (PRJEB27455, PRJEB27111), ArrayExpress E-MTAB-9622 and GEO `GSE1`.', stored);
+      .run(ENTRY, body, stored);
     db.prepare("INSERT INTO items(id,type,slug) VALUES('ds:row-a','dataset','row-a')").run();
     db.prepare("INSERT INTO dataset_rows(item_id,page,cells_json,subseries,ordinal) VALUES('ds:row-a','Cow','[]',NULL,0)").run();
     return db;
@@ -1139,6 +1142,11 @@ describe('checkAccessions (tucca-cellag/caail-planning#752)', () => {
       expect(r.ok, typo).toBe(false);
       expect(r.detail, typo).toContain('named nowhere in its heading or description');
     }
+  });
+
+  it('finds an accession its entry writes with a version suffix', () => {
+    const r = result(withEntry(JSON.stringify(['PRJEB27455']), 'Deposited at ENA as PRJEB27455.1.'), fileWith({ [ENTRY]: ['PRJEB27455'] }));
+    expect(r.ok).toBe(true);
   });
 
   it('sends an accession outside the families to the data links, rather than leaving it nowhere', () => {
@@ -1250,6 +1258,17 @@ describe('checkDataLinks (tucca-cellag/caail-planning#752)', () => {
   it('refuses a link its entry names nowhere, such as one cut short', () => {
     const cut = REPO.slice(0, -1);
     expect(listed([cut]).detail).toContain('named nowhere in its heading or description');
+  });
+
+  it('refuses a link cut short at a dot, a ? or a #, and passes one that ends a sentence', () => {
+    const body = 'At https://doi.org/10.5281/zenodo.11357327, [the query](https://example.org/data?id=1), ' +
+      '[the docs](https://example.org/docs#data), and https://github.com/a/b.';
+    for (const cut of ['https://doi.org/10.5281/zenodo', 'https://example.org/data', 'https://example.org/docs']) {
+      const r = result(withEntry(JSON.stringify([cut]), PAPER, body), fileWith({ [ENTRY]: [cut] }));
+      expect(r.detail, cut).toContain('named nowhere in its heading or description');
+    }
+    const whole = 'https://github.com/a/b';
+    expect(result(withEntry(JSON.stringify([whole]), PAPER, body), fileWith({ [ENTRY]: [whole] })).ok).toBe(true);
   });
 
   it('rejects a link listed twice, however its case or trailing slash, and an empty list', () => {

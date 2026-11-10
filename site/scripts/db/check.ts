@@ -601,13 +601,18 @@ type ListValue = { key: string; text: string } | { problem: string };
 
 /**
  * Whether `text` appears in `prose` as a whole token: not inside a longer accession or link, so a
- * value missing its last digit, or a link cut short, is not found inside the full one.
+ * value missing its last digit, or a link cut short, is not found inside the full one. A link also
+ * continues past a `.`, `?` or `#` that more address text follows, so `…/zenodo` is not found inside
+ * `…/zenodo.11357327`, while a link that ends a sentence (`….`) is whole. An accession does not: one
+ * followed by `.` and digits is that accession with a version suffix.
  */
 function namedIn(prose: string, text: string): boolean {
+  const link = /^https?:\/\//i.test(text);
   for (let i = prose.indexOf(text); i !== -1; i = prose.indexOf(text, i + 1)) {
     const before = prose[i - 1] ?? '';
-    const after = prose[i + text.length] ?? '';
-    if (!/[A-Za-z0-9]/.test(before) && !/[A-Za-z0-9_\-/]/.test(after)) return true;
+    const after = prose.slice(i + text.length, i + text.length + 2);
+    const continues = /^[A-Za-z0-9_\-/]/.test(after) || (link && /^[.?#][A-Za-z0-9_\-/~%=&+]/.test(after));
+    if (!/[A-Za-z0-9]/.test(before) && !continues) return true;
   }
   return false;
 }
