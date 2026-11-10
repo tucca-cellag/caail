@@ -22,7 +22,7 @@
  *    Research-area axis only; the method-row axis is deliberately not gated.
  *  - inventory Data cells: a deposit link, `supplementary` or `unavailable`, read by the
  *    parser's own `readDataCell` (checkInventoryCells).
- *  - twins: no curated entry and inventory row on one page name the same DOI or deposit link
+ *  - twins: no curated entry and inventory row on one page name the same deposit
  *    (checkEntryRowTwins).
  *  - curated entries' own accessions: keys resolve, values are bare accessions, the column
  *    matches dataset-accessions.json (checkAccessions).
@@ -699,7 +699,7 @@ export function checkDataLinks(db: Db, path: string = DATASET_DATA_LINKS_PATH): 
 }
 
 export const ENTRY_ROW_TWINS_LABEL =
-  'dataset_entries x dataset_rows: no curated entry and inventory row on one page name the same DOI or deposit link';
+  'dataset_entries x dataset_rows: no curated entry and inventory row on one page name the same deposit';
 
 /**
  * A statement stored inside its own quotes: it opens and closes with a mark of one family,
@@ -841,32 +841,48 @@ export function checkOnRequest(db: Db, repoRoot: string = REPO_ROOT): CheckResul
 
 /**
  * Twin guard (tucca-cellag/caail-planning#752). A curated entry and an inventory row on the same page
- * that name the same DOI, or link the same deposit, list one dataset twice, and the datasets total and
- * `api/datasets.json` count it twice. The integrity check cannot see this: it asserts a dataset id sits
- * in exactly one of the two tables, and twins carry different ids. CrossSpecies held seven such pairs.
+ * that name the same deposit list one dataset twice, and the datasets total and `api/datasets.json`
+ * count it twice. The integrity check cannot see this: it asserts a dataset id sits in exactly one of
+ * the two tables, and twins carry different ids. CrossSpecies held seven such pairs.
  *
- * An entry is read from its `doi` column and its heading link (a doi.org link as its DOI, any other
- * link as a deposit). A row is read from its Paper, DOI / URL and Data cells, link by link, as
- * `checkOnRequest` reads them, and from CrossSpecies' Scope cell, which is where that page names a
- * row's paper, since it has no Paper column: four of its seven twins met only there. A species page's
- * Description is not read, since that names data a study reuses rather than its own. A link is
- * compared without a trailing slash and case-insensitively.
+ * Deposits are compared, never papers (Benji, 2026-11-10): one paper can describe several deposits,
+ * which is how the datasets endpoint reads a paper DOI, so an entry and a row from one paper may be two
+ * datasets. An entry's deposits are its `doi` where the DOI's registrant is a data host, its heading
+ * link unless that states a paper's DOI, its `accessions` and its `dataLinks`. A row's deposit is its
+ * Data cell, read by the same `readDataCell` that fills the API's `dataUrl`, `dataDoi` and `accession`;
+ * a status word names none, and its Paper and Description cells are not read. A link that states a
+ * DOI is compared as that DOI, any other link without a trailing slash and case-insensitively, and an
+ * accession case-insensitively and without a version suffix, as the endpoint tells consumers to.
+ *
+ * An entry that names its deposit only in its description is not compared, which is why its deposits
+ * belong in `dataset-accessions.json` or `dataset-data-links.json`.
  *
  * It compares within a page only. A resource that covers several species counts once for each species
- * (Benji, 2026-11-10, #791), so the same DOI on two species pages is not a twin. Two inventory rows on
- * one page that share a deposit are #715's case, not this one. A row whose cells cannot be read is
- * skipped here, because `checkInventoryCells` already fails it.
+ * (Benji, 2026-11-10, #791), so the same deposit on two species pages is not a twin. Two inventory rows
+ * on one page that share a deposit are #715's case, not this one. A row whose cells cannot be read is
+ * skipped here, because `checkInventoryCells` already fails it. Each pair is reported once, naming
+ * every deposit the two share.
  */
 export function checkEntryRowTwins(
   db: Db,
   repoRoot: string = REPO_ROOT,
   headerFor: (page: string) => InventoryHeader = (page) => readInventoryHeader(page, repoRoot),
 ): CheckResult[] {
-  const keyOf = (url: string): string => {
+  /** A link's key, or null for a link that states a paper's DOI. */
+  const linkKeyOf = (url: string): string | null => {
     const doi = statedDoi(url);
-    return doi ? `DOI ${doi}` : `link ${url.replace(/\/+$/, '').toLowerCase()}`;
+    if (!doi) return `link ${linkKey(url)}`;
+    return doiRelation(doi) === 'own' ? `DOI ${doi}` : null;
   };
-  /** page -> key -> ids of the rows on that page naming it. */
+  const accessionKey = (a: string): string => `accession ${a.trim().replace(/\.\d+$/, '').toUpperCase()}`;
+  const list = (raw: string | null): string[] => {
+    if (!raw) return [];
+    try {
+      const v: unknown = JSON.parse(raw);
+      return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
+    } catch { return []; } // checkAccessions and checkDataLinks name a malformed column
+  };
+  /** page -> deposit key -> ids of the rows on that page naming it. */
   const rowKeys = new Map<string, Map<string, Set<string>>>();
   const headers = new Map<string, InventoryHeader>();
   for (const d of db.prepare('SELECT item_id, page, cells_json FROM dataset_rows ORDER BY page, ordinal, item_id')
@@ -875,28 +891,32 @@ export function checkEntryRowTwins(
     const h = headers.get(d.page)!;
     const parsed = parseRowCells(d.cells_json);
     const cols = 'header' in h && 'cells' in parsed ? labelCells(h.header, parsed.cells) : null;
-    if (!cols) continue;
+    if (!cols || !('Data' in cols)) continue;
+    const data = readDataCell(cols['Data']!);
+    if (data.kind !== 'deposit') continue;
     const keys = rowKeys.get(d.page) ?? new Map<string, Set<string>>();
     rowKeys.set(d.page, keys);
-    for (const cell of [cols['Paper'], cols['DOI / URL'], cols['Data'], cols['Scope']]) {
-      for (const url of linkDestinations(cell ?? '')) {
-        const k = keyOf(url);
-        keys.set(k, (keys.get(k) ?? new Set()).add(d.item_id));
-      }
-    }
+    const own = [linkKeyOf(data.url), data.doi ? `DOI ${data.doi}` : null, data.accession ? accessionKey(data.accession) : null];
+    for (const k of own) if (k) keys.set(k, (keys.get(k) ?? new Set()).add(d.item_id));
   }
   const problems: string[] = [];
-  for (const e of db.prepare('SELECT item_id, page, url, doi FROM dataset_entries ORDER BY page, ordinal, item_id')
-    .all() as { item_id: string; page: string; url: string | null; doi: string | null }[]) {
+  for (const e of db.prepare('SELECT item_id, page, url, doi, accessions, data_links FROM dataset_entries ORDER BY page, ordinal, item_id')
+    .all() as { item_id: string; page: string; url: string | null; doi: string | null; accessions: string | null; data_links: string | null }[]) {
     const own = new Set<string>();
     const doi = bareDoi(e.doi);
-    if (doi) own.add(`DOI ${doi}`);
-    if (e.url) own.add(keyOf(e.url));
+    if (doi && doiRelation(doi) === 'own') own.add(`DOI ${doi}`);
+    for (const url of [...(e.url ? [e.url] : []), ...list(e.data_links)]) {
+      const k = linkKeyOf(url);
+      if (k) own.add(k);
+    }
+    for (const a of list(e.accessions)) own.add(accessionKey(a));
+    /** row id -> the deposits this entry shares with it. */
+    const shared = new Map<string, string[]>();
     for (const k of own) {
-      const twins = [...(rowKeys.get(e.page)?.get(k) ?? [])];
-      if (twins.length > 0) {
-        problems.push(`${e.item_id} and ${twins.join(', ')} on ${e.page} both name ${k}, so one dataset is listed twice; keep one copy`);
-      }
+      for (const rowId of rowKeys.get(e.page)?.get(k) ?? []) shared.set(rowId, [...(shared.get(rowId) ?? []), k]);
+    }
+    for (const [rowId, keys] of shared) {
+      problems.push(`${e.item_id} and ${rowId} on ${e.page} both name ${keys.join(' and ')}, so one dataset is listed twice; keep one copy`);
     }
   }
   return [ok(ENTRY_ROW_TWINS_LABEL, problems.length === 0, `${problems.length} twin(s): ${problems.slice(0, 10).join('; ')}`)];
