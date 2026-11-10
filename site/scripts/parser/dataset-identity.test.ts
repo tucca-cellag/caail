@@ -135,7 +135,7 @@ describe('rowIdentity: the Data cell', () => {
     });
   });
 
-  it('reads nothing from a DOI / URL cell, the column CrossSpecies dropped with its rows (#752)', () => {
+  it('reads nothing from a DOI / URL cell, the column CrossSpecies dropped with its rows (tucca-cellag/caail-planning#752)', () => {
     // No page carries that column now, and db:check refuses a table without a Data column, so
     // a deposit or a paper written there is not identity.
     for (const cell of [

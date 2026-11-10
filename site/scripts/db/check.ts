@@ -47,7 +47,7 @@ import { toString as mdastToString } from 'mdast-util-to-string';
 import { visit } from 'unist-util-visit';
 import type { Definition, FootnoteDefinition } from 'mdast';
 import {
-  DATA_CELL_FORMS, fitsDoiLink, labelCells, parseRowCells, readDataCell, readInventoryHeader, statedDoi,
+  DATA_CELL_FORMS, fitsDoiLink, labelCells, parseRowCells, readDataCell, readInventoryHeader, statedDoi, WEB_ADDRESS,
   linkDestinations,
   type InventoryHeader,
 } from '../parser/dataset-inventory.js';
@@ -586,46 +586,88 @@ export const ACCESSION_FAMILIES = ACCESSION_SOURCE.split('|')
 
 export const ACCESSIONS_LABEL =
   'dataset_entries.accessions: every dataset-accessions.json key is a curated dataset entry, every value a ' +
-  'non-empty list of distinct repository accessions, and the stored column matches the file';
+  'non-empty list of distinct repository accessions its heading or description names, and the stored column ' +
+  'matches the file';
+
+/** A curated entry as the entry-list guards read it. */
+interface ListEntry { item_id: string; url: string | null; doi: string | null; heading_md: string; body_md: string }
+
+/** One value of an entry's list: the key it is compared by and the text it must appear as, or why it is refused. */
+type ListValue = { key: string; text: string } | { problem: string };
+
+/**
+ * Whether `text` appears in `prose` as a whole token: not inside a longer accession or link, so a
+ * value missing its last digit, or a link cut short, is not found inside the full one.
+ */
+function namedIn(prose: string, text: string): boolean {
+  for (let i = prose.indexOf(text); i !== -1; i = prose.indexOf(text, i + 1)) {
+    const before = prose[i - 1] ?? '';
+    const after = prose[i + text.length] ?? '';
+    if (!/[A-Za-z0-9]/.test(before) && !/[A-Za-z0-9_\-/]/.test(after)) return true;
+  }
+  return false;
+}
+
+/**
+ * The skeleton the curated entries' list guards share (`checkAccessions`, `checkDataLinks`), as
+ * `seedEntryList` is the one fold behind both. Each key in the file must be a curated dataset entry,
+ * each value a non-empty list, and each item one `read` accepts. No item may repeat by its key. Each
+ * must be named in the entry's own heading or description (tucca-cellag/caail-planning#752, review
+ * round 3), so a mistyped accession or link cannot be served as the entry's own deposit: the file is
+ * hand-typed beside prose that already names the deposit, and this makes the two agree. The stored
+ * column must equal what the file says, so an edit to the file without `db:reseed-axes`, or a
+ * hand-edited column, fails here rather than shipping a stale value.
+ */
+function checkEntryList(
+  db: Db, path: string, file: string, column: 'accessions' | 'data_links', label: string, noun: string,
+  read: (item: unknown, entry: ListEntry) => ListValue,
+): CheckResult[] {
+  const problems: string[] = [];
+  const manual = readEntryListFile(path, file, problems);
+  const entries = new Map((db.prepare('SELECT item_id, url, doi, heading_md, body_md FROM dataset_entries').all() as ListEntry[])
+    .map((e) => [e.item_id, e]));
+  const expected = new Map<string, string>();
+  for (const [id, list] of Object.entries(manual)) {
+    const e = entries.get(id);
+    if (!e) { problems.push(`${id}: not a curated dataset entry`); continue; }
+    if (!Array.isArray(list) || list.length === 0) { problems.push(`${id}: needs a non-empty list of ${noun}`); continue; }
+    const seen = new Set<string>();
+    const prose = `${e.heading_md}\n${e.body_md}`;
+    for (const item of list) {
+      const v = read(item, e);
+      if ('problem' in v) { problems.push(`${id}: ${v.problem}`); continue; }
+      if (seen.has(v.key)) problems.push(`${id}: lists ${v.text} twice`);
+      else if (!namedIn(prose, v.text)) {
+        problems.push(`${id}: ${v.text} is named nowhere in its heading or description; check it against the entry, or name it there`);
+      }
+      seen.add(v.key);
+    }
+    expected.set(id, JSON.stringify(list.map((x) => String(x).trim())));
+  }
+  for (const r of db.prepare(`SELECT item_id, ${column} AS stored FROM dataset_entries ORDER BY item_id`).all() as { item_id: string; stored: string | null }[]) {
+    const want = expected.get(r.item_id) ?? null;
+    const have = r.stored ?? null;
+    if (have !== want) {
+      problems.push(`${r.item_id}: stored ${column} ${have ?? 'NULL'} differ from ${file} (${want ?? 'none'}); run db:reseed-axes`);
+    }
+  }
+  return [ok(label, problems.length === 0, `${problems.length} problem(s): ${problems.slice(0, 10).join('; ')}`)];
+}
 
 /**
  * Guard for curated entries' own repository accessions (tucca-cellag/caail-planning#752), the
- * `accessions` column `seedAccessions` folds from `scripts/db/dataset-accessions.json`. Each key must
- * be a curated dataset entry (an inventory row names its deposit in its Data cell instead), each
- * value a non-empty list of distinct strings that are each exactly one accession of the families in
- * `ACCESSION_SOURCE`, uppercase, with no URL or version suffix: the same vocabulary the `ds:` id
- * minter and the subseries guard use, and the shape `api/datasets.json` serves. The stored column
- * must equal what the file says, so an edit to the file without `db:reseed-axes`, or a hand-edited
- * column, fails here rather than shipping a stale value.
+ * `accessions` column `seedAccessions` folds from `scripts/db/dataset-accessions.json`, through
+ * `checkEntryList`. Each item must be exactly one accession of the families in `ACCESSION_SOURCE`,
+ * uppercase, with no URL or version suffix: the same vocabulary the `ds:` id minter and the subseries
+ * guard use, and the shape `api/datasets.json` serves. A deposit outside those families goes in
+ * `dataset-data-links.json` as its link, and the refusal says so.
  */
 export function checkAccessions(db: Db, path: string = DATASET_ACCESSIONS_PATH): CheckResult[] {
-  const problems: string[] = [];
-  const manual = readEntryListFile(path, 'dataset-accessions.json', problems);
-  const entryIds = new Set((db.prepare('SELECT item_id FROM dataset_entries').all() as { item_id: string }[]).map((r) => r.item_id));
-  const expected = new Map<string, string>();
-  for (const [id, list] of Object.entries(manual)) {
-    if (!entryIds.has(id)) { problems.push(`${id}: not a curated dataset entry`); continue; }
-    if (!Array.isArray(list) || list.length === 0) { problems.push(`${id}: needs a non-empty list of accessions`); continue; }
-    const seen = new Set<string>();
-    for (const a of list) {
-      if (typeof a !== 'string' || !ACCESSION_EXACT.test(a)) {
-        problems.push(`${id}: ${JSON.stringify(a)} is not one bare accession (${ACCESSION_FAMILIES}); ` +
-          'a deposit outside these families goes in dataset-data-links.json as its link');
-      } else if (seen.has(a)) {
-        problems.push(`${id}: lists ${a} twice`);
-      }
-      seen.add(String(a));
-    }
-    expected.set(id, JSON.stringify(list.map((a) => String(a).trim())));
-  }
-  for (const r of db.prepare('SELECT item_id, accessions FROM dataset_entries ORDER BY item_id').all() as { item_id: string; accessions: string | null }[]) {
-    const want = expected.get(r.item_id) ?? null;
-    const have = r.accessions ?? null;
-    if (have !== want) {
-      problems.push(`${r.item_id}: stored accessions ${have ?? 'NULL'} differ from dataset-accessions.json (${want ?? 'none'}); run db:reseed-axes`);
-    }
-  }
-  return [ok(ACCESSIONS_LABEL, problems.length === 0, `${problems.length} problem(s): ${problems.slice(0, 10).join('; ')}`)];
+  return checkEntryList(db, path, 'dataset-accessions.json', 'accessions', ACCESSIONS_LABEL, 'accessions', (a) =>
+    typeof a === 'string' && ACCESSION_EXACT.test(a)
+      ? { key: a, text: a }
+      : { problem: `${JSON.stringify(a)} is not one bare accession (${ACCESSION_FAMILIES}); ` +
+          'a deposit outside these families goes in dataset-data-links.json as its link' });
 }
 
 /**
@@ -646,74 +688,61 @@ function readEntryListFile(path: string, name: string, problems: string[]): Reco
 
 export const DATA_LINKS_LABEL =
   'dataset_entries.data_links: every dataset-data-links.json key is a curated dataset entry, every value a ' +
-  'non-empty list of distinct http(s) links to a deposit, none the entry\'s paper, doi or heading link, and ' +
-  'the stored column matches the file';
+  'non-empty list of distinct http(s) links to a deposit its heading or description names, none a paper or ' +
+  'the entry\'s doi or heading link, and the stored column matches the file';
+
+/** A Zenodo record page, whose DOI Zenodo mints as `10.5281/zenodo.<record>`. */
+const ZENODO_RECORD = /^https?:\/\/(?:www\.)?zenodo\.org\/records?\/(\d+)\/?(?:[?#].*)?$/i;
 
 /**
- * A deposit link as the twin check and the data-links guard compare it: the DOI it states, as a
- * bare lowercase DOI, so `doi.org`, `dx.doi.org` and a `doi:` token name one deposit alike; any other
- * link without a trailing slash and case-insensitively. A link whose host merely embeds a DOI in its
- * path with no such token is compared as a link, since `statedDoi` will not guess.
+ * A deposit link as the twin check and the data-links guard compare it. A link that states a DOI
+ * (`statedDoi`: a doi.org link on any host form, or a `doi:` token) is that DOI, bare and lowercase,
+ * and so is a Zenodo record page, whose DOI Zenodo mints from its record number. Any other link is
+ * compared without its scheme or a trailing slash, and case-insensitively. A host that merely embeds a
+ * DOI in its path with no such token is compared as a link, since `statedDoi` will not guess.
  */
 const depositKey = (url: string): string => {
-  const doi = statedDoi(url);
-  return doi ? `DOI ${doi}` : `link ${url.replace(/\/+$/, '').toLowerCase()}`;
+  const zenodo = url.match(ZENODO_RECORD);
+  const doi = statedDoi(url) ?? (zenodo ? `10.5281/zenodo.${zenodo[1]}` : null);
+  return doi ? `DOI ${doi}` : `link ${url.replace(/^https?:\/\//i, '').replace(/\/+$/, '').toLowerCase()}`;
 };
+
+/** A DOI-shaped token in a link's path, such as a publisher's `/doi/10.1002/…` page: refused below, never used as a key. */
+const PATH_DOI = /^https?:\/\/[^/?#]+\/(?:[^?#]*\/)?(10\.\d{4,9}\/[^\s?#]+)/i;
 
 /**
  * Guard for curated entries' own deposit links (tucca-cellag/caail-planning#752), the `data_links`
- * column `seedDataLinks` folds from `scripts/db/dataset-data-links.json`: the deposits no accession
- * names, such as a Zenodo record or a code repository holding the data. Each key must be a curated
- * dataset entry and each value a non-empty list of distinct links to an http(s) address with a host.
+ * column `seedDataLinks` folds from `scripts/db/dataset-data-links.json`, through `checkEntryList`:
+ * the deposits the entry's accessions do not name, such as a Zenodo record or a code repository
+ * holding the data. Each item must be one link to an http(s) address with a host (`WEB_ADDRESS`, the
+ * Data-cell reader's own test, with no whitespace).
  *
- * A link may not name the entry's paper: one stating a DOI whose registrant is not a data host is
- * refused, as a Data cell refuses it (`readDataCell`), with the same pointer to the registrant
- * list for a deposit on a host it lacks. Nor may it repeat what the entry already serves, its
- * `doi` or its heading link, since `dataLinks` is the deposits the entry serves nowhere else.
- * Links are compared by `depositKey`, so two spellings of one DOI are one link. The stored column must equal
- * what the file says, as for the accessions. It checks a link's form and registrant, not that it
- * reaches the deposit.
+ * A link may not name a paper. One that states a DOI whose registrant is not a data host is refused,
+ * as a Data cell refuses it (`readDataCell`), with the same pointer to the registrant list for a
+ * deposit on a host it lacks, and so is one whose path carries such a DOI (a publisher's article
+ * page). A publisher page with no DOI in its address (ScienceDirect's `/pii/`) cannot be told from a
+ * deposit by its form, and is left to review. Nor may a link repeat what the entry already serves, its
+ * `doi` or its heading link, since `dataLinks` is the deposits the entry serves nowhere else. Links
+ * are compared by `depositKey`. It checks a link's form and registrant, not that it reaches the deposit.
  */
 export function checkDataLinks(db: Db, path: string = DATASET_DATA_LINKS_PATH): CheckResult[] {
-  const problems: string[] = [];
-  const manual = readEntryListFile(path, 'dataset-data-links.json', problems);
-  const entries = new Map((db.prepare('SELECT item_id, url, doi FROM dataset_entries').all() as
-    { item_id: string; url: string | null; doi: string | null }[]).map((e) => [e.item_id, e]));
-  const expected = new Map<string, string>();
-  for (const [id, list] of Object.entries(manual)) {
-    const e = entries.get(id);
-    if (!e) { problems.push(`${id}: not a curated dataset entry`); continue; }
-    if (!Array.isArray(list) || list.length === 0) { problems.push(`${id}: needs a non-empty list of links`); continue; }
-    const seen = new Set<string>();
+  return checkEntryList(db, path, 'dataset-data-links.json', 'data_links', DATA_LINKS_LABEL, 'links', (a, e) => {
+    const url = typeof a === 'string' ? a.trim() : '';
+    if (!WEB_ADDRESS.test(url) || /\s/.test(url)) return { problem: `${JSON.stringify(a)} is not one link to an http(s) address with a host` };
+    const key = depositKey(url);
     const ownDoi = bareDoi(e.doi);
-    for (const a of list) {
-      const url = typeof a === 'string' ? a.trim() : '';
-      if (!/^https?:\/\/[^\s/?#]+\S*$/i.test(url)) {
-        problems.push(`${id}: ${JSON.stringify(a)} is not one link to an http(s) address with a host`);
-        continue;
-      }
-      const doi = statedDoi(url);
-      const key = depositKey(url);
-      if (seen.has(key)) problems.push(`${id}: lists ${url} twice`);
-      else if (e.url && depositKey(e.url) === key) problems.push(`${id}: ${url} is already its heading link`);
-      else if (doi && doi === ownDoi) problems.push(`${id}: ${url} is already its doi`);
-      else if (doi && doiRelation(doi) === 'publication') {
-        problems.push(`${id}: ${url} links ${doi}, whose registrant is not a data host: a paper is the entry's doi, ` +
-          'and a deposit on an unlisted host needs its registrant added to DATA_REPOSITORY_REGISTRANTS ' +
-          '(site/scripts/parser/doi-relation.ts)');
-      }
-      seen.add(key);
+    if (e.url && depositKey(e.url) === key) return { problem: `${url} is already its heading link` };
+    if (ownDoi && key === `DOI ${ownDoi}`) return { problem: `${url} is already its doi` };
+    const stated = statedDoi(url);
+    const inPath = stated ? null : bareDoi(url.match(PATH_DOI)?.[1]?.replace(/\/+$/, '') ?? null);
+    const paper = [stated, inPath].find((d) => d && doiRelation(d) === 'publication');
+    if (paper) {
+      return { problem: `${url} links ${paper}, whose registrant is not a data host: a paper is the entry's doi, ` +
+        'and a deposit on an unlisted host needs its registrant added to DATA_REPOSITORY_REGISTRANTS ' +
+        '(site/scripts/parser/doi-relation.ts)' };
     }
-    expected.set(id, JSON.stringify(list.map((a) => String(a).trim())));
-  }
-  for (const r of db.prepare('SELECT item_id, data_links FROM dataset_entries ORDER BY item_id').all() as { item_id: string; data_links: string | null }[]) {
-    const want = expected.get(r.item_id) ?? null;
-    const have = r.data_links ?? null;
-    if (have !== want) {
-      problems.push(`${r.item_id}: stored data_links ${have ?? 'NULL'} differ from dataset-data-links.json (${want ?? 'none'}); run db:reseed-axes`);
-    }
-  }
-  return [ok(DATA_LINKS_LABEL, problems.length === 0, `${problems.length} problem(s): ${problems.slice(0, 10).join('; ')}`)];
+    return { key, text: url };
+  });
 }
 
 export const ENTRY_ROW_TWINS_LABEL =
@@ -876,8 +905,9 @@ export function checkOnRequest(db: Db, repoRoot: string = REPO_ROOT): CheckResul
  * belong in `dataset-accessions.json` or `dataset-data-links.json`.
  *
  * It compares within a page only. A resource that covers several species counts once for each species
- * (Benji, 2026-11-10, #791), so the same deposit on two species pages is not a twin. Two inventory rows
- * on one page that share a deposit are #715's case, not this one. A row whose cells cannot be read is
+ * (Benji, 2026-11-10, tucca-cellag/caail-planning#791), so the same deposit on two species pages is not
+ * a twin. Two inventory rows on one page that share a deposit are tucca-cellag/caail-planning#715's case,
+ * not this one. A row whose cells cannot be read is
  * skipped here, because `checkInventoryCells` already fails it. Each pair is reported once, naming
  * every deposit the two share.
  */

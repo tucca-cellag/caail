@@ -195,8 +195,8 @@ const isStatusWord = (s: string): s is StatusWord => (STATUS_WORDS as readonly s
 /** The forms a Data cell may take, worded for a check's label and a curator's reason; the words are quoted as literals. */
 export const DATA_CELL_FORMS = ['a deposit link', ...STATUS_WORDS.map((w) => `"${w}"`)].join(', ').replace(/, (?=[^,]*$)/, ' or ');
 
-/** An http(s) address with a host. */
-const WEB_ADDRESS = /^https?:\/\/[^\s/?#]+/i;
+/** An http(s) address with a host. Shared with db:check's data-links guard. */
+export const WEB_ADDRESS = /^https?:\/\/[^\s/?#]+/i;
 
 /**
  * Whole labels from the schema's own vocabulary that name no deposit: `none named` (the Paper
