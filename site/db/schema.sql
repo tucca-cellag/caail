@@ -157,7 +157,7 @@ CREATE TABLE datasets_on_request (
   page      TEXT NOT NULL,             -- dataset page basename ('Cow', 'CHOReference')
   study     TEXT NOT NULL,             -- the Study cell: the study as a reader names it, with authors and year
   statement TEXT NOT NULL,             -- the paper's own data availability statement, verbatim, without quotes
-  ordinal   INTEGER NOT NULL           -- document order across all dataset pages
+  ordinal   INTEGER NOT NULL           -- place in its page's table, counting from 0
 );
 
 -- Field reports — recurring institutional state-of-field surveys (GFI State of the

@@ -10,13 +10,13 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { openDb, importNdjson, REPO_ROOT, type Db } from './lib.js';
+import { openDb, importNdjson, exportNdjson, REPO_ROOT, type Db } from './lib.js';
 import { emitDatasetPage } from './emit.js';
-import { isDbOwnedDatasetPage } from './emit-files.js';
+import { emitAll, isDbOwnedDatasetPage } from './emit-files.js';
 import { extractOnRequest, ON_REQUEST_HEADING, readPagesOnRequest } from './extract.js';
 import { seedOnRequest } from './seed.js';
 import { checkOnRequest, ON_REQUEST_LABEL } from './check.js';
@@ -166,20 +166,15 @@ describe('edges: entry counting, verbatim text, row order, placement, drift and 
 
   it('refuses a DOI its [DOI](…) link could not hold: an angle bracket or an unbalanced parenthesis', () => {
     for (const doi of ['10.1000/a<b>c', '10.1000/a(b', '10.1000/a)b']) {
-      expect(result(dbWith('Cow', [{ ...ROW, doi }])).detail, doi).toContain('angle bracket or unbalanced parentheses');
+      expect(result(dbWith('Cow', [{ ...ROW, doi }])).detail, doi).toContain(`${doi}: cannot sit whole in its [DOI](https://doi.org/…) link`);
     }
     expect(result(dbWith('Cow', [{ ...ROW, doi: '10.1000/a(b)c' }])).ok).toBe(true);
   });
 
-  it('refuses ordinals db:bootstrap would not write: a gap, or a page out of ON_REQUEST_PAGES order', () => {
+  it('refuses a page\'s first row numbered anything but 0', () => {
     const db = openDb();
-    const ins = db.prepare('INSERT INTO datasets_on_request(doi,page,study,statement,ordinal) VALUES(?,?,?,?,?)');
-    ins.run('10.1000/fish', 'Fish', 'S', 'Ask.', 0);
-    ins.run('10.1000/cow', 'Cow', 'S', 'Ask.', 1);
-    expect(result(db).detail).toContain('10.1000/cow: ordinal 1 is out of place');
-    const gap = openDb();
-    gap.prepare('INSERT INTO datasets_on_request(doi,page,study,statement,ordinal) VALUES(?,?,?,?,?)').run('10.1000/a', 'Cow', 'S', 'Ask.', 5);
-    expect(result(gap).detail).toContain('ordinal 5 is out of place');
+    db.prepare('INSERT INTO datasets_on_request(doi,page,study,statement,ordinal) VALUES(?,?,?,?,?)').run('10.1000/a', 'Cow', 'S', 'Ask.', 5);
+    expect(result(db).detail).toContain('10.1000/a: ordinal 5 is out of place');
   });
 });
 
@@ -192,7 +187,7 @@ describe('one section per page, one page per study', () => {
     const src = join(TMP, 'Two.md');
     writeFileSync(src, two);
     expect(() => extractOnRequest(src)).toThrow(/2 "## Data on request" sections/);
-    expect(() => emitFixture('Two', two, [ROW])).toThrow(/2 "## Data on request" sections/);
+    expect(() => emitFixture('Two', two, [ROW])).toThrow(/Two\.md: 2 "## Data on request" sections; a page holds one, so merge them/);
     const twice = join(TMP, 'Twice.md');
     writeFileSync(twice, `# Twice\n\n## Data on request\n\n${TABLE}${line('10.1000/a')}${line('10.1000/a')}`);
     expect(() => extractOnRequest(twice)).toThrow(/10\.1000\/a is listed twice/);
@@ -319,6 +314,198 @@ describe('seedOnRequest and checkOnRequest', () => {
   });
 });
 
+describe('held DOIs, link-safe DOIs and statements that render as stored', () => {
+  it('refuses an on-request DOI that a curated entry\'s heading links, when its doi column is empty', () => {
+    const db = dbWith('Cow', [ROW]);
+    db.exec('PRAGMA foreign_keys = OFF');
+    db.prepare("INSERT INTO dataset_entries(item_id,name,url,page,section,kind,heading_md,body_md,doi,doi_source,ordinal) VALUES('ds:linked-entry','E','https://doi.org/10.1000/ABC','Cow','S','other','[E](https://doi.org/10.1000/ABC)','b',NULL,NULL,0)").run();
+    expect(result(db).detail).toContain('also the paper of ds:linked-entry');
+  });
+
+  it('refuses a DOI whose [DOI](…) link would resolve to another one: a ?, #, % or backslash', () => {
+    for (const doi of ['10.1000/a?b', '10.1000/a#b', '10.1000/a%41', '10.1000/a\\_b']) {
+      const r = result(dbWith('Cow', [{ ...ROW, doi }]));
+      expect(r.ok, doi).toBe(false);
+      expect(r.detail, doi).toContain(`${doi}: cannot sit whole in its [DOI](https://doi.org/…) link`);
+    }
+  });
+
+  it('refuses a statement holding Markdown or HTML the page would render differently from the stored words', () => {
+    const altered = [
+      'See *Table 1*.', 'the _final_ data', 'Data ~~withdrawn~~ on request.', 'Ask the author<sup>1</sup>.',
+      'Data \\* on request.', 'Use `code`.', 'R&amp;D data.', 'See [here](https://x.org).', 'See <https://x.org>.',
+    ];
+    for (const statement of altered) {
+      const r = result(dbWith('Cow', [{ ...ROW, statement }]));
+      expect(r.ok, statement).toBe(false);
+      expect(r.detail, statement).toContain(`${ROW.doi}: statement holds Markdown or HTML`);
+    }
+  });
+
+  it('passes a statement whose bare URL or email address the page links but shows unchanged', () => {
+    expect(result(dbWith('Cow', [{ ...ROW, statement: 'Ask a.b@uni.edu or see https://zenodo.org/r/1 and data_v1_final.' }])).ok).toBe(true);
+  });
+
+  it('refuses a statement stored inside its own quotes, double or single, matched or not, which the page would show doubled', () => {
+    const wrapped = [
+      '"Data will be made available on request."', '“Data will be made available on request.”',
+      '"Data will be made available on request.”', '„Data will be made available on request.“',
+      '‘Data will be made available on request.’', "'Data will be made available on request.'",
+      // an apostrophe inside a single-quoted wrap, a reversed opener, low-9 single and guillemets
+      '‘The study’s data are available on request.’', "'The authors' data are available on request.'",
+      '”Data will be made available on request.”', '’Data will be made available on request.’',
+      '‚Data will be made available on request.‘', '«Data will be made available on request.»',
+    ];
+    for (const statement of wrapped) {
+      const r = result(dbWith('Cow', [{ ...ROW, statement }]));
+      expect(r.ok, statement).toBe(false);
+      expect(r.detail, statement).toContain(`${ROW.doi}: statement is stored inside its own quotes`);
+    }
+  });
+
+  it('passes a statement that only starts or ends with a quoted word', () => {
+    for (const statement of ['"Raw" data will be made available on request.', '"Raw" counts and "processed"', "Ask the authors' lab."]) {
+      expect(result(dbWith('Cow', [{ ...ROW, statement }])).ok, statement).toBe(true);
+    }
+  });
+
+  it('refuses a DOI holding an entity reference, which the link destination decodes', () => {
+    for (const doi of ['10.1000/a&amp;b', '10.1000/a&#38;b', '10.1000/a&#x26;b']) {
+      const r = result(dbWith('Cow', [{ ...ROW, doi }]));
+      expect(r.ok, doi).toBe(false);
+      expect(r.detail, doi).toContain(`${doi}: cannot sit whole in its [DOI](https://doi.org/…) link`);
+    }
+    expect(result(dbWith('Cow', [{ ...ROW, doi: '10.1000/a&b' }])).ok).toBe(true);
+  });
+});
+
+describe('a pipe in the DOI, every holder named, and the page\'s own definitions', () => {
+  it('refuses a DOI holding a |, which would split its row of the emitted table', () => {
+    const r = result(dbWith('Cow', [{ ...ROW, doi: '10.1000/a|b' }]));
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('10.1000/a|b: holds a |, which would split its row of the page\'s table');
+  });
+
+  it('names every holder of a DOI, not only the last one read', () => {
+    const db = dbWith('Cow', [ROW]);
+    db.exec('PRAGMA foreign_keys = OFF');
+    db.prepare("INSERT INTO dataset_rows(item_id,page,cells_json,subseries,ordinal) VALUES('ds:held-row','Cow',?,NULL,0)")
+      .run(JSON.stringify(['Held', '[DOI](https://doi.org/10.1000/abc)', 'supplementary', 'x', 'x', 'x', 'x', 'x']));
+    db.prepare("INSERT INTO dataset_entries(item_id,name,url,page,section,kind,heading_md,body_md,doi,doi_source,ordinal) VALUES('ds:held-entry','E',NULL,'Cow','S','other','E','b','10.1000/abc','manual',0)").run();
+    const detail = result(db).detail;
+    expect(detail).toContain('ds:held-row');
+    expect(detail).toContain('ds:held-entry');
+  });
+
+  it('refuses a statement a link reference or footnote defined on its page would turn into a link', () => {
+    const rootWith = (page: string): string => {
+      const root = mkdtempSync(join(tmpdir(), 'caail-onreq-defs-'));
+      mkdirSync(join(root, 'Datasets'));
+      writeFileSync(join(root, 'Datasets', 'Cow.md'), page);
+      return root;
+    };
+    const defined = rootWith('# Cow\n\nIntro.\n\n[1]: https://x.org/one\n\n[^n]: A note.\n');
+    // GFM resolves a definition nested in a blockquote or a list item document-wide.
+    const nested = rootWith('# Cow\n\n> A quote.\n>\n> [2]: https://x.org/two\n\n- An item.\n\n  [3]: https://x.org/three\n');
+    for (const [statement, root] of [['See [1] on request.', defined], ['Ask the author[^n].', defined],
+      ['See [2] on request.', nested], ['See [3] on request.', nested]] as const) {
+      const r = result(dbWith('Cow', [{ ...ROW, statement }]), root);
+      expect(r.ok, statement).toBe(false);
+      expect(r.detail, statement).toContain(`${ROW.doi}: statement holds Markdown or HTML`);
+    }
+    const bare = rootWith('# Cow\n\nIntro.\n');
+    expect(result(dbWith('Cow', [{ ...ROW, statement: 'See [1] on request.' }]), bare).ok).toBe(true);
+  });
+});
+
+describe('ordinals number each page\'s list on its own', () => {
+  const insert = (db: Db, rows: [string, string, number][]) => {
+    const ins = db.prepare('INSERT INTO datasets_on_request(doi,page,study,statement,ordinal) VALUES(?,?,?,?,?)');
+    for (const [doi, page, ordinal] of rows) ins.run(doi, page, 'S', 'Ask.', ordinal);
+    return db;
+  };
+
+  it('passes a row added on one page without renumbering another', () => {
+    const db = insert(openDb(), [['10.1000/cow-a', 'Cow', 0], ['10.1000/cow-b', 'Cow', 1], ['10.1000/fish', 'Fish', 0]]);
+    expect(result(db).ok).toBe(true);
+  });
+
+  it('refuses an ordinal out of place on its own page: a gap, or two rows given one ordinal', () => {
+    const gap = insert(openDb(), [['10.1000/a', 'Cow', 0], ['10.1000/b', 'Cow', 2], ['10.1000/fish', 'Fish', 0]]);
+    expect(result(gap).detail).toContain('10.1000/b: ordinal 2 is out of place');
+    expect(result(gap).detail).not.toContain('10.1000/fish');
+    const tie = insert(openDb(), [['10.1000/a', 'Cow', 0], ['10.1000/b', 'Cow', 0]]);
+    expect(result(tie).detail).toContain('10.1000/b: ordinal 0 is out of place');
+  });
+
+  it('has bootstrap number each page\'s rows from 0, in table order', () => {
+    const root = mkdtempSync(join(tmpdir(), 'caail-onreq-per-page-'));
+    mkdirSync(join(root, 'Datasets'));
+    const table = (dois: string[]) => '# P\n\n## Data on request\n\n| Study | Paper | Data availability statement |\n|---|---|---|\n' +
+      dois.map((d) => `| S | [DOI](https://doi.org/${d}) | "Ask." |\n`).join('');
+    writeFileSync(join(root, 'Datasets', 'Cow.md'), table(['10.1000/cow']));
+    writeFileSync(join(root, 'Datasets', 'Fish.md'), table(['10.1000/fish-a', '10.1000/fish-b']));
+    const db = openDb();
+    seedOnRequest(db, root);
+    expect(db.prepare('SELECT doi,page,ordinal FROM datasets_on_request ORDER BY page, ordinal').all()).toEqual([
+      { doi: '10.1000/cow', page: 'Cow', ordinal: 0 },
+      { doi: '10.1000/fish-a', page: 'Fish', ordinal: 0 },
+      { doi: '10.1000/fish-b', page: 'Fish', ordinal: 1 },
+    ]);
+  });
+
+  it('serves the rows in ON_REQUEST_PAGES order, then each page\'s own order', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'caail-onreq-api-order-'));
+    const rows = [['10.1000/a', 'CHOReference', 0], ['10.1000/b', 'Cow', 0], ['10.1000/c', 'Cow', 1]] as const;
+    writeFileSync(join(dir, 'datasets_on_request.ndjson'),
+      rows.map(([doi, page, ordinal]) => JSON.stringify({ doi, page, study: 'S', statement: 'Ask.', ordinal })).join('\n') + '\n');
+    expect(readOnRequestRows(dir).map((r) => r.doi)).toEqual(['10.1000/b', '10.1000/c', '10.1000/a']);
+  });
+
+  it('exports the NDJSON grouped by page, so a row added on one page moves no other page\'s lines', () => {
+    const db = insert(openDb(), [['10.1000/cow-a', 'Cow', 0], ['10.1000/fish', 'Fish', 0], ['10.1000/cow-b', 'Cow', 1]]);
+    const dir = mkdtempSync(join(tmpdir(), 'caail-onreq-export-'));
+    exportNdjson(db, dir);
+    const lines = readFileSync(join(dir, 'datasets_on_request.ndjson'), 'utf-8').trim().split('\n');
+    expect(lines.map((l) => (JSON.parse(l) as { doi: string }).doi)).toEqual(['10.1000/cow-a', '10.1000/cow-b', '10.1000/fish']);
+  });
+});
+
+describe('a section on a page no page list names', () => {
+  const SECTION = '## Data on request\n\n| Study | Paper | Data availability statement |\n|---|---|---|\n| S | [DOI](https://doi.org/10.1000/a) | "Ask." |\n';
+  const rootWith = (name: string, text: string): string => {
+    const root = mkdtempSync(join(tmpdir(), 'caail-onreq-unlisted-'));
+    mkdirSync(join(root, 'Datasets'));
+    writeFileSync(join(root, 'Datasets', name), text);
+    return root;
+  };
+
+  it('has bootstrap and parse refuse it on a new dataset page or the index, rather than ignore it', () => {
+    expect(() => readPagesOnRequest(rootWith('Rabbit.md', `# Rabbit\n\n${SECTION}`))).toThrow(/Rabbit\.md has a "## Data on request" section/);
+    // ON_REQUEST_PAGES is derived, so the message names the lists a page is added to.
+    expect(() => readPagesOnRequest(rootWith('Rabbit.md', `# Rabbit\n\n${SECTION}`))).toThrow(/SPECIES_PAGES.*INVENTORY_PAGES.*REFERENCE_PAGES/);
+    expect(() => seedOnRequest(openDb(), rootWith('Rabbit.md', `# Rabbit\n\n${SECTION}`))).toThrow(/Rabbit\.md/);
+    expect(() => readPagesOnRequest(rootWith('README.md', `# Datasets\n\n${SECTION}`))).toThrow(/README\.md has a "## Data on request" section/);
+  });
+
+  it('has db:emit refuse one on Benchmarks before writing anything, rather than delete it', () => {
+    const root = mkdtempSync(join(tmpdir(), 'caail-onreq-emit-'));
+    mkdirSync(join(root, 'Datasets'));
+    for (const f of ['Papers.md', 'Software.md', 'Databases.md']) copyFileSync(join(REPO_ROOT, f), join(root, f));
+    const bench = readFileSync(join(REPO_ROOT, 'Datasets', 'Benchmarks.md'), 'utf-8');
+    writeFileSync(join(root, 'Datasets', 'Benchmarks.md'), bench);
+    expect(() => emitAll(importNdjson(), root)).not.toThrow();
+    writeFileSync(join(root, 'Datasets', 'Benchmarks.md'), `${bench}\n${SECTION}`);
+    expect(() => emitAll(importNdjson(), root)).toThrow(/Benchmarks\.md has a "## Data on request" section/);
+    expect(readFileSync(join(root, 'Datasets', 'Benchmarks.md'), 'utf-8')).toContain(SECTION);
+  });
+
+  it('leaves the directory\'s CLAUDE.md and a private .local.md alone, since neither is a published page', () => {
+    expect(readPagesOnRequest(rootWith('CLAUDE.md', `# Schema\n\n${SECTION}`))).toEqual([]);
+    expect(readPagesOnRequest(rootWith('Rabbit.local.md', `# Notes\n\n${SECTION}`))).toEqual([]);
+  });
+});
+
 describe('the Data on request list on the real corpus', () => {
   it('round-trips every page that may carry one', () => {
     const db = importNdjson();
@@ -328,6 +515,15 @@ describe('the Data on request list on the real corpus', () => {
       writeFileSync(out, emitDatasetPage(db, src, page));
       expect(extractOnRequest(out), page).toEqual(extractOnRequest(src));
     }
+  });
+
+  it('is what a fresh seed from the pages writes, ordinals included', () => {
+    const db = openDb();
+    seedOnRequest(db, REPO_ROOT);
+    type Placed = { page: string; ordinal: number };
+    const byPlace = (a: Placed, b: Placed): number => a.page.localeCompare(b.page) || a.ordinal - b.ordinal;
+    const seeded = db.prepare('SELECT doi, page, study, statement, ordinal FROM datasets_on_request').all() as Placed[];
+    expect(seeded.sort(byPlace)).toEqual(readOnRequestRows().sort(byPlace));
   });
 
   it('serves every committed row through the parser, in order, marked on-request and never as a dataset id', () => {
