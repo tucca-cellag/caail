@@ -38,6 +38,8 @@ import type { TaxonomyData } from '../parser/types.js';
 import { bareDoi, DOI_SHAPE } from '../parser/doi-relation.js';
 import { parseMarkdown } from '../parser/markdown.js';
 import { toString as mdastToString } from 'mdast-util-to-string';
+import { visit } from 'unist-util-visit';
+import type { Definition, FootnoteDefinition } from 'mdast';
 import {
   DATA_CELL_FORMS, fitsDoiLink, labelCells, parseRowCells, readDataCell, readInventoryHeader, readLinkCell, statedDoi,
   linkDestinations,
@@ -569,35 +571,41 @@ export const ON_REQUEST_LABEL =
   'list from 0';
 
 /**
- * A statement that is one quoted span: it opens and closes with a mark of one family, double
- * (`"` `“` `”` `„`) or single (`'` `‘` `’`), matched or not, and holds no other mark of that
- * family. `"Raw" counts and "processed"` holds inner marks, so it is the paper's own quoting.
+ * A statement stored inside its own quotes: it opens and closes with a mark of one family,
+ * matched or not. Double (`"` `“` `”` `„` `«` `»`): only when no other double mark sits inside,
+ * since `"Raw" counts and "processed"` is the paper's own quoting. Single (`'` `‘` `’` `‚`):
+ * whatever sits inside, since an inner single mark is nearly always an apostrophe
+ * (`‘The study’s data …’`).
  */
-const WRAPPED_IN_QUOTES = /^(?:["“„][^"“”„]*["“”]|['‘][^'‘’]*['’])$/;
+const WRAPPED_IN_QUOTES = /^(?:["“”„«][^"“”„«»]*["“”»]|['‘’‚].*['’‘])$/s;
 
 /**
  * Whether a statement renders as the words stored. db:emit writes it into a table cell between
- * straight quotes, so that cell is parsed with GFM, as GitHub renders the page, and must come
- * back as the same text holding no raw HTML. The test is whether the rendered text changes:
- * emphasis, strikethrough, code, a backslash escape, an entity reference that decodes, a link
- * or an image fails, since each shows different words or markup from the ones the API serves.
- * A backslash before a letter, a bare `&`, and a bare URL or email address all pass (GFM links
- * the last two, but shows them as written). The site adds smart punctuation to every page,
- * turning straight quotes, `--` and `...` into typographic ones; that changes glyphs, never
- * words, and this does not model it.
+ * straight quotes, so that cell is parsed with GFM (remark-gfm, the Markdown GitHub and the
+ * site share) and must come back as the same text holding no raw HTML. The test is whether
+ * the rendered text changes: any Markdown or HTML that alters it fails (emphasis, code, a
+ * backslash escape, an entity reference that decodes, a link, a reference the page defines,
+ * among others), since the page would then show different words or markup from the ones the
+ * API serves. A backslash before a letter, a bare `&`, and a bare URL or email address pass
+ * (GFM links the last two but shows them as written).
  *
- * `definitions` is the source of the page's link reference and footnote definitions
- * (`pageDefinitions`), parsed with the cell, since a `[1]` or `[^1]` the page defines renders
- * as a link on that page and as plain text anywhere else.
+ * Two renderings are not modelled. GitHub's own extensions beyond GFM (`$…$` math,
+ * `:shortcode:` emoji) are not in remark-gfm. The site's smart punctuation turns straight
+ * quotes, `--` and `...` into typographic ones on every page, which changes glyphs, never
+ * words.
+ *
+ * `definitions` is the page's link reference and footnote definitions (`pageDefinitions`),
+ * parsed with the cell, since a `[1]` or `[^1]` the page defines renders as a link on that
+ * page and as plain text anywhere else.
  */
 export function statementRendersAsStored(statement: string, definitions = ''): boolean {
   const cell = `"${statement}"`;
   const table = parseMarkdown(`| s |\n|---|\n| ${cell} |\n\n${definitions}`).children[0];
   const node = table?.type === 'table' ? table.children[1]?.children[0] : undefined;
   if (!node) return false;
-  const hasHtml = (n: { type: string; children?: unknown[] }): boolean =>
-    n.type === 'html' || (n.children ?? []).some((c) => hasHtml(c as { type: string; children?: unknown[] }));
-  return !hasHtml(node) && mdastToString(node) === cell;
+  let html = false;
+  visit(node, 'html', () => { html = true; });
+  return !html && mdastToString(node) === cell;
 }
 
 /**
@@ -608,13 +616,11 @@ export function statementRendersAsStored(statement: string, definitions = ''): b
  */
 export function pageDefinitions(src: string): string {
   const out: string[] = [];
-  const walk = (n: { type: string; label?: string | null; identifier?: string; children?: unknown[] }): void => {
-    const label = n.label ?? n.identifier;
-    if (n.type === 'definition' && label) out.push(`[${label}]: x`);
-    else if (n.type === 'footnoteDefinition' && label) out.push(`[^${label}]: x`);
-    for (const c of n.children ?? []) walk(c as typeof n);
-  };
-  walk(parseMarkdown(src));
+  visit(parseMarkdown(src), ['definition', 'footnoteDefinition'], (n) => {
+    const d = n as Definition | FootnoteDefinition;
+    const label = d.label ?? d.identifier;
+    out.push(d.type === 'definition' ? `[${label}]: x` : `[^${label}]: x`);
+  });
   return out.join('\n\n');
 }
 

@@ -351,6 +351,10 @@ describe('held DOIs, link-safe DOIs and statements that render as stored', () =>
       '"Data will be made available on request."', '“Data will be made available on request.”',
       '"Data will be made available on request.”', '„Data will be made available on request.“',
       '‘Data will be made available on request.’', "'Data will be made available on request.'",
+      // an apostrophe inside a single-quoted wrap, a reversed opener, low-9 single and guillemets
+      '‘The study’s data are available on request.’', "'The authors' data are available on request.'",
+      '”Data will be made available on request.”', '’Data will be made available on request.’',
+      '‚Data will be made available on request.‘', '«Data will be made available on request.»',
     ];
     for (const statement of wrapped) {
       const r = result(dbWith('Cow', [{ ...ROW, statement }]));
@@ -479,7 +483,7 @@ describe('a section on a page no page list names', () => {
   it('has bootstrap and parse refuse it on a new dataset page or the index, rather than ignore it', () => {
     expect(() => readPagesOnRequest(rootWith('Rabbit.md', `# Rabbit\n\n${SECTION}`))).toThrow(/Rabbit\.md has a "## Data on request" section/);
     // ON_REQUEST_PAGES is derived, so the message names the lists a page is added to.
-    expect(() => readPagesOnRequest(rootWith('Rabbit.md', `# Rabbit\n\n${SECTION}`))).toThrow(/SPECIES_PAGES or REFERENCE_PAGES/);
+    expect(() => readPagesOnRequest(rootWith('Rabbit.md', `# Rabbit\n\n${SECTION}`))).toThrow(/SPECIES_PAGES.*INVENTORY_PAGES.*REFERENCE_PAGES/);
     expect(() => seedOnRequest(openDb(), rootWith('Rabbit.md', `# Rabbit\n\n${SECTION}`))).toThrow(/Rabbit\.md/);
     expect(() => readPagesOnRequest(rootWith('README.md', `# Datasets\n\n${SECTION}`))).toThrow(/README\.md has a "## Data on request" section/);
   });

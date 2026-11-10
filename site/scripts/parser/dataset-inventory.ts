@@ -148,13 +148,15 @@ const WHOLE_DEST = new RegExp(`^${DEST}$`);
  * Whether a bare DOI can sit in a `https://doi.org/<doi>` link and resolve to itself. It must
  * read whole as one destination under `DEST` (no whitespace, parentheses only in balanced
  * pairs) and hold none of the characters that change where the link goes: `<` or `>` (an
- * angle-bracket destination), `\` (a Markdown escape), an entity reference such as `&amp;`
- * (which a link destination decodes), `?` or `#` (the URL's query or fragment, which never
- * reaches doi.org, and where `statedDoi` cuts a DOI short) and `%` (a percent escape doi.org
- * decodes into a different DOI). A bare `&` is kept as written, so it passes.
+ * angle-bracket destination), `\` (a Markdown escape), `?` or `#` (the URL's query or
+ * fragment, which never reaches doi.org, and where `statedDoi` cuts a DOI short), `%` (a
+ * percent escape doi.org decodes into a different DOI), and anything shaped like a named
+ * entity reference, `&name;`, which a link destination decodes when HTML defines the name.
+ * That shape is refused whether or not it does, since telling them apart needs the whole
+ * entity table; a numeric reference holds `#` and is refused already. A bare `&` passes.
  */
 export function fitsDoiLink(doi: string): boolean {
-  return WHOLE_DEST.test(doi) && !/[<>\\?#%]/.test(doi) && !/&(?:#\d+|#x[0-9a-f]+|[a-z][a-z0-9]*);/i.test(doi);
+  return WHOLE_DEST.test(doi) && !/[<>\\?#%]/.test(doi) && !/&[a-z][a-z0-9]*;/i.test(doi);
 }
 const BADGE_LINK = new RegExp('^\\[`([^`]+)`\\]\\(' + DEST + '\\)$');
 /** A link whose text is plain words: group 1 is the text, group 2 the destination. */

@@ -374,7 +374,7 @@ export function refuseUnlistedOnRequest(repoRoot: string, who: string): void {
     if (extractOnRequest(join(dir, file)) === null) continue;
     const why = file === `${BENCHMARKS_PAGE}.md` || file === 'README.md'
       ? 'and that page carries none'
-      : 'and only a page in ON_REQUEST_PAGES carries one; that list is built from SPECIES_PAGES or REFERENCE_PAGES in site/scripts/parser/datasets.ts, so add the page to one of those first';
+      : 'and only a page in ON_REQUEST_PAGES carries one. That list is built in site/scripts/parser/datasets.ts from SPECIES_PAGES (a species page), INVENTORY_PAGES (any other page with an inventory table) and REFERENCE_PAGES (a page of curated entries only), so add the page to the one that fits first';
     throw new Error(`${who}: ${file} has a "## ${ON_REQUEST_HEADING}" section, ${why}`);
   }
 }
