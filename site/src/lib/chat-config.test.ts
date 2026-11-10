@@ -25,10 +25,18 @@ describe('chat-config: the one switch for the Ask CAAIL box (tucca-cellag/caail-
   it('hides it when the variable is absent', async () => {
     const c = await configWith(undefined);
     expect(c.CHAT_ENABLED).toBe(false);
+    expect(c.CHAT_API).toBeUndefined();
   });
 
-  it('hides it when the value is whitespace or not an http(s) URL, since the box could not answer', async () => {
-    for (const value of ['   ', 'not a url', 'chat.invalid/caail/ask', 'ftp://chat.invalid/caail/ask']) {
+  it('hides it when the value is not an endpoint the HTTPS site could reach, since the box could not answer', async () => {
+    const unusable = [
+      '   ', 'not a url', 'chat.invalid/caail/ask', 'ftp://chat.invalid/caail/ask',
+      // site/.env.example's placeholder, copied as-is
+      'https://<backend-host>/caail/ask',
+      // plain http to a real host is mixed content on the HTTPS site, so the browser blocks it
+      'http://chat.example/caail/ask',
+    ];
+    for (const value of unusable) {
       const c = await configWith(value);
       expect(c.CHAT_ENABLED, JSON.stringify(value)).toBe(false);
       expect(c.CHAT_API, JSON.stringify(value)).toBeUndefined();
@@ -39,5 +47,11 @@ describe('chat-config: the one switch for the Ask CAAIL box (tucca-cellag/caail-
     const c = await configWith('  https://chat.invalid/caail/ask\n');
     expect(c.CHAT_ENABLED).toBe(true);
     expect(c.CHAT_API).toBe('https://chat.invalid/caail/ask');
+  });
+
+  it('accepts an upper-case scheme, and plain http only to a local backend', async () => {
+    for (const value of ['HTTPS://chat.invalid/caail/ask', 'http://localhost:8787/caail/ask', 'http://127.0.0.1:8787/caail/ask']) {
+      expect((await configWith(value)).CHAT_ENABLED, value).toBe(true);
+    }
   });
 });
