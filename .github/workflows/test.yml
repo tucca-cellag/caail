@@ -327,17 +327,18 @@ jobs:
         run: pnpm --dir site test:e2e
 
       # The deploy builds without an endpoint whenever the repo variable is
-      # unset, which is how the chat box is hidden. Build that state too and run
-      # the specs that differ between the two builds. From a clean dist, since an
-      # incremental build can zero-fill pagefind's files (site/CLAUDE.md), and
-      # with the variable empty for both steps, as an unset repo variable is.
+      # unset, which is how the chat box is hidden, so that build gets the whole
+      # suite too; the chat specs pick their own side through e2e/chat-build.ts.
+      # From a clean dist, since an incremental build can zero-fill pagefind's
+      # files (site/CLAUDE.md), and with the variable empty for both steps, as an
+      # unset repo variable is.
       - name: Build without a chat endpoint
         run: rm -rf site/dist && pnpm --dir site build
         env:
           PUBLIC_CAAIL_CHAT_API: ''
 
-      - name: End-to-end, built without a chat endpoint
-        run: pnpm --dir site exec playwright test e2e/chat-widget-hidden.spec.ts e2e/privacy.spec.ts
+      - name: End-to-end + accessibility tests, built without a chat endpoint
+        run: pnpm --dir site test:e2e
         env:
           PUBLIC_CAAIL_CHAT_API: ''
 

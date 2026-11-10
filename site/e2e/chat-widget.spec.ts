@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { NOTICE_FACTS } from '../src/content/ask-caail-disclosure';
-import { CHAT_BUILT } from './chat-build';
+import { CHAT_BUILT, CHAT_ISLAND } from './chat-build';
 
 /**
  * Ask CAAIL widget.
@@ -151,6 +151,16 @@ test('the notice links to the privacy statement', async ({ page }) => {
   // level 1: the page also carries an h2 "Changes to This Privacy Statement",
   // which makes an unqualified name match ambiguous under strict mode.
   await expect(page.getByRole('heading', { level: 1, name: 'Privacy Statement' })).toBeVisible();
+});
+
+test('each page carries exactly one widget island, the selector the hidden-state spec counts', async ({ page }) => {
+  // The other direction of chat-widget-hidden.spec.ts: if CHAT_ISLAND matched nothing in any
+  // build (a renamed component, a hash-only chunk name), that spec would pass on a build that
+  // still mounts the widget. Here it has to find the island.
+  for (const route of ['./', './privacy/']) {
+    await page.goto(route);
+    await expect(page.locator(CHAT_ISLAND), route).toHaveCount(1);
+  }
 });
 
 test('the privacy statement carries no "not offered" notice while the box is offered', async ({ page }) => {

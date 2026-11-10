@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { CHAT_BUILT } from './chat-build';
+import { CHAT_BUILT, CHAT_ISLAND } from './chat-build';
 
 /**
  * Ask CAAIL, built without a chat endpoint: the box is not offered
@@ -16,9 +16,9 @@ test.skip(CHAT_BUILT, 'built with a chat endpoint; chat-widget.spec.ts runs inst
 for (const route of ['./', './software/', './papers/explorer/', './privacy/']) {
   test(`no widget and no widget island on ${route}`, async ({ page }) => {
     await page.goto(route);
-    // The island itself, not only the button: an island left in the markup still loads the
-    // widget's script and hydrates it, and with no island nothing can render the button.
-    await expect(page.locator('astro-island[component-url*="CaailChatWidget"]')).toHaveCount(0);
+    // The island is the load-bearing check (see CHAT_ISLAND); the button and wrapper checks
+    // below only confirm nothing else drew one.
+    await expect(page.locator(CHAT_ISLAND)).toHaveCount(0);
     await expect(page.locator('.chat-fab')).toHaveCount(0);
     await expect(page.locator('.chat-widget')).toHaveCount(0);
   });
