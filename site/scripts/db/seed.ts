@@ -349,16 +349,23 @@ interface LicenseCache { repos: Record<string, { spdx?: string | null }>; }
 interface ManualLicenses { catalog: Record<string, string>; datasets: Record<string, string>; }
 
 /**
- * A committed side file's JSON, or `fallback` when the file is absent. A file that is not JSON fails
- * naming itself, since `db:reseed-axes` and `db:bootstrap` read several and a bare SyntaxError names none.
+ * A committed side file's JSON object, or `fallback` when the file is absent. Every side file is one
+ * object, so a file that is not JSON, or is JSON but not an object (`null`, a list), fails naming
+ * itself: `db:reseed-axes` and `db:bootstrap` read several, and a bare SyntaxError or TypeError names
+ * none.
  */
 const readJson = <T>(path: string, fallback: T): T => {
   if (!existsSync(path)) return fallback;
+  let parsed: unknown;
   try {
-    return JSON.parse(readFileSync(path, 'utf-8')) as T;
+    parsed = JSON.parse(readFileSync(path, 'utf-8'));
   } catch (err) {
     throw new Error(`${path} is not JSON: ${(err as Error).message}`);
   }
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    throw new Error(`${path} is not a JSON object`);
+  }
+  return parsed as T;
 };
 
 /**

@@ -80,4 +80,14 @@ describe('a side file that is not JSON (tucca-cellag/caail-planning#752, review 
       expect(() => fold(db, bad), fold.name).toThrow(`${bad} is not JSON`);
     }
   });
+
+  it('fails naming the file when it is JSON but not an object', () => {
+    for (const body of ['null', '[]', '"datasets"']) {
+      const bad = join(mkdtempSync(join(tmpdir(), 'caail-not-object-')), 'side.json');
+      writeFileSync(bad, body);
+      for (const fold of [seedAccessions, seedDataLinks, seedSubseries]) {
+        expect(() => fold(importNdjson(), bad), `${fold.name} ${body}`).toThrow(`${bad} is not a JSON object`);
+      }
+    }
+  });
 });
