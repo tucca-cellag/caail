@@ -12,7 +12,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { openDb, importNdjson, REPO_ROOT, ACCESSION_SOURCE, type Db } from './lib.js';
-import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkAxisBijection, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, checkRowTagParity, checkFineTagSeedDrift, checkInventoryCells, INVENTORY_CELLS_LABEL, INVENTORY_CELLS_SHOWN, checkEntryRowTwins, ENTRY_ROW_TWINS_LABEL, checkAccessions, ACCESSIONS_LABEL, ACCESSION_FAMILIES, checkDataLinks, DATA_LINKS_LABEL, runChecks } from './check.js';
+import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkAxisBijection, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, checkRowTagParity, checkFineTagSeedDrift, checkInventoryCells, INVENTORY_CELLS_LABEL, INVENTORY_CELLS_SHOWN, checkInventoryPages, INVENTORY_PAGES_LABEL, checkEntryRowTwins, ENTRY_ROW_TWINS_LABEL, checkAccessions, ACCESSIONS_LABEL, ACCESSION_FAMILIES, checkDataLinks, DATA_LINKS_LABEL, runChecks } from './check.js';
 import { NON_DEPOSIT_LABELS, parseRowCells, readInventoryHeader, STATUS_WORDS, SUPPLEMENT_PREFIX } from '../parser/dataset-inventory.js';
 import { THEME_SLUGS, FINE_TAGS } from './seed.js';
 
@@ -956,6 +956,29 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
     expect(result(noTable).ok).toBe(false);
     const short = miniDb(); insRow(short, 'ds:study-c', 'Cow', [BADGE]);
     expect(result(short).ok).toBe(false);
+  });
+});
+
+describe('checkInventoryPages (tucca-cellag/caail-planning#752)', () => {
+  const TABLE = '## Complete data inventory\n\n| Study | Paper | Data |\n| --- | --- | --- |\n| A | none named | supplementary |\n';
+  const rootWith = (pages: Record<string, string>): string => {
+    const root = mkdtempSync(join(tmpdir(), 'caail-inv-pages-'));
+    mkdirSync(join(root, 'Datasets'));
+    for (const [page, body] of Object.entries(pages)) writeFileSync(join(root, 'Datasets', `${page}.md`), `# ${page}\n\n${body}`);
+    return root;
+  };
+  const result = (root: string) => checkInventoryPages(root).find((r) => r.label === INVENTORY_PAGES_LABEL)!;
+
+  it('fails an inventory table on a page outside INVENTORY_PAGES, CrossSpecies or an unlisted page, naming each', () => {
+    const r = result(rootWith({ CrossSpecies: TABLE, Brandnew: TABLE, Cow: TABLE }));
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('Datasets/CrossSpecies.md has a "## Complete data inventory" table');
+    expect(r.detail).toContain('Datasets/Brandnew.md');
+    expect(r.detail).not.toContain('Cow.md');
+  });
+
+  it('passes an inventory table on an inventory page, and a reference page of entries only', () => {
+    expect(result(rootWith({ Cow: TABLE, CrossSpecies: '## Section\n\n### An entry\n\nProse.\n' })).ok).toBe(true);
   });
 });
 

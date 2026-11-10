@@ -22,6 +22,8 @@
  *    Research-area axis only; the method-row axis is deliberately not gated.
  *  - inventory Data cells: a deposit link, `supplementary` or `unavailable`, read by the
  *    parser's own `readDataCell` (checkInventoryCells).
+ *  - inventory pages: no page outside INVENTORY_PAGES carries an inventory table
+ *    (checkInventoryPages).
  *  - twins: no curated entry and inventory row on one page name the same deposit
  *    (checkEntryRowTwins).
  *  - curated entries' own accessions: keys resolve, values are bare accessions, the column
@@ -30,12 +32,14 @@
  *    rather than a paper, the column matches dataset-data-links.json (checkDataLinks).
  */
 
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { importNdjson, ACCESSION_EXACT, ACCESSION_SOURCE, idAccession, REPO_ROOT, SITE_ROOT, type Db } from './lib.js';
 import { THEME_SLUGS, THEMES, FINE_TAGS, pageOrdinals, DATASET_ACCESSIONS_PATH, DATASET_DATA_LINKS_PATH } from './seed.js';
-import { ON_REQUEST_PAGES } from '../parser/datasets.js';
+import { ON_REQUEST_PAGES, INVENTORY_PAGES } from '../parser/datasets.js';
+import { extractInventory } from './extract.js';
+import { isPublishedMarkdown } from '../../src/lib/canonical-files.js';
 import { buildTaxonomyModel } from '../parser/taxonomy.js';
 import { AREAS } from '../parser/areas.js';
 import { MATRIX_SECTION } from '../parser/types.js';
@@ -969,6 +973,33 @@ export function checkEntryRowTwins(
   return [ok(ENTRY_ROW_TWINS_LABEL, problems.length === 0, `${problems.length} twin(s): ${problems.slice(0, 10).join('; ')}`)];
 }
 
+export const INVENTORY_PAGES_LABEL =
+  'Datasets pages: only a page in INVENTORY_PAGES carries a "## Complete data inventory" table';
+
+/**
+ * Inventory-page guard (tucca-cellag/caail-planning#752, review round 3). A `## Complete data
+ * inventory` table on a page outside INVENTORY_PAGES is read by nothing that counts: `db:bootstrap`
+ * seeds rows only from INVENTORY_PAGES, the dataset total counts such a page's `###` entries instead,
+ * and `db:emit`, which treats any page with an inventory table as DB-owned (`isDbOwnedDatasetPage`),
+ * regenerates the table from the page's DB rows, of which it has none. Rows a curator adds there would
+ * be counted nowhere and gone on the next emit. CrossSpecies, which carried such a table until
+ * tucca-cellag/caail-planning#752 removed its rows, is the page most likely to grow one again. The
+ * directory is listed rather than the page
+ * lists, so a page no list names is caught too.
+ */
+export function checkInventoryPages(repoRoot: string = REPO_ROOT): CheckResult[] {
+  const dir = join(repoRoot, 'Datasets');
+  const stray = existsSync(dir)
+    ? readdirSync(dir).sort()
+      .filter((f) => isPublishedMarkdown(f) && !INVENTORY_PAGES.includes(f.replace(/\.md$/, '')))
+      .filter((f) => extractInventory(join(dir, f)) !== null)
+    : [];
+  return [ok(INVENTORY_PAGES_LABEL, stray.length === 0, stray.map((f) =>
+    `Datasets/${f} has a "## Complete data inventory" table, but ${f.replace(/\.md$/, '')} is not in INVENTORY_PAGES ` +
+    '(site/scripts/parser/datasets.ts), so its rows are never seeded or counted and db:emit would regenerate the table ' +
+    'empty: add the page to INVENTORY_PAGES, or record its datasets as curated entries').join('; '))];
+}
+
 /** How many problems one failing run names; the count always covers them all. */
 export const INVENTORY_CELLS_SHOWN = 10;
 
@@ -1322,7 +1353,7 @@ export function runChecks(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
     ...checkTopicTiers(db), ...checkAxisBijection(db, repoRoot),
     ...checkCatalogHeadings(db), ...checkLicenses(db), ...checkManualLicenseKeys(db),
     ...checkDois(db), ...checkManualDoiKeys(db), ...checkRelatedDois(db), ...checkSubseries(db),
-    ...checkInventoryCells(db, repoRoot), ...checkOnRequest(db, repoRoot), ...checkEntryRowTwins(db, repoRoot), ...checkAccessions(db), ...checkDataLinks(db),
+    ...checkInventoryCells(db, repoRoot), ...checkInventoryPages(repoRoot), ...checkOnRequest(db, repoRoot), ...checkEntryRowTwins(db, repoRoot), ...checkAccessions(db), ...checkDataLinks(db),
     ...checkSeries(db), ...checkFineTagSeedDrift(db), ...checkRowTagParity(db)];
 }
 
