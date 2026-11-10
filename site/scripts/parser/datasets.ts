@@ -4,9 +4,9 @@
  * "Datasets" is not one uniform shape in the corpus, so each page contributes
  * its natural, deterministic unit:
  *
- *   - inventory pages (the 10 species pages + CrossSpecies): data rows in the
+ *   - inventory pages (the 10 species pages): data rows in the
  *     page's `## Complete data inventory` GFM table.
- *   - reference pages (HumanReference, CHOReference): one `###` heading per
+ *   - reference pages (HumanReference, CHOReference, CrossSpecies, ...): one `###` heading per
  *     curated dataset entry. The `## Further reading` footers use bullet lists
  *     (no H3), so a raw H3 count yields exactly the dataset entries.
  *   - the benchmarks page (Benchmarks): one `##` heading per benchmark dataset
@@ -38,11 +38,15 @@ export const SPECIES_PAGES: readonly string[] = [
 ];
 
 /** Pages whose datasets are counted as `## Complete data inventory` table rows. */
-export const INVENTORY_PAGES: readonly string[] = [...SPECIES_PAGES, 'CrossSpecies'];
+export const INVENTORY_PAGES: readonly string[] = [...SPECIES_PAGES];
 
-/** Pages whose datasets are counted as `###` (H3) entries (no inventory table). */
+/**
+ * Pages whose datasets are counted as `###` (H3) entries (no inventory table). CrossSpecies
+ * joined them when its seven inventory rows went: each was a second listing of one of its
+ * curated entries (tucca-cellag/caail-planning#752).
+ */
 export const REFERENCE_PAGES: readonly string[] = [
-  'HumanReference', 'CHOReference', 'MicrobialHostReference', 'FoodSafety', 'Sustainability',
+  'HumanReference', 'CHOReference', 'MicrobialHostReference', 'FoodSafety', 'Sustainability', 'CrossSpecies',
 ];
 
 /** The benchmarks page, whose datasets are counted as `##` (H2) entries. */

@@ -201,7 +201,6 @@
 {"id":"ds:genecorpus-30m","type":"dataset","slug":"genecorpus-30m"}
 {"id":"ds:genome-scale-metabolic-network","type":"dataset","slug":"genome-scale-metabolic-network"}
 {"id":"ds:gpqa","type":"dataset","slug":"gpqa"}
-{"id":"ds:growth-factor-thermostability","type":"dataset","slug":"growth-factor-thermostability"}
 {"id":"ds:growth-factor-thermostability-dataset","type":"dataset","slug":"growth-factor-thermostability-dataset"}
 {"id":"ds:gse114452","type":"dataset","slug":"gse114452"}
 {"id":"ds:gse152947","type":"dataset","slug":"gse152947"}
@@ -257,7 +256,6 @@
 {"id":"ds:issus3744-sus-scrofa-porcine","type":"dataset","slug":"issus3744-sus-scrofa-porcine"}
 {"id":"ds:iumami-scm","type":"dataset","slug":"iumami-scm"}
 {"id":"ds:lab-bench","type":"dataset","slug":"lab-bench"}
-{"id":"ds:lions-mane-mushroom-steak","type":"dataset","slug":"lions-mane-mushroom-steak"}
 {"id":"ds:lions-mane-mushroom-steak-characterization","type":"dataset","slug":"lions-mane-mushroom-steak-characterization"}
 {"id":"ds:lipidomic-and-transcriptomic","type":"dataset","slug":"lipidomic-and-transcriptomic"}
 {"id":"ds:massspecgym","type":"dataset","slug":"massspecgym"}
@@ -267,9 +265,7 @@
 {"id":"ds:metabolomics-profiling-to","type":"dataset","slug":"metabolomics-profiling-to"}
 {"id":"ds:mmlu-pro","type":"dataset","slug":"mmlu-pro"}
 {"id":"ds:mouse-genecorpus-20m","type":"dataset","slug":"mouse-genecorpus-20m"}
-{"id":"ds:mycelium-mechanics","type":"dataset","slug":"mycelium-mechanics"}
 {"id":"ds:mycelium-mechanics-taste-of-fungi-steak","type":"dataset","slug":"mycelium-mechanics-taste-of-fungi-steak"}
-{"id":"ds:nmr-metabolomics-of","type":"dataset","slug":"nmr-metabolomics-of"}
 {"id":"ds:nmr-metabolomics-of-plant-and-yeast-based-hydrolysates","type":"dataset","slug":"nmr-metabolomics-of-plant-and-yeast-based-hydrolysates"}
 {"id":"ds:oxidative-stress-and","type":"dataset","slug":"oxidative-stress-and"}
 {"id":"ds:parse-biosciences-10m-pbmc-atlas","type":"dataset","slug":"parse-biosciences-10m-pbmc-atlas"}
@@ -277,13 +273,10 @@
 {"id":"ds:perturb-sapiens","type":"dataset","slug":"perturb-sapiens"}
 {"id":"ds:pigbiobank","type":"dataset","slug":"pigbiobank"}
 {"id":"ds:piggtex-portal","type":"dataset","slug":"piggtex-portal"}
-{"id":"ds:plant-based-meat-textural-properties","type":"dataset","slug":"plant-based-meat-textural-properties"}
 {"id":"ds:plant-based-meat-textural-properties-training-table-kircali-ata-et-al-2023","type":"dataset","slug":"plant-based-meat-textural-properties-training-table-kircali-ata-et-al-2023"}
 {"id":"ds:preliminary-study-on","type":"dataset","slug":"preliminary-study-on"}
 {"id":"ds:prjca049754","type":"dataset","slug":"prjca049754"}
 {"id":"ds:prjca054990","type":"dataset","slug":"prjca054990"}
-{"id":"ds:prjeb14330","type":"dataset","slug":"prjeb14330"}
-{"id":"ds:prjeb27455","type":"dataset","slug":"prjeb27455"}
 {"id":"ds:prjeb41485","type":"dataset","slug":"prjeb41485"}
 {"id":"ds:prjeb41939","type":"dataset","slug":"prjeb41939"}
 {"id":"ds:prjeb55656","type":"dataset","slug":"prjeb55656"}

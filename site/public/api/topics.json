@@ -11,8 +11,8 @@
           "paper": 97,
           "software": 55,
           "database": 58,
-          "dataset": 62,
-          "total": 272
+          "dataset": 61,
+          "total": 271
         },
         "tags": [
           "ai-agents",
@@ -48,8 +48,8 @@
           "paper": 51,
           "software": 14,
           "database": 37,
-          "dataset": 189,
-          "total": 291
+          "dataset": 188,
+          "total": 290
         },
         "tags": [
           "cell-line-engineering",
@@ -83,8 +83,8 @@
           "paper": 31,
           "software": 17,
           "database": 4,
-          "dataset": 33,
-          "total": 85
+          "dataset": 31,
+          "total": 83
         },
         "tags": [
           "cryopreservation",
@@ -103,8 +103,8 @@
           "paper": 28,
           "software": 22,
           "database": 18,
-          "dataset": 33,
-          "total": 101
+          "dataset": 32,
+          "total": 100
         },
         "tags": [
           "metabolic-modeling"
@@ -120,8 +120,8 @@
           "paper": 16,
           "software": 0,
           "database": 0,
-          "dataset": 8,
-          "total": 24
+          "dataset": 6,
+          "total": 22
         },
         "tags": [
           "scaffolds-biomaterials"
@@ -137,8 +137,8 @@
           "paper": 74,
           "software": 27,
           "database": 25,
-          "dataset": 33,
-          "total": 159
+          "dataset": 30,
+          "total": 156
         },
         "tags": [
           "flavor-sensory",
@@ -262,8 +262,8 @@
           "paper": 51,
           "software": 5,
           "database": 13,
-          "dataset": 11,
-          "total": 80
+          "dataset": 9,
+          "total": 78
         },
         "tags": []
       },
@@ -277,8 +277,8 @@
           "paper": 1,
           "software": 0,
           "database": 4,
-          "dataset": 8,
-          "total": 13
+          "dataset": 7,
+          "total": 12
         },
         "tags": []
       },
@@ -292,8 +292,8 @@
           "paper": 19,
           "software": 22,
           "database": 11,
-          "dataset": 23,
-          "total": 75
+          "dataset": 22,
+          "total": 74
         },
         "tags": []
       },
@@ -322,8 +322,8 @@
           "paper": 28,
           "software": 22,
           "database": 18,
-          "dataset": 30,
-          "total": 98
+          "dataset": 29,
+          "total": 97
         },
         "tags": []
       },
@@ -337,8 +337,8 @@
           "paper": 13,
           "software": 0,
           "database": 0,
-          "dataset": 6,
-          "total": 19
+          "dataset": 4,
+          "total": 17
         },
         "tags": []
       },
@@ -352,8 +352,8 @@
           "paper": 4,
           "software": 0,
           "database": 0,
-          "dataset": 10,
-          "total": 14
+          "dataset": 9,
+          "total": 13
         },
         "tags": []
       },
