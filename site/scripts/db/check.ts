@@ -648,8 +648,16 @@ export const DATA_LINKS_LABEL =
   'non-empty list of distinct http(s) links to a deposit, none the entry\'s paper, doi or heading link, and ' +
   'the stored column matches the file';
 
-/** A link as the twin check and this guard compare it: no trailing slash, case-insensitive. */
-const linkKey = (url: string): string => url.replace(/\/+$/, '').toLowerCase();
+/**
+ * A deposit link as the twin check and the data-links guard compare it: the DOI it states, as a
+ * bare lowercase DOI, so `doi.org`, `dx.doi.org` and a `doi:` token name one deposit alike; any other
+ * link without a trailing slash and case-insensitively. A link whose host merely embeds a DOI in its
+ * path with no such token is compared as a link, since `statedDoi` will not guess.
+ */
+const depositKey = (url: string): string => {
+  const doi = statedDoi(url);
+  return doi ? `DOI ${doi}` : `link ${url.replace(/\/+$/, '').toLowerCase()}`;
+};
 
 /**
  * Guard for curated entries' own deposit links (tucca-cellag/caail-planning#752), the `data_links`
@@ -661,7 +669,7 @@ const linkKey = (url: string): string => url.replace(/\/+$/, '').toLowerCase();
  * refused, as a Data cell refuses it (`readDataCell`), with the same pointer to the registrant
  * list for a deposit on a host it lacks. Nor may it repeat what the entry already serves, its
  * `doi` or its heading link, since `dataLinks` is the deposits the entry serves nowhere else.
- * Links are compared without a trailing slash and case-insensitively. The stored column must equal
+ * Links are compared by `depositKey`, so two spellings of one DOI are one link. The stored column must equal
  * what the file says, as for the accessions. It checks a link's form and registrant, not that it
  * reaches the deposit.
  */
@@ -684,15 +692,16 @@ export function checkDataLinks(db: Db, path: string = DATASET_DATA_LINKS_PATH): 
         continue;
       }
       const doi = statedDoi(url);
-      if (seen.has(linkKey(url))) problems.push(`${id}: lists ${url} twice`);
-      else if (e.url && linkKey(e.url) === linkKey(url)) problems.push(`${id}: ${url} is already its heading link`);
+      const key = depositKey(url);
+      if (seen.has(key)) problems.push(`${id}: lists ${url} twice`);
+      else if (e.url && depositKey(e.url) === key) problems.push(`${id}: ${url} is already its heading link`);
       else if (doi && doi === ownDoi) problems.push(`${id}: ${url} is already its doi`);
       else if (doi && doiRelation(doi) === 'publication') {
         problems.push(`${id}: ${url} links ${doi}, whose registrant is not a data host: a paper is the entry's doi, ` +
           'and a deposit on an unlisted host needs its registrant added to DATA_REPOSITORY_REGISTRANTS ' +
           '(site/scripts/parser/doi-relation.ts)');
       }
-      seen.add(linkKey(url));
+      seen.add(key);
     }
     expected.set(id, JSON.stringify(list.map((a) => String(a).trim())));
   }
@@ -879,8 +888,7 @@ export function checkEntryRowTwins(
   /** A link's key, or null for a link that states a paper's DOI. */
   const linkKeyOf = (url: string): string | null => {
     const doi = statedDoi(url);
-    if (!doi) return `link ${linkKey(url)}`;
-    return doiRelation(doi) === 'own' ? `DOI ${doi}` : null;
+    return doi && doiRelation(doi) !== 'own' ? null : depositKey(url);
   };
   const accessionKey = (a: string): string => `accession ${a.trim().replace(/\.\d+$/, '').toUpperCase()}`;
   const list = (raw: string | null): string[] => {

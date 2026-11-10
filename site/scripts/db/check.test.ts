@@ -1172,8 +1172,8 @@ describe('checkDataLinks (tucca-cellag/caail-planning#752)', () => {
   it("rejects the entry's own paper, as its heading link, as its doi, or as any paper's DOI", () => {
     expect(listed([HEADING]).detail).toContain('already its heading link');
     expect(listed([`${HEADING.toUpperCase()}/`]).detail).toContain('already its heading link');
-    // Not its heading link, but the DOI its `doi` column holds.
-    expect(listed([`https://dx.doi.org/${PAPER}`]).detail).toContain('already its doi');
+    // Another host form of the heading's DOI is the same link.
+    expect(listed([`https://dx.doi.org/${PAPER}`]).detail).toContain('already its heading link');
     const other = listed(['https://doi.org/10.1038/s41586-020-0001-1']);
     expect(other.ok).toBe(false);
     expect(other.detail).toContain('DATA_REPOSITORY_REGISTRANTS');
@@ -1186,6 +1186,8 @@ describe('checkDataLinks (tucca-cellag/caail-planning#752)', () => {
 
   it('rejects a link listed twice, however its case or trailing slash, and an empty list', () => {
     expect(listed([REPO, `${REPO.toLowerCase()}/`]).detail).toContain('twice');
+    // One DOI written on two hosts, in two cases, is one deposit.
+    expect(listed([ZENODO, 'https://dx.doi.org/10.5281/ZENODO.11357327/']).detail).toContain('twice');
     expect(result(withEntry(null), fileWith({ [ENTRY]: [] })).detail).toContain('non-empty list');
   });
 
