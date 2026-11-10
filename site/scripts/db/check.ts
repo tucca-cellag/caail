@@ -609,7 +609,8 @@ export function checkAccessions(db: Db, path: string = DATASET_ACCESSIONS_PATH):
     const seen = new Set<string>();
     for (const a of list) {
       if (typeof a !== 'string' || !ACCESSION_EXACT.test(a)) {
-        problems.push(`${id}: ${JSON.stringify(a)} is not one bare accession (${ACCESSION_FAMILIES})`);
+        problems.push(`${id}: ${JSON.stringify(a)} is not one bare accession (${ACCESSION_FAMILIES}); ` +
+          'a deposit outside these families goes in dataset-data-links.json as its link');
       } else if (seen.has(a)) {
         problems.push(`${id}: lists ${a} twice`);
       }

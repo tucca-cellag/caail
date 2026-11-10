@@ -1098,6 +1098,12 @@ describe('checkAccessions (tucca-cellag/caail-planning#752)', () => {
     }
   });
 
+  it('sends an accession outside the families to the data links, rather than leaving it nowhere', () => {
+    const r = result(withEntry(JSON.stringify(['SRA051669'])), fileWith({ [ENTRY]: ['SRA051669'] }));
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('dataset-data-links.json as its link');
+  });
+
   it('names every family ACCESSION_SOURCE admits, read from it rather than typed beside it', () => {
     const families = ACCESSION_SOURCE.split('|');
     expect(families.length).toBeGreaterThan(5);

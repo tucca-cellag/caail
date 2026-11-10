@@ -235,8 +235,8 @@ export const DatasetEntrySchema = z.object({
    *  first; `[]` when none is recorded. Curated in `scripts/db/dataset-accessions.json`
    *  (tucca-cellag/caail-planning#752). Reused third-party data is not listed. */
   accessions: z.array(z.string()).default([]),
-  /** links to the entry's own deposits that no accession names (a Zenodo record, a code
-   *  repository holding the data), primary first, a deposit DOI as its `https://doi.org/` link;
+  /** links to the entry's own deposits that its `accessions` do not name (a Zenodo record, a code
+   *  repository holding the data, an archive outside the accession families), primary first, a deposit DOI as its `https://doi.org/` link;
    *  `[]` when none is recorded. Curated in `scripts/db/dataset-data-links.json`
    *  (tucca-cellag/caail-planning#752). Never the entry's paper, never data it reuses. */
   dataLinks: z.array(z.string()).default([]),

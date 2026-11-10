@@ -102,8 +102,9 @@ A **curated dataset entry's own repository deposits** go in `site/scripts/db/dat
 (`{ "datasets": { "ds:…": ["PRJEB…", …] } }`, bare accessions, primary first, never reused data),
 since an entry has no Data cell. Folded into the `accessions` column by `db:reseed-axes` and served as
 the entry's `accessions` in `api/datasets.json`. `db:check` refuses an unknown key, a value outside
-`ACCESSION_SOURCE`'s families, a repeat, and a column that no longer matches the file. A deposit no
-accession names (a Zenodo record, a code repository holding the data) goes in
+`ACCESSION_SOURCE`'s families, a repeat, and a column that no longer matches the file. A deposit with
+no accession in those families (a Zenodo record, a code repository holding the data, an SRA or CNGB
+accession) goes in
 `site/scripts/db/dataset-data-links.json` instead, same shape, as its http(s) link (a DOI as its
 `https://doi.org/` link), folded into `data_links` and served as `dataLinks`. `db:check` refuses there a
 link to a paper's DOI and one repeating the entry's `doi` or heading link, as well as the same unknown-key,
