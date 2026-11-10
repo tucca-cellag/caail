@@ -12,7 +12,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { openDb, importNdjson, REPO_ROOT, type Db } from './lib.js';
-import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkAxisBijection, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, checkRowTagParity, checkFineTagSeedDrift, checkInventoryCells, INVENTORY_CELLS_LABEL, INVENTORY_CELLS_SHOWN, checkEntryRowTwins, ENTRY_ROW_TWINS_LABEL, runChecks } from './check.js';
+import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkAxisBijection, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, checkRowTagParity, checkFineTagSeedDrift, checkInventoryCells, INVENTORY_CELLS_LABEL, INVENTORY_CELLS_SHOWN, checkEntryRowTwins, ENTRY_ROW_TWINS_LABEL, checkAccessions, ACCESSIONS_LABEL, runChecks } from './check.js';
 import { NON_DEPOSIT_LABELS, parseRowCells, readInventoryHeader, STATUS_WORDS, SUPPLEMENT_PREFIX } from '../parser/dataset-inventory.js';
 import { THEME_SLUGS, FINE_TAGS } from './seed.js';
 
@@ -1053,6 +1053,61 @@ describe('checkEntryRowTwins (tucca-cellag/caail-planning#752)', () => {
     entry(db, 'ds:entry-f', 'Cow', 'https://example.org/atlas', PAPER);
     row(db, 'ds:row-f', 'Cow', { Description: `reuses [their data](https://doi.org/${PAPER})`, Data: `[\`GSE1\`](${DEPOSIT})` });
     expect(result(db).ok).toBe(true);
+  });
+});
+
+describe('checkAccessions (tucca-cellag/caail-planning#752)', () => {
+  const ENTRY = 'ds:atlas-a';
+  const withEntry = (stored: string | null): Db => {
+    const db = miniDb();
+    db.prepare("INSERT INTO items(id,type,slug) VALUES(?,'dataset','atlas-a')").run(ENTRY);
+    db.prepare(`INSERT INTO dataset_entries(item_id,name,url,page,section,kind,heading_md,body_md,accessions,ordinal)
+      VALUES(?,'An atlas',NULL,'Cow','S','atlas','An atlas','body',?,0)`).run(ENTRY, stored);
+    db.prepare("INSERT INTO items(id,type,slug) VALUES('ds:row-a','dataset','row-a')").run();
+    db.prepare("INSERT INTO dataset_rows(item_id,page,cells_json,subseries,ordinal) VALUES('ds:row-a','Cow','[]',NULL,0)").run();
+    return db;
+  };
+  const fileWith = (datasets: Record<string, unknown>): string => {
+    const dir = mkdtempSync(join(tmpdir(), 'caail-accessions-'));
+    const path = join(dir, 'dataset-accessions.json');
+    writeFileSync(path, JSON.stringify({ datasets }));
+    return path;
+  };
+  const result = (db: Db, path: string) => checkAccessions(db, path).find((r) => r.label === ACCESSIONS_LABEL)!;
+
+  it('passes a curated entry whose distinct accessions are stored as the file lists them', () => {
+    const list = ['PRJEB27455', 'PRJEB27111', 'E-MTAB-9622'];
+    expect(result(withEntry(JSON.stringify(list)), fileWith({ [ENTRY]: list })).ok).toBe(true);
+  });
+
+  it('passes an empty file with nothing stored', () => {
+    expect(result(withEntry(null), fileWith({})).ok).toBe(true);
+  });
+
+  it('rejects a key that is an inventory row or no item at all', () => {
+    for (const id of ['ds:row-a', 'ds:nowhere']) {
+      const r = result(withEntry(null), fileWith({ [id]: ['GSE1'] }));
+      expect(r.ok, id).toBe(false);
+      expect(r.detail, id).toContain('not a curated dataset entry');
+    }
+  });
+
+  it('rejects a value that is not one bare accession from the shared families', () => {
+    for (const bad of ['prjeb27455', 'https://www.ebi.ac.uk/ena/browser/view/PRJEB27455', 'CNP0000198', 'GSE1 GSE2', '']) {
+      const r = result(withEntry(JSON.stringify([bad])), fileWith({ [ENTRY]: [bad] }));
+      expect(r.ok, bad).toBe(false);
+      expect(r.detail, bad).toContain('not one bare accession');
+    }
+  });
+
+  it('rejects an accession listed twice, and an empty list', () => {
+    expect(result(withEntry(JSON.stringify(['GSE1', 'GSE1'])), fileWith({ [ENTRY]: ['GSE1', 'GSE1'] })).detail).toContain('twice');
+    expect(result(withEntry(null), fileWith({ [ENTRY]: [] })).detail).toContain('non-empty list');
+  });
+
+  it('rejects a stored column that differs from the file, in either direction', () => {
+    expect(result(withEntry(null), fileWith({ [ENTRY]: ['GSE1'] })).detail).toContain('db:reseed-axes');
+    expect(result(withEntry(JSON.stringify(['GSE1'])), fileWith({})).detail).toContain('db:reseed-axes');
   });
 });
 

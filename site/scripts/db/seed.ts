@@ -460,6 +460,32 @@ export function seedRelatedDois(db: Db): { rows: number } {
   return { rows };
 }
 
+interface ManualAccessions { datasets: Record<string, string[]> }
+
+/** The committed file a curated dataset entry's own repository accessions are read from. */
+export const DATASET_ACCESSIONS_PATH = join(SITE_ROOT, 'scripts', 'db', 'dataset-accessions.json');
+
+/**
+ * Seed `accessions` onto dataset_entries from the committed `scripts/db/dataset-accessions.json`:
+ * the entry's OWN repository deposits, by `ds:` id, primary first (tucca-cellag/caail-planning#752).
+ * An inventory row names its deposit in its Data cell, but a curated entry has no such cell, so
+ * without this an entry whose data sit at ENA or GEO cannot be matched by accession. Reused
+ * third-party data is not listed, as for a row. Values are stored as written (trimmed), so a
+ * malformed one reaches `db:check`, which names it, rather than being quietly repaired here.
+ * Stored as a JSON string; an empty or absent list leaves NULL. DB-only, like the DOI axis.
+ * Folded by `db:reseed-axes` and `db:bootstrap`; validated by `checkAccessions`.
+ */
+export function seedAccessions(db: Db, path: string = DATASET_ACCESSIONS_PATH): { rows: number } {
+  const manual = readJson<ManualAccessions>(path, { datasets: {} });
+  const set = db.prepare('UPDATE dataset_entries SET accessions=? WHERE item_id=?');
+  let rows = 0;
+  for (const [id, list] of Object.entries(manual.datasets ?? {})) {
+    const trimmed = (Array.isArray(list) ? list : []).map((a) => String(a).trim());
+    if (trimmed.length && set.run(JSON.stringify(trimmed), id).changes) rows++;
+  }
+  return { rows };
+}
+
 interface ManualSubseries { datasets: Record<string, string[]> }
 
 /**

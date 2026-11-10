@@ -1,0 +1,6 @@
+{
+  "datasets": {
+    "ds:comparative-chromatin-accessibility-in-cattle-pig-and-mouse": ["PRJEB14330"],
+    "ds:fr-agencode-multi-species-farm-animal-regulatory-atlas": ["PRJEB27455", "PRJEB27111", "PRJEB27364"]
+  }
+}

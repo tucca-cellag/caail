@@ -231,6 +231,10 @@ export const DatasetEntrySchema = z.object({
   citationSources: z.number().int().nonnegative().default(0),
   /** the DOIs whose counts were summed — the works the badge/hub link opens (#102) */
   citationDois: z.array(z.string()).default([]),
+  /** the entry's own repository deposits as bare accessions (`PRJEB27455`, `GSE158430`), primary
+   *  first; `[]` when none is recorded. Curated in `scripts/db/dataset-accessions.json`
+   *  (tucca-cellag/caail-planning#752). Reused third-party data is not listed. */
+  accessions: z.array(z.string()).default([]),
 });
 
 /** Schema for datasets.json — the curated dataset entries across the Datasets/ pages. */

@@ -24,13 +24,15 @@
  *    parser's own `readDataCell` (checkInventoryCells).
  *  - twins: no curated entry and inventory row on one page name the same DOI or deposit link
  *    (checkEntryRowTwins).
+ *  - curated entries' own accessions: keys resolve, values are bare accessions, the column
+ *    matches dataset-accessions.json (checkAccessions).
  */
 
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { importNdjson, ACCESSION_EXACT, idAccession, REPO_ROOT, SITE_ROOT, type Db } from './lib.js';
-import { THEME_SLUGS, THEMES, FINE_TAGS, pageOrdinals } from './seed.js';
+import { THEME_SLUGS, THEMES, FINE_TAGS, pageOrdinals, DATASET_ACCESSIONS_PATH } from './seed.js';
 import { ON_REQUEST_PAGES } from '../parser/datasets.js';
 import { buildTaxonomyModel } from '../parser/taxonomy.js';
 import { AREAS } from '../parser/areas.js';
@@ -571,6 +573,59 @@ export const ON_REQUEST_LABEL =
   'cell links and no curated entry\'s doi or heading link names, a non-Benchmarks dataset page, a study and a ' +
   'statement that fit a table cell, a statement that renders as stored, and an ordinal counting its page\'s ' +
   'list from 0';
+
+export const ACCESSIONS_LABEL =
+  'dataset_entries.accessions: every dataset-accessions.json key is a curated dataset entry, every value a ' +
+  'non-empty list of distinct repository accessions, and the stored column matches the file';
+
+/**
+ * Guard for curated entries' own repository accessions (tucca-cellag/caail-planning#752), the
+ * `accessions` column `seedAccessions` folds from `scripts/db/dataset-accessions.json`. Each key must
+ * be a curated dataset entry (an inventory row names its deposit in its Data cell instead), each
+ * value a non-empty list of distinct strings that are each exactly one accession of the families in
+ * `ACCESSION_SOURCE`, uppercase, with no URL or version suffix: the same vocabulary the `ds:` id
+ * minter and the subseries guard use, and the shape `api/datasets.json` serves. The stored column
+ * must equal what the file says, so an edit to the file without `db:reseed-axes`, or a hand-edited
+ * column, fails here rather than shipping a stale value.
+ */
+export function checkAccessions(db: Db, path: string = DATASET_ACCESSIONS_PATH): CheckResult[] {
+  const problems: string[] = [];
+  let manual: Record<string, unknown> = {};
+  if (existsSync(path)) {
+    let parsed: unknown = undefined;
+    try { parsed = JSON.parse(readFileSync(path, 'utf-8')); } catch { problems.push('dataset-accessions.json is not JSON'); }
+    const datasets = (parsed as { datasets?: unknown } | undefined)?.datasets;
+    if (parsed !== undefined && (typeof datasets !== 'object' || datasets === null || Array.isArray(datasets))) {
+      problems.push('dataset-accessions.json has no "datasets" object');
+    } else if (datasets) {
+      manual = datasets as Record<string, unknown>;
+    }
+  }
+  const entryIds = new Set((db.prepare('SELECT item_id FROM dataset_entries').all() as { item_id: string }[]).map((r) => r.item_id));
+  const expected = new Map<string, string>();
+  for (const [id, list] of Object.entries(manual)) {
+    if (!entryIds.has(id)) { problems.push(`${id}: not a curated dataset entry`); continue; }
+    if (!Array.isArray(list) || list.length === 0) { problems.push(`${id}: needs a non-empty list of accessions`); continue; }
+    const seen = new Set<string>();
+    for (const a of list) {
+      if (typeof a !== 'string' || !ACCESSION_EXACT.test(a)) {
+        problems.push(`${id}: ${JSON.stringify(a)} is not one bare accession (GSE…, GSM…, PRJ…, SRP…, PXD…, CRA…, E-MTAB-…)`);
+      } else if (seen.has(a)) {
+        problems.push(`${id}: lists ${a} twice`);
+      }
+      seen.add(String(a));
+    }
+    expected.set(id, JSON.stringify(list.map((a) => String(a).trim())));
+  }
+  for (const r of db.prepare('SELECT item_id, accessions FROM dataset_entries ORDER BY item_id').all() as { item_id: string; accessions: string | null }[]) {
+    const want = expected.get(r.item_id) ?? null;
+    const have = r.accessions ?? null;
+    if (have !== want) {
+      problems.push(`${r.item_id}: stored accessions ${have ?? 'NULL'} differ from dataset-accessions.json (${want ?? 'none'}); run db:reseed-axes`);
+    }
+  }
+  return [ok(ACCESSIONS_LABEL, problems.length === 0, `${problems.length} problem(s): ${problems.slice(0, 10).join('; ')}`)];
+}
 
 export const ENTRY_ROW_TWINS_LABEL =
   'dataset_entries x dataset_rows: no curated entry and inventory row on one page name the same DOI or deposit link';
@@ -1136,7 +1191,7 @@ export function runChecks(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
     ...checkTopicTiers(db), ...checkAxisBijection(db, repoRoot),
     ...checkCatalogHeadings(db), ...checkLicenses(db), ...checkManualLicenseKeys(db),
     ...checkDois(db), ...checkManualDoiKeys(db), ...checkRelatedDois(db), ...checkSubseries(db),
-    ...checkInventoryCells(db, repoRoot), ...checkOnRequest(db, repoRoot), ...checkEntryRowTwins(db, repoRoot),
+    ...checkInventoryCells(db, repoRoot), ...checkOnRequest(db, repoRoot), ...checkEntryRowTwins(db, repoRoot), ...checkAccessions(db),
     ...checkSeries(db), ...checkFineTagSeedDrift(db), ...checkRowTagParity(db)];
 }
 
