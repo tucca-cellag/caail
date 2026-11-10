@@ -18,7 +18,7 @@ import { INVENTORY_PAGES, REFERENCE_PAGES, BENCHMARKS_PAGE } from '../parser/dat
 import { REPO_ROOT, SITE_ROOT, assignId, frozenSlug, type Db } from './lib.js';
 import {
   extractCatalogEntries, extractInventory, extractMatrixHeaders, extractPaperBlockquotes,
-  extractDatasetEntries, extractReports, readPagesOnRequest, type CatalogRaw, type ReportRaw,
+  extractDatasetEntries, extractReports, readPagesOnRequest, refuseStrayInventory, type CatalogRaw, type ReportRaw,
 } from './extract.js';
 
 // --- papers ----------------------------------------------------------------
@@ -165,6 +165,8 @@ export function seedDatasetEntries(db: Db, seen: Set<string>): number {
  * collision-free across both tables.
  */
 export function seedDatasets(db: Db): { rows: Record<string, number>; entries: number } {
+  // An inventory table on a page outside INVENTORY_PAGES would be seeded by nothing.
+  refuseStrayInventory(REPO_ROOT, 'db:bootstrap');
   const seen = new Set<string>();
   const rows: Record<string, number> = {};
   for (const page of INVENTORY_PAGES) {

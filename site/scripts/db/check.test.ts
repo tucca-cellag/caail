@@ -989,6 +989,13 @@ describe('checkInventoryPages (tucca-cellag/caail-planning#752)', () => {
     expect(unlisted).toContain('in no page list');
     expect(unlisted).not.toContain('db:emit would regenerate');
   });
+
+  it("tells the directory's README to move its rows rather than join a page list", () => {
+    const detail = result(rootWith({ README: TABLE })).detail;
+    expect(detail).toContain('Datasets/README.md has a "## Complete data inventory" table');
+    expect(detail).toContain('move the rows to a dataset page');
+    expect(detail).not.toContain('add the page to INVENTORY_PAGES');
+  });
 });
 
 describe('checkEntryRowTwins (tucca-cellag/caail-planning#752)', () => {

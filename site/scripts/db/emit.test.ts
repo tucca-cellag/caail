@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { writeFileSync, readFileSync, mkdtempSync } from 'node:fs';
+import { writeFileSync, readFileSync, mkdtempSync, mkdirSync, copyFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -25,6 +25,19 @@ import { emitAll } from './emit-files.js';
 import { removeItem } from './mutate.js';
 
 describe('emitAll is fail-safe (writes nothing on a bad state — db:add/db:remove order it before export)', () => {
+  it('refuses an inventory table on a reference page before writing anything, rather than empty it (tucca-cellag/caail-planning#752)', () => {
+    const root = mkdtempSync(join(tmpdir(), 'caail-emit-stray-'));
+    mkdirSync(join(root, 'Datasets'));
+    for (const f of ['Papers.md', 'Software.md', 'Databases.md']) copyFileSync(join(REPO_ROOT, f), join(root, f));
+    const page = readFileSync(join(REPO_ROOT, 'Datasets', 'CrossSpecies.md'), 'utf-8');
+    writeFileSync(join(root, 'Datasets', 'CrossSpecies.md'), page);
+    expect(() => emitAll(importNdjson(), root)).not.toThrow();
+    const table = '\n## Complete data inventory\n\n| Study | Paper | Data |\n| --- | --- | --- |\n| A hand-added row | x | supplementary |\n';
+    writeFileSync(join(root, 'Datasets', 'CrossSpecies.md'), `${page}${table}`);
+    expect(() => emitAll(importNdjson(), root)).toThrow(/db:emit: Datasets\/CrossSpecies\.md has a "## Complete data inventory" table/);
+    expect(readFileSync(join(root, 'Datasets', 'CrossSpecies.md'), 'utf-8')).toContain('A hand-added row');
+  });
+
   it('throws and writes NO file when a paper section cannot be emitted', () => {
     const db = importNdjson();
     // A paper in a section with no anchor in Papers.md — emitPapersFile (first, before any
