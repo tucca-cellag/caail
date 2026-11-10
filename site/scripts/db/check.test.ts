@@ -1091,6 +1091,16 @@ describe('checkEntryRowTwins (tucca-cellag/caail-planning#752)', () => {
     expect(result(db).detail).toContain('ds:entry-p and ds:row-p on Cow both name accession PRJEB14330');
   });
 
+  it('passes a badge a link holds only inside a longer segment or in its host', () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-r', 'Cow', 'https://github.com/SysBioChalmers/Zebrafish-GEM-v2', null);
+    row(db, 'ds:row-r', 'Cow', { Data: '[`Zebrafish-GEM`](https://github.com/SysBioChalmers/Zebrafish-GEM)' });
+    entry(db, 'ds:entry-s', 'Pig', `https://doi.org/${PAPER}`, PAPER, { dataLinks: ['https://zenodo.org/records/7'] });
+    row(db, 'ds:row-s', 'Pig', { Data: '[`zenodo.5`](https://example.org/z5)' });
+    const r = result(db);
+    expect(r.ok, r.detail).toBe(true);
+  });
+
   it('passes a link that holds an accession only inside a longer one', () => {
     const db = miniDb();
     entry(db, 'ds:entry-q', 'Cow', `https://doi.org/${PAPER}`, PAPER, { dataLinks: ['https://www.ncbi.nlm.nih.gov/sra/SRR12345678'] });
@@ -1310,19 +1320,24 @@ describe('checkDataLinks (tucca-cellag/caail-planning#752)', () => {
     expect(result(withEntry(JSON.stringify([whole]), PAPER, body), fileWith({ [ENTRY]: [whole] })).ok).toBe(true);
   });
 
-  it('refuses a link naming an accession dataset-accessions.json takes, in any case, and passes others', () => {
+  it('refuses a link whose path segment or query value is an accession dataset-accessions.json takes, and passes others', () => {
     const at = (link: string) => result(withEntry(JSON.stringify([link]), PAPER, `At [the archive](${link}).`), fileWith({ [ENTRY]: [link] }));
     for (const [link, accession] of [
       ['https://www.ebi.ac.uk/ena/browser/view/PRJEB27455', 'PRJEB27455'],
-      ['https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=gse12345', 'GSE12345'],
+      ['https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE12345', 'GSE12345'],
+      ['https://www.ebi.ac.uk/pride/archive/projects/PXD012345.1', 'PXD012345'],
     ] as const) {
       const r = at(link);
       expect(r.ok, link).toBe(false);
-      expect(r.detail, link).toContain(`names ${accession}`);
+      expect(r.detail, link).toContain(`names ${accession},`);
       expect(r.detail, link).toContain(`list ${accession} there instead`);
     }
-    // An archive the families leave out, and a family prefix inside a longer word, are links.
-    for (const link of ['https://www.ncbi.nlm.nih.gov/sra/SRR1234567', 'https://github.com/example/gsm8k-data']) {
+    // An archive the families leave out, a family prefix inside a longer segment or a file name,
+    // and a lowercase lookalike (the families are uppercase) are links.
+    for (const link of [
+      'https://www.ncbi.nlm.nih.gov/sra/SRR1234567', 'https://github.com/example/gsm8k-data',
+      'https://github.com/lab/cra2/tree/main/data', 'https://zenodo.org/records/5/files/GSE1.csv',
+    ]) {
       expect(at(link).ok, link).toBe(true);
     }
   });

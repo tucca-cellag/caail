@@ -617,18 +617,25 @@ function namedIn(prose: string, text: string): boolean {
   return false;
 }
 
+/** A link's path, query and fragment: what follows its scheme and host, so a host is never read. */
+const pathOf = (url: string): string => url.replace(/^https?:\/\/[^/?#]*/i, '');
+
 /**
- * Whether `link` names `accession` as a whole token, in any case: not inside a longer identifier, so
- * `GSE1` is not found in `…acc=GSE12`, while `…/GSE1.2` (a version suffix) still names it.
+ * The end of an identifier that is a whole path segment or query value: an optional version suffix
+ * (`.2`), then the end of the link or a `/`, `?`, `&` or `#`. Its start is a `/` or `=`.
+ */
+const SEGMENT_END = String.raw`(?:\.\d+)?(?=$|[/?&#])`;
+
+/**
+ * Whether `link` names `accession` as a whole path segment or query value, in any case: `…/GSE1`,
+ * `…?acc=GSE1` and `…/GSE1.2` (a version suffix) name `GSE1`; `…acc=GSE12`, a repository
+ * `…/Zebrafish-GEM-v2` (for `Zebrafish-GEM`) and a host (`zenodo.org`) do not.
  */
 export function accessionNamedIn(link: string, accession: string): boolean {
-  const hay = link.toUpperCase();
-  const needle = accession.trim().toUpperCase();
+  const needle = accession.trim();
   if (!needle) return false;
-  for (let i = hay.indexOf(needle); i !== -1; i = hay.indexOf(needle, i + 1)) {
-    if (!/[A-Z0-9]/.test(hay[i - 1] ?? '') && !/[A-Z0-9]/.test(hay[i + needle.length] ?? '')) return true;
-  }
-  return false;
+  const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`(?<=[/=])${escaped}${SEGMENT_END}`, 'i').test(pathOf(link));
 }
 
 /**
@@ -718,8 +725,12 @@ export const DATA_LINKS_LABEL =
 /** A Zenodo record page, whose DOI Zenodo mints as `10.5281/zenodo.<record>`. */
 const ZENODO_RECORD = /^https?:\/\/(?:www\.)?zenodo\.org\/records?\/(\d+)\/?(?:[?#].*)?$/i;
 
-/** An accession of `ACCESSION_SOURCE`'s families anywhere in a link, as a whole token, in any case. */
-const FAMILY_ACCESSION_IN = new RegExp(`(?<![A-Za-z0-9])(?:${ACCESSION_SOURCE})(?![A-Za-z0-9])`, 'i');
+/**
+ * An accession of `ACCESSION_SOURCE`'s families as a whole path segment or query value, as the
+ * families write it (uppercase), captured without a version suffix. Read against `pathOf`, so a file
+ * `gse1.csv`, a repository `cra2` and a longer segment such as `GSE1.csv` are not accessions.
+ */
+const FAMILY_ACCESSION_IN = new RegExp(`(?<=[/=])(${ACCESSION_SOURCE})${SEGMENT_END}`);
 
 /**
  * A deposit link as the twin check and the data-links guard compare it. A link that states a DOI
@@ -752,9 +763,9 @@ const PATH_DOI = /^https?:\/\/[^/?#]+\/(?:[^?#]*\/)?(10\.\d{4,9}\/[^\s?#]+)/i;
  * `doi` or its heading link, since `dataLinks` is the deposits the entry serves nowhere else. Links
  * are compared by `depositKey`. It checks a link's form and registrant, not that it reaches the deposit.
  *
- * Nor may a link name, as a whole token, an accession of the families `dataset-accessions.json` takes
- * (`ACCESSION_SOURCE`, matched in any case): that deposit is served as an accession, which is how a
- * consumer and the twin check match it, so the link would hide it from both.
+ * Nor may a link name an accession of the families `dataset-accessions.json` takes as a whole path
+ * segment or query value (`FAMILY_ACCESSION_IN`): that deposit is served as an accession, which is
+ * how a consumer and the twin check match it, so the link would hide it from both.
  */
 export function checkDataLinks(db: Db, path: string = DATASET_DATA_LINKS_PATH): CheckResult[] {
   return checkEntryList(db, path, 'dataset-data-links.json', 'data_links', DATA_LINKS_LABEL, 'links', (a, e) => {
@@ -764,7 +775,7 @@ export function checkDataLinks(db: Db, path: string = DATASET_DATA_LINKS_PATH): 
     const ownDoi = bareDoi(e.doi);
     if (e.url && depositKey(e.url) === key) return { problem: `${url} is already its heading link` };
     if (ownDoi && key === `DOI ${ownDoi}`) return { problem: `${url} is already its doi` };
-    const accession = url.match(FAMILY_ACCESSION_IN)?.[0]?.toUpperCase();
+    const accession = pathOf(url).match(FAMILY_ACCESSION_IN)?.[1];
     if (accession) {
       return { problem: `${url} names ${accession}, an accession of a family dataset-accessions.json takes: list ${accession} there instead` };
     }
@@ -935,9 +946,9 @@ export function checkOnRequest(db: Db, repoRoot: string = REPO_ROOT): CheckResul
  * a status word names none, and its Paper and Description cells are not read. A link that states a
  * DOI is compared as that DOI, any other link without a trailing slash and case-insensitively, and an
  * accession case-insensitively and without a version suffix, as the endpoint tells consumers to. An
- * accession on one side is also shared when a deposit link on the other names it as a whole token
- * (`accessionNamedIn`), so an entry's link to an SRA run page meets a row badged with that run, and a
- * row's ENA link meets an entry listing the project.
+ * accession on one side is also shared when a deposit link on the other names it as a whole path
+ * segment or query value (`accessionNamedIn`), so an entry's link to an SRA run page meets a row
+ * badged with that run, and a row's ENA link meets an entry listing the project.
  *
  * An entry that names its deposit only in its description is not compared, which is why its deposits
  * belong in `dataset-accessions.json` or `dataset-data-links.json`.
@@ -959,7 +970,8 @@ export function checkEntryRowTwins(
     const doi = statedDoi(url);
     return doi && doiRelation(doi) !== 'own' ? null : depositKey(url);
   };
-  const accessionOf = (a: string): string => a.trim().replace(/\.\d+$/, '').toUpperCase();
+  /** A badge or accession compared bare: uppercase, without a version suffix after its digits. */
+  const accessionOf = (a: string): string => a.trim().replace(/(\d)\.\d+$/, '$1').toUpperCase();
   const list = (raw: string | null): string[] => {
     if (!raw) return [];
     try {
