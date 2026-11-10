@@ -7,7 +7,8 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { join } from 'node:path';
 import { buildPapersModel } from '../parser/papers.js';
-import { openDb, REPO_ROOT, type Db } from './lib.js';
+import { SPECIES_PAGES } from '../parser/datasets.js';
+import { importNdjson, openDb, REPO_ROOT, type Db } from './lib.js';
 import { extractDatasetEntries } from './extract.js';
 import { seedPapers, seedDatasets } from './seed.js';
 
@@ -96,5 +97,16 @@ describe('seedDatasets (rows + entries share the ds: namespace)', () => {
     const rows = all('SELECT item_id FROM dataset_rows').length;
     const entries = all('SELECT item_id FROM dataset_entries').length;
     expect(rows + entries).toBe(datasetItems);
+  });
+
+  it("numbers CrossSpecies' entries after the species pages and before HumanReference, as the committed NDJSON does", () => {
+    const range = (d: Db, pages: readonly string[]) => d.prepare(
+      `SELECT MIN(ordinal) AS lo, MAX(ordinal) AS hi FROM dataset_entries WHERE page IN (${pages.map(() => '?').join(',')})`,
+    ).get(...pages) as { lo: number; hi: number };
+    for (const [name, d] of [['fresh seed', db], ['committed NDJSON', importNdjson()]] as const) {
+      const cross = range(d, ['CrossSpecies']);
+      expect(cross.lo, name).toBeGreaterThan(range(d, SPECIES_PAGES).hi);
+      expect(cross.hi, name).toBeLessThan(range(d, ['HumanReference']).lo);
+    }
   });
 });

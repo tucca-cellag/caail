@@ -46,10 +46,13 @@ export const INVENTORY_PAGES: readonly string[] = [...SPECIES_PAGES];
 /**
  * Pages whose datasets are counted as `###` (H3) entries (no inventory table). CrossSpecies
  * joined them when its seven inventory rows went: each was a second listing of one of its
- * curated entries (tucca-cellag/caail-planning#752).
+ * curated entries (tucca-cellag/caail-planning#752). It comes first because `db:bootstrap`
+ * numbers entries in page-list order (`ENTRY_PAGES` in `scripts/db/seed.ts`), and first keeps
+ * its entries where they were as the last inventory page, between the species pages and
+ * HumanReference.
  */
 export const REFERENCE_PAGES: readonly string[] = [
-  'HumanReference', 'CHOReference', 'MicrobialHostReference', 'FoodSafety', 'Sustainability', 'CrossSpecies',
+  'CrossSpecies', 'HumanReference', 'CHOReference', 'MicrobialHostReference', 'FoodSafety', 'Sustainability',
 ];
 
 /** The benchmarks page, whose datasets are counted as `##` (H2) entries. */
