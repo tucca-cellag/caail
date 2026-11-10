@@ -33,7 +33,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { importNdjson, ACCESSION_EXACT, idAccession, REPO_ROOT, SITE_ROOT, type Db } from './lib.js';
+import { importNdjson, ACCESSION_EXACT, ACCESSION_SOURCE, idAccession, REPO_ROOT, SITE_ROOT, type Db } from './lib.js';
 import { THEME_SLUGS, THEMES, FINE_TAGS, pageOrdinals, DATASET_ACCESSIONS_PATH, DATASET_DATA_LINKS_PATH } from './seed.js';
 import { ON_REQUEST_PAGES } from '../parser/datasets.js';
 import { buildTaxonomyModel } from '../parser/taxonomy.js';
@@ -576,6 +576,14 @@ export const ON_REQUEST_LABEL =
   'statement that fit a table cell, a statement that renders as stored, and an ordinal counting its page\'s ' +
   'list from 0';
 
+/**
+ * The accession families `ACCESSION_SOURCE` admits, as a curator reads them (`GSE…, PRJ…, E-MTAB-…`):
+ * each alternative's literal prefix, so a family added there is named here without a second edit.
+ */
+export const ACCESSION_FAMILIES = ACCESSION_SOURCE.split('|')
+  .map((alt) => `${alt.match(/^[A-Z-]+/)?.[0] ?? alt}…`)
+  .join(', ');
+
 export const ACCESSIONS_LABEL =
   'dataset_entries.accessions: every dataset-accessions.json key is a curated dataset entry, every value a ' +
   'non-empty list of distinct repository accessions, and the stored column matches the file';
@@ -601,7 +609,7 @@ export function checkAccessions(db: Db, path: string = DATASET_ACCESSIONS_PATH):
     const seen = new Set<string>();
     for (const a of list) {
       if (typeof a !== 'string' || !ACCESSION_EXACT.test(a)) {
-        problems.push(`${id}: ${JSON.stringify(a)} is not one bare accession (GSE…, GSM…, PRJ…, SRP…, PXD…, CRA…, E-MTAB-…)`);
+        problems.push(`${id}: ${JSON.stringify(a)} is not one bare accession (${ACCESSION_FAMILIES})`);
       } else if (seen.has(a)) {
         problems.push(`${id}: lists ${a} twice`);
       }

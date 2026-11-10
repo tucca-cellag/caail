@@ -11,8 +11,8 @@ import { writeFileSync, mkdtempSync, mkdirSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { openDb, importNdjson, REPO_ROOT, type Db } from './lib.js';
-import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkAxisBijection, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, checkRowTagParity, checkFineTagSeedDrift, checkInventoryCells, INVENTORY_CELLS_LABEL, INVENTORY_CELLS_SHOWN, checkEntryRowTwins, ENTRY_ROW_TWINS_LABEL, checkAccessions, ACCESSIONS_LABEL, checkDataLinks, DATA_LINKS_LABEL, runChecks } from './check.js';
+import { openDb, importNdjson, REPO_ROOT, ACCESSION_SOURCE, type Db } from './lib.js';
+import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkAxisBijection, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, checkRowTagParity, checkFineTagSeedDrift, checkInventoryCells, INVENTORY_CELLS_LABEL, INVENTORY_CELLS_SHOWN, checkEntryRowTwins, ENTRY_ROW_TWINS_LABEL, checkAccessions, ACCESSIONS_LABEL, ACCESSION_FAMILIES, checkDataLinks, DATA_LINKS_LABEL, runChecks } from './check.js';
 import { NON_DEPOSIT_LABELS, parseRowCells, readInventoryHeader, STATUS_WORDS, SUPPLEMENT_PREFIX } from '../parser/dataset-inventory.js';
 import { THEME_SLUGS, FINE_TAGS } from './seed.js';
 
@@ -1095,6 +1095,17 @@ describe('checkAccessions (tucca-cellag/caail-planning#752)', () => {
       const r = result(withEntry(JSON.stringify([bad])), fileWith({ [ENTRY]: [bad] }));
       expect(r.ok, bad).toBe(false);
       expect(r.detail, bad).toContain('not one bare accession');
+    }
+  });
+
+  it('names every family ACCESSION_SOURCE admits, read from it rather than typed beside it', () => {
+    const families = ACCESSION_SOURCE.split('|');
+    expect(families.length).toBeGreaterThan(5);
+    const detail = result(withEntry(JSON.stringify(['x'])), fileWith({ [ENTRY]: ['x'] })).detail;
+    for (const alt of families) {
+      const prefix = alt.match(/^[A-Z-]+/)![0];
+      expect(ACCESSION_FAMILIES, alt).toContain(`${prefix}…`);
+      expect(detail, alt).toContain(`${prefix}…`);
     }
   });
 
