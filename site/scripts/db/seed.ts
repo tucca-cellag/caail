@@ -346,8 +346,18 @@ export function repoFromUrl(url: string): string | null {
 interface LicenseCache { repos: Record<string, { spdx?: string | null }>; }
 interface ManualLicenses { catalog: Record<string, string>; datasets: Record<string, string>; }
 
-const readJson = <T>(path: string, fallback: T): T =>
-  existsSync(path) ? (JSON.parse(readFileSync(path, 'utf-8')) as T) : fallback;
+/**
+ * A committed side file's JSON, or `fallback` when the file is absent. A file that is not JSON fails
+ * naming itself, since `db:reseed-axes` and `db:bootstrap` read several and a bare SyntaxError names none.
+ */
+const readJson = <T>(path: string, fallback: T): T => {
+  if (!existsSync(path)) return fallback;
+  try {
+    return JSON.parse(readFileSync(path, 'utf-8')) as T;
+  } catch (err) {
+    throw new Error(`${path} is not JSON: ${(err as Error).message}`);
+  }
+};
 
 /**
  * Seed license + license_source onto catalog + dataset_entries from two committed,
