@@ -1709,6 +1709,13 @@
             "items": {
               "type": "string"
             }
+          },
+          "dataLinks": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
@@ -1729,7 +1736,8 @@
           "citationCount",
           "citationSources",
           "citationDois",
-          "accessions"
+          "accessions",
+          "dataLinks"
         ],
         "additionalProperties": false
       },

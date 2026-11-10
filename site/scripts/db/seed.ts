@@ -476,8 +476,30 @@ export const DATASET_ACCESSIONS_PATH = join(SITE_ROOT, 'scripts', 'db', 'dataset
  * Folded by `db:reseed-axes` and `db:bootstrap`; validated by `checkAccessions`.
  */
 export function seedAccessions(db: Db, path: string = DATASET_ACCESSIONS_PATH): { rows: number } {
+  return seedEntryList(db, path, 'accessions');
+}
+
+/** The committed file a curated dataset entry's own deposit links are read from. */
+export const DATASET_DATA_LINKS_PATH = join(SITE_ROOT, 'scripts', 'db', 'dataset-data-links.json');
+
+/**
+ * Seed `data_links` onto dataset_entries from the committed `scripts/db/dataset-data-links.json`:
+ * the http(s) links of the entry's OWN deposits, by `ds:` id, primary first, a deposit DOI written
+ * as its `https://doi.org/` link (tucca-cellag/caail-planning#752). The companion of
+ * `seedAccessions` for a deposit no accession names, such as a Zenodo record or a code repository
+ * holding the data: an inventory row serves such a deposit from its Data cell, and without this an
+ * entry could name it only in prose. Same contract as the accessions: stored as written (trimmed),
+ * an empty or absent list leaves NULL, folded by `db:reseed-axes` and `db:bootstrap`, validated by
+ * `checkDataLinks`.
+ */
+export function seedDataLinks(db: Db, path: string = DATASET_DATA_LINKS_PATH): { rows: number } {
+  return seedEntryList(db, path, 'data_links');
+}
+
+/** Fold one `{ "datasets": { "ds:…": [...] } }` file into a JSON-array column of dataset_entries. */
+function seedEntryList(db: Db, path: string, column: 'accessions' | 'data_links'): { rows: number } {
   const manual = readJson<ManualAccessions>(path, { datasets: {} });
-  const set = db.prepare('UPDATE dataset_entries SET accessions=? WHERE item_id=?');
+  const set = db.prepare(`UPDATE dataset_entries SET ${column}=? WHERE item_id=?`);
   let rows = 0;
   for (const [id, list] of Object.entries(manual.datasets ?? {})) {
     const trimmed = (Array.isArray(list) ? list : []).map((a) => String(a).trim());

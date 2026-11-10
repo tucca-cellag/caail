@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { buildDatasetsModel, datasetEntryAnchor, parseAccessions } from './datasets-entries.js';
+import { buildDatasetsModel, datasetEntryAnchor, parseAccessions, parseDataLinks } from './datasets-entries.js';
 
 const model = buildDatasetsModel();
 
@@ -85,5 +85,27 @@ describe('accessions (tucca-cellag/caail-planning#752)', () => {
     expect(entries.every((e) => Array.isArray(e.accessions))).toBe(true);
     const fr = entries.find((e) => e.id === 'ds:fr-agencode-multi-species-farm-animal-regulatory-atlas');
     expect(fr?.accessions).toEqual(['PRJEB27455', 'PRJEB27111', 'PRJEB27364']);
+  });
+});
+
+describe('dataLinks (tucca-cellag/caail-planning#752)', () => {
+  it('reads a stored JSON array, and no value as none', () => {
+    expect(parseDataLinks('ds:a', '["https://github.com/a/b"]')).toEqual(['https://github.com/a/b']);
+    expect(parseDataLinks('ds:a', null)).toEqual([]);
+    expect(parseDataLinks('ds:a', undefined)).toEqual([]);
+  });
+
+  it('throws on a value that is not an array of strings, naming the entry and the column', () => {
+    for (const raw of ['"https://github.com/a/b"', '{"a":1}', '[1]']) {
+      expect(() => parseDataLinks('ds:bad', raw), raw).toThrow(/ds:bad: data_links/);
+    }
+  });
+
+  it('serves every entry an array, and the NMR hydrolysate entry its Zenodo deposit', () => {
+    const { entries } = buildDatasetsModel();
+    expect(entries.every((e) => Array.isArray(e.dataLinks))).toBe(true);
+    const nmr = entries.find((e) => e.id === 'ds:nmr-metabolomics-of-plant-and-yeast-based-hydrolysates');
+    expect(nmr?.dataLinks).toEqual(['https://doi.org/10.5281/zenodo.11357327']);
+    expect(entries.filter((e) => e.dataLinks.length > 0).length).toBeGreaterThan(0);
   });
 });

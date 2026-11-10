@@ -12,7 +12,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { openDb, importNdjson, REPO_ROOT, type Db } from './lib.js';
-import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkAxisBijection, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, checkRowTagParity, checkFineTagSeedDrift, checkInventoryCells, INVENTORY_CELLS_LABEL, INVENTORY_CELLS_SHOWN, checkEntryRowTwins, ENTRY_ROW_TWINS_LABEL, checkAccessions, ACCESSIONS_LABEL, runChecks } from './check.js';
+import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkAxisBijection, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, checkRowTagParity, checkFineTagSeedDrift, checkInventoryCells, INVENTORY_CELLS_LABEL, INVENTORY_CELLS_SHOWN, checkEntryRowTwins, ENTRY_ROW_TWINS_LABEL, checkAccessions, ACCESSIONS_LABEL, checkDataLinks, DATA_LINKS_LABEL, runChecks } from './check.js';
 import { NON_DEPOSIT_LABELS, parseRowCells, readInventoryHeader, STATUS_WORDS, SUPPLEMENT_PREFIX } from '../parser/dataset-inventory.js';
 import { THEME_SLUGS, FINE_TAGS } from './seed.js';
 
@@ -1087,6 +1087,81 @@ describe('checkAccessions (tucca-cellag/caail-planning#752)', () => {
   it('rejects a stored column that differs from the file, in either direction', () => {
     expect(result(withEntry(null), fileWith({ [ENTRY]: ['GSE1'] })).detail).toContain('db:reseed-axes');
     expect(result(withEntry(JSON.stringify(['GSE1'])), fileWith({})).detail).toContain('db:reseed-axes');
+  });
+});
+
+describe('checkDataLinks (tucca-cellag/caail-planning#752)', () => {
+  const ENTRY = 'ds:texture-a';
+  const PAPER = '10.1016/j.actbio.2025.07.002';
+  const HEADING = `https://doi.org/${PAPER}`;
+  const REPO = 'https://github.com/LivingMatterLab/CANN/tree/main/ARTMEAT/FungiSteak';
+  const ZENODO = 'https://doi.org/10.5281/zenodo.11357327';
+  const withEntry = (stored: string | null, doi: string | null = PAPER): Db => {
+    const db = miniDb();
+    db.prepare("INSERT INTO items(id,type,slug) VALUES(?,'dataset','texture-a')").run(ENTRY);
+    db.prepare(`INSERT INTO dataset_entries(item_id,name,url,page,section,kind,heading_md,body_md,doi,doi_source,data_links,ordinal)
+      VALUES(?,'A texture reference',?,'CrossSpecies','S','other',?,'body',?,?,?,0)`)
+      .run(ENTRY, HEADING, `[A texture reference](${HEADING})`, doi, doi ? 'manual' : null, stored);
+    db.prepare("INSERT INTO items(id,type,slug) VALUES('ds:row-a','dataset','row-a')").run();
+    db.prepare("INSERT INTO dataset_rows(item_id,page,cells_json,subseries,ordinal) VALUES('ds:row-a','Cow','[]',NULL,0)").run();
+    return db;
+  };
+  const fileWith = (datasets: Record<string, unknown>): string => {
+    const dir = mkdtempSync(join(tmpdir(), 'caail-data-links-'));
+    const path = join(dir, 'dataset-data-links.json');
+    writeFileSync(path, JSON.stringify({ datasets }));
+    return path;
+  };
+  const result = (db: Db, path: string) => checkDataLinks(db, path).find((r) => r.label === DATA_LINKS_LABEL)!;
+  const listed = (list: unknown[]) => result(withEntry(JSON.stringify(list)), fileWith({ [ENTRY]: list }));
+
+  it('passes a code repository and a data host DOI link, stored as the file lists them', () => {
+    expect(listed([REPO, ZENODO]).ok).toBe(true);
+  });
+
+  it('passes an empty file with nothing stored', () => {
+    expect(result(withEntry(null), fileWith({})).ok).toBe(true);
+  });
+
+  it('rejects a key that is an inventory row or no item at all', () => {
+    for (const id of ['ds:row-a', 'ds:nowhere']) {
+      const r = result(withEntry(null), fileWith({ [id]: [REPO] }));
+      expect(r.ok, id).toBe(false);
+      expect(r.detail, id).toContain('not a curated dataset entry');
+    }
+  });
+
+  it('rejects a value that is not one link to an http(s) address with a host', () => {
+    for (const bad of ['github.com/a/b', 'mailto:author@example.org', 'https://', 'https://example.org/a b', '', 7]) {
+      const r = listed([bad]);
+      expect(r.ok, String(bad)).toBe(false);
+      expect(r.detail, String(bad)).toContain('not one link to an http(s) address');
+    }
+  });
+
+  it("rejects the entry's own paper, as its heading link, as its doi, or as any paper's DOI", () => {
+    expect(listed([HEADING]).detail).toContain('already its heading link');
+    expect(listed([`${HEADING.toUpperCase()}/`]).detail).toContain('already its heading link');
+    // Not its heading link, but the DOI its `doi` column holds.
+    expect(listed([`https://dx.doi.org/${PAPER}`]).detail).toContain('already its doi');
+    const other = listed(['https://doi.org/10.1038/s41586-020-0001-1']);
+    expect(other.ok).toBe(false);
+    expect(other.detail).toContain('DATA_REPOSITORY_REGISTRANTS');
+  });
+
+  it("rejects a link that repeats an entry's own deposit DOI", () => {
+    const r = result(withEntry(JSON.stringify([ZENODO]), '10.5281/zenodo.11357327'), fileWith({ [ENTRY]: [ZENODO] }));
+    expect(r.detail).toContain('already its doi');
+  });
+
+  it('rejects a link listed twice, however its case or trailing slash, and an empty list', () => {
+    expect(listed([REPO, `${REPO.toLowerCase()}/`]).detail).toContain('twice');
+    expect(result(withEntry(null), fileWith({ [ENTRY]: [] })).detail).toContain('non-empty list');
+  });
+
+  it('rejects a stored column that differs from the file, in either direction', () => {
+    expect(result(withEntry(null), fileWith({ [ENTRY]: [REPO] })).detail).toContain('db:reseed-axes');
+    expect(result(withEntry(JSON.stringify([REPO])), fileWith({})).detail).toContain('db:reseed-axes');
   });
 });
 

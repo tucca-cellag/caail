@@ -24,7 +24,7 @@ interface EntryRow {
   section: string; kind: 'atlas' | 'gem' | 'other'; heading_md: string; body_md: string;
   license: string | null; license_source: 'auto' | 'manual' | null;
   doi: string | null; doi_source: 'auto' | 'manual' | null; related_dois: string | null;
-  accessions?: string | null; ordinal: number;
+  accessions?: string | null; data_links?: string | null; ordinal: number;
 }
 
 /**
@@ -33,10 +33,19 @@ interface EntryRow {
  * value, so reaching here with one means the NDJSON was edited around the guard.
  */
 export function parseAccessions(id: string, raw: string | null | undefined): string[] {
+  return parseStringList(id, 'accessions', raw);
+}
+
+/** Parse the `data_links` JSON-array column (tucca-cellag/caail-planning#752), as `parseAccessions` does. */
+export function parseDataLinks(id: string, raw: string | null | undefined): string[] {
+  return parseStringList(id, 'data_links', raw);
+}
+
+function parseStringList(id: string, column: string, raw: string | null | undefined): string[] {
   if (raw === null || raw === undefined) return [];
   const list: unknown = JSON.parse(raw);
   if (!Array.isArray(list) || !list.every((a) => typeof a === 'string')) {
-    throw new Error(`${id}: accessions is not a JSON array of strings: ${raw}`);
+    throw new Error(`${id}: ${column} is not a JSON array of strings: ${raw}`);
   }
   return list as string[];
 }
@@ -93,6 +102,7 @@ export function buildDatasetsModel(): DatasetsData {
       ...licenseInfo(r.license, r.license_source),
       ...citationInfo(r.doi, r.doi_source, counts, parseRelatedDois(r.related_dois)),
       accessions: parseAccessions(r.item_id, r.accessions),
+      dataLinks: parseDataLinks(r.item_id, r.data_links),
     };
   });
 

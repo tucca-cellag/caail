@@ -26,7 +26,8 @@
       "citationDois": [
         "10.1093/bib/bbaa294"
       ],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:chickengtex-portal",
@@ -69,7 +70,8 @@
       "citationDois": [
         "10.1038/s41588-025-02155-9"
       ],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:sinke-et-al-2023-cultivated-meat-ex-ante-lci",
@@ -97,7 +99,8 @@
       "citationDois": [
         "10.1007/s11367-022-02128-8"
       ],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:gene-switch",
@@ -128,7 +131,8 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": [],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:ies1300-gallus-gallus-chicken",
@@ -186,7 +190,8 @@
       "citationDois": [
         "10.1371/journal.pone.0254270"
       ],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:cattlegtex",
@@ -229,7 +234,8 @@
       "citationDois": [
         "10.1038/s41588-025-02329-5"
       ],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:bovreg",
@@ -265,7 +271,8 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": [],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:aqua-faang",
@@ -301,7 +308,8 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": [],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:salarecon-salmo-salar-atlantic-salmon",
@@ -349,7 +357,8 @@
       "citationDois": [
         "10.1371/journal.pcbi.1010194"
       ],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:piggtex-portal",
@@ -382,7 +391,8 @@
       "citationDois": [
         "10.1038/s41588-023-01585-7"
       ],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:gene-switch-2",
@@ -413,7 +423,8 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": [],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:pigbiobank",
@@ -446,7 +457,8 @@
       "citationDois": [
         "10.1093/nar/gkad1080"
       ],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:pcpigmnet2025-sus-scrofa-porcine",
@@ -499,7 +511,8 @@
       "citationDois": [
         "10.1016/j.ymben.2026.01.001"
       ],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:issus3744-sus-scrofa-porcine",
@@ -562,7 +575,8 @@
       "citationDois": [
         "10.64898/2026.05.28.728221"
       ],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:sheepgtex-portal",
@@ -600,7 +614,8 @@
       "citationDois": [
         "10.1101/2025.11.03.686346"
       ],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:growth-factor-thermostability-dataset",
@@ -646,7 +661,8 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": [],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:nmr-metabolomics-of-plant-and-yeast-based-hydrolysates",
@@ -699,7 +715,10 @@
       "citationDois": [
         "10.1016/j.crfs.2024.100855"
       ],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": [
+        "https://doi.org/10.5281/zenodo.11357327"
+      ]
     },
     {
       "id": "ds:plant-based-meat-textural-properties-training-table-kircali-ata-et-al-2023",
@@ -752,7 +771,10 @@
       "citationDois": [
         "10.3390/foods12020344"
       ],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": [
+        "https://github.com/sezinata/FoodML"
+      ]
     },
     {
       "id": "ds:fr-agencode-multi-species-farm-animal-regulatory-atlas",
@@ -784,7 +806,8 @@
         "PRJEB27455",
         "PRJEB27111",
         "PRJEB27364"
-      ]
+      ],
+      "dataLinks": []
     },
     {
       "id": "ds:comparative-chromatin-accessibility-in-cattle-pig-and-mouse",
@@ -808,7 +831,8 @@
       ],
       "accessions": [
         "PRJEB14330"
-      ]
+      ],
+      "dataLinks": []
     },
     {
       "id": "ds:mycelium-mechanics-taste-of-fungi-steak",
@@ -851,7 +875,10 @@
       "citationDois": [
         "10.1016/j.actbio.2025.07.002"
       ],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": [
+        "https://github.com/LivingMatterLab/CANN/tree/main/ARTMEAT/FungiSteak"
+      ]
     },
     {
       "id": "ds:lions-mane-mushroom-steak-characterization",
@@ -892,7 +919,10 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": [],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": [
+        "https://github.com/LivingMatterLab/CANN/tree/main/ARTMEAT/LionsManeMushroomSteak"
+      ]
     },
     {
       "id": "ds:genecorpus-30m",
@@ -940,7 +970,8 @@
       "citationDois": [
         "10.1038/s41586-023-06139-9"
       ],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:genecorpus-104m",
@@ -976,7 +1007,8 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": [],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:mouse-genecorpus-20m",
@@ -1014,7 +1046,8 @@
       "citationDois": [
         "10.1371/journal.pgen.1011420"
       ],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:perturb-sapiens",
@@ -1070,7 +1103,8 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": [],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:scperturb",
@@ -1123,7 +1157,8 @@
       "citationDois": [
         "10.1038/s41592-023-02144-y"
       ],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:arc-virtual-cell-atlas",
@@ -1184,7 +1219,8 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": [],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:parse-biosciences-10m-pbmc-atlas",
@@ -1240,7 +1276,8 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": [],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:human-skeletal-muscle-single-cell-atlas-de-micheli-et-al-2020",
@@ -1278,7 +1315,8 @@
       "citationDois": [
         "10.1186/s13395-020-00236-3"
       ],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:human-and-mouse-white-adipose-tissue-single-cell-atlas-emont-et-al-2022",
@@ -1316,7 +1354,8 @@
       "citationDois": [
         "10.1038/s41586-022-04518-2"
       ],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:sasp-atlas",
@@ -1344,7 +1383,8 @@
       "citationDois": [
         "10.1371/journal.pbio.3000599"
       ],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:recon3d-human1-hmr-homo-sapiens-template-upstream-reference",
@@ -1390,7 +1430,8 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": [],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:icho1766-icho2048-chompact-chinese-hamster-ovary-biopharma-adjacent-reference",
@@ -1441,7 +1482,8 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": [],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:cho-gs-media-component-critical-quality-attributes-gangwar-et-al-2024",
@@ -1479,7 +1521,8 @@
       "citationDois": [
         "10.1007/s00253-024-13147-w"
       ],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:cho-multi-omic-culture-ph-profiling-dataset-lee-et-al-2021",
@@ -1532,7 +1575,8 @@
       "citationDois": [
         "10.1002/bit.27899"
       ],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:cho-antibody-producer-multi-omic-dataset-gopalakrishnan-et-al-2024",
@@ -1590,7 +1634,8 @@
       "citationDois": [
         "10.1016/j.ymben.2024.07.009"
       ],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:cho-clone-selection-productivity-biomarkers-barberi-et-al-2025",
@@ -1648,7 +1693,8 @@
       "citationDois": [
         "10.1002/aic.18602"
       ],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:cho-process-mode-uptake-and-secretion-rates-venkatarama-reddy-et-al-2026",
@@ -1696,7 +1742,8 @@
       "citationDois": [
         "10.1016/j.ymben.2026.102552"
       ],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:yeast9-saccharomyces-cerevisiae-precision-fermentation-host-reference",
@@ -1764,7 +1811,8 @@
       "citationDois": [
         "10.1038/s44320-024-00060-7"
       ],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:imt1026-imt1026-v30-komagataella-phaffii-pichia-pastoris",
@@ -1822,7 +1870,8 @@
       "citationDois": [
         "10.1371/journal.pone.0148031"
       ],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:bioml-bench",
@@ -1863,7 +1912,8 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": [],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:biomysterybench",
@@ -1899,7 +1949,8 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": [],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:bixbench",
@@ -1935,7 +1986,8 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": [],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:blade",
@@ -1971,7 +2023,8 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": [],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:compbiobench-v1",
@@ -2017,7 +2070,8 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": [],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:flip-fitness-landscape-inference-for-proteins",
@@ -2073,7 +2127,8 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": [],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:frontierscience",
@@ -2104,7 +2159,8 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": [],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:genebench-pro",
@@ -2145,7 +2201,8 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": [],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:gpqa",
@@ -2181,7 +2238,8 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": [],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:humanitys-last-exam",
@@ -2212,7 +2270,8 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": [],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:iumami-scm",
@@ -2253,7 +2312,8 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": [],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:lab-bench",
@@ -2289,7 +2349,8 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": [],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:massspecgym",
@@ -2335,7 +2396,8 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": [],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:mmlu-pro",
@@ -2366,7 +2428,8 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": [],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:proteingym",
@@ -2422,7 +2485,8 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": [],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:scihorizon-gene",
@@ -2458,7 +2522,8 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": [],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:swe-bench",
@@ -2494,7 +2559,8 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": [],
-      "accessions": []
+      "accessions": [],
+      "dataLinks": []
     }
   ],
   "inventory": [

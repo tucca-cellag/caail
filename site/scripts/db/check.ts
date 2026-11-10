@@ -26,20 +26,22 @@
  *    (checkEntryRowTwins).
  *  - curated entries' own accessions: keys resolve, values are bare accessions, the column
  *    matches dataset-accessions.json (checkAccessions).
+ *  - curated entries' own deposit links: keys resolve, values are http(s) links to a deposit
+ *    rather than a paper, the column matches dataset-data-links.json (checkDataLinks).
  */
 
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { importNdjson, ACCESSION_EXACT, idAccession, REPO_ROOT, SITE_ROOT, type Db } from './lib.js';
-import { THEME_SLUGS, THEMES, FINE_TAGS, pageOrdinals, DATASET_ACCESSIONS_PATH } from './seed.js';
+import { THEME_SLUGS, THEMES, FINE_TAGS, pageOrdinals, DATASET_ACCESSIONS_PATH, DATASET_DATA_LINKS_PATH } from './seed.js';
 import { ON_REQUEST_PAGES } from '../parser/datasets.js';
 import { buildTaxonomyModel } from '../parser/taxonomy.js';
 import { AREAS } from '../parser/areas.js';
 import { MATRIX_SECTION } from '../parser/types.js';
 import { seriesRecency, EDITION_SORT_RULE } from '../parser/reports.js';
 import type { TaxonomyData } from '../parser/types.js';
-import { bareDoi, DOI_SHAPE } from '../parser/doi-relation.js';
+import { bareDoi, doiRelation, DOI_SHAPE } from '../parser/doi-relation.js';
 import { parseMarkdown } from '../parser/markdown.js';
 import { toString as mdastToString } from 'mdast-util-to-string';
 import { visit } from 'unist-util-visit';
@@ -590,17 +592,7 @@ export const ACCESSIONS_LABEL =
  */
 export function checkAccessions(db: Db, path: string = DATASET_ACCESSIONS_PATH): CheckResult[] {
   const problems: string[] = [];
-  let manual: Record<string, unknown> = {};
-  if (existsSync(path)) {
-    let parsed: unknown = undefined;
-    try { parsed = JSON.parse(readFileSync(path, 'utf-8')); } catch { problems.push('dataset-accessions.json is not JSON'); }
-    const datasets = (parsed as { datasets?: unknown } | undefined)?.datasets;
-    if (parsed !== undefined && (typeof datasets !== 'object' || datasets === null || Array.isArray(datasets))) {
-      problems.push('dataset-accessions.json has no "datasets" object');
-    } else if (datasets) {
-      manual = datasets as Record<string, unknown>;
-    }
-  }
+  const manual = readEntryListFile(path, 'dataset-accessions.json', problems);
   const entryIds = new Set((db.prepare('SELECT item_id FROM dataset_entries').all() as { item_id: string }[]).map((r) => r.item_id));
   const expected = new Map<string, string>();
   for (const [id, list] of Object.entries(manual)) {
@@ -625,6 +617,85 @@ export function checkAccessions(db: Db, path: string = DATASET_ACCESSIONS_PATH):
     }
   }
   return [ok(ACCESSIONS_LABEL, problems.length === 0, `${problems.length} problem(s): ${problems.slice(0, 10).join('; ')}`)];
+}
+
+/**
+ * The `datasets` object of a `{ "datasets": { "ds:…": [...] } }` file, or `{}` when the file is
+ * absent. A file that is not JSON, or has no such object, is a problem named by `name`.
+ */
+function readEntryListFile(path: string, name: string, problems: string[]): Record<string, unknown> {
+  if (!existsSync(path)) return {};
+  let parsed: unknown = undefined;
+  try { parsed = JSON.parse(readFileSync(path, 'utf-8')); } catch { problems.push(`${name} is not JSON`); }
+  const datasets = (parsed as { datasets?: unknown } | undefined)?.datasets;
+  if (parsed !== undefined && (typeof datasets !== 'object' || datasets === null || Array.isArray(datasets))) {
+    problems.push(`${name} has no "datasets" object`);
+    return {};
+  }
+  return (datasets as Record<string, unknown> | undefined) ?? {};
+}
+
+export const DATA_LINKS_LABEL =
+  'dataset_entries.data_links: every dataset-data-links.json key is a curated dataset entry, every value a ' +
+  'non-empty list of distinct http(s) links to a deposit, none the entry\'s paper, doi or heading link, and ' +
+  'the stored column matches the file';
+
+/** A link as the twin check and this guard compare it: no trailing slash, case-insensitive. */
+const linkKey = (url: string): string => url.replace(/\/+$/, '').toLowerCase();
+
+/**
+ * Guard for curated entries' own deposit links (tucca-cellag/caail-planning#752), the `data_links`
+ * column `seedDataLinks` folds from `scripts/db/dataset-data-links.json`: the deposits no accession
+ * names, such as a Zenodo record or a code repository holding the data. Each key must be a curated
+ * dataset entry and each value a non-empty list of distinct links to an http(s) address with a host.
+ *
+ * A link may not name the entry's paper: one stating a DOI whose registrant is not a data host is
+ * refused, as a Data cell refuses it (`readDataCell`), with the same pointer to the registrant
+ * list for a deposit on a host it lacks. Nor may it repeat what the entry already serves, its
+ * `doi` or its heading link, since `dataLinks` is the deposits the entry serves nowhere else.
+ * Links are compared without a trailing slash and case-insensitively. The stored column must equal
+ * what the file says, as for the accessions. It checks a link's form and registrant, not that it
+ * reaches the deposit.
+ */
+export function checkDataLinks(db: Db, path: string = DATASET_DATA_LINKS_PATH): CheckResult[] {
+  const problems: string[] = [];
+  const manual = readEntryListFile(path, 'dataset-data-links.json', problems);
+  const entries = new Map((db.prepare('SELECT item_id, url, doi FROM dataset_entries').all() as
+    { item_id: string; url: string | null; doi: string | null }[]).map((e) => [e.item_id, e]));
+  const expected = new Map<string, string>();
+  for (const [id, list] of Object.entries(manual)) {
+    const e = entries.get(id);
+    if (!e) { problems.push(`${id}: not a curated dataset entry`); continue; }
+    if (!Array.isArray(list) || list.length === 0) { problems.push(`${id}: needs a non-empty list of links`); continue; }
+    const seen = new Set<string>();
+    const ownDoi = bareDoi(e.doi);
+    for (const a of list) {
+      const url = typeof a === 'string' ? a.trim() : '';
+      if (!/^https?:\/\/[^\s/?#]+\S*$/i.test(url)) {
+        problems.push(`${id}: ${JSON.stringify(a)} is not one link to an http(s) address with a host`);
+        continue;
+      }
+      const doi = statedDoi(url);
+      if (seen.has(linkKey(url))) problems.push(`${id}: lists ${url} twice`);
+      else if (e.url && linkKey(e.url) === linkKey(url)) problems.push(`${id}: ${url} is already its heading link`);
+      else if (doi && doi === ownDoi) problems.push(`${id}: ${url} is already its doi`);
+      else if (doi && doiRelation(doi) === 'publication') {
+        problems.push(`${id}: ${url} links ${doi}, whose registrant is not a data host: a paper is the entry's doi, ` +
+          'and a deposit on an unlisted host needs its registrant added to DATA_REPOSITORY_REGISTRANTS ' +
+          '(site/scripts/parser/doi-relation.ts)');
+      }
+      seen.add(linkKey(url));
+    }
+    expected.set(id, JSON.stringify(list.map((a) => String(a).trim())));
+  }
+  for (const r of db.prepare('SELECT item_id, data_links FROM dataset_entries ORDER BY item_id').all() as { item_id: string; data_links: string | null }[]) {
+    const want = expected.get(r.item_id) ?? null;
+    const have = r.data_links ?? null;
+    if (have !== want) {
+      problems.push(`${r.item_id}: stored data_links ${have ?? 'NULL'} differ from dataset-data-links.json (${want ?? 'none'}); run db:reseed-axes`);
+    }
+  }
+  return [ok(DATA_LINKS_LABEL, problems.length === 0, `${problems.length} problem(s): ${problems.slice(0, 10).join('; ')}`)];
 }
 
 export const ENTRY_ROW_TWINS_LABEL =
@@ -1184,7 +1255,7 @@ export function runChecks(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
     ...checkTopicTiers(db), ...checkAxisBijection(db, repoRoot),
     ...checkCatalogHeadings(db), ...checkLicenses(db), ...checkManualLicenseKeys(db),
     ...checkDois(db), ...checkManualDoiKeys(db), ...checkRelatedDois(db), ...checkSubseries(db),
-    ...checkInventoryCells(db, repoRoot), ...checkOnRequest(db, repoRoot), ...checkEntryRowTwins(db, repoRoot), ...checkAccessions(db),
+    ...checkInventoryCells(db, repoRoot), ...checkOnRequest(db, repoRoot), ...checkEntryRowTwins(db, repoRoot), ...checkAccessions(db), ...checkDataLinks(db),
     ...checkSeries(db), ...checkFineTagSeedDrift(db), ...checkRowTagParity(db)];
 }
 

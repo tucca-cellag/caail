@@ -578,7 +578,10 @@ export function buildManifest(
           'against the inventory rows\' `accession`, `dataDoi`, `dataUrl` and `links` (every URL ' +
           'in the row, secondary deposits included; keep a URL\'s query string, many name their ' +
           'record there), and against the entries\' `url`, their `accessions` (the entry\'s own ' +
-          'repository deposits, bare, primary first; `[]` when none is recorded), and their `doi` ' +
+          'repository deposits, bare, primary first; `[]` when none is recorded), their ' +
+          '`dataLinks` (links to the entry\'s own deposits that no accession names, such as a ' +
+          'Zenodo record or a code repository, a DOI as its https://doi.org/ link; `[]` when none ' +
+          'is recorded), and their `doi` ' +
           'where `doiRelation` is "own" (a data host\'s DOI, naming the item itself). Compare DOIs as bare lowercase ' +
           'strings and accessions case-insensitively, ignoring a version suffix (SRA051669.1 is ' +
           'SRA051669). Some deposits have only a `dataUrl`. ' +

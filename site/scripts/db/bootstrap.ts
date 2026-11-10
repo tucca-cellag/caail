@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 import { buildPapersModel } from '../parser/papers.js';
 import { openDb, exportNdjson, REPO_ROOT, NDJSON_DIR, type Db } from './lib.js';
 import { extractCatalogEntries, extractReports } from './extract.js';
-import { seedPapers, seedCatalog, seedReports, seedDatasets, seedOnRequest, seedTopics, seedLicenses, seedDois, seedRelatedDois, seedAccessions, seedSubseries } from './seed.js';
+import { seedPapers, seedCatalog, seedReports, seedDatasets, seedOnRequest, seedTopics, seedLicenses, seedDois, seedRelatedDois, seedAccessions, seedDataLinks, seedSubseries } from './seed.js';
 
 /**
  * Preserve retired paper-id tombstones across a re-bootstrap. They aren't in the
@@ -199,6 +199,7 @@ export function main(): void {
   const doiSummary = seedDois(db);
   const relatedDoiSummary = seedRelatedDois(db);
   seedAccessions(db);
+  seedDataLinks(db);
   const subseriesSummary = seedSubseries(db);
 
   const counts = exportNdjson(db, NDJSON_DIR);

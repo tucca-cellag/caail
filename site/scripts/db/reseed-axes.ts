@@ -28,13 +28,14 @@
 
 import { fileURLToPath } from 'node:url';
 import { importNdjson, exportNdjson, NDJSON_DIR, type Db } from './lib.js';
-import { seedLicenses, seedDois, seedRelatedDois, seedAccessions, seedSubseries } from './seed.js';
+import { seedLicenses, seedDois, seedRelatedDois, seedAccessions, seedDataLinks, seedSubseries } from './seed.js';
 
 export interface ReseedSummary {
   licenses: { auto: number; manual: number };
   dois: { manual: number };
   relatedDois: { rows: number };
   accessions: { rows: number };
+  dataLinks: { rows: number };
   subseries: { rows: number };
 }
 
@@ -43,7 +44,7 @@ export interface ReseedSummary {
  *
  * Clears the side-axis columns first, THEN re-seeds. This makes a reseed a pure
  * function of the current committed inputs (`licenses-manual.json` + `license-cache.json`
- * + `dois-manual.json` + `dois-related.json` + `dataset-accessions.json` + `subseries.json`), so removing a manual
+ * + `dois-manual.json` + `dois-related.json` + `dataset-accessions.json` + `dataset-data-links.json` + `subseries.json`), so removing a manual
  * override reconciles — the underlying seeders only UPDATE keys still present, so without the clear a
  * retracted value would persist stale (the DB here is already populated, unlike the
  * fresh rows `db:bootstrap` seeds onto). Every license/DOI is reproducible from those
@@ -53,31 +54,32 @@ export interface ReseedSummary {
 export function reseedAxes(db: Db): ReseedSummary {
   db.exec(
     'UPDATE catalog SET license=NULL, license_source=NULL, doi=NULL, doi_source=NULL, related_dois=NULL;' +
-      'UPDATE dataset_entries SET license=NULL, license_source=NULL, doi=NULL, doi_source=NULL, related_dois=NULL, accessions=NULL;' +
+      'UPDATE dataset_entries SET license=NULL, license_source=NULL, doi=NULL, doi_source=NULL, related_dois=NULL, accessions=NULL, data_links=NULL;' +
       'UPDATE dataset_rows SET subseries=NULL;',
   );
   const licenses = seedLicenses(db);
   const dois = seedDois(db);
   const relatedDois = seedRelatedDois(db);
   const accessions = seedAccessions(db);
+  const dataLinks = seedDataLinks(db);
   const subseries = seedSubseries(db);
-  return { licenses, dois, relatedDois, accessions, subseries };
+  return { licenses, dois, relatedDois, accessions, dataLinks, subseries };
 }
 
 function main(): void {
   const db = importNdjson(NDJSON_DIR);
-  const { licenses, dois, relatedDois, accessions, subseries } = reseedAxes(db);
+  const { licenses, dois, relatedDois, accessions, dataLinks, subseries } = reseedAxes(db);
   exportNdjson(db, NDJSON_DIR);
   db.close();
   console.log(
     `db:reseed-axes — folded side axes into NDJSON: ` +
       `licenses ${licenses.manual} manual + ${licenses.auto} auto (GitHub SPDX); ` +
       `dois ${dois.manual} manual; related-doi sets ${relatedDois.rows}; ` +
-      `entry accession sets ${accessions.rows}; subseries sets ${subseries.rows}.`,
+      `entry accession sets ${accessions.rows}; entry data-link sets ${dataLinks.rows}; subseries sets ${subseries.rows}.`,
   );
   console.log(
     `  Only the side-axis columns change (license, doi, related_dois on catalog + ` +
-      `dataset_entries; accessions on dataset_entries; subseries on dataset_rows); topics + ordinals are left intact. ` +
+      `dataset_entries; accessions and data_links on dataset_entries; subseries on dataset_rows); topics + ordinals are left intact. ` +
       `Review the diff and commit the NDJSON with its input file(s).`,
   );
 }
