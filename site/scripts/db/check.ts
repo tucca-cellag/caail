@@ -774,6 +774,20 @@ const COPIED_PUNCT = /[.,;:!?)\]'"*]$/;
 const PATH_DOI = /^https?:\/\/[^/?#]+\/(?:[^?#]*\/)?(10\.\d{4,9}\/[^\s?#]+)/i;
 
 /**
+ * The first query value of a link that is a DOI, decoded, such as PLOS's article page
+ * (`…/article?id=10.1371/journal.pone.…`): refused below like `PATH_DOI`, never used as a key.
+ */
+const queryDoi = (url: string): string | null => {
+  const query = url.match(/\?([^#]*)/)?.[1];
+  if (!query) return null;
+  for (const value of new URLSearchParams(query).values()) {
+    const doi = bareDoi(value.trim());
+    if (doi) return doi;
+  }
+  return null;
+};
+
+/**
  * Guard for curated entries' own deposit links (tucca-cellag/caail-planning#752), the `data_links`
  * column `seedDataLinks` folds from `scripts/db/dataset-data-links.json`, through `checkEntryList`:
  * the deposits the entry's accessions do not name, such as a Zenodo record or a code repository
@@ -783,11 +797,11 @@ const PATH_DOI = /^https?:\/\/[^/?#]+\/(?:[^?#]*\/)?(10\.\d{4,9}\/[^\s?#]+)/i;
  *
  * A link may not name a paper. One that states a DOI whose registrant is not a data host is refused,
  * as a Data cell refuses it (`readDataCell`), with the same pointer to the registrant list for a
- * deposit on a host it lacks, and so is one whose path carries such a DOI (a publisher's article
- * page). A publisher page with no DOI in its address (ScienceDirect's `/pii/`) cannot be told from a
- * deposit by its form, and is left to review. Nor may a link repeat what the entry already serves, its
- * `doi` or its heading link, since `dataLinks` is the deposits the entry serves nowhere else. Links
- * are compared by `depositKey`. It checks a link's form and registrant, not that it reaches the deposit.
+ * deposit on a host it lacks, and so is one whose path or query value carries such a DOI (a
+ * publisher's article page, `PATH_DOI` and `queryDoi`). A publisher page with no DOI in its address
+ * (ScienceDirect's `/pii/`) cannot be told from a deposit by its form, and is left to review. Nor
+ * may a link repeat what the entry already serves, its `doi` or its heading link, since `dataLinks`
+ * is the deposits the entry serves nowhere else. Links are compared by `depositKey`. It checks a link's form and registrant, not that it reaches the deposit.
  *
  * Nor may a link name an accession of the families `dataset-accessions.json` takes as a whole path
  * segment or query value (`FAMILY_IN_SEGMENT`, `FAMILY_IN_QUERY`): that deposit is served as an
@@ -817,7 +831,7 @@ export function checkDataLinks(db: Db, path: string = DATASET_DATA_LINKS_PATH): 
     }
     const stated = statedDoi(url);
     const inPath = stated ? null : bareDoi(url.match(PATH_DOI)?.[1]?.replace(/\/+$/, '') ?? null);
-    const paper = [stated, inPath].find((d) => d && doiRelation(d) === 'publication');
+    const paper = [stated, inPath, queryDoi(url)].find((d) => d && doiRelation(d) === 'publication');
     if (paper) {
       return { problem: `${url} links ${paper}, whose registrant is not a data host: a paper is the entry's doi, ` +
         'and a deposit on an unlisted host needs its registrant added to DATA_REPOSITORY_REGISTRANTS ' +

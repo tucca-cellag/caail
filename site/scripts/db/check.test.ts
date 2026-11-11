@@ -1324,6 +1324,20 @@ describe('checkDataLinks (tucca-cellag/caail-planning#752)', () => {
     expect(result(withEntry(JSON.stringify([record]), PAPER, `At [Zenodo](${record}).`), fileWith({ [ENTRY]: [record] })).ok).toBe(true);
   });
 
+  it("rejects a publisher's article page whose query value is a paper DOI, encoded or not", () => {
+    for (const [article, doi] of [
+      ['https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0123456', '10.1371/journal.pone.0123456'],
+      ['https://example.org/view?type=html&doi=10.1002%2Fjsfa.12345', '10.1002/jsfa.12345'],
+    ] as const) {
+      const r = result(withEntry(JSON.stringify([article]), PAPER, `See [the article](${article}).`), fileWith({ [ENTRY]: [article] }));
+      expect(r.ok, article).toBe(false);
+      expect(r.detail, article).toContain(`links ${doi}, whose registrant is not a data host`);
+    }
+    // A data host's DOI in a query value is a deposit, and passes.
+    const deposit = 'https://example.org/browse?doi=10.5281/zenodo.11357327';
+    expect(result(withEntry(JSON.stringify([deposit]), PAPER, `At [the browser](${deposit}).`), fileWith({ [ENTRY]: [deposit] })).ok).toBe(true);
+  });
+
   it('refuses a link its entry names nowhere, such as one cut short', () => {
     const cut = REPO.slice(0, -1);
     expect(listed([cut]).detail).toContain('named nowhere in its heading or description');
