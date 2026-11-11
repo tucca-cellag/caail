@@ -29,7 +29,7 @@ import { toString as mdastToString } from 'mdast-util-to-string';
 import { ACCESSION, idAccession } from '../db/lib.js';
 import { bareDoi, doiRelation } from './doi-relation.js';
 import type { DoiRelation } from './types.js';
-import { extractInventory } from '../db/extract.js';
+import { extractInventory, refuseStrayInventory } from '../db/extract.js';
 import { parseMarkdown } from './markdown.js';
 import { topicsByItemId } from './topics.js';
 import { INVENTORY_PAGES } from './datasets.js';
@@ -387,6 +387,11 @@ function readRows(ndjsonDir: string): RowNdjson[] {
 /**
  * Build the inventory model, in page order then table order.
  *
+ * A page outside INVENTORY_PAGES that carries an inventory table throws first
+ * (`refuseStrayInventory`), as a stray Data on request section does (`readPagesOnRequest`): its
+ * rows are in no NDJSON, so they would be shown on the page and counted nowhere, and `pnpm parse`
+ * and `build`, which run no `db:check`, would pass them (tucca-cellag/caail-planning#752).
+ *
  * @param repoRoot  Repository root (override in tests to point at a fixture directory).
  * @param ndjsonDir Committed NDJSON directory (defaults to `site/db/ndjson`).
  */
@@ -394,6 +399,7 @@ export function buildDatasetInventory(
   repoRoot: string = DEFAULT_REPO_ROOT,
   ndjsonDir: string = NDJSON_DIR,
 ): DatasetInventory {
+  refuseStrayInventory(repoRoot, 'pnpm parse');
   const byId = topicsByItemId();
   const rows = readRows(ndjsonDir);
 

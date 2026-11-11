@@ -1082,7 +1082,8 @@ export const INVENTORY_PAGES_LABEL =
  * Inventory-page guard (tucca-cellag/caail-planning#752, review round 3). Reports every page outside
  * INVENTORY_PAGES that carries a `## Complete data inventory` table, which nothing that counts reads;
  * `strayInventoryTables` says why for each kind of page. `db:emit` and `db:bootstrap` refuse the same
- * pages before writing (`refuseStrayInventory`), so the emit never regenerates such a table empty.
+ * pages before writing (`refuseStrayInventory`), so the emit never regenerates such a table empty,
+ * and `pnpm parse` refuses them too (`buildDatasetInventory`), since `build` runs no `db:check`.
  * CrossSpecies, which carried one until tucca-cellag/caail-planning#752 removed its rows, is the page
  * most likely to grow one again.
  */

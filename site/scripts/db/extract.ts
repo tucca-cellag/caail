@@ -395,7 +395,8 @@ export function refuseUnlistedOnRequest(repoRoot: string, who: string): void {
  * an inventory table as DB-owned (`isDbOwnedDatasetPage`), would also regenerate the table from
  * the page's DB rows, of which it has none. A page in no list is never emitted or counted, and
  * the README is no dataset page. `db:check` reports these (`checkInventoryPages`); `db:emit`
- * and `db:bootstrap` refuse them (`refuseStrayInventory`), so no emit runs over the rows.
+ * and `db:bootstrap` refuse them (`refuseStrayInventory`), so no emit runs over the rows, and so
+ * does `pnpm parse` (`buildDatasetInventory`), so no build ships rows that nothing counts.
  */
 export function strayInventoryTables(repoRoot: string): string[] {
   return unlistedPagesWith(repoRoot, INVENTORY_PAGES, (p) => extractInventory(p) !== null).map((f) => {
