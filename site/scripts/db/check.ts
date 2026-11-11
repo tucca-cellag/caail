@@ -974,28 +974,28 @@ export function checkOnRequest(db: Db, repoRoot: string = REPO_ROOT): CheckResul
  * count it twice. The integrity check cannot see this: it asserts a dataset id sits in exactly one of
  * the two tables, and twins carry different ids. CrossSpecies held seven such pairs.
  *
- * Deposits are compared, never papers (Benji, 2026-11-10): one paper can describe several deposits,
- * which is how the datasets endpoint reads a paper DOI, so an entry and a row from one paper may be two
- * datasets. An entry's deposits are its `doi` where the DOI's registrant is a data host, its heading
- * link unless that states a paper's DOI, its `accessions` and its `dataLinks`. A row's deposit is its
- * Data cell, read by the same `readDataCell` that fills the API's `dataUrl`, `dataDoi` and `accession`;
- * a status word names none, and its Paper and Description cells are not read. A link that states a
- * DOI is compared as that DOI, any other link without a trailing slash and case-insensitively, and an
- * accession case-insensitively and without a version suffix, as the endpoint tells consumers to. An
- * accession on one side is also shared when a deposit link on the other names it as a whole path
- * segment, as written, or a whole query value, in any case (`accessionNamedIn`), so an entry's link to
- * an SRA run page meets a row badged with that run, and a row's ENA link meets an entry listing the
- * project, while a repository named `cra2` does not meet a row badged `CRA2`.
+ * Deposits are compared, never papers, as decided on that ticket: one paper can describe several
+ * deposits, which is how the datasets endpoint reads a paper DOI, so an entry and a row from one paper
+ * may be two datasets. An entry's deposits are its `doi` where the DOI's registrant is a data host,
+ * its heading link unless that states a paper's DOI, its `accessions` and its `dataLinks`. A row's
+ * deposit is its Data cell, read by the same `readDataCell` that fills the API's `dataUrl`,
+ * `dataDoi` and `accession`; a status word names none, and its Paper and Description cells are not
+ * read. A link that states a DOI is compared as that DOI, any other link without a trailing slash
+ * and case-insensitively, and an accession case-insensitively and without a version suffix, as the
+ * endpoint tells consumers to. An accession on one side is also shared when a deposit link on the
+ * other names it as a whole path segment, as written, or a whole query value, in any case
+ * (`accessionNamedIn`), so an entry's link to an SRA run page meets a row badged with that run, and a
+ * row's ENA link meets an entry listing the project, while a repository named `cra2` does not meet a
+ * row badged `CRA2`.
  *
  * An entry that names its deposit only in its description is not compared, which is why its deposits
  * belong in `dataset-accessions.json` or `dataset-data-links.json`.
  *
  * It compares within a page only. A resource that covers several species counts once for each species
- * (Benji, 2026-11-10, tucca-cellag/caail-planning#791), so the same deposit on two species pages is not
- * a twin. Two inventory rows on one page that share a deposit are tucca-cellag/caail-planning#715's case,
- * not this one. A row whose cells cannot be read is
- * skipped here, because `checkInventoryCells` already fails it. Each pair is reported once, naming
- * every deposit the two share.
+ * (tucca-cellag/caail-planning#791), so the same deposit on two species pages is not a twin. Two
+ * inventory rows on one page that share a deposit are tucca-cellag/caail-planning#715's case, not this
+ * one. A row whose cells cannot be read is skipped here, because `checkInventoryCells` already fails
+ * it. Each pair is reported once, naming every deposit the two share.
  */
 export function checkEntryRowTwins(
   db: Db,
