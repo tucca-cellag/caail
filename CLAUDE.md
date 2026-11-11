@@ -384,8 +384,8 @@ non-catalog canonical files (`OtherResources.md`, `ReferenceWorks.md`, `AwesomeL
     id. Conditions, all required: the id is **provably unreproducible** (show the seed's output beside
     the committed id); **every** reference moves with it (`item_topics`, `dois-manual.json`,
     `licenses-manual.json`, `dois-related.json`, `dataset-accessions.json`,
-    `dataset-data-links.json` — note `licenses-manual.json` and `dois-related.json` key by *url*,
-    not id) and `db:check` passes; and the commit says which id changed and why. **Never** do this to a `paper:N`
+    `dataset-data-links.json` — `dois-manual.json`, `licenses-manual.json` and `dois-related.json`
+    key a dataset by its `ds:` id and a catalog entry by its *url*) and `db:check` passes; and the commit says which id changed and why. **Never** do this to a `paper:N`
     id — those are public anchors people bookmark, they are retired rather than reused, and the fix
     for a bad one is a tombstone. Prefer changing the outlier over changing the slug rule: a rule
     change silently re-mints every id derived from it.
