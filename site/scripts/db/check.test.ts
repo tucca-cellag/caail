@@ -1101,6 +1101,26 @@ describe('checkEntryRowTwins (tucca-cellag/caail-planning#752)', () => {
     expect(r.ok, r.detail).toBe(true);
   });
 
+  it('passes a repository named like a badge in another case, as the data-links guard reads a path segment', () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-t', 'Cow', `https://doi.org/${PAPER}`, PAPER, { dataLinks: ['https://github.com/lab/cra2/tree/main/data'] });
+    row(db, 'ds:row-t', 'Cow', { Data: '[`CRA2`](https://ngdc.cncb.ac.cn/gsa/browse/CRA2)' });
+    const r = result(db);
+    expect(r.ok, r.detail).toBe(true);
+  });
+
+  it('fails a link naming a badge in a path segment as written, or in a query value in any case', () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-v', 'Cow', `https://doi.org/${PAPER}`, PAPER, { dataLinks: ['https://www.ncbi.nlm.nih.gov/sra/?term=srr1234567'] });
+    row(db, 'ds:row-v', 'Cow', { Data: '[`SRR1234567`](https://trace.ncbi.nlm.nih.gov/Traces/?run=SRR1234567)' });
+    entry(db, 'ds:entry-w', 'Pig', 'https://github.com/SysBioChalmers/Zebrafish-GEM', null);
+    row(db, 'ds:row-w', 'Pig', { Data: '[`Zebrafish-GEM`](https://doi.org/10.5281/zenodo.9)' });
+    const r = result(db);
+    expect(r.detail).toMatch(/^2 twin\(s\): /);
+    expect(r.detail).toContain('ds:entry-v and ds:row-v on Cow both name accession SRR1234567');
+    expect(r.detail).toContain('ds:entry-w and ds:row-w on Pig both name accession ZEBRAFISH-GEM');
+  });
+
   it('passes a link that holds an accession only inside a longer one', () => {
     const db = miniDb();
     entry(db, 'ds:entry-q', 'Cow', `https://doi.org/${PAPER}`, PAPER, { dataLinks: ['https://www.ncbi.nlm.nih.gov/sra/SRR12345678'] });

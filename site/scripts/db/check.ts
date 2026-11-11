@@ -638,15 +638,20 @@ const pathOf = (url: string): string => url.replace(/^https?:\/\/[^/?#]*/i, '');
 const SEGMENT_END = String.raw`(?:\.\d+)?(?=$|[/?&#])`;
 
 /**
- * Whether `link` names `accession` as a whole path segment or query value, in any case: `…/GSE1`,
- * `…?acc=GSE1` and `…/GSE1.2` (a version suffix) name `GSE1`; `…acc=GSE12`, a repository
- * `…/Zebrafish-GEM-v2` (for `Zebrafish-GEM`) and a host (`zenodo.org`) do not.
+ * Whether `link` names `accession` as a whole path segment, as written, or as a whole query value,
+ * in any case. That is the rule the data-links guard refuses a family accession by
+ * (`FAMILY_IN_SEGMENT`, `FAMILY_IN_QUERY`), since a path segment can be a name (a repository `cra2`)
+ * while a query value is an identifier slot. `…/GSE1`, `…?acc=gse1` and `…/GSE1.2` (a version
+ * suffix) name `GSE1`; `…/gse1`, `…acc=GSE12`, a repository `…/Zebrafish-GEM-v2` (for
+ * `Zebrafish-GEM`) and a host (`zenodo.org`) do not.
  */
 export function accessionNamedIn(link: string, accession: string): boolean {
   const needle = accession.trim();
   if (!needle) return false;
   const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return new RegExp(`(?<=[/=])${escaped}${SEGMENT_END}`, 'i').test(pathOf(link));
+  const path = pathOf(link);
+  return new RegExp(`(?<=/)${escaped}${SEGMENT_END}`).test(path)
+    || new RegExp(`(?<==)${escaped}${SEGMENT_END}`, 'i').test(path);
 }
 
 /**
@@ -978,8 +983,9 @@ export function checkOnRequest(db: Db, repoRoot: string = REPO_ROOT): CheckResul
  * DOI is compared as that DOI, any other link without a trailing slash and case-insensitively, and an
  * accession case-insensitively and without a version suffix, as the endpoint tells consumers to. An
  * accession on one side is also shared when a deposit link on the other names it as a whole path
- * segment or query value (`accessionNamedIn`), so an entry's link to an SRA run page meets a row
- * badged with that run, and a row's ENA link meets an entry listing the project.
+ * segment, as written, or a whole query value, in any case (`accessionNamedIn`), so an entry's link to
+ * an SRA run page meets a row badged with that run, and a row's ENA link meets an entry listing the
+ * project, while a repository named `cra2` does not meet a row badged `CRA2`.
  *
  * An entry that names its deposit only in its description is not compared, which is why its deposits
  * belong in `dataset-accessions.json` or `dataset-data-links.json`.
@@ -1001,8 +1007,10 @@ export function checkEntryRowTwins(
     const doi = statedDoi(url);
     return doi && doiRelation(doi) !== 'own' ? null : depositKey(url);
   };
-  /** A badge or accession compared bare: uppercase, without a version suffix after its digits. */
-  const accessionOf = (a: string): string => a.trim().replace(/(\d)\.\d+$/, '$1').toUpperCase();
+  /** A badge or accession as written, without a version suffix after its digits. */
+  const unversioned = (a: string): string => a.trim().replace(/(\d)\.\d+$/, '$1');
+  /** The key an accession is compared by: unversioned and uppercase. */
+  const accessionKey = (a: string): string => `accession ${a.toUpperCase()}`;
   const list = (raw: string | null): string[] => {
     if (!raw) return [];
     try {
@@ -1010,19 +1018,22 @@ export function checkEntryRowTwins(
       return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
     } catch { return []; } // checkAccessions and checkDataLinks name a malformed column
   };
-  /** One side's deposits: its keys, its deposit links, and its accessions (bare, uppercase). */
+  /**
+   * One side's deposits: its keys, its deposit links, and its accessions unversioned but as
+   * written, since a link names one in a path segment only as written (`accessionNamedIn`).
+   */
   interface Deposits { keys: Set<string>; links: string[]; accessions: string[] }
   const deposits = (doiKey: string | null, links: string[], accessions: string[]): Deposits => {
     const own = links.filter((url) => linkKeyOf(url) !== null);
-    const bare = accessions.map(accessionOf);
-    const keys = [doiKey, ...own.map(linkKeyOf), ...bare.map((a) => `accession ${a}`)];
-    return { keys: new Set(keys.filter((k): k is string => k !== null)), links: own, accessions: bare };
+    const written = accessions.map(unversioned);
+    const keys = [doiKey, ...own.map(linkKeyOf), ...written.map(accessionKey)];
+    return { keys: new Set(keys.filter((k): k is string => k !== null)), links: own, accessions: written };
   };
   /** The deposits two sides share, by key or by an accession one side's link names. */
   const sharedBy = (a: Deposits, b: Deposits): string[] => {
     const out = new Set([...a.keys].filter((k) => b.keys.has(k)));
     for (const [x, y] of [[a, b], [b, a]] as const) {
-      for (const acc of x.accessions) if (y.links.some((url) => accessionNamedIn(url, acc))) out.add(`accession ${acc}`);
+      for (const acc of x.accessions) if (y.links.some((url) => accessionNamedIn(url, acc))) out.add(accessionKey(acc));
     }
     return [...out];
   };
