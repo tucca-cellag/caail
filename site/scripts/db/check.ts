@@ -759,6 +759,12 @@ const depositKey = (url: string): string => {
   return doi ? `DOI ${doi}` : `link ${url.replace(/^https?:\/\//i, '').replace(/\/+$/, '').toLowerCase()}`;
 };
 
+/**
+ * The last character of a link copied with the sentence or Markdown around it (`…/FoodML),`): the
+ * punctuation `namedIn` lets end a link in prose, so the copy is still found there verbatim.
+ */
+const COPIED_PUNCT = /[.,;:!?)\]'"*]$/;
+
 /** A DOI-shaped token in a link's path, such as a publisher's `/doi/10.1002/…` page: refused below, never used as a key. */
 const PATH_DOI = /^https?:\/\/[^/?#]+\/(?:[^?#]*\/)?(10\.\d{4,9}\/[^\s?#]+)/i;
 
@@ -767,7 +773,8 @@ const PATH_DOI = /^https?:\/\/[^/?#]+\/(?:[^?#]*\/)?(10\.\d{4,9}\/[^\s?#]+)/i;
  * column `seedDataLinks` folds from `scripts/db/dataset-data-links.json`, through `checkEntryList`:
  * the deposits the entry's accessions do not name, such as a Zenodo record or a code repository
  * holding the data. Each item must be one link to an http(s) address with a host (`WEB_ADDRESS`, the
- * Data-cell reader's own test, with no whitespace).
+ * Data-cell reader's own test, with no whitespace), and may not end in the punctuation that ends a
+ * sentence or a Markdown link (`COPIED_PUNCT`), which is copied with a link rather than part of it.
  *
  * A link may not name a paper. One that states a DOI whose registrant is not a data host is refused,
  * as a Data cell refuses it (`readDataCell`), with the same pointer to the registrant list for a
@@ -787,6 +794,9 @@ export function checkDataLinks(db: Db, path: string = DATASET_DATA_LINKS_PATH): 
   return checkEntryList(db, path, 'dataset-data-links.json', 'data_links', DATA_LINKS_LABEL, 'links', (a, e) => {
     const url = typeof a === 'string' ? a.trim() : '';
     if (!WEB_ADDRESS.test(url) || /\s/.test(url)) return { problem: `${JSON.stringify(a)} is not one link to an http(s) address with a host` };
+    if (COPIED_PUNCT.test(url)) {
+      return { problem: `${url} ends in "${url.slice(-1)}", punctuation copied with the link: drop it, or percent-encode it if the address needs it` };
+    }
     const key = depositKey(url);
     const ownDoi = bareDoi(e.doi);
     if (e.url && depositKey(e.url) === key) return { problem: `${url} is already its heading link` };

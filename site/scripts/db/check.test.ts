@@ -1353,6 +1353,23 @@ describe('checkDataLinks (tucca-cellag/caail-planning#752)', () => {
     expect(result(withEntry(JSON.stringify([whole]), PAPER, body), fileWith({ [ENTRY]: [whole] })).ok).toBe(true);
   });
 
+  it('refuses a link ending in punctuation copied with it, though the prose holds the copy verbatim', () => {
+    const body = 'Code: [FoodML](https://github.com/sezinata/FoodML), at https://github.com/a/b. ' +
+      'See (https://example.org/x) and "https://example.org/y"; *https://example.org/z* or https://example.org/w!';
+    for (const copied of [
+      'https://github.com/sezinata/FoodML),', 'https://github.com/sezinata/FoodML)', 'https://github.com/a/b.',
+      'https://example.org/x)', 'https://example.org/y"', 'https://example.org/y";', 'https://example.org/z*',
+      'https://example.org/w!',
+    ]) {
+      const r = result(withEntry(JSON.stringify([copied]), PAPER, body), fileWith({ [ENTRY]: [copied] }));
+      expect(r.ok, copied).toBe(false);
+      expect(r.detail, copied).toContain(`ends in "${copied.slice(-1)}", punctuation copied with the link`);
+    }
+    for (const whole of ['https://github.com/sezinata/FoodML', 'https://github.com/a/b']) {
+      expect(result(withEntry(JSON.stringify([whole]), PAPER, body), fileWith({ [ENTRY]: [whole] })).ok, whole).toBe(true);
+    }
+  });
+
   it('refuses a Zenodo record page, naming the DOI link to write instead', () => {
     const record = 'https://zenodo.org/records/123';
     const r = result(withEntry(JSON.stringify([record]), PAPER, `At [Zenodo](${record}).`), fileWith({ [ENTRY]: [record] }));
