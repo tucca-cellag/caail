@@ -1353,6 +1353,20 @@ describe('checkDataLinks (tucca-cellag/caail-planning#752)', () => {
     expect(result(withEntry(JSON.stringify([whole]), PAPER, body), fileWith({ [ENTRY]: [whole] })).ok).toBe(true);
   });
 
+  it('refuses a Zenodo record page, naming the DOI link to write instead', () => {
+    const record = 'https://zenodo.org/records/123';
+    const r = result(withEntry(JSON.stringify([record]), PAPER, `At [Zenodo](${record}).`), fileWith({ [ENTRY]: [record] }));
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('write its DOI link, https://doi.org/10.5281/zenodo.123');
+  });
+
+  it('refuses a family accession in a query value whatever its case', () => {
+    const link = 'https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=gse158430';
+    const r = result(withEntry(JSON.stringify([link]), PAPER, `At [GEO](${link}).`), fileWith({ [ENTRY]: [link] }));
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('names GSE158430,');
+  });
+
   it('rejects a link listed twice, however its case or trailing slash, and an empty list', () => {
     expect(listed([REPO, `${REPO.toLowerCase()}/`]).detail).toContain('twice');
     expect(listed([REPO, REPO.replace('https://', 'http://')]).detail).toContain('twice');

@@ -737,11 +737,14 @@ export const DATA_LINKS_LABEL =
 const ZENODO_RECORD = /^https?:\/\/(?:www\.)?zenodo\.org\/records?\/(\d+)\/?(?:[?#].*)?$/i;
 
 /**
- * An accession of `ACCESSION_SOURCE`'s families as a whole path segment or query value, as the
- * families write it (uppercase), captured without a version suffix. Read against `pathOf`, so a file
- * `gse1.csv`, a repository `cra2` and a longer segment such as `GSE1.csv` are not accessions.
+ * An accession of `ACCESSION_SOURCE`'s families as a whole path segment, as the families write it
+ * (uppercase), or as a whole query value in any case (`?acc=gse158430`), since a query value is an
+ * identifier slot while a path segment can be a name. Captured without a version suffix and read
+ * against `pathOf`, so a host, a repository `cra2` and a longer segment such as `GSE1.csv` are not
+ * accessions.
  */
-const FAMILY_ACCESSION_IN = new RegExp(`(?<=[/=])(${ACCESSION_SOURCE})${SEGMENT_END}`);
+const FAMILY_IN_SEGMENT = new RegExp(`(?<=/)(${ACCESSION_SOURCE})${SEGMENT_END}`);
+const FAMILY_IN_QUERY = new RegExp(`(?<==)(${ACCESSION_SOURCE})${SEGMENT_END}`, 'i');
 
 /**
  * A deposit link as the twin check and the data-links guard compare it. A link that states a DOI
@@ -775,8 +778,10 @@ const PATH_DOI = /^https?:\/\/[^/?#]+\/(?:[^?#]*\/)?(10\.\d{4,9}\/[^\s?#]+)/i;
  * are compared by `depositKey`. It checks a link's form and registrant, not that it reaches the deposit.
  *
  * Nor may a link name an accession of the families `dataset-accessions.json` takes as a whole path
- * segment or query value (`FAMILY_ACCESSION_IN`): that deposit is served as an accession, which is
- * how a consumer and the twin check match it, so the link would hide it from both.
+ * segment or query value (`FAMILY_IN_SEGMENT`, `FAMILY_IN_QUERY`): that deposit is served as an
+ * accession, which is how a consumer and the twin check match it, so the link would hide it from
+ * both. And a Zenodo record page is refused in favour of its `https://doi.org/` link, which is how
+ * `dataLinks` writes a deposit DOI, so a consumer comparing DOIs finds it.
  */
 export function checkDataLinks(db: Db, path: string = DATASET_DATA_LINKS_PATH): CheckResult[] {
   return checkEntryList(db, path, 'dataset-data-links.json', 'data_links', DATA_LINKS_LABEL, 'links', (a, e) => {
@@ -786,9 +791,14 @@ export function checkDataLinks(db: Db, path: string = DATASET_DATA_LINKS_PATH): 
     const ownDoi = bareDoi(e.doi);
     if (e.url && depositKey(e.url) === key) return { problem: `${url} is already its heading link` };
     if (ownDoi && key === `DOI ${ownDoi}`) return { problem: `${url} is already its doi` };
-    const accession = pathOf(url).match(FAMILY_ACCESSION_IN)?.[1];
+    const path = pathOf(url);
+    const accession = (path.match(FAMILY_IN_SEGMENT) ?? path.match(FAMILY_IN_QUERY))?.[1]?.toUpperCase();
     if (accession) {
       return { problem: `${url} names ${accession}, an accession of a family dataset-accessions.json takes: list ${accession} there instead` };
+    }
+    const record = url.match(ZENODO_RECORD)?.[1];
+    if (record) {
+      return { problem: `${url} is a Zenodo record page: write its DOI link, https://doi.org/10.5281/zenodo.${record}, and name that in the entry` };
     }
     const stated = statedDoi(url);
     const inPath = stated ? null : bareDoi(url.match(PATH_DOI)?.[1]?.replace(/\/+$/, '') ?? null);
