@@ -1342,6 +1342,17 @@ describe('checkDataLinks (tucca-cellag/caail-planning#752)', () => {
     }
   });
 
+  it('refuses a link cut short before any address character, and passes one followed by punctuation and a space', () => {
+    const body = 'See [ENA](https://www.ebi.ac.uk/ena/browser/view?acc=ERP1&display=xml), ' +
+      '[the set](https://example.org/data%20set) and https://github.com/a/b: the code.';
+    for (const cut of ['https://www.ebi.ac.uk/ena/browser/view?acc', 'https://www.ebi.ac.uk/ena/browser/view?acc=ERP1', 'https://example.org/data']) {
+      const r = result(withEntry(JSON.stringify([cut]), PAPER, body), fileWith({ [ENTRY]: [cut] }));
+      expect(r.detail, cut).toContain('named nowhere in its heading or description');
+    }
+    const whole = 'https://github.com/a/b';
+    expect(result(withEntry(JSON.stringify([whole]), PAPER, body), fileWith({ [ENTRY]: [whole] })).ok).toBe(true);
+  });
+
   it('rejects a link listed twice, however its case or trailing slash, and an empty list', () => {
     expect(listed([REPO, `${REPO.toLowerCase()}/`]).detail).toContain('twice');
     expect(listed([REPO, REPO.replace('https://', 'http://')]).detail).toContain('twice');

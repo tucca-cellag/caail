@@ -599,19 +599,30 @@ interface ListEntry { item_id: string; url: string | null; doi: string | null; h
 /** One value of an entry's list: the key it is compared by and the text it must appear as, or why it is refused. */
 type ListValue = { key: string; text: string } | { problem: string };
 
+/** A character that always continues a link written in prose. */
+const ADDRESS_CHAR = /[A-Za-z0-9\-_~/=&%+@$]/;
+
+/** Punctuation that ends a sentence or a Markdown link, and continues a link only when more address follows. */
+const TRAILING_PUNCT = /[.?#:;,!'()*[\]]/;
+
 /**
  * Whether `text` appears in `prose` as a whole token: not inside a longer accession or link, so a
- * value missing its last digit, or a link cut short, is not found inside the full one. A link also
- * continues past a `.`, `?` or `#` that more address text follows, so `…/zenodo` is not found inside
- * `…/zenodo.11357327`, while a link that ends a sentence (`….`) is whole. An accession does not: one
- * followed by `.` and digits is that accession with a version suffix.
+ * value missing its last digit, or a link cut short, is not found inside the full one. A link
+ * continues past any address character (`ADDRESS_CHAR`), and past punctuation (`TRAILING_PUNCT`)
+ * that more address follows, so `…view?acc` is not found inside `…view?acc=ERP1`, nor `…/zenodo`
+ * inside `…/zenodo.11357327`, while a link that ends a sentence (`….`) or a Markdown link (`…)`) is
+ * whole. An accession continues only past a letter, digit, `_`, `-` or `/`: one followed by `.` and
+ * digits is that accession with a version suffix.
  */
 function namedIn(prose: string, text: string): boolean {
   const link = /^https?:\/\//i.test(text);
   for (let i = prose.indexOf(text); i !== -1; i = prose.indexOf(text, i + 1)) {
     const before = prose[i - 1] ?? '';
-    const after = prose.slice(i + text.length, i + text.length + 2);
-    const continues = /^[A-Za-z0-9_\-/]/.test(after) || (link && /^[.?#][A-Za-z0-9_\-/~%=&+]/.test(after));
+    const next = prose[i + text.length] ?? '';
+    const then = prose[i + text.length + 1] ?? '';
+    const continues = link
+      ? ADDRESS_CHAR.test(next) || (TRAILING_PUNCT.test(next) && ADDRESS_CHAR.test(then))
+      : /[A-Za-z0-9_\-/]/.test(next);
     if (!/[A-Za-z0-9]/.test(before) && !continues) return true;
   }
   return false;
