@@ -540,7 +540,7 @@ describe('site-relative hrefs in the API', () => {
       .toBe('<a href="https://github.com/tucca-cellag/caail/blob/main/Software.md#causalbench">x</a>');
   });
 
-  it('resolves a Markdown link in a dataset cell as the site resolves it on that page (tucca-cellag/caail-planning#348)', () => {
+  it("resolves a dataset cell's relative links: a .md target as the site does, a fragment to the page's GitHub source (tucca-cellag/caail-planning#348)", () => {
     // A card or island route takes no unknown anchor, so Papers.md#193 keeps its GitHub blob.
     expect(absolutizeMarkdownLinks('companion to [Papers.md #193](../Papers.md#193)', 'Datasets/Pig.md'))
       .toBe('companion to [Papers.md #193](https://github.com/tucca-cellag/caail/blob/main/Papers.md#193)');

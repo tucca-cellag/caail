@@ -314,10 +314,10 @@ export const DatasetInventoryRowSchema = z.object({
   page: z.string(),
   /** plain text of the first column — the study/resource name */
   name: z.string(),
-  /** the page's header labels → that row's raw markdown cell, in table order */
+  /** the page's header labels → that row's markdown cell, in table order (the agent API serves its relative links made absolute) */
   columns: z.record(z.string(), z.string()),
   /**
-   * every absolute URL written in the row, in document order, deduped. The page's relative
+   * every URL the page writes absolute in the row, in document order, deduped. Its relative
    * links to CAAIL's own pages (`../Papers.md#193`), which `columns` serves made absolute,
    * are not deposits and are not listed.
    */
