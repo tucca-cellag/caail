@@ -562,6 +562,9 @@ describe('site-relative hrefs in the API', () => {
     expect(absolutizeMarkdownLinks(absolute, 'Datasets/Pig.md')).toBe(absolute);
     // Link syntax quoted in a code span is not a link, so it is left as written.
     expect(absolutizeMarkdownLinks('write `[x](./Cow.md)` to link', 'Datasets/Pig.md')).toBe('write `[x](./Cow.md)` to link');
+    // A title holding the destination's own text is not mistaken for the destination.
+    expect(absolutizeMarkdownLinks('[Cow](./Cow.md "see ](./Cow.md")', 'Datasets/Pig.md'))
+      .toBe(`[Cow](${SITE_URL}datasets/cow/ "see ](./Cow.md")`);
   });
 
   it('finds every link target that would not resolve off-site, and nothing in a code span', () => {
@@ -569,12 +572,24 @@ describe('site-relative hrefs in the API', () => {
       '[s](./site/db/schema.sql)', '[s](<../a b.csv>)', "[x](../a.csv 't')", '[x](../a.csv (t))',
       '[x](../wiki_(a).csv)', '![f](fig.png)', '<a href="../x.csv">x</a>', '[x](#)',
       '[x](https://github.com/tucca-cellag/caail/blob/main/../outside.md)', '[x](https://h.org/a/./b)',
+      // An unquoted value with a '/' parses as text, not HTML, so it is no link; one without does.
+      '<a href=data.csv>x</a>', "<img src='fig.png'>",
     ]) {
       expect(unresolvableMarkdownTargets(md), md).toHaveLength(1);
     }
-    for (const md of ['[x](https://x.org/a?b=1#c) [m](mailto:a@b.c)', 'quoted `[x](../y.csv)` syntax', 'see https://x.org/a', 'no links']) {
+    for (const md of [
+      '[x](https://x.org/a?b=1#c) [m](mailto:a@b.c)', 'quoted `[x](../y.csv)` syntax', 'see https://x.org/a', 'no links',
+      '[ENA FTP](ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR123/)', '[q](https://x.org/view?path=./data)',
+    ]) {
       expect(unresolvableMarkdownTargets(md), md).toEqual([]);
     }
+  });
+
+  it('holds the catalog HTML check to the same rule as the dataset Markdown check', () => {
+    for (const url of ['https://github.com/tucca-cellag/caail/blob/main/../x.md', 'https://x.org/#']) {
+      expect(() => assertAbsoluteLinks(`<a href="${url}">x</a>`), url).toThrow(/not an absolute URL/);
+    }
+    expect(() => assertAbsoluteLinks('<a href="ftp://ftp.ebi.ac.uk/pub/">f</a>')).not.toThrow();
   });
 
   it('fails the build on a target the rewrite leaves unresolved, naming the file once', () => {

@@ -134,99 +134,128 @@ function fragmentUrl(sourceFile: string, anchor: string): string {
   return onSite ? `${SITE_URL}${onSite.slice(1)}` : `${GITHUB_BLOB_BASE}/${sourceFile}#${anchor}`;
 }
 
+/**
+ * Whether a URL resolves wherever the file is fetched from: an http(s) or ftp(s) URL
+ * with a host, or a mailto, with no `.` or `..` segment in its path (a
+ * `blob/main/../x.md` climbs out of the repo) and no empty fragment. The one rule the
+ * catalog HTML check (`assertAbsoluteLinks`) and the dataset Markdown check share.
+ */
+const resolvesAnywhere = (url: string): boolean => {
+  if (/^mailto:/i.test(url)) return true;
+  const m = url.match(/^(?:https?|ftps?):\/\/[^/?#\s]+([^?#]*)/i);
+  return m !== null && !/(?:^|\/)\.{1,2}(?:\/|$)/.test(m[1]!) && !url.endsWith('#');
+};
+
 /** Text that can hold no link destination: no `]` (inline links, definitions) and no `<` (HTML). */
 const NO_LINK_SYNTAX = /^[^\]<]*$/;
 
-const escapeRegExp = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+/** An `href` or `src` attribute in inline HTML, its value double-quoted, single-quoted or bare. */
+const HTML_LINK_ATTR = /\b(?:href|src)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/gi;
+
+/** One link target in Markdown text, and where its destination is written, where it can be rewritten in place. */
+interface LinkTarget { url: string; at: { start: number; end: number } | null }
 
 /**
- * Every link, image and definition in Markdown text, as the site's parser reads it
- * (`parseMarkdown`: remark with GFM), each with the offsets of its destination as
- * written, or null where that text cannot be found (an escaped or entity-encoded
- * destination, a GFM autolink). Parsing, rather than a pattern, is what keeps a code
- * span's `[x](y)` from counting as a link and reads every destination form remark does.
+ * Where `node`'s destination is written in `md`: after the `](` (a definition's `]:`)
+ * that closes its label, past any whitespace and an opening `<`. A link's label ends
+ * at its last child, so a title or text holding `](url` is never taken for the
+ * destination. Null where the destination is not written as the URL remark reads
+ * (escaped or entity-encoded), or there is none (a GFM autolink).
  */
-function linkDestinations(md: string): { url: string; at: { start: number; end: number } | null }[] {
+function destinationAt(md: string, node: any): { start: number; end: number } | null {
+  const s: number | undefined = node.position?.start.offset;
+  const e: number | undefined = node.position?.end.offset;
+  if (s === undefined || e === undefined || !node.url) return null;
+  const opener = node.type === 'definition' ? ']:' : '](';
+  const label = node.type === 'link' ? node.children?.at(-1)?.position?.end.offset : undefined;
+  const i = md.indexOf(opener, label ?? s);
+  if (i === -1 || i >= e) return null;
+  let j = i + opener.length;
+  while (j < e && /\s/.test(md[j]!)) j++;
+  if (md[j] === '<') j++;
+  return md.startsWith(node.url, j) ? { start: j, end: j + node.url.length } : null;
+}
+
+/**
+ * Every link target in Markdown text as the site's parser reads it (`parseMarkdown`:
+ * remark with GFM): each link, image and definition destination with where it is
+ * written, and each `href`/`src` in inline HTML, which is checked but never rewritten.
+ * Parsing, not a pattern, keeps a code span's `[x](y)` from counting as a link and
+ * reads every destination form remark does. Its one walk serves the rewrite and the check.
+ */
+function markdownLinkTargets(md: string): LinkTarget[] {
   if (NO_LINK_SYNTAX.test(md)) return [];
-  const out: { url: string; at: { start: number; end: number } | null }[] = [];
+  const out: LinkTarget[] = [];
   visit(parseMarkdown(md), (node: any) => {
-    if (node.type !== 'link' && node.type !== 'image' && node.type !== 'definition') return;
-    const s: number | undefined = node.position?.start.offset;
-    const e: number | undefined = node.position?.end.offset;
-    let at: { start: number; end: number } | null = null;
-    if (s !== undefined && e !== undefined && node.url) {
-      const opener = node.type === 'definition' ? ']:' : '](';
-      const re = new RegExp(`${escapeRegExp(opener)}\\s*<?(${escapeRegExp(node.url)})`, 'g');
-      const span = md.slice(s, e);
-      let last: RegExpExecArray | null = null;
-      for (let m = re.exec(span); m; m = re.exec(span)) last = m;
-      if (last) {
-        const start = s + last.index + last[0].length - last[1]!.length;
-        at = { start, end: start + last[1]!.length };
-      }
+    if (node.type === 'link' || node.type === 'image' || node.type === 'definition') {
+      out.push({ url: node.url, at: destinationAt(md, node) });
+    } else if (node.type === 'html') {
+      for (const m of String(node.value).matchAll(HTML_LINK_ATTR)) out.push({ url: m[1] ?? m[2] ?? m[3]!, at: null });
     }
-    out.push({ url: node.url, at });
   });
   return out;
+}
+
+/**
+ * A relative target's absolute URL, or undefined to leave it as written. A `.md`
+ * target becomes the link the rendered page gives a reader (`resolveCaailHref`, the
+ * site's own rewriter). A fragment resolves as in `absolutizeFragments`: to its card
+ * route where `dedicatedLink` knows the anchor, otherwise to `sourceFile`'s GitHub blob,
+ * where it was written to resolve, since a rendered page's ids can differ from GitHub's.
+ */
+function absoluteTarget(url: string, sourceFile: string): string | undefined {
+  if (url === '#') return undefined;
+  return url.startsWith('#')
+    ? fragmentUrl(sourceFile, url.slice(1))
+    : resolveCaailHref(url, sourceFile, SITE_URL.replace(/\/$/, ''));
+}
+
+/**
+ * Markdown written in `sourceFile` with its relative link targets made absolute, and the
+ * targets that still would not resolve off-site, from one parse. Only destination text
+ * changes, so the rest of the text is served as written.
+ */
+function absolutizeWithReport(md: string, sourceFile: string): { md: string; unresolved: string[] } {
+  const edits: { start: number; end: number; url: string }[] = [];
+  const served: string[] = [];
+  for (const t of markdownLinkTargets(md)) {
+    const next = t.at ? absoluteTarget(t.url, sourceFile) : undefined;
+    if (next !== undefined) edits.push({ ...t.at!, url: next });
+    served.push(next ?? t.url);
+  }
+  const out = edits.sort((a, b) => b.start - a.start).reduce((s, x) => s.slice(0, x.start) + x.url + s.slice(x.end), md);
+  return { md: out, unresolved: served.filter((u) => !resolvesAnywhere(u)) };
 }
 
 /**
  * Resolve the relative link targets in Markdown text written in `sourceFile`
  * (tucca-cellag/caail-planning#348). An inventory row's cells are served as the
  * page's own Markdown, where `../Papers.md#193` is right; an agent reading the JSON
- * off-site resolves it against the API URL and gets a 404. A `.md` target becomes
- * the link the rendered page gives a reader (`resolveCaailHref`, the site's own
- * rewriter). A fragment resolves as in `absolutizeFragments`: to its card route where
- * `dedicatedLink` knows the anchor, otherwise to `sourceFile`'s GitHub blob, where it
- * was written to resolve, since a rendered page's ids can differ from GitHub's. Only
- * the destination text changes, so the rest of the cell is served as written; a
- * target this cannot place, or leaves relative, is refused by `assertAbsoluteMarkdownLinks`.
+ * off-site resolves it against the API URL and gets a 404. See `absoluteTarget` for
+ * where each kind goes; a target this cannot place is refused by the build check.
  */
 export function absolutizeMarkdownLinks(md: string, sourceFile: string): string {
-  const edits: { start: number; end: number; url: string }[] = [];
-  for (const { url, at } of linkDestinations(md)) {
-    if (!at || url === '#') continue;
-    const next = url.startsWith('#')
-      ? fragmentUrl(sourceFile, url.slice(1))
-      : resolveCaailHref(url, sourceFile, SITE_URL.replace(/\/$/, ''));
-    if (next !== undefined) edits.push({ ...at, url: next });
-  }
-  return edits.sort((a, b) => b.start - a.start).reduce((s, x) => s.slice(0, x.start) + x.url + s.slice(x.end), md);
+  return absolutizeWithReport(md, sourceFile).md;
 }
-
-/**
- * Whether a URL resolves wherever the file is fetched from: an http(s) URL with a host
- * or a mailto, with no `.` or `..` path segment (a `blob/main/../x.md` climbs out of
- * the repo) and no empty fragment.
- */
-const resolvesAnywhere = (url: string): boolean =>
-  /^(?:https?:\/\/[^/?#\s]+|mailto:)/i.test(url) &&
-  !/(?:^|\/)\.{1,2}(?:\/|$|[?#])/.test(url.replace(/^[a-z]+:\/\/[^/?#]*/i, '')) &&
-  !url.endsWith('#');
 
 /**
  * The link targets in Markdown text that would not resolve off-site: every link, image
- * and definition destination, and every `href`/`src` in inline HTML, that is not
- * `resolvesAnywhere`. The one detector the build check and the endpoint tests share.
+ * and definition destination, and every inline-HTML `href`/`src`, that is not
+ * `resolvesAnywhere`. The detector the build check and the endpoint tests share.
  */
 export function unresolvableMarkdownTargets(md: string): string[] {
-  if (NO_LINK_SYNTAX.test(md)) return [];
-  const urls: string[] = [];
-  visit(parseMarkdown(md), (node: any) => {
-    if (node.type === 'link' || node.type === 'image' || node.type === 'definition') urls.push(node.url);
-    else if (node.type === 'html') {
-      for (const m of String(node.value).matchAll(/\b(?:href|src)\s*=\s*["']([^"']*)["']/gi)) urls.push(m[1]!);
-    }
-  });
-  return urls.filter((u) => !resolvesAnywhere(u));
+  return markdownLinkTargets(md).map((t) => t.url).filter((u) => !resolvesAnywhere(u));
 }
 
-/** After `absolutizeMarkdownLinks`, every link target in `sourceFile`'s Markdown must resolve off-site, or the build fails. */
-export function assertAbsoluteMarkdownLinks(md: string, sourceFile: string): void {
-  const bad = unresolvableMarkdownTargets(md);
+const refuseUnresolved = (bad: string[], sourceFile: string): void => {
   if (bad.length > 0) {
     throw new Error(`${sourceFile}: Markdown link target "${bad[0]}" is not an absolute URL that resolves off-site.`);
   }
+};
+
+/** Every link target in `sourceFile`'s Markdown must resolve off-site, or the build fails. */
+export function assertAbsoluteMarkdownLinks(md: string, sourceFile: string): void {
+  refuseUnresolved(unresolvableMarkdownTargets(md), sourceFile);
 }
 
 /** The inventory rows, with each cell's Markdown links made absolute against the row's own page. */
@@ -235,8 +264,8 @@ function inventoryForApi(rows: DatasetInventoryRow[]): DatasetInventoryRow[] {
     const file = `Datasets/${r.page}.md`;
     try {
       const columns = Object.fromEntries(Object.entries(r.columns).map(([label, cell]) => {
-        const md = absolutizeMarkdownLinks(cell, file);
-        assertAbsoluteMarkdownLinks(md, file);
+        const { md, unresolved } = absolutizeWithReport(cell, file);
+        refuseUnresolved(unresolved, file);
         return [label, md];
       }));
       return { ...r, columns };
@@ -261,7 +290,7 @@ function inventoryForApi(rows: DatasetInventoryRow[]): DatasetInventoryRow[] {
  */
 export function assertAbsoluteLinks(html: string): void {
   for (const m of html.matchAll(/(?<=\s)(href|src)="([^"]*)"/g)) {
-    if (!/^(?:https?:|mailto:)/i.test(m[2])) {
+    if (!resolvesAnywhere(m[2]!)) {
       throw new Error(`agent-api: ${m[1]}="${m[2]}" is not an absolute URL.`);
     }
   }
