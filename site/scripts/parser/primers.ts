@@ -79,7 +79,10 @@ export function rewritePrimerUrl(
   const path = rawPath.endsWith('/') ? `${rawPath}README.md` : rawPath;
   if (!/\.md$/i.test(path)) return { url, internal: false };
 
-  const repoRel = posix.normalize(posix.join(srcDir, path)).replace(/^\.\//, '');
+  // A root-relative path (`/Papers.md`) is read from the repo root, as GitHub and
+  // `resolveCaailHref` read it.
+  const repoRel = (path.startsWith('/') ? posix.normalize(path.slice(1)) : posix.normalize(posix.join(srcDir, path)))
+    .replace(/^\.\//, '');
   const anchorSuffix = anchor ? `#${anchor}` : '';
 
   // A card/island route keeps an anchor only when it is known to exist there;
