@@ -366,7 +366,7 @@ describe('labeledLinksAfter', () => {
     expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([{ label: 'Retraction', urls: [] }]);
   });
 
-  it('reads only a line-starting **Label**: as a label, so bold prose is content', () => {
+  it('reads only a line-starting **Label**: as a label, and returns bold prose as a line with none', () => {
     const src = [
       '<a id="11">11</a> Author (2021). Title. https://doi.org/10.11/x',
       '',
@@ -378,6 +378,49 @@ describe('labeledLinksAfter', () => {
     ].join('\n');
     expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([
       { label: 'Code', urls: ['https://github.com/x/y'] },
+      { label: null, text: 'See also the repo for more.' },
+      { label: null, text: 'Note that this line has no colon after its bold.' },
+    ]);
+  });
+
+  it('reads bold followed by words and then a colon as prose, not a label', () => {
+    const src = [
+      '<a id="15">15</a> Author (2021). Title. https://doi.org/10.15/t',
+      '',
+      '> **Important** caveat: see https://example.org/a',
+    ].join('\n');
+    expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([
+      { label: null, text: 'Important caveat: see https://example.org/a' },
+    ]);
+  });
+
+  it('returns a URL wrapped onto its own line as a line with no label, not as a URL of the label above', () => {
+    const src = [
+      '<a id="16">16</a> Author (2021). Title. https://doi.org/10.16/s',
+      '',
+      '> **Models**: https://huggingface.co/a/one,',
+      '> https://huggingface.co/a/two',
+    ].join('\n');
+    expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([
+      { label: 'Models', urls: ['https://huggingface.co/a/one'] },
+      { label: null, text: 'https://huggingface.co/a/two' },
+    ]);
+  });
+
+  it('returns an unbolded label, a bare URL and a list item each as a line with no label', () => {
+    const src = [
+      '<a id="17">17</a> Author (2021). Title. https://doi.org/10.17/r',
+      '',
+      '> Correction: https://doi.org/10.1/x',
+      '',
+      '> https://doi.org/10.1/y',
+      '',
+      '> - a list item https://doi.org/10.1/z',
+    ].join('\n');
+    expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([
+      { label: null, text: 'Correction: https://doi.org/10.1/x' },
+      { label: null, text: 'https://doi.org/10.1/y' },
+      { label: null, text: 'a list item https://doi.org/10.1/z' },
     ]);
   });
 
@@ -407,6 +450,7 @@ describe('labeledLinksAfter', () => {
     ].join('\n');
     expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([
       { label: 'Correction', urls: ['https://doi.org/10.1/fix'] },
+      { label: null, text: 'See also the dataset' },
     ]);
   });
 
@@ -437,6 +481,17 @@ describe('labeledLinksAfter', () => {
     expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([{ label: 'Data', urls: ['https://-bad-/a'] }]);
   });
 
+  it('trims the punctuation a sentence puts after a URL GFM did not autolink', () => {
+    for (const tail of ['.', ').', ';', ']', '>', ':']) {
+      const src = [
+        '<a id="18">18</a> Author (2021). Title. https://doi.org/10.18/q',
+        '',
+        `> **Data**: https://-bad-/a${tail}`,
+      ].join('\n');
+      expect(labeledLinksAfter(parseMarkdown(src).children, 0), tail).toEqual([{ label: 'Data', urls: ['https://-bad-/a'] }]);
+    }
+  });
+
   it('(d) stops at the first non-blockquote sibling', () => {
     const src = [
       '<a id="4">4</a> Author (2020). Title. https://doi.org/10.4/d',
@@ -453,16 +508,14 @@ describe('labeledLinksAfter', () => {
     expect(results[0].label).toBe('Code');
   });
 
-  it('(e) prose blockquote with a relative link yields NO http(s) entry', () => {
-    // A blockquote that contains only a relative link should produce no results.
+  it('(e) a prose blockquote with a relative link is a line with no label, not a labelled URL', () => {
     const src = [
       '<a id="5">5</a> Author (2019). Title. https://doi.org/10.5/e',
       '',
       '> See also [Datasets/](./Datasets/) for more.',
     ].join('\n');
     const root = parseMarkdown(src);
-    const results = labeledLinksAfter(root.children, 0);
-    expect(results).toHaveLength(0);
+    expect(labeledLinksAfter(root.children, 0)).toEqual([{ label: null, text: 'See also Datasets/ for more.' }]);
   });
 
   it('(f) returns [] when nodes[index+1] is not a blockquote', () => {

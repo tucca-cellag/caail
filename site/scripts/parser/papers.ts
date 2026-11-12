@@ -24,7 +24,7 @@ import { toString as mdToString } from 'mdast-util-to-string';
 import { visit } from 'unist-util-visit';
 import type { Root, TableRow } from 'mdast';
 
-import { parseMarkdown, firstTable, sectionsAfter, anchorParagraphs, labeledLinksAfter } from './markdown.js';
+import { parseMarkdown, firstTable, sectionsAfter, anchorParagraphs, labeledLinksAfter, type BlockquoteLine } from './markdown.js';
 import { parseApa } from './apa.js';
 import { areaKeyForLabel } from './areas.js';
 import { topicsByItemId } from './topics.js';
@@ -163,14 +163,26 @@ const CANONICAL = new Map<string, string>([...RESOURCE_LABELS, ...NOTICE_LABELS]
 
 /**
  * A reference's trailing blockquotes, sorted into its resources and its notices. A
- * label the parser does not know, a known one with no http(s) URL, or a Code or Data
- * label with more than the one URL its field holds, throws naming the reference, so
- * no blockquote content is dropped silently. A notice is served under its canonical
- * label, whatever case the blockquote wrote it in.
+ * line that opens no label (prose, or a URL wrapped onto its own line), a label the
+ * parser does not know, a known one with no http(s) URL, or a Code or Data label with
+ * more than the one URL its field holds, throws naming the reference, so no blockquote
+ * content is dropped silently. An exact repeat (the same URL under one resource, or
+ * the same notice twice) is served once. A notice is served under its canonical label,
+ * whatever case the blockquote wrote it in.
  */
-function referenceLinks(id: number, labeled: Array<{ label: string; urls: string[] }>): Pick<
+function referenceLinks(id: number, lines: BlockquoteLine[]): Pick<
   PartialReference, 'codeUrl' | 'dataUrl' | 'modelUrls' | 'notices'
 > {
+  const labeled: Array<{ label: string; urls: string[] }> = [];
+  for (const line of lines) {
+    if (line.label === null) {
+      throw new Error(
+        `Papers.md ref ${id}: a line of its blockquotes opens no label: "${line.text}". Each line there is one label and ` +
+        `its URLs (\`> **Code**: url\`): put a wrapped URL back on its label's line, and keep prose out.`,
+      );
+    }
+    labeled.push(line);
+  }
   for (const { label, urls } of labeled) {
     if (!CANONICAL.has(label.toLowerCase())) {
       throw new Error(
@@ -180,9 +192,9 @@ function referenceLinks(id: number, labeled: Array<{ label: string; urls: string
     }
     if (urls.length === 0) throw new Error(`Papers.md ref ${id}: blockquote label "${label}" has no http(s) URL.`);
   }
-  /** Every URL under a label, across its occurrences, in document order. */
+  /** Every URL under a label, across its occurrences, in document order, each once. */
   const urlsFor = (name: string): string[] =>
-    labeled.filter((e) => e.label.toLowerCase() === name).flatMap((e) => e.urls);
+    [...new Set(labeled.filter((e) => e.label.toLowerCase() === name).flatMap((e) => e.urls))];
   for (const key of ['code', 'data']) {
     const n = urlsFor(key).length;
     if (n > 1) {
@@ -194,9 +206,10 @@ function referenceLinks(id: number, labeled: Array<{ label: string; urls: string
     codeUrl: urlsFor('code')[0] ?? null,
     dataUrl: urlsFor('data')[0] ?? null,
     modelUrls: urlsFor('models'),
-    notices: labeled
+    notices: [...new Map(labeled
       .filter((e) => NOTICE_KEYS.has(e.label.toLowerCase()))
-      .flatMap((e) => e.urls.map((url) => ({ label: CANONICAL.get(e.label.toLowerCase())!, url }))),
+      .flatMap((e) => e.urls.map((url) => ({ label: CANONICAL.get(e.label.toLowerCase())!, url })))
+      .map((n) => [`${n.label}\n${n.url}`, n] as const)).values()],
   };
 }
 

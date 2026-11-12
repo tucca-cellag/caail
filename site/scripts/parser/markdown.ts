@@ -185,77 +185,50 @@ const ABSOLUTE_URL_RE = /^https?:\/\//i;
  *     `strong`→`link` pairs within each paragraph so both labels are recovered
  *     regardless of authoring style.
  *
- * A label is bold text that starts a line of the blockquote: `> **Code**: url`,
- * `> **Erratum:** url`, `> **Correction** (2025): url` and `> **Code** url` all
- * label what follows, since the bold is followed by a colon (inside or after
- * it) or straight by a URL. Bold prose that starts a line and runs into words
- * with no colon (`> **Note** that …`), and bold anywhere else (`(**archived**)`
- * after a URL), is content, not a label. Each label's URLs are the absolute
- * http(s) URLs after it on its line and on the lines that continue it up to the
- * next line that starts (`> **Models**: url1, url2` gives both); a line that
- * starts without a label ends the label, so a later `See also [x](url)` line is
- * not one of its URLs. A label with no such URL is returned with `urls: []`, so a
- * caller can refuse a label it does not know rather than lose it. A relative link
- * such as `[Datasets/](./Datasets/)` is not a deposit URL and is skipped.
+ * Every line of those blockquotes is returned, one entry each, in document order.
+ * A line that opens with a label gives `{ label, urls }`; any other line gives
+ * `{ label: null, text }`, its plain text, so a caller can refuse it rather than
+ * lose it. A label is bold that starts the line and is followed by a colon,
+ * inside the bold or after it with at most a parenthesis between
+ * (`> **Erratum:** url`, `> **Correction** (2025): url`), or straight by a URL
+ * (`> **Code** url`). Bold that runs into words (`> **Note** that …`,
+ * `> **Important** caveat: …`), and bold anywhere else (`(**archived**)` after a
+ * URL), is no label. A label's URLs are the absolute http(s) URLs on its own line
+ * (`> **Models**: url1, url2` gives both), each once; a URL wrapped onto the next
+ * line is that line's content, not the label's. A label with no such URL is
+ * returned with `urls: []`. A relative link such as `[Datasets/](./Datasets/)` is
+ * not a deposit URL and is skipped. A blockquote child that is not a paragraph (a
+ * list, say) is returned whole as one line with no label.
  *
  * @param nodes Sibling nodes to scan
  * @param index Index of the reference paragraph node (scan begins at index+1)
- * @returns One `{ label, urls }` per label occurrence, in document order; label
- *   is the bold text as written (e.g. `"Code"`), without a trailing colon.
+ * @returns One entry per line, in document order; a label is the bold text as
+ *   written (e.g. `"Code"`), without a trailing colon.
  */
-export function labeledLinksAfter(
-  nodes: RootContent[],
-  index: number,
-): Array<{ label: string; urls: string[] }> {
-  const result: Array<{ label: string; urls: string[] }> = [];
+export function labeledLinksAfter(nodes: RootContent[], index: number): BlockquoteLine[] {
+  const result: BlockquoteLine[] = [];
 
   for (let i = index + 1; i < nodes.length; i++) {
     const node = nodes[i];
     if (node.type !== 'blockquote') break;
 
     for (const child of (node as Blockquote).children) {
-      if (child.type !== 'paragraph') continue;
-
-      // Walk inline children, line by line: a line that starts with a label
-      // opens it, and every link (or URL in a text run) after it, until a line
-      // starts again, is one of its URLs. This handles both one-pair and
-      // multi-pair (soft-break-joined) paragraphs.
-      const inlines = (child as Paragraph).children;
-      let current: { label: string; urls: string[] } | null = null;
-      let atLineStart = true;
-      const collect = (urls: string[]): void => {
-        for (const url of urls) {
-          if (current !== null && ABSOLUTE_URL_RE.test(url) && !current.urls.includes(url)) current.urls.push(url);
+      if (child.type !== 'paragraph') {
+        result.push({ label: null, text: mdastToString(child).trim() });
+        continue;
+      }
+      for (const line of linesOf((child as Paragraph).children)) {
+        const label = labelOf(line);
+        if (label === null) {
+          result.push({ label: null, text: line.map((inline) => mdastToString(inline)).join('').trim() });
+          continue;
         }
-      };
-      const textUrls = (text: string): string[] => [...text.matchAll(TEXT_URL)].map((m) => m[0]);
-      for (let k = 0; k < inlines.length; k++) {
-        const inline = inlines[k]!;
-        if (atLineStart) {
-          atLineStart = false;
-          const label = labelAt(inlines, k);
-          if (label !== null) {
-            current = { label, urls: [] };
-            result.push(current);
-            continue;
-          }
-          current = null;
+        const urls: string[] = [];
+        for (const inline of line.slice(1)) {
+          const found = inline.type === 'link' ? [inline.url] : inline.type === 'text' ? textUrls(inline.value) : [];
+          for (const url of found) if (ABSOLUTE_URL_RE.test(url) && !urls.includes(url)) urls.push(url);
         }
-        if (inline.type === 'break') {
-          atLineStart = true;
-        } else if (inline.type === 'text' && inline.value.includes('\n')) {
-          // A soft line break sits inside a text run, at its start, middle or end.
-          // The run's first line still belongs to the current label; a line after
-          // it starts without one unless the run ends at the break, where the next
-          // inline starts a line and may be a label.
-          collect(textUrls(inline.value.slice(0, inline.value.indexOf('\n'))));
-          current = null;
-          atLineStart = inline.value.slice(inline.value.lastIndexOf('\n') + 1).trim() === '';
-        } else if (inline.type === 'link') {
-          collect([inline.url]);
-        } else if (inline.type === 'text') {
-          collect(textUrls(inline.value));
-        }
+        result.push({ label, urls });
       }
     }
   }
@@ -263,28 +236,57 @@ export function labeledLinksAfter(
   return result;
 }
 
-/** A URL written out in a text run that GFM did not autolink, up to whitespace or a comma. */
-const TEXT_URL = /https?:\/\/[^\s,]+/g;
+/** One line of a reference's trailing blockquotes: a label and its URLs, or a line that opens no label. */
+export type BlockquoteLine = { label: string; urls: string[] } | { label: null; text: string };
+
+type Inline = Paragraph['children'][number];
 
 /**
- * The label `inlines[k]` opens, or null when it opens none: a `strong` whose text
- * ends with a colon, or that is followed straight by a link, or by text holding a
- * colon before any URL or starting with one (see `labeledLinksAfter`).
+ * A paragraph's inline children split into its lines, at a hard `break` and at each
+ * soft line break inside a text run. Whitespace-only text that starts a line is
+ * dropped, and so is a line left with nothing on it.
  */
-function labelAt(inlines: Paragraph['children'], k: number): string | null {
-  const inline = inlines[k];
-  if (inline?.type !== 'strong') return null;
-  const text = mdastToString(inline).trim();
+function linesOf(inlines: Inline[]): Inline[][] {
+  const lines: Inline[][] = [[]];
+  for (const inline of inlines) {
+    if (inline.type === 'break') {
+      lines.push([]);
+    } else if (inline.type === 'text' && inline.value.includes('\n')) {
+      inline.value.split('\n').forEach((part, n) => {
+        if (n > 0) lines.push([]);
+        if (part !== '') lines.at(-1)!.push({ type: 'text', value: part });
+      });
+    } else {
+      lines.at(-1)!.push(inline);
+    }
+  }
+  return lines
+    .map((line) => (line[0]?.type === 'text' && line[0].value.trim() === '' ? line.slice(1) : line))
+    .filter((line) => line.length > 0);
+}
+
+/** A URL written out in a text run that GFM did not autolink, up to whitespace or a comma. */
+const TEXT_URL = /https?:\/\/[^\s,]+/g;
+/** The punctuation a sentence leaves after such a URL, which GFM's own autolinks exclude too. */
+const TRAILING_PUNCTUATION = /[.;:!?'")\]>]+$/;
+
+function textUrls(text: string): string[] {
+  return [...text.matchAll(TEXT_URL)].map((m) => m[0].replace(TRAILING_PUNCTUATION, ''));
+}
+
+/**
+ * The label a line opens, or null when it opens none: a leading `strong` whose text
+ * ends with a colon, or that is followed straight by a link, by a colon (after at
+ * most a parenthesis), or by a URL written out (see `labeledLinksAfter`).
+ */
+function labelOf(line: Inline[]): string | null {
+  const first = line[0];
+  if (first?.type !== 'strong') return null;
+  const text = mdastToString(first).trim();
   if (text.endsWith(':')) return text.slice(0, -1).trim();
   // A space or tab between the bold and an autolinked URL is no content of its own.
-  let j = k + 1;
-  const gap = inlines[j];
-  if (gap?.type === 'text' && /^[ \t]*$/.test(gap.value)) j++;
-  const next = inlines[j];
+  const next = line[1]?.type === 'text' && /^[ \t]*$/.test(line[1].value) ? line[2] : line[1];
   if (next?.type === 'link') return text;
-  if (next?.type === 'text') {
-    const beforeUrl = next.value.split(/https?:\/\//)[0]!;
-    if (beforeUrl.includes(':') || /^\s*https?:\/\//.test(next.value)) return text;
-  }
+  if (next?.type === 'text' && /^\s*(?:\([^)]*\)\s*)?:|^\s*https?:\/\//.test(next.value)) return text;
   return null;
 }

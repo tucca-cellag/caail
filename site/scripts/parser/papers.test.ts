@@ -153,7 +153,7 @@ describe('buildPapersModel — reference blockquote labels', () => {
   };
   const ref4 = (m: PapersData) => m.references.find((r) => r.id === 4)!;
 
-  it('carries every sanctioned notice label, as written, with its URL, in order', () => {
+  it('carries every sanctioned notice label, with its URL, in order', () => {
     const notices = NOTICE_LABELS.map((label, i) => ({ label, url: `https://doi.org/10.1/notice.${i}` }));
     const r = ref4(withRef4(notices.map((n) => `> **${n.label}**: ${n.url}`)));
     expect(r.notices).toEqual(notices);
@@ -201,6 +201,38 @@ describe('buildPapersModel — reference blockquote labels', () => {
   it('serves a notice under its canonical label, whatever case the blockquote wrote', () => {
     expect(ref4(withRef4(['> **expression OF concern**: https://doi.org/10.1/eoc'])).notices)
       .toEqual([{ label: 'Expression of concern', url: 'https://doi.org/10.1/eoc' }]);
+  });
+
+  it('fails on a blockquote line that opens no label, naming the reference and the line', () => {
+    const lines: Record<string, string> = {
+      'a URL wrapped onto its own line': '> **Models**: https://huggingface.co/a/one,\n> https://huggingface.co/a/two',
+      'an unbolded label': '> Correction: https://doi.org/10.1/x',
+      'a bare URL': '> https://doi.org/10.1/y',
+      'bold prose with a colon later': '> **Important** caveat: see https://example.org/a',
+    };
+    const text: Record<string, string> = {
+      'a URL wrapped onto its own line': 'https://huggingface.co/a/two',
+      'an unbolded label': 'Correction: https://doi.org/10.1/x',
+      'a bare URL': 'https://doi.org/10.1/y',
+      'bold prose with a colon later': 'Important caveat: see https://example.org/a',
+    };
+    for (const [name, blockquote] of Object.entries(lines)) {
+      expect(() => withRef4([blockquote]), name).toThrow(`Papers.md ref 4: a line of its blockquotes opens no label: "${text[name]}"`);
+    }
+  });
+
+  it('drops an exact duplicate, so a repeated URL is one link and a repeated notice one notice', () => {
+    const r = ref4(withRef4([
+      '> **Models**: https://huggingface.co/a/one',
+      '> **Models**: https://huggingface.co/a/one, https://huggingface.co/a/two',
+      '> **Code**: https://github.com/x/a',
+      '> **Code**: https://github.com/x/a',
+      '> **Correction**: https://doi.org/10.1/c',
+      '> **correction**: https://doi.org/10.1/c',
+    ]));
+    expect(r.modelUrls).toEqual(['https://huggingface.co/a/one', 'https://huggingface.co/a/two']);
+    expect(r.codeUrl).toBe('https://github.com/x/a');
+    expect(r.notices).toEqual([{ label: 'Correction', url: 'https://doi.org/10.1/c' }]);
   });
 
   it('fails on a known label with no http(s) URL', () => {
