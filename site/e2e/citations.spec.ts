@@ -71,12 +71,13 @@ test('the /citations/ hub has no axe violations', async ({ page }) => {
 });
 
 test('a paper card in the Papers Explorer shows its post-publication notice apart from Code and Data (tucca-cellag/caail-planning#656)', async ({ page }) => {
-  const noticed = papers.references.find((r) => r.notices.length > 0 && r.section === 'References' && r.title);
-  expect(noticed, 'a primary reference with a notice').toBeDefined();
+  const noticed = papers.references.find((r) => r.notices.length > 0 && r.section === 'References' && r.doi);
+  expect(noticed, 'a primary reference with a notice and a DOI').toBeDefined();
   await page.goto('./papers/explorer/');
   await awaitHydrated(page, 'PapersExplorer');
-  await page.getByPlaceholder(/Search authors/).fill(noticed!.title!);
-  const card = page.locator('.px-ref', { hasText: noticed!.title! }).first();
+  // Search by DOI, and find the card by its own paper: id, so a title's formatting cannot miss it.
+  await page.getByPlaceholder(/Search authors/).fill(noticed!.doi!);
+  const card = page.locator('.px-ref', { has: page.locator(`a.report-link[href$="item=paper%3A${noticed!.id}"]`) });
   for (const n of noticed!.notices) {
     await expect(card.locator('.px-bdg.notice', { hasText: n.label })).toHaveAttribute('href', n.url);
   }

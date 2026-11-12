@@ -20,7 +20,7 @@ const read = <T>(name: string): T => JSON.parse(readFileSync(`${dataDir}${name}`
 type Counts = { papers: number; software: number; databases: number; species: number; datasets: number };
 type Cell = { method: string; area: string; refIds: number[] };
 type Ref = {
-  id: number; section: string; title: string | null;
+  id: number; section: string; title: string | null; doi: string | null;
   modelUrls: string[]; notices: { label: string; url: string }[];
 };
 type Papers = {
