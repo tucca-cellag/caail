@@ -319,9 +319,9 @@ describe('labeledLinksAfter', () => {
     const results = labeledLinksAfter(root.children, 0);
     expect(results).toHaveLength(2);
     expect(results[0].label).toBe('Code');
-    expect(results[0].url).toBe('https://github.com/org/repo');
+    expect(results[0].urls).toEqual(['https://github.com/org/repo']);
     expect(results[1].label).toBe('Data');
-    expect(results[1].url).toBe('https://zenodo.org/record/999');
+    expect(results[1].urls).toEqual(['https://zenodo.org/record/999']);
   });
 
   it('(b) single blockquote node (no blank line between Code and Data) — BOTH labels recovered', () => {
@@ -340,24 +340,43 @@ describe('labeledLinksAfter', () => {
     expect(labels).toContain('Data');
     const codeEntry = results.find((r) => r.label === 'Code')!;
     const dataEntry = results.find((r) => r.label === 'Data')!;
-    expect(codeEntry.url).toBe('https://github.com/example/merged');
-    expect(dataEntry.url).toBe('https://zenodo.org/record/merged');
+    expect(codeEntry.urls).toEqual(['https://github.com/example/merged']);
+    expect(dataEntry.urls).toEqual(['https://zenodo.org/record/merged']);
   });
 
-  it('(c) comma-separated URLs on one Code line — at least the first URL recovered with label Code', () => {
-    // `> **Code**: url1, url2` is unusual but the function should not crash
-    // and should recover the first URL under the Code label.
+  it('(c) comma-separated URLs on one line — every URL recovered under its label (tucca-cellag/caail-planning#656)', () => {
+    // `> **Models**: url1, url2` is how ref 124 lists its two model checkpoints.
     const src = [
       '<a id="3">3</a> Author (2021). Title. https://doi.org/10.3/c',
       '',
-      '> **Code**: https://github.com/foo/bar',
+      '> **Models**: https://huggingface.co/a/one, https://huggingface.co/a/two',
     ].join('\n');
     const root = parseMarkdown(src);
-    const results = labeledLinksAfter(root.children, 0);
-    expect(results.length).toBeGreaterThanOrEqual(1);
-    const codeEntry = results.find((r) => r.label === 'Code');
-    expect(codeEntry).toBeDefined();
-    expect(codeEntry!.url).toBe('https://github.com/foo/bar');
+    expect(labeledLinksAfter(root.children, 0)).toEqual([
+      { label: 'Models', urls: ['https://huggingface.co/a/one', 'https://huggingface.co/a/two'] },
+    ]);
+  });
+
+  it('returns a label with no http(s) URL, with no URLs, so a caller can refuse it', () => {
+    const src = [
+      '<a id="9">9</a> Author (2021). Title. https://doi.org/10.9/z',
+      '',
+      '> **Retraction**: see the journal',
+    ].join('\n');
+    expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([{ label: 'Retraction', urls: [] }]);
+  });
+
+  it('merges a label met twice, case-insensitively, keeping its first spelling', () => {
+    const src = [
+      '<a id="10">10</a> Author (2021). Title. https://doi.org/10.10/y',
+      '',
+      '> **Correction**: https://doi.org/10.1/one',
+      '',
+      '> **correction**: https://doi.org/10.1/two',
+    ].join('\n');
+    expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([
+      { label: 'Correction', urls: ['https://doi.org/10.1/one', 'https://doi.org/10.1/two'] },
+    ]);
   });
 
   it('(d) stops at the first non-blockquote sibling', () => {

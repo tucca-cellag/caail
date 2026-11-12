@@ -142,10 +142,57 @@ function parseMatrix(root: Root): MatrixResult {
 /** A reference with the cell-derived fields not yet filled in. */
 type PartialReference = Omit<Reference, 'isPrimary' | 'methods' | 'areas' | 'slug'>;
 
+/** The labels of a reference's own resources, served as `codeUrl`, `dataUrl` and `modelUrls`. */
+export const RESOURCE_LABELS = ['Code', 'Data', 'Models'] as const;
+
+/**
+ * The post-publication notices that leave a paper standing, served in `notices`
+ * (tucca-cellag/caail-planning#656). Each is the publisher's own word, which is the
+ * claim the label makes (`CLAUDE.md`, the `Papers.md` schema). A retraction is not
+ * one of these: whether a retracted paper keeps its cells is a curator decision, so
+ * a `Retraction` label fails the parse like any other unknown label.
+ */
+export const NOTICE_LABELS = [
+  'Correction', 'Erratum', 'Expression of concern', 'Corrigendum',
+  'Author Correction', 'Publisher Correction', 'Addendum',
+] as const;
+
+const NOTICE_KEYS = new Set(NOTICE_LABELS.map((l) => l.toLowerCase()));
+const KNOWN_KEYS = new Set([...RESOURCE_LABELS, ...NOTICE_LABELS].map((l) => l.toLowerCase()));
+
+/**
+ * A reference's trailing blockquotes, sorted into its resources and its notices. A
+ * label the parser does not know, or a known one with no http(s) URL, throws naming
+ * the reference, so no blockquote is dropped silently.
+ */
+function referenceLinks(id: number, labeled: Array<{ label: string; urls: string[] }>): Pick<
+  PartialReference, 'codeUrl' | 'dataUrl' | 'modelUrls' | 'notices'
+> {
+  for (const { label, urls } of labeled) {
+    if (!KNOWN_KEYS.has(label.toLowerCase())) {
+      throw new Error(
+        `Papers.md ref ${id}: blockquote label "${label}" is neither a resource (${RESOURCE_LABELS.join(', ')}) nor a ` +
+        `post-publication notice (${NOTICE_LABELS.join(', ')}). A retraction is not a notice: raise it with the curator.`,
+      );
+    }
+    if (urls.length === 0) throw new Error(`Papers.md ref ${id}: blockquote label "${label}" has no http(s) URL.`);
+  }
+  const urlsFor = (name: string): string[] => labeled.find((e) => e.label.toLowerCase() === name)?.urls ?? [];
+  return {
+    codeUrl: urlsFor('code')[0] ?? null,
+    dataUrl: urlsFor('data')[0] ?? null,
+    modelUrls: urlsFor('models'),
+    notices: labeled
+      .filter((e) => NOTICE_KEYS.has(e.label.toLowerCase()))
+      .flatMap((e) => e.urls.map((url) => ({ label: e.label, url }))),
+  };
+}
+
 /**
  * Walk every `##` section and build a PartialReference for each anchor
- * paragraph. Code/Data URLs are pulled from the blockquotes that immediately
- * follow the reference paragraph (associated by node index within the section).
+ * paragraph. Code, Data and Models URLs and post-publication notices are pulled
+ * from the blockquotes that immediately follow the reference paragraph
+ * (associated by node index within the section; see `referenceLinks`).
  *
  * `src` is the raw markdown source. We slice it by the paragraph node's
  * `position` offsets to recover the ORIGINAL markdown for `parseApa` — the
@@ -177,9 +224,7 @@ function parseReferences(root: Root, src: string): PartialReference[] {
 
       const fields = parseApa(raw);
 
-      const labeled = labeledLinksAfter(nodes, i);
-      const codeUrl = labeled.find((e) => e.label.toLowerCase() === 'code')?.url ?? null;
-      const dataUrl = labeled.find((e) => e.label.toLowerCase() === 'data')?.url ?? null;
+      const { codeUrl, dataUrl, modelUrls, notices } = referenceLinks(id, labeledLinksAfter(nodes, i));
 
       refs.push({
         id,
@@ -194,6 +239,8 @@ function parseReferences(root: Root, src: string): PartialReference[] {
         doi: fields.doi,
         codeUrl,
         dataUrl,
+        modelUrls,
+        notices,
         hasCode: codeUrl !== null,
         hasData: dataUrl !== null,
       });

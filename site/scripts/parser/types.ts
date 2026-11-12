@@ -101,6 +101,14 @@ export const ReferenceSchema = z.object({
   codeUrl: z.string().url().nullable(),
   /** URL from `> **Data**:` blockquote; null if absent */
   dataUrl: z.string().url().nullable(),
+  /** URLs from a `> **Models**:` blockquote (model weights), in order; [] if absent */
+  modelUrls: z.array(z.string().url()).default([]),
+  /**
+   * Post-publication notices that leave the paper standing (a correction, an erratum, an
+   * expression of concern…), each its blockquote's label as written and its URL, in order;
+   * [] if none. The label is the publisher's own word. A retraction is never one of these.
+   */
+  notices: z.array(z.object({ label: z.string(), url: z.string().url() })).default([]),
   /** True if section === "References" AND ≥1 matrix cell cites this ref */
   isPrimary: z.boolean(),
   /** Method labels whose cells cite this reference */

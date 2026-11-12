@@ -185,21 +185,24 @@ const ABSOLUTE_URL_RE = /^https?:\/\//i;
  *     `strong`→`link` pairs within each paragraph so both labels are recovered
  *     regardless of authoring style.
  *
- * Only absolute http(s) URLs are returned — a relative link such as
- * `[Datasets/](./Datasets/)` inside a prose blockquote is not a deposit URL
- * and is silently skipped.
+ * Every bold label is returned, with every absolute http(s) URL that follows it
+ * before the next label (`> **Models**: url1, url2` gives both), and a label
+ * with no such URL is returned with `urls: []`, so a caller can refuse a label
+ * it does not know rather than lose it. A label met twice is one entry, its URLs
+ * merged in order. A relative link such as `[Datasets/](./Datasets/)` is not a
+ * deposit URL and is skipped.
  *
  * @param nodes Sibling nodes to scan
  * @param index Index of the reference paragraph node (scan begins at index+1)
- * @returns Array of `{ label, url }` pairs in encounter order; label is the
- *   original-case bold text (e.g. `"Code"`, `"Data"`).
+ * @returns One `{ label, urls }` per distinct label (compared case-insensitively),
+ *   in encounter order; label is the original-case bold text (e.g. `"Code"`).
  */
 export function labeledLinksAfter(
   nodes: RootContent[],
   index: number,
-): Array<{ label: string; url: string }> {
-  const result: Array<{ label: string; url: string }> = [];
-  const seen = new Set<string>();
+): Array<{ label: string; urls: string[] }> {
+  const result: Array<{ label: string; urls: string[] }> = [];
+  const byKey = new Map<string, { label: string; urls: string[] }>();
 
   for (let i = index + 1; i < nodes.length; i++) {
     const node = nodes[i];
@@ -208,16 +211,23 @@ export function labeledLinksAfter(
     for (const child of (node as Blockquote).children) {
       if (child.type !== 'paragraph') continue;
 
-      // Walk inline children: a `strong` sets the current label; the next
-      // link (or http text run) is its URL.  This handles both one-pair and
-      // multi-pair (soft-break-joined) paragraphs.
-      let currentLabel: string | null = null;
+      // Walk inline children: a `strong` sets the current label, and every link
+      // (or http text run) after it, up to the next `strong`, is one of its URLs.
+      // This handles both one-pair and multi-pair (soft-break-joined) paragraphs.
+      let current: { label: string; urls: string[] } | null = null;
       for (const inline of (child as Paragraph).children) {
         if (inline.type === 'strong') {
-          currentLabel = mdastToString(inline).trim();
+          const label = mdastToString(inline).trim();
+          const key = label.toLowerCase();
+          current = byKey.get(key) ?? null;
+          if (current === null) {
+            current = { label, urls: [] };
+            byKey.set(key, current);
+            result.push(current);
+          }
           continue;
         }
-        if (currentLabel === null) continue;
+        if (current === null) continue;
 
         let url: string | null = null;
         if (inline.type === 'link') {
@@ -226,14 +236,7 @@ export function labeledLinksAfter(
           url = inline.value.trim();
         }
 
-        if (url !== null && ABSOLUTE_URL_RE.test(url)) {
-          const key = currentLabel.toLowerCase();
-          if (!seen.has(key)) {
-            seen.add(key);
-            result.push({ label: currentLabel, url });
-          }
-          currentLabel = null; // consume this label slot
-        }
+        if (url !== null && ABSOLUTE_URL_RE.test(url) && !current.urls.includes(url)) current.urls.push(url);
       }
     }
   }

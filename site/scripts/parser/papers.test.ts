@@ -7,10 +7,12 @@
  */
 
 import { describe, it, expect } from 'vitest';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { buildPapersModel, PAPERS_MD_PATH } from './papers.js';
+import { buildPapersModel, NOTICE_LABELS, PAPERS_MD_PATH } from './papers.js';
 import { EDITOR_ROLES_RE, stripItalics } from './apa.js';
 import { PapersDataSchema, type PapersData } from './types.js';
 
@@ -134,6 +136,60 @@ describe('buildPapersModel — fixture', () => {
 });
 
 // ---------------------------------------------------------------------------
+// A2. Reference blockquote labels (tucca-cellag/caail-planning#656)
+// ---------------------------------------------------------------------------
+
+describe('buildPapersModel — reference blockquote labels', () => {
+  const REF4 = '<a id="4">4</a> Jones, M. (2020).';
+  /** The fixture with `blockquotes` after ref 4, built into a model. */
+  const withRef4 = (blockquotes: string[]): PapersData => {
+    const src = readFileSync(FIXTURE_PATH, 'utf-8');
+    const at = src.indexOf(REF4);
+    const end = src.indexOf('\n', at);
+    expect(at).toBeGreaterThan(-1);
+    const path = join(mkdtempSync(join(tmpdir(), 'caail-papers-labels-')), 'Papers.md');
+    writeFileSync(path, `${src.slice(0, end)}\n\n${blockquotes.join('\n\n')}\n${src.slice(end)}`);
+    return buildPapersModel(path);
+  };
+  const ref4 = (m: PapersData) => m.references.find((r) => r.id === 4)!;
+
+  it('carries every sanctioned notice label, as written, with its URL, in order', () => {
+    const notices = NOTICE_LABELS.map((label, i) => ({ label, url: `https://doi.org/10.1/notice.${i}` }));
+    const r = ref4(withRef4(notices.map((n) => `> **${n.label}**: ${n.url}`)));
+    expect(r.notices).toEqual(notices);
+    expect(r.codeUrl).toBeNull();
+  });
+
+  it('carries every Models URL, and keeps notices apart from Code, Data and Models', () => {
+    const r = ref4(withRef4([
+      '> **Code**: https://github.com/example/four',
+      '> **Models**: https://huggingface.co/a/one, https://huggingface.co/a/two',
+      '> **Corrigendum**: https://doi.org/10.1/fix',
+    ]));
+    expect(r.codeUrl).toBe('https://github.com/example/four');
+    expect(r.modelUrls).toEqual(['https://huggingface.co/a/one', 'https://huggingface.co/a/two']);
+    expect(r.notices).toEqual([{ label: 'Corrigendum', url: 'https://doi.org/10.1/fix' }]);
+  });
+
+  it('fails on a label it does not know, a retraction included, naming the reference', () => {
+    for (const label of ['Retraction', 'Note', 'Slides']) {
+      expect(() => withRef4([`> **${label}**: https://example.org/x`]), label)
+        .toThrow(new RegExp(`Papers\\.md ref 4: blockquote label "${label}" is neither a resource`));
+    }
+  });
+
+  it('fails on a known label with no http(s) URL', () => {
+    expect(() => withRef4(['> **Correction**: see the journal'])).toThrow(/ref 4: blockquote label "Correction" has no http\(s\) URL/);
+  });
+
+  it('serves no notice and no model for a reference with neither', () => {
+    const r = ref4(withRef4([]));
+    expect(r.notices).toEqual([]);
+    expect(r.modelUrls).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // B. Real corpus integration
 // ---------------------------------------------------------------------------
 
@@ -165,6 +221,19 @@ describe('buildPapersModel — real Papers.md', () => {
   it('has 12 refs with an absolute data URL', () => {
     const withDataUrl = model.references.filter((r) => r.dataUrl !== null).length;
     expect(withDataUrl).toBe(12);
+  });
+
+  it("carries the corpus's post-publication notices and model links (tucca-cellag/caail-planning#656)", () => {
+    const noticed = model.references.filter((r) => r.notices.length > 0)
+      .map((r) => ({ id: r.id, notices: r.notices }));
+    expect(noticed).toEqual([
+      { id: 218, notices: [{ label: 'Corrigendum', url: 'https://doi.org/10.1016/j.foodres.2025.116857' }] },
+      { id: 289, notices: [{ label: 'Correction', url: 'https://doi.org/10.1093/biomethods/bpaf076' }] },
+      { id: 303, notices: [{ label: 'Correction', url: 'https://doi.org/10.1007/s11367-026-02697-y' }] },
+    ]);
+    expect(model.references.find((r) => r.id === 124)!.modelUrls).toEqual([
+      'https://huggingface.co/arcinstitute/Stack-Large', 'https://huggingface.co/arcinstitute/Stack-Large-Aligned',
+    ]);
   });
 
   it('has 6 distinct sections including References and Reviews & Perspectives', () => {
