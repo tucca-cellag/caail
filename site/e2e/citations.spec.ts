@@ -78,8 +78,12 @@ test('a paper card in the Papers Explorer shows its post-publication notice apar
   // Search by DOI, and find the card by its own paper: id, so a title's formatting cannot miss it.
   await page.getByPlaceholder(/Search authors/).fill(noticed!.doi!);
   const card = page.locator('.px-ref', { has: page.locator(`a.report-link[href$="item=paper%3A${noticed!.id}"]`) });
-  for (const n of noticed!.notices) {
-    await expect(card.locator('.px-bdg.notice', { hasText: n.label })).toHaveAttribute('href', n.url);
+  // One badge per notice, in document order, each its own link and label.
+  const badges = card.locator('a.px-bdg.notice');
+  await expect(badges).toHaveCount(noticed!.notices.length);
+  for (const [i, n] of noticed!.notices.entries()) {
+    await expect(badges.nth(i)).toHaveAttribute('href', n.url);
+    await expect(badges.nth(i)).toContainText(n.label);
   }
   const results = await new AxeBuilder({ page }).include('.px-ref').analyze();
   expect(results.violations).toEqual([]);
