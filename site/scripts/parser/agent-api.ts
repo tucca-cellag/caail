@@ -155,11 +155,34 @@ const isAbsoluteLink = (url: string): boolean => {
 const NO_LINK_SYNTAX = /^(?:(?!:\/\/|www\.)[^\]<])*$/i;
 
 /**
- * An `href` or `src` attribute in HTML: group 1 the name, then its value double-quoted,
- * single-quoted or bare (groups 2 to 4). Not `data-src` or `data-href`, which no browser
- * follows.
+ * An `href` or `src` attribute in an HTML tag: group 1 the name, then its value
+ * double-quoted, single-quoted or bare (groups 2 to 4). Not `data-src` or `data-href`,
+ * which no browser follows.
  */
 const HTML_LINK_ATTR = /(?<![\w-])(href|src)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/gi;
+
+/** An HTML start tag. A comment (`<!--`) or closing tag is none, and neither is text between tags. */
+const HTML_START_TAG = /<[a-z][^>]*>/gi;
+
+/**
+ * The `href` and `src` attributes of the start tags in HTML, as name and value. Only
+ * tag text is read, so `…&amp;src=GEO` in a link's visible text, or `src=` in a
+ * comment, is not mistaken for an attribute.
+ */
+function htmlLinkAttrs(html: string): { name: string; value: string }[] {
+  const out: { name: string; value: string }[] = [];
+  for (const tag of html.matchAll(HTML_START_TAG)) {
+    for (const m of tag[0].matchAll(HTML_LINK_ATTR)) out.push({ name: m[1]!, value: m[2] ?? m[3] ?? m[4]! });
+  }
+  return out;
+}
+
+/**
+ * A full (`[text][ref]`) or collapsed (`[ref][]`) reference link, which takes its target
+ * from a definition elsewhere on the page. Served alone, a cell's reference link has no
+ * target, so it is reported rather than served.
+ */
+const REFERENCE_LINK = /\[[^\]]*\]\[[^\]]*\]/g;
 
 /**
  * What a cell is parsed behind, so its text is read as the inline content of one line,
@@ -195,8 +218,9 @@ function destinationAt(md: string, node: any): { start: number; end: number } | 
 /**
  * Every link target in a line of Markdown as the site's parser reads it inside a table
  * cell (`parseMarkdown`, remark with GFM, behind `INLINE_PREFIX`): each link and image
- * destination with where it is written, and each `href`/`src` in inline HTML, which is
- * checked but never rewritten. Parsing, not a pattern, keeps a code span's `[x](y)`
+ * destination with where it is written, and each `href`/`src` in an inline HTML tag and
+ * each reference link (`REFERENCE_LINK`), which are checked but never rewritten.
+ * Parsing, not a pattern, keeps a code span's `[x](y)`
  * from counting as a link and reads every destination form remark does. Its one walk
  * serves the rewrite and the check.
  */
@@ -209,7 +233,10 @@ function markdownLinkTargets(md: string): LinkTarget[] {
       const at = destinationAt(src, node);
       out.push({ url: node.url, at: at && { start: at.start - INLINE_PREFIX.length, end: at.end - INLINE_PREFIX.length } });
     } else if (node.type === 'html') {
-      for (const m of String(node.value).matchAll(HTML_LINK_ATTR)) out.push({ url: m[2] ?? m[3] ?? m[4]!, at: null });
+      for (const a of htmlLinkAttrs(String(node.value))) out.push({ url: a.value, at: null });
+    } else if (node.type === 'text') {
+      // Parsed alone, a reference link has no definition and reads as text.
+      for (const m of String(node.value).matchAll(REFERENCE_LINK)) out.push({ url: m[0], at: null });
     }
   });
   return out;
@@ -252,7 +279,8 @@ export function absolutizeCellLinks(md: string, sourceFile: string): { md: strin
 
 /**
  * The link targets in a line of Markdown that are not `isAbsoluteLink`: every link and
- * image destination, and every inline-HTML `href`/`src`. What the endpoint tests check
+ * image destination, every `href`/`src` in an inline HTML tag, and every reference link,
+ * which has no target outside its page. What the endpoint tests check
  * every served string with.
  */
 export function nonAbsoluteMarkdownTargets(md: string): string[] {
@@ -292,10 +320,9 @@ function inventoryForApi(rows: DatasetInventoryRow[]): DatasetInventoryRow[] {
  * fails the build here.
  */
 export function assertAbsoluteLinks(html: string): void {
-  for (const m of html.matchAll(HTML_LINK_ATTR)) {
-    const value = m[2] ?? m[3] ?? m[4]!;
+  for (const { name, value } of htmlLinkAttrs(html)) {
     if (!isAbsoluteLink(value)) {
-      throw new Error(`agent-api: ${m[1]}="${value}" is not an absolute URL.`);
+      throw new Error(`agent-api: ${name}="${value}" is not an absolute URL.`);
     }
   }
 }

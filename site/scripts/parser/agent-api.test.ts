@@ -586,6 +586,8 @@ describe('site-relative hrefs in the API', () => {
       '<a href=data.csv>x</a>', "<img src='fig.png'>",
       // A bare URL is held to the same rule as a written link.
       'www.example.org/a/../b', 'see www.example.org/a# here',
+      // A reference link takes its target from a definition elsewhere on the page.
+      'see [GEO][geo]', 'see [geo][]',
     ]) {
       expect(nonAbsoluteMarkdownTargets(md), md).toHaveLength(1);
     }
@@ -594,6 +596,8 @@ describe('site-relative hrefs in the API', () => {
       '[ENA FTP](ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR123/)', '[q](https://x.org/view?path=./data)',
       // data-src is no link a browser follows.
       '<img data-src="fig.png" src="https://x.org/a.png">',
+      // Attribute-like text outside a tag is not an attribute, nor is a comment.
+      '[v](https://x.org/view?id=1&src=GEO)', '<!-- src=fig.png --> text', 'cited as [1] and [2]', 'quoted `[a][b]` syntax',
     ]) {
       expect(nonAbsoluteMarkdownTargets(md), md).toEqual([]);
     }
@@ -609,6 +613,9 @@ describe('site-relative hrefs in the API', () => {
       expect(() => assertAbsoluteLinks(html), html).toThrow(/not an absolute URL/);
     }
     expect(() => assertAbsoluteLinks('<img data-src="fig.png" src="https://x.org/a.png">')).not.toThrow();
+    // An attribute-like run in visible text, or in a comment, is not read as an attribute.
+    expect(() => assertAbsoluteLinks('<a href="https://x.org/view?id=1&amp;src=GEO">https://x.org/view?id=1&amp;src=GEO</a>')).not.toThrow();
+    expect(() => assertAbsoluteLinks('<p>see <!-- src=fig.png --> here</p>')).not.toThrow();
   });
 
   it('fails the build on a cell link left not absolute, naming the row and the file once', () => {
@@ -642,7 +649,7 @@ describe('site-relative hrefs in the API', () => {
     const strings = (v: unknown): string[] =>
       typeof v === 'string' ? [v] : v && typeof v === 'object' ? Object.values(v).flatMap(strings) : [];
     for (const f of files.filter((f) => f.name !== 'openapi.json')) {
-      const bad = strings(f.body).filter((s) => /\]|href|src/.test(s)).flatMap(nonAbsoluteMarkdownTargets);
+      const bad = strings(f.body).flatMap(nonAbsoluteMarkdownTargets);
       expect(bad, f.name).toEqual([]);
     }
   });
