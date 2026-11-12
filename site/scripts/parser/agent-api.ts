@@ -32,10 +32,11 @@ import { fileURLToPath } from 'node:url';
 
 import { assertValid, buildOpenApiDocument, OPENAPI_FILE } from './openapi.js';
 import { MATRIX_SECTION } from './types.js';
-import type { Catalog, CatalogEntry, DatasetInventory, DoiRelation, OnRequestStudy, PapersData } from './types.js';
+import type { Catalog, CatalogEntry, DatasetInventory, DatasetInventoryRow, DoiRelation, OnRequestStudy, PapersData } from './types.js';
 import { isUnderBase, RETIRED_BASES, SITE_BASE, SITE_URL } from '../../src/content/site-config.ts';
 import { CATALOG_SOURCES } from './catalog.js';
 import { dedicatedLink, GITHUB_BLOB_BASE } from '../dedicated-links.ts';
+import { resolveCaailHref } from '../remark/rewrite-caail-links.ts';
 
 /** Where an agent-visible caveat is stated once and reused everywhere. */
 export const SCOPE_NOTE =
@@ -122,10 +123,59 @@ export function absolutizeSiteHrefs(html: string, base: string = SITE_BASE, url:
  * that file's GitHub blob, which is where the fragment was written to resolve.
  */
 export function absolutizeFragments(html: string, sourceFile: string): string {
-  return html.replace(/(?<=\s)href="#([^"]+)"/g, (_, anchor: string) => {
-    const onSite = dedicatedLink(sourceFile, anchor);
-    const url = onSite ? `${SITE_URL}${onSite.slice(1)}` : `${GITHUB_BLOB_BASE}/${sourceFile}#${anchor}`;
-    return `href="${url}"`;
+  return html.replace(/(?<=\s)href="#([^"]+)"/g, (_, anchor: string) => `href="${fragmentUrl(sourceFile, anchor)}"`);
+}
+
+/** `#anchor` in `sourceFile`, as an absolute URL: its on-site route where one is known, else its GitHub blob. */
+function fragmentUrl(sourceFile: string, anchor: string): string {
+  const onSite = dedicatedLink(sourceFile, anchor);
+  return onSite ? `${SITE_URL}${onSite.slice(1)}` : `${GITHUB_BLOB_BASE}/${sourceFile}#${anchor}`;
+}
+
+/** A Markdown link's target, then an optional quoted title. */
+const MARKDOWN_LINK = /\]\(([^()\s]+)((?:\s+"[^"]*")?)\)/g;
+
+/**
+ * Resolve the relative link targets in Markdown text written in `sourceFile`
+ * (tucca-cellag/caail-planning#348). An inventory row's cells are served as the
+ * page's own Markdown, where `../Papers.md#193` is right; an agent reading the JSON
+ * off-site resolves it against the API URL and gets a 404. A `.md` target becomes
+ * the link the rendered page gives a reader (`resolveCaailHref`, the site's own
+ * rewriter), and a fragment resolves against `sourceFile` as in `absolutizeFragments`.
+ * Anything else is left as written, for `assertAbsoluteMarkdownLinks` to refuse.
+ */
+export function absolutizeMarkdownLinks(md: string, sourceFile: string): string {
+  return md.replace(MARKDOWN_LINK, (whole, target: string, title: string) => {
+    const url = target.startsWith('#')
+      ? fragmentUrl(sourceFile, target.slice(1))
+      : resolveCaailHref(target, sourceFile, SITE_URL.replace(/\/$/, ''));
+    return url === undefined ? whole : `](${url}${title})`;
+  });
+}
+
+/** After `absolutizeMarkdownLinks`, every Markdown link target must be absolute, or the build fails. */
+export function assertAbsoluteMarkdownLinks(md: string): void {
+  for (const m of md.matchAll(MARKDOWN_LINK)) {
+    if (!/^(?:https?:|mailto:)/i.test(m[1]!)) {
+      throw new Error(`agent-api: Markdown link target "${m[1]}" is not an absolute URL.`);
+    }
+  }
+}
+
+/** The inventory rows, with each cell's Markdown links made absolute against the row's own page. */
+function inventoryForApi(rows: DatasetInventoryRow[]): DatasetInventoryRow[] {
+  return rows.map((r) => {
+    const file = `Datasets/${r.page}.md`;
+    try {
+      const columns = Object.fromEntries(Object.entries(r.columns).map(([label, cell]) => {
+        const md = absolutizeMarkdownLinks(cell, file);
+        assertAbsoluteMarkdownLinks(md);
+        return [label, md];
+      }));
+      return { ...r, columns };
+    } catch (err) {
+      throw new Error(`${file}, inventory row ${r.id}: ${(err as Error).message}`);
+    }
   });
 }
 
@@ -644,7 +694,7 @@ export function buildAgentApi(inputs: AgentApiInputs): ApiFile[] {
       name: 'datasets.json',
       body: {
         ...(inputs.datasets as object),
-        inventory: inputs.inventory?.inventory ?? [],
+        inventory: inventoryForApi(inputs.inventory?.inventory ?? []),
         onRequest: inputs.onRequest ?? [],
         corpusDate,
       },

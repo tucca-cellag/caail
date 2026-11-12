@@ -3478,7 +3478,7 @@
         "Data": "[`GSE158430`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE158430)",
         "Type": "ChIP-seq + ATAC-seq",
         "Tissue": "8 tissues incl. skeletal muscle, adipose",
-        "Description": "ATAC-seq and CTCF ChIP-seq across 8 tissues; one multi-species GEO deposit, also covers pig (see [Pig.md](./Pig.md))",
+        "Description": "ATAC-seq and CTCF ChIP-seq across 8 tissues; one multi-species GEO deposit, also covers pig (see [Pig.md](https://caail.tufts.edu/datasets/pig/))",
         "Size": "6.8 B ChIP-seq + 1.19 B ATAC-seq reads (cattle-relevant figure from the source survey)",
         "Area of research": "Comparative epigenomics"
       },
@@ -4299,7 +4299,7 @@
         "Data": "[Zenodo](https://zenodo.org/records/16764338)",
         "Type": "RGB image dataset (computer vision)",
         "Tissue": "Muscle (whole cuts)",
-        "Description": "11,000 high-resolution RGB images (5,627 fresh, 5,373 spoiled) of cow meat photographed in Ghanaian markets, butcher shops, and cold storage, labelled for fresh-vs-spoiled binary classification (Gyening et al. 2025, *Data in Brief*; companion to [Papers.md #196](../Papers.md#196))",
+        "Description": "11,000 high-resolution RGB images (5,627 fresh, 5,373 spoiled) of cow meat photographed in Ghanaian markets, butcher shops, and cold storage, labelled for fresh-vs-spoiled binary classification (Gyening et al. 2025, *Data in Brief*; companion to [Papers.md #196](https://github.com/tucca-cellag/caail/blob/main/Papers.md#196))",
         "Size": "11,000 images",
         "Area of research": "Meat-quality imaging"
       },
@@ -7876,7 +7876,7 @@
         "Data": "[`GSE158430`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE158430)",
         "Type": "ChIP-seq + ATAC-seq",
         "Tissue": "8 tissues incl. skeletal muscle, adipose",
-        "Description": "ATAC-seq and CTCF ChIP-seq across 8 tissues; one multi-species GEO deposit, also covers cattle (see [Cow.md](./Cow.md))",
+        "Description": "ATAC-seq and CTCF ChIP-seq across 8 tissues; one multi-species GEO deposit, also covers cattle (see [Cow.md](https://caail.tufts.edu/datasets/cow/))",
         "Size": "4.28 B ChIP-seq + 1.04 B ATAC-seq reads (pig-relevant figure from the source survey)",
         "Area of research": "Comparative epigenomics"
       },
@@ -8112,7 +8112,7 @@
         "Data": "supplementary",
         "Type": "LC-HRMS + GC-QToF-MS (non-volatile and volatile compounds)",
         "Tissue": "Cell line (porcine myoblasts and fibroblasts)",
-        "Description": "Aroma precursors and volatiles of spontaneously immortalized porcine myoblast and fibroblast cell lines against pork meat: the supplementary files give per-sample abundances of 28 LC-HRMS non-volatile compounds (Supplementary File S1) and 60 GC-QToF-MS volatile compounds (Supplementary File S2) across four suspension cell groups (myoblasts and fibroblasts, each in full-serum and in 1% FBS low-serum medium) and pork meat, three replicates each. The paper's RNA-seq of four adaptation stages is available on request only. Companion to [Papers.md #193](../Papers.md#193) (Zhou et al. 2025, *Food Chemistry*)",
+        "Description": "Aroma precursors and volatiles of spontaneously immortalized porcine myoblast and fibroblast cell lines against pork meat: the supplementary files give per-sample abundances of 28 LC-HRMS non-volatile compounds (Supplementary File S1) and 60 GC-QToF-MS volatile compounds (Supplementary File S2) across four suspension cell groups (myoblasts and fibroblasts, each in full-serum and in 1% FBS low-serum medium) and pork meat, three replicates each. The paper's RNA-seq of four adaptation stages is available on request only. Companion to [Papers.md #193](https://github.com/tucca-cellag/caail/blob/main/Papers.md#193) (Zhou et al. 2025, *Food Chemistry*)",
         "Size": "—",
         "Area of research": "Cultivated-pork aroma & cell-line adaptation"
       },

@@ -300,8 +300,10 @@ export type ReportsData = z.infer<typeof ReportsDataSchema>;
  * — the species pages use Study/Paper/Data/Type/Tissue/…, and Fish and the invertebrates add
  * a Species column. A positional array would be unreadable without fetching the Markdown,
  * which is the cost this removes.
- * Values are the RAW markdown cell, so nothing is lost; `links` is the convenience
- * extraction of the URLs inside them.
+ * Values are the markdown cell, so nothing is lost; `links` is the convenience
+ * extraction of the URLs inside them. The agent API makes each cell's link targets
+ * absolute before serving it (`absolutizeMarkdownLinks` in agent-api.ts), since a
+ * page-relative `../Papers.md` resolves nowhere off-site.
  */
 export const DatasetInventoryRowSchema = z.object({
   /** frozen ds: id, shared with the curated entries' namespace */

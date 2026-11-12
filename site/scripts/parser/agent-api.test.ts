@@ -30,6 +30,8 @@ import {
   absolutizeSiteHrefs,
   absolutizeFragments,
   assertAbsoluteLinks,
+  absolutizeMarkdownLinks,
+  assertAbsoluteMarkdownLinks,
 } from './agent-api.js';
 import { RETIRED_BASES, SITE_BASE, SITE_ORIGIN, SITE_URL } from '../../src/content/site-config.ts';
 import { buildPapersModel } from './papers.js';
@@ -537,6 +539,39 @@ describe('site-relative hrefs in the API', () => {
       .toBe('<a href="https://github.com/tucca-cellag/caail/blob/main/Software.md#causalbench">x</a>');
   });
 
+  it('resolves a Markdown link in a dataset cell as the site resolves it on that page (tucca-cellag/caail-planning#348)', () => {
+    // A card or island route takes no unknown anchor, so Papers.md#193 keeps its GitHub blob.
+    expect(absolutizeMarkdownLinks('companion to [Papers.md #193](../Papers.md#193)', 'Datasets/Pig.md'))
+      .toBe('companion to [Papers.md #193](https://github.com/tucca-cellag/caail/blob/main/Papers.md#193)');
+    // A rendered prose page becomes its site route.
+    expect(absolutizeMarkdownLinks('see [Cow.md](./Cow.md)', 'Datasets/Pig.md')).toBe(`see [Cow.md](${SITE_URL}datasets/cow/)`);
+    // A fragment resolves against the cell's own page, where it was written to resolve.
+    expect(absolutizeMarkdownLinks('[above](#featured-atlases)', 'Datasets/Pig.md'))
+      .toBe('[above](https://github.com/tucca-cellag/caail/blob/main/Datasets/Pig.md#featured-atlases)');
+    // A title survives, and an absolute link is left as written.
+    expect(absolutizeMarkdownLinks('[c](./Cow.md "Cow page")', 'Datasets/Pig.md')).toBe(`[c](${SITE_URL}datasets/cow/ "Cow page")`);
+    const absolute = '[`GSE1`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE1) and [m](mailto:a@b.c)';
+    expect(absolutizeMarkdownLinks(absolute, 'Datasets/Pig.md')).toBe(absolute);
+  });
+
+  it('fails on a Markdown link the API cannot make absolute', () => {
+    // A relative non-.md target passes the rewrite untouched and resolves nowhere off-site.
+    for (const md of ['[s](./site/db/schema.sql)', '[s](../x.csv "t")', '![f](fig.png)']) {
+      expect(() => assertAbsoluteMarkdownLinks(md), md).toThrow(/not an absolute URL/);
+    }
+    expect(() => assertAbsoluteMarkdownLinks('[x](https://x.org/) [m](mailto:a@b.c)')).not.toThrow();
+  });
+
+  it('ships no relative Markdown link target in any emitted endpoint', () => {
+    // An agent reading the JSON off-site resolves ../Papers.md against the API URL and 404s.
+    const files = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
+    expect(JSON.stringify(inventory)).toMatch(/\]\(\.\.?\//); // the input really has them
+    for (const f of files) {
+      const targets = [...JSON.stringify(f.body).matchAll(/\]\(([^()\s]+)/g)].map((m) => m[1]!);
+      expect(targets.filter((t) => !/^(?:https?:|mailto:)/i.test(t)), f.name).toEqual([]);
+    }
+  });
+
   it('ships no root-relative or fragment-only href in any emitted endpoint', () => {
     // An agent reading the JSON off-site (or from the raw mirror) cannot resolve
     // "/…" or "#…"; the parser's catalog summaries carry both forms for the site.
@@ -558,6 +593,14 @@ describe('site/public/api/datasets.json (the shipped file)', () => {
     readFileSync(join(REPO_ROOT, 'site', 'public', 'api', 'datasets.json'), 'utf-8'),
   );
   const cowTable = extractInventory(join(REPO_ROOT, 'Datasets', 'Cow.md'))!;
+
+  it('carries no relative Markdown link in any inventory cell (tucca-cellag/caail-planning#348)', () => {
+    const relative = (shipped.inventory ?? []).flatMap((r: any) =>
+      Object.values(r.columns as Record<string, string>).flatMap((cell) =>
+        [...cell.matchAll(/\]\(([^()\s]+)/g)].map((m) => m[1]!).filter((t) => !/^(?:https?:|mailto:)/i.test(t))
+          .map((t) => `${r.id}: ${t}`)));
+    expect(relative).toEqual([]);
+  });
 
   it('shows an agent as many bovine datasets as a reader of Datasets/Cow.md sees', () => {
     const cow = [...(shipped.entries ?? []), ...(shipped.inventory ?? [])].filter(
