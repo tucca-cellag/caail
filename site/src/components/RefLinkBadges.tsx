@@ -19,23 +19,34 @@ function modelName(url: string): string {
   }
 }
 
+/**
+ * Each label as a badge shows it: unchanged where it is the only one of its kind on the
+ * card, numbered in order where it repeats, so no two links on a card share a name
+ * (`['Correction', 'Erratum', 'Correction']` gives `Correction 1`, `Erratum`, `Correction 2`).
+ */
+function numberRepeats(labels: readonly string[]): string[] {
+  return labels.map((label, i) => {
+    const before = labels.slice(0, i).filter((l) => l === label).length;
+    return labels.filter((l) => l === label).length > 1 ? `${label} ${before + 1}` : label;
+  });
+}
+
 export default function RefLinkBadges({ r }: { r: RefLinks }) {
+  const modelLabels = numberRepeats(r.modelUrls.map(() => 'Model'));
+  const noticeLabels = numberRepeats(r.notices.map((n) => n.label));
   return (
     <>
       {r.codeUrl && <a class="px-bdg code" href={r.codeUrl}>⟨⟩ Code</a>}
       {r.dataUrl && <a class="px-bdg data" href={r.dataUrl}>▤ Data</a>}
-      {r.modelUrls.map((url, i, all) => {
-        const label = all.length > 1 ? `Model ${i + 1}` : 'Model';
+      {r.modelUrls.map((url, i) => (
         // The accessible name starts with the visible text, then says which weights it opens.
-        return (
-          <a key={`model|${url}`} class="px-bdg models" href={url} aria-label={`${label}: ${modelName(url)}`} title={`Model weights: ${modelName(url)}`}>
-            ◇ {label}
-          </a>
-        );
-      })}
+        <a key={`model|${url}`} class="px-bdg models" href={url} aria-label={`${modelLabels[i]}: ${modelName(url)}`} title={`Model weights: ${modelName(url)}`}>
+          ◇ {modelLabels[i]}
+        </a>
+      ))}
       {r.notices.map((n, i) => (
         <a key={`notice|${i}|${n.url}`} class="px-bdg notice" href={n.url} title={`Post-publication notice: ${n.label}`}>
-          ⓘ {n.label}
+          ⓘ {noticeLabels[i]}
         </a>
       ))}
     </>
