@@ -753,8 +753,8 @@ export function buildManifest(
           '`page` (e.g. "Cow", "Benchmarks"). Use the inventory rows for "what could I combine ' +
           'my own run with", and page "Benchmarks" for "what could I evaluate a model against". ' +
           'To tell whether a dataset find is already held, match the find\'s own identifier ' +
-          'against the inventory rows\' `accession`, `dataDoi`, `dataUrl` and `links` (every URL the page ' +
-          'writes absolute in the row, secondary deposits included, its relative links to CAAIL\'s own pages not; keep a URL\'s query string, many name their ' +
+          'against the inventory rows\' `accession`, `dataDoi`, `dataUrl` and `links` (every http(s) URL the page ' +
+          'writes in the row, secondary deposits included, its relative links to CAAIL\'s own pages not; keep a URL\'s query string, many name their ' +
           'record there), and against the entries\' `url`, their `accessions` (the entry\'s own ' +
           'repository deposits, bare, primary first; `[]` when none is recorded), their ' +
           '`dataLinks` (links to the entry\'s own deposits that its `accessions` do not name, such ' +

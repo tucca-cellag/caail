@@ -317,7 +317,7 @@ export const DatasetInventoryRowSchema = z.object({
   /** the page's header labels → that row's markdown cell, in table order (the agent API serves its relative links made absolute) */
   columns: z.record(z.string(), z.string()),
   /**
-   * every URL the page writes absolute in the row, in document order, deduped. Its relative
+   * every http(s) URL the page writes in the row, in document order, deduped. Its relative
    * links to CAAIL's own pages (`../Papers.md#193`), which `columns` serves made absolute,
    * are not deposits and are not listed.
    */
