@@ -49,7 +49,9 @@ export function resolveCaailHref(url: string, sourcePath: string, base: string):
   // that directory's README index, mirroring how GitHub serves the folder.
   const path = rawPath.endsWith('/') ? rawPath + 'README.md' : rawPath;
   if (!/\.md$/i.test(path)) return undefined;
-  const repoRel = posix.normalize(posix.join(posix.dirname(sourcePath), path)).replace(/^\.\//, '');
+  // A root-relative path (`/Papers.md`) is read from the repo root, as GitHub reads it.
+  const repoRel = (path.startsWith('/') ? posix.normalize(path.slice(1)) : posix.normalize(posix.join(posix.dirname(sourcePath), path)))
+    .replace(/^\.\//, '');
   const id = CAAIL_PAGES.idForSourcePath(repoRel.replace(/\.md$/i, ''));
   if (CAAIL_PAGES.byId(id)) return `${base}/${id}/`;
   let dedicated: string | undefined;

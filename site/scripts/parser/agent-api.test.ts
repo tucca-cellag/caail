@@ -544,6 +544,8 @@ describe('site-relative hrefs in the API', () => {
     // A card or island route takes no unknown anchor, so Papers.md#193 keeps its GitHub blob.
     expect(rewrite('companion to [Papers.md #193](../Papers.md#193)'))
       .toBe('companion to [Papers.md #193](https://github.com/tucca-cellag/caail/blob/main/Papers.md#193)');
+    // A root-relative target is read from the repo root, as GitHub reads it.
+    expect(rewrite('[r](/Papers.md#193)')).toBe('[r](https://github.com/tucca-cellag/caail/blob/main/Papers.md#193)');
     // A rendered prose page becomes its site route.
     expect(rewrite('see [Cow.md](./Cow.md)')).toBe(`see [Cow.md](${SITE_URL}datasets/cow/)`);
     // A fragment resolves against the cell's own page, where it was written to resolve.
