@@ -135,22 +135,38 @@ function fragmentUrl(sourceFile: string, anchor: string): string {
 }
 
 /**
- * Whether a URL resolves wherever the file is fetched from: an http(s) or ftp(s) URL
- * with a host, or a mailto, with no `.` or `..` segment in its path (a
- * `blob/main/../x.md` climbs out of the repo) and no empty fragment. The one rule the
- * catalog HTML check (`assertAbsoluteLinks`) and the dataset Markdown check share.
+ * Whether a URL is absolute in a form that does not depend on where the file is fetched
+ * from: an http(s) or ftp(s) URL with a host, or a mailto, with no `.` or `..` segment
+ * in its path (a `blob/main/../x.md` climbs out of the repo) and no empty fragment. It
+ * checks form, not that the target exists. The one rule the catalog HTML check
+ * (`assertAbsoluteLinks`) and the dataset Markdown check share.
  */
-const resolvesAnywhere = (url: string): boolean => {
+const isAbsoluteLink = (url: string): boolean => {
   if (/^mailto:/i.test(url)) return true;
   const m = url.match(/^(?:https?|ftps?):\/\/[^/?#\s]+([^?#]*)/i);
   return m !== null && !/(?:^|\/)\.{1,2}(?:\/|$)/.test(m[1]!) && !url.endsWith('#');
 };
 
-/** Text that can hold no link destination: no `]` (inline links, definitions) and no `<` (HTML). */
-const NO_LINK_SYNTAX = /^[^\]<]*$/;
+/**
+ * Text that can hold no link: no `]` (inline links), no `<` (HTML, angle autolinks), and
+ * no `://` or `www.` (GFM autolink literals). An email autolink becomes a mailto, which
+ * is always absolute, so `@` needs no parse.
+ */
+const NO_LINK_SYNTAX = /^(?:(?!:\/\/|www\.)[^\]<])*$/i;
 
-/** An `href` or `src` attribute in inline HTML, its value double-quoted, single-quoted or bare. */
-const HTML_LINK_ATTR = /\b(?:href|src)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/gi;
+/**
+ * An `href` or `src` attribute in HTML: group 1 the name, then its value double-quoted,
+ * single-quoted or bare (groups 2 to 4). Not `data-src` or `data-href`, which no browser
+ * follows.
+ */
+const HTML_LINK_ATTR = /(?<![\w-])(href|src)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/gi;
+
+/**
+ * What a cell is parsed behind, so its text is read as the inline content of one line,
+ * as in the table cell it comes from: a cell opening with `<div>`, `<!-- -->` or
+ * `[a]: x` would otherwise start an HTML block or a definition and hide its links.
+ */
+const INLINE_PREFIX = 'x ';
 
 /** One link target in Markdown text, and where its destination is written, where it can be rewritten in place. */
 interface LinkTarget { url: string; at: { start: number; end: number } | null }
@@ -177,20 +193,23 @@ function destinationAt(md: string, node: any): { start: number; end: number } | 
 }
 
 /**
- * Every link target in Markdown text as the site's parser reads it (`parseMarkdown`:
- * remark with GFM): each link, image and definition destination with where it is
- * written, and each `href`/`src` in inline HTML, which is checked but never rewritten.
- * Parsing, not a pattern, keeps a code span's `[x](y)` from counting as a link and
- * reads every destination form remark does. Its one walk serves the rewrite and the check.
+ * Every link target in a line of Markdown as the site's parser reads it inside a table
+ * cell (`parseMarkdown`, remark with GFM, behind `INLINE_PREFIX`): each link and image
+ * destination with where it is written, and each `href`/`src` in inline HTML, which is
+ * checked but never rewritten. Parsing, not a pattern, keeps a code span's `[x](y)`
+ * from counting as a link and reads every destination form remark does. Its one walk
+ * serves the rewrite and the check.
  */
 function markdownLinkTargets(md: string): LinkTarget[] {
   if (NO_LINK_SYNTAX.test(md)) return [];
+  const src = INLINE_PREFIX + md;
   const out: LinkTarget[] = [];
-  visit(parseMarkdown(md), (node: any) => {
+  visit(parseMarkdown(src), (node: any) => {
     if (node.type === 'link' || node.type === 'image' || node.type === 'definition') {
-      out.push({ url: node.url, at: destinationAt(md, node) });
+      const at = destinationAt(src, node);
+      out.push({ url: node.url, at: at && { start: at.start - INLINE_PREFIX.length, end: at.end - INLINE_PREFIX.length } });
     } else if (node.type === 'html') {
-      for (const m of String(node.value).matchAll(HTML_LINK_ATTR)) out.push({ url: m[1] ?? m[2] ?? m[3]!, at: null });
+      for (const m of String(node.value).matchAll(HTML_LINK_ATTR)) out.push({ url: m[2] ?? m[3] ?? m[4]!, at: null });
     }
   });
   return out;
@@ -211,11 +230,15 @@ function absoluteTarget(url: string, sourceFile: string): string | undefined {
 }
 
 /**
- * Markdown written in `sourceFile` with its relative link targets made absolute, and the
- * targets that still would not resolve off-site, from one parse. Only destination text
- * changes, so the rest of the text is served as written.
+ * A table cell's Markdown, written in `sourceFile`, with its relative link targets made
+ * absolute (tucca-cellag/caail-planning#348), and the targets still not absolute, from
+ * one parse. An inventory row's cells are served as the page's own Markdown, where
+ * `../Papers.md#193` is right; an agent reading the JSON off-site resolves it against
+ * the API URL and gets a 404. See `absoluteTarget` for where each kind goes. Only
+ * destination text changes, so the rest of the cell is served as written; the endpoint
+ * refuses any target left in `notAbsolute`.
  */
-function absolutizeWithReport(md: string, sourceFile: string): { md: string; unresolved: string[] } {
+export function absolutizeCellLinks(md: string, sourceFile: string): { md: string; notAbsolute: string[] } {
   const edits: { start: number; end: number; url: string }[] = [];
   const served: string[] = [];
   for (const t of markdownLinkTargets(md)) {
@@ -224,38 +247,16 @@ function absolutizeWithReport(md: string, sourceFile: string): { md: string; unr
     served.push(next ?? t.url);
   }
   const out = edits.sort((a, b) => b.start - a.start).reduce((s, x) => s.slice(0, x.start) + x.url + s.slice(x.end), md);
-  return { md: out, unresolved: served.filter((u) => !resolvesAnywhere(u)) };
+  return { md: out, notAbsolute: served.filter((u) => !isAbsoluteLink(u)) };
 }
 
 /**
- * Resolve the relative link targets in Markdown text written in `sourceFile`
- * (tucca-cellag/caail-planning#348). An inventory row's cells are served as the
- * page's own Markdown, where `../Papers.md#193` is right; an agent reading the JSON
- * off-site resolves it against the API URL and gets a 404. See `absoluteTarget` for
- * where each kind goes; a target this cannot place is refused by the build check.
+ * The link targets in a line of Markdown that are not `isAbsoluteLink`: every link and
+ * image destination, and every inline-HTML `href`/`src`. What the endpoint tests check
+ * every served string with.
  */
-export function absolutizeMarkdownLinks(md: string, sourceFile: string): string {
-  return absolutizeWithReport(md, sourceFile).md;
-}
-
-/**
- * The link targets in Markdown text that would not resolve off-site: every link, image
- * and definition destination, and every inline-HTML `href`/`src`, that is not
- * `resolvesAnywhere`. The detector the build check and the endpoint tests share.
- */
-export function unresolvableMarkdownTargets(md: string): string[] {
-  return markdownLinkTargets(md).map((t) => t.url).filter((u) => !resolvesAnywhere(u));
-}
-
-const refuseUnresolved = (bad: string[], sourceFile: string): void => {
-  if (bad.length > 0) {
-    throw new Error(`${sourceFile}: Markdown link target "${bad[0]}" is not an absolute URL that resolves off-site.`);
-  }
-};
-
-/** Every link target in `sourceFile`'s Markdown must resolve off-site, or the build fails. */
-export function assertAbsoluteMarkdownLinks(md: string, sourceFile: string): void {
-  refuseUnresolved(unresolvableMarkdownTargets(md), sourceFile);
+export function nonAbsoluteMarkdownTargets(md: string): string[] {
+  return markdownLinkTargets(md).map((t) => t.url).filter((u) => !isAbsoluteLink(u));
 }
 
 /** The inventory rows, with each cell's Markdown links made absolute against the row's own page. */
@@ -264,8 +265,10 @@ function inventoryForApi(rows: DatasetInventoryRow[]): DatasetInventoryRow[] {
     const file = `Datasets/${r.page}.md`;
     try {
       const columns = Object.fromEntries(Object.entries(r.columns).map(([label, cell]) => {
-        const { md, unresolved } = absolutizeWithReport(cell, file);
-        refuseUnresolved(unresolved, file);
+        const { md, notAbsolute } = absolutizeCellLinks(cell, file);
+        if (notAbsolute.length > 0) {
+          throw new Error(`${file}: Markdown link target "${notAbsolute[0]}" is not an absolute URL.`);
+        }
         return [label, md];
       }));
       return { ...r, columns };
@@ -289,9 +292,10 @@ function inventoryForApi(rows: DatasetInventoryRow[]): DatasetInventoryRow[] {
  * fails the build here.
  */
 export function assertAbsoluteLinks(html: string): void {
-  for (const m of html.matchAll(/(?<=\s)(href|src)="([^"]*)"/g)) {
-    if (!resolvesAnywhere(m[2]!)) {
-      throw new Error(`agent-api: ${m[1]}="${m[2]}" is not an absolute URL.`);
+  for (const m of html.matchAll(HTML_LINK_ATTR)) {
+    const value = m[2] ?? m[3] ?? m[4]!;
+    if (!isAbsoluteLink(value)) {
+      throw new Error(`agent-api: ${m[1]}="${value}" is not an absolute URL.`);
     }
   }
 }

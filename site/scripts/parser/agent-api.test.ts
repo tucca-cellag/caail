@@ -30,9 +30,8 @@ import {
   absolutizeSiteHrefs,
   absolutizeFragments,
   assertAbsoluteLinks,
-  absolutizeMarkdownLinks,
-  assertAbsoluteMarkdownLinks,
-  unresolvableMarkdownTargets,
+  absolutizeCellLinks,
+  nonAbsoluteMarkdownTargets,
 } from './agent-api.js';
 import { RETIRED_BASES, SITE_BASE, SITE_ORIGIN, SITE_URL } from '../../src/content/site-config.ts';
 import { buildPapersModel } from './papers.js';
@@ -541,13 +540,14 @@ describe('site-relative hrefs in the API', () => {
   });
 
   it("resolves a dataset cell's relative links: a .md target as the site does, a fragment to the page's GitHub source (tucca-cellag/caail-planning#348)", () => {
+    const rewrite = (md: string): string => absolutizeCellLinks(md, 'Datasets/Pig.md').md;
     // A card or island route takes no unknown anchor, so Papers.md#193 keeps its GitHub blob.
-    expect(absolutizeMarkdownLinks('companion to [Papers.md #193](../Papers.md#193)', 'Datasets/Pig.md'))
+    expect(rewrite('companion to [Papers.md #193](../Papers.md#193)'))
       .toBe('companion to [Papers.md #193](https://github.com/tucca-cellag/caail/blob/main/Papers.md#193)');
     // A rendered prose page becomes its site route.
-    expect(absolutizeMarkdownLinks('see [Cow.md](./Cow.md)', 'Datasets/Pig.md')).toBe(`see [Cow.md](${SITE_URL}datasets/cow/)`);
+    expect(rewrite('see [Cow.md](./Cow.md)')).toBe(`see [Cow.md](${SITE_URL}datasets/cow/)`);
     // A fragment resolves against the cell's own page, where it was written to resolve.
-    expect(absolutizeMarkdownLinks('[above](#featured-atlases)', 'Datasets/Pig.md'))
+    expect(rewrite('[above](#featured-atlases)'))
       .toBe('[above](https://github.com/tucca-cellag/caail/blob/main/Datasets/Pig.md#featured-atlases)');
     // Every title and destination form remark reads is rewritten, and only the destination changes.
     for (const [md, want] of [
@@ -556,32 +556,46 @@ describe('site-relative hrefs in the API', () => {
       ['[c](./Cow.md (Cow))', `[c](${SITE_URL}datasets/cow/ (Cow))`],
       ['[c](<./Cow.md>)', `[c](<${SITE_URL}datasets/cow/>)`],
     ] as const) {
-      expect(absolutizeMarkdownLinks(md, 'Datasets/Pig.md'), md).toBe(want);
+      expect(rewrite(md), md).toBe(want);
     }
     const absolute = '[`GSE1`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE1) and [m](mailto:a@b.c)';
-    expect(absolutizeMarkdownLinks(absolute, 'Datasets/Pig.md')).toBe(absolute);
+    expect(rewrite(absolute)).toBe(absolute);
     // Link syntax quoted in a code span is not a link, so it is left as written.
-    expect(absolutizeMarkdownLinks('write `[x](./Cow.md)` to link', 'Datasets/Pig.md')).toBe('write `[x](./Cow.md)` to link');
+    expect(rewrite('write `[x](./Cow.md)` to link')).toBe('write `[x](./Cow.md)` to link');
     // A title holding the destination's own text is not mistaken for the destination.
-    expect(absolutizeMarkdownLinks('[Cow](./Cow.md "see ](./Cow.md")', 'Datasets/Pig.md'))
+    expect(rewrite('[Cow](./Cow.md "see ](./Cow.md")'))
       .toBe(`[Cow](${SITE_URL}datasets/cow/ "see ](./Cow.md")`);
+    // A cell is inline content, as in its table: HTML at its start cannot hide its links,
+    // and text shaped like a definition is text.
+    for (const [md, want] of [
+      ['<div>[x](./Cow.md)</div>', `<div>[x](${SITE_URL}datasets/cow/)</div>`],
+      ['<!-- note --> [x](./Cow.md)', `<!-- note --> [x](${SITE_URL}datasets/cow/)`],
+      ['<details><summary>s</summary>[x](./Cow.md)</details>', `<details><summary>s</summary>[x](${SITE_URL}datasets/cow/)</details>`],
+      ['[a]: ./Cow.md', '[a]: ./Cow.md'],
+    ] as const) {
+      expect(rewrite(md), md).toBe(want);
+    }
   });
 
-  it('finds every link target that would not resolve off-site, and nothing in a code span', () => {
+  it('finds every link target that is not absolute, and nothing in a code span', () => {
     for (const md of [
       '[s](./site/db/schema.sql)', '[s](<../a b.csv>)', "[x](../a.csv 't')", '[x](../a.csv (t))',
       '[x](../wiki_(a).csv)', '![f](fig.png)', '<a href="../x.csv">x</a>', '[x](#)',
       '[x](https://github.com/tucca-cellag/caail/blob/main/../outside.md)', '[x](https://h.org/a/./b)',
       // An unquoted value with a '/' parses as text, not HTML, so it is no link; one without does.
       '<a href=data.csv>x</a>', "<img src='fig.png'>",
+      // A bare URL is held to the same rule as a written link.
+      'www.example.org/a/../b', 'see www.example.org/a# here',
     ]) {
-      expect(unresolvableMarkdownTargets(md), md).toHaveLength(1);
+      expect(nonAbsoluteMarkdownTargets(md), md).toHaveLength(1);
     }
     for (const md of [
       '[x](https://x.org/a?b=1#c) [m](mailto:a@b.c)', 'quoted `[x](../y.csv)` syntax', 'see https://x.org/a', 'no links',
       '[ENA FTP](ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR123/)', '[q](https://x.org/view?path=./data)',
+      // data-src is no link a browser follows.
+      '<img data-src="fig.png" src="https://x.org/a.png">',
     ]) {
-      expect(unresolvableMarkdownTargets(md), md).toEqual([]);
+      expect(nonAbsoluteMarkdownTargets(md), md).toEqual([]);
     }
   });
 
@@ -590,14 +604,24 @@ describe('site-relative hrefs in the API', () => {
       expect(() => assertAbsoluteLinks(`<a href="${url}">x</a>`), url).toThrow(/not an absolute URL/);
     }
     expect(() => assertAbsoluteLinks('<a href="ftp://ftp.ebi.ac.uk/pub/">f</a>')).not.toThrow();
+    // It finds single-quoted and bare values too, and passes over data-src.
+    for (const html of ["<a href='../x.md'>x</a>", '<a href=x.csv>x</a>']) {
+      expect(() => assertAbsoluteLinks(html), html).toThrow(/not an absolute URL/);
+    }
+    expect(() => assertAbsoluteLinks('<img data-src="fig.png" src="https://x.org/a.png">')).not.toThrow();
   });
 
-  it('fails the build on a target the rewrite leaves unresolved, naming the file once', () => {
-    expect(() => assertAbsoluteMarkdownLinks('[s](./site/db/schema.sql)', 'Datasets/Pig.md'))
-      .toThrow(/^Datasets\/Pig\.md: Markdown link target "\.\/site\/db\/schema\.sql" is not an absolute URL/);
-    // An empty fragment is not rewritten to a URL ending in a bare '#'; the check refuses it.
-    expect(absolutizeMarkdownLinks('[x](#)', 'Datasets/Pig.md')).toBe('[x](#)');
-    expect(() => assertAbsoluteMarkdownLinks('[x](https://x.org/) [m](mailto:a@b.c)', 'Datasets/Pig.md')).not.toThrow();
+  it('fails the build on a cell link left not absolute, naming the row and the file once', () => {
+    const bad: typeof inventory = {
+      ...inventory,
+      inventory: [...inventory.inventory, {
+        ...inventory.inventory[0]!, id: 'ds:fixture-bad-link', page: 'Pig', columns: { Description: '[s](./site/db/schema.sql)' },
+      }],
+    };
+    expect(() => buildAgentApi({ papers, catalog, datasets, inventory: bad, topics, taxonomy, reports, corpusDate: DATE }))
+      .toThrow(/^agent-api: inventory row ds:fixture-bad-link: Datasets\/Pig\.md: Markdown link target "\.\/site\/db\/schema\.sql" is not an absolute URL\.$/);
+    // An empty fragment is not rewritten to a URL ending in a bare '#'; it is reported instead.
+    expect(absolutizeCellLinks('[x](#)', 'Datasets/Pig.md')).toEqual({ md: '[x](#)', notAbsolute: ['#'] });
   });
 
   it('ships no relative Markdown link target in any emitted endpoint', () => {
@@ -618,7 +642,7 @@ describe('site-relative hrefs in the API', () => {
     const strings = (v: unknown): string[] =>
       typeof v === 'string' ? [v] : v && typeof v === 'object' ? Object.values(v).flatMap(strings) : [];
     for (const f of files.filter((f) => f.name !== 'openapi.json')) {
-      const bad = strings(f.body).filter((s) => /\]|href|src/.test(s)).flatMap(unresolvableMarkdownTargets);
+      const bad = strings(f.body).filter((s) => /\]|href|src/.test(s)).flatMap(nonAbsoluteMarkdownTargets);
       expect(bad, f.name).toEqual([]);
     }
   });
@@ -648,7 +672,7 @@ describe('site/public/api/datasets.json (the shipped file)', () => {
   it('carries no relative Markdown link in any inventory cell (tucca-cellag/caail-planning#348)', () => {
     const relative = (shipped.inventory ?? []).flatMap((r: any) =>
       Object.values(r.columns as Record<string, string>).flatMap((cell) =>
-        unresolvableMarkdownTargets(cell).map((t) => `${r.id}: ${t}`)));
+        nonAbsoluteMarkdownTargets(cell).map((t) => `${r.id}: ${t}`)));
     expect(relative).toEqual([]);
   });
 

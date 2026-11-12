@@ -302,7 +302,7 @@ export type ReportsData = z.infer<typeof ReportsDataSchema>;
  * which is the cost this removes.
  * Values are the markdown cell, so nothing is lost; `links` is the convenience
  * extraction of the URLs inside them. The agent API makes each cell's link targets
- * absolute before serving it (`absolutizeMarkdownLinks` in agent-api.ts), since a
+ * absolute before serving it (`absolutizeCellLinks` in agent-api.ts), since a
  * page-relative `../Papers.md` resolves nowhere off-site.
  */
 export const DatasetInventoryRowSchema = z.object({
