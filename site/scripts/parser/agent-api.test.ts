@@ -587,6 +587,7 @@ describe('site-relative hrefs in the API', () => {
       '[x](https://github.com/tucca-cellag/caail/blob/main/Datasets/Pig.md#)',
       // An unquoted value: remark reads one holding '/' as text, but CommonMark reads it as a tag.
       '<a href=data.csv>x</a>', '<a href=../data/x.csv>x</a>', "<img src='fig.png'>", '<img alt="a > b" src="../fig.png">',
+      '<a title="<!--" href="../x.csv">x</a> <!-- note -->',
     ]) {
       expect(nonAbsoluteMarkdownTargets(md), md).toHaveLength(1);
     }
@@ -629,6 +630,14 @@ describe('site-relative hrefs in the API', () => {
     expect(() => assertAbsoluteLinks('<p><!-- <img src="x.png"> --></p>')).not.toThrow();
     // A quoted '>' does not end the tag, so a later src is still read.
     expect(() => assertAbsoluteLinks('<img alt="a > b" src="../fig.png">')).toThrow(/not an absolute URL/);
+    // It never reads less than the whole-string check before it: no space between
+    // attributes, an empty comment, and a '<!--' quoted inside a tag all still fail.
+    for (const html of [
+      '<a href="/software/"title="t">x</a>', '<!--> <a href="../x.md">x</a> <!-- n -->',
+      '<a title="<!--" href="../x.csv">x</a> <!-- note -->',
+    ]) {
+      expect(() => assertAbsoluteLinks(html), html).toThrow(/not an absolute URL/);
+    }
   });
 
   it('fails the build on a cell link left not absolute, naming the row and the file once', () => {

@@ -165,20 +165,43 @@ const NO_LINK_SYNTAX = /^(?:(?!:\/\/|www\.)[^\]<])*$/i;
 const HTML_LINK_ATTR = /(?<![\w-])(href|src)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/gi;
 
 /**
- * An HTML start tag: its name, then attributes whose quoted values may hold `>`. A
- * closing tag or text between tags is none.
+ * An HTML start tag: its name, then attributes whose quoted values may hold `>`, each
+ * after whitespace or straight after a quoted value (`href="/x"title="t"`, which browsers
+ * read as two attributes). A closing tag or text between tags is none.
  */
-const HTML_START_TAG = /<[a-z][a-z0-9-]*(?:\s+[^\s"'>/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'=<>`]+))?)*\s*\/?>/gi;
+const HTML_START_TAG = /<[a-z][a-z0-9-]*(?:(?:\s+|(?<=["']))[^\s"'>/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'=<>`]+))?)*\s*\/?>/gi;
 
 /**
- * The `href` and `src` attributes of the start tags in HTML, as name and value. Comments
- * are removed first, and only tag text is read, so a tag quoted in a comment, or
- * `…&amp;src=GEO` in a link's visible text, is not mistaken for a link.
+ * A comment (`<!-- … -->`, or the empty `<!-->` and `<!--->`) or a start tag, read in one
+ * ordered pass, so a `<!--` quoted inside a tag's attribute stays inside that tag.
+ */
+const HTML_COMMENT_OR_START_TAG = new RegExp(`<!--(?:>|->|[\\s\\S]*?-->)|${HTML_START_TAG.source}`, 'gi');
+
+/** The start tags in HTML, and the HTML with its comments removed. */
+function scanHtml(html: string): { tags: string[]; uncommented: string } {
+  const tags: string[] = [];
+  let uncommented = '';
+  let last = 0;
+  for (const m of html.matchAll(HTML_COMMENT_OR_START_TAG)) {
+    if (m[0].startsWith('<!--')) {
+      uncommented += html.slice(last, m.index);
+      last = m.index! + m[0].length;
+    } else {
+      tags.push(m[0]);
+    }
+  }
+  return { tags, uncommented: uncommented + html.slice(last) };
+}
+
+/**
+ * The `href` and `src` attributes of the start tags in HTML, as name and value. Only tag
+ * text outside comments is read, so a tag quoted in a comment, or `…&amp;src=GEO` in a
+ * link's visible text, is not mistaken for a link.
  */
 function htmlLinkAttrs(html: string): { name: string; value: string }[] {
   const out: { name: string; value: string }[] = [];
-  for (const tag of html.replace(/<!--[\s\S]*?-->/g, '').matchAll(HTML_START_TAG)) {
-    for (const m of tag[0].matchAll(HTML_LINK_ATTR)) out.push({ name: m[1]!, value: m[2] ?? m[3] ?? m[4]! });
+  for (const tag of scanHtml(html).tags) {
+    for (const m of tag.matchAll(HTML_LINK_ATTR)) out.push({ name: m[1]!, value: m[2] ?? m[3] ?? m[4]! });
   }
   return out;
 }
@@ -320,7 +343,12 @@ function inventoryForApi(rows: DatasetInventoryRow[]): DatasetInventoryRow[] {
  * fails the build here.
  */
 export function assertAbsoluteLinks(html: string): void {
-  for (const { name, value } of htmlLinkAttrs(html)) {
+  // The tag reader, then the whole-string pattern this check used before it, over the
+  // HTML without its comments: a tag the reader cannot match is still read the old way,
+  // so the check never reads less than it did.
+  const backstop = [...scanHtml(html).uncommented.matchAll(/(?<=\s)(href|src)="([^"]*)"/g)]
+    .map((m) => ({ name: m[1]!, value: m[2]! }));
+  for (const { name, value } of [...htmlLinkAttrs(html), ...backstop]) {
     if (!isAbsoluteLink(value)) {
       throw new Error(`agent-api: ${name}="${value}" is not an absolute URL.`);
     }
