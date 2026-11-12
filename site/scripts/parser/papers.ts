@@ -158,24 +158,32 @@ export const NOTICE_LABELS = [
 ] as const;
 
 const NOTICE_KEYS = new Set(NOTICE_LABELS.map((l) => l.toLowerCase()));
-const KNOWN_KEYS = new Set([...RESOURCE_LABELS, ...NOTICE_LABELS].map((l) => l.toLowerCase()));
+/** Each known label by its lowercase key, so a label matched in any case is served in its canonical form. */
+const CANONICAL = new Map<string, string>([...RESOURCE_LABELS, ...NOTICE_LABELS].map((l) => [l.toLowerCase(), l]));
 
 /**
  * A reference's trailing blockquotes, sorted into its resources and its notices. A
- * label the parser does not know, or a known one with no http(s) URL, throws naming
- * the reference, so no blockquote is dropped silently.
+ * label the parser does not know, a known one with no http(s) URL, or a Code or Data
+ * label with more than the one URL its field holds, throws naming the reference, so
+ * no blockquote content is dropped silently. A notice is served under its canonical
+ * label, whatever case the blockquote wrote it in.
  */
 function referenceLinks(id: number, labeled: Array<{ label: string; urls: string[] }>): Pick<
   PartialReference, 'codeUrl' | 'dataUrl' | 'modelUrls' | 'notices'
 > {
   for (const { label, urls } of labeled) {
-    if (!KNOWN_KEYS.has(label.toLowerCase())) {
+    const key = label.toLowerCase();
+    if (!CANONICAL.has(key)) {
       throw new Error(
         `Papers.md ref ${id}: blockquote label "${label}" is neither a resource (${RESOURCE_LABELS.join(', ')}) nor a ` +
         `post-publication notice (${NOTICE_LABELS.join(', ')}). A retraction is not a notice: raise it with the curator.`,
       );
     }
     if (urls.length === 0) throw new Error(`Papers.md ref ${id}: blockquote label "${label}" has no http(s) URL.`);
+    if ((key === 'code' || key === 'data') && urls.length > 1) {
+      throw new Error(`Papers.md ref ${id}: blockquote label "${label}" has ${urls.length} URLs, but a reference serves one ` +
+        `${CANONICAL.get(key)} URL: keep the primary one.`);
+    }
   }
   const urlsFor = (name: string): string[] => labeled.find((e) => e.label.toLowerCase() === name)?.urls ?? [];
   return {
@@ -184,7 +192,7 @@ function referenceLinks(id: number, labeled: Array<{ label: string; urls: string
     modelUrls: urlsFor('models'),
     notices: labeled
       .filter((e) => NOTICE_KEYS.has(e.label.toLowerCase()))
-      .flatMap((e) => e.urls.map((url) => ({ label: e.label, url }))),
+      .flatMap((e) => e.urls.map((url) => ({ label: CANONICAL.get(e.label.toLowerCase())!, url }))),
   };
 }
 

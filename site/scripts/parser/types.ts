@@ -105,8 +105,9 @@ export const ReferenceSchema = z.object({
   modelUrls: z.array(z.string().url()).default([]),
   /**
    * Post-publication notices that leave the paper standing (a correction, an erratum, an
-   * expression of concern…), each its blockquote's label as written and its URL, in order;
-   * [] if none. The label is the publisher's own word. A retraction is never one of these.
+   * expression of concern…), each its canonical label from `NOTICE_LABELS` (the publisher's
+   * own word, whatever case the blockquote used) and its URL, in order; [] if none. A
+   * retraction is never one of these.
    */
   notices: z.array(z.object({ label: z.string(), url: z.string().url() })).default([]),
   /** True if section === "References" AND ≥1 matrix cell cites this ref */

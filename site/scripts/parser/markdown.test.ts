@@ -366,6 +366,21 @@ describe('labeledLinksAfter', () => {
     expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([{ label: 'Retraction', urls: [] }]);
   });
 
+  it('reads only a line-starting **Label**: as a label, so bold prose is content', () => {
+    const src = [
+      '<a id="11">11</a> Author (2021). Title. https://doi.org/10.11/x',
+      '',
+      '> **Code**: https://github.com/x/y (**archived**)',
+      '',
+      '> See **also** [the repo](https://github.com/x/z) for more.',
+      '',
+      '> **Note** that this line has no colon after its bold.',
+    ].join('\n');
+    expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([
+      { label: 'Code', urls: ['https://github.com/x/y'] },
+    ]);
+  });
+
   it('merges a label met twice, case-insensitively, keeping its first spelling', () => {
     const src = [
       '<a id="10">10</a> Author (2021). Title. https://doi.org/10.10/y',

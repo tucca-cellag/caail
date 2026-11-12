@@ -185,8 +185,10 @@ const ABSOLUTE_URL_RE = /^https?:\/\//i;
  *     `strong`→`link` pairs within each paragraph so both labels are recovered
  *     regardless of authoring style.
  *
- * Every bold label is returned, with every absolute http(s) URL that follows it
- * before the next label (`> **Models**: url1, url2` gives both), and a label
+ * A label is bold text that starts a line and is followed by a colon
+ * (`> **Code**: …`); bold elsewhere is content. Every label is returned, with
+ * every absolute http(s) URL that follows it before the next label
+ * (`> **Models**: url1, url2` gives both), and a label
  * with no such URL is returned with `urls: []`, so a caller can refuse a label
  * it does not know rather than lose it. A label met twice is one entry, its URLs
  * merged in order. A relative link such as `[Datasets/](./Datasets/)` is not a
@@ -211,12 +213,18 @@ export function labeledLinksAfter(
     for (const child of (node as Blockquote).children) {
       if (child.type !== 'paragraph') continue;
 
-      // Walk inline children: a `strong` sets the current label, and every link
-      // (or http text run) after it, up to the next `strong`, is one of its URLs.
-      // This handles both one-pair and multi-pair (soft-break-joined) paragraphs.
+      // Walk inline children: a label is a `strong` that starts a line and is
+      // followed by `:` (`**Code**:`), and every link (or http text run) after
+      // it, up to the next label, is one of its URLs. Bold anywhere else, such
+      // as `(**archived**)` after a URL, is content, not a label. This handles
+      // both one-pair and multi-pair (soft-break-joined) paragraphs.
+      const inlines = (child as Paragraph).children;
       let current: { label: string; urls: string[] } | null = null;
-      for (const inline of (child as Paragraph).children) {
-        if (inline.type === 'strong') {
+      let atLineStart = true;
+      for (let k = 0; k < inlines.length; k++) {
+        const inline = inlines[k]!;
+        const next = inlines[k + 1];
+        if (inline.type === 'strong' && atLineStart && next?.type === 'text' && /^\s*:/.test(next.value)) {
           const label = mdastToString(inline).trim();
           const key = label.toLowerCase();
           current = byKey.get(key) ?? null;
@@ -225,8 +233,10 @@ export function labeledLinksAfter(
             byKey.set(key, current);
             result.push(current);
           }
+          atLineStart = false;
           continue;
         }
+        atLineStart = inline.type === 'break' || (inline.type === 'text' && inline.value.endsWith('\n'));
         if (current === null) continue;
 
         let url: string | null = null;

@@ -178,6 +178,16 @@ describe('buildPapersModel — reference blockquote labels', () => {
     }
   });
 
+  it('fails on a Code or Data label with more than the one URL its field holds', () => {
+    expect(() => withRef4(['> **Data**: https://zenodo.org/a, https://www.ncbi.nlm.nih.gov/geo/b']))
+      .toThrow(/ref 4: blockquote label "Data" has 2 URLs, but a reference serves one Data URL/);
+  });
+
+  it('serves a notice under its canonical label, whatever case the blockquote wrote', () => {
+    expect(ref4(withRef4(['> **expression OF concern**: https://doi.org/10.1/eoc'])).notices)
+      .toEqual([{ label: 'Expression of concern', url: 'https://doi.org/10.1/eoc' }]);
+  });
+
   it('fails on a known label with no http(s) URL', () => {
     expect(() => withRef4(['> **Correction**: see the journal'])).toThrow(/ref 4: blockquote label "Correction" has no http\(s\) URL/);
   });
