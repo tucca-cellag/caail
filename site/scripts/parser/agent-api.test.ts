@@ -583,11 +583,9 @@ describe('site-relative hrefs in the API', () => {
       '[x](../wiki_(a).csv)', '![f](fig.png)', '<a href="../x.csv">x</a>', '[x](#)',
       '[x](https://github.com/tucca-cellag/caail/blob/main/../outside.md)', '[x](https://h.org/a/./b)',
       // An unquoted value with a '/' parses as text, not HTML, so it is no link; one without does.
-      '<a href=data.csv>x</a>', "<img src='fig.png'>",
+      '<a href=data.csv>x</a>', "<img src='fig.png'>", '<img alt="a > b" src="../fig.png">',
       // A bare URL is held to the same rule as a written link.
       'www.example.org/a/../b', 'see www.example.org/a# here',
-      // A reference link takes its target from a definition elsewhere on the page.
-      'see [GEO][geo]', 'see [geo][]',
     ]) {
       expect(nonAbsoluteMarkdownTargets(md), md).toHaveLength(1);
     }
@@ -598,6 +596,11 @@ describe('site-relative hrefs in the API', () => {
       '<img data-src="fig.png" src="https://x.org/a.png">',
       // Attribute-like text outside a tag is not an attribute, nor is a comment.
       '[v](https://x.org/view?id=1&src=GEO)', '<!-- src=fig.png --> text', 'cited as [1] and [2]', 'quoted `[a][b]` syntax',
+      // A reference link is a link only where its page defines the label, which no dataset
+      // page may, so in a cell it is text; so are citation brackets and escaped brackets.
+      'see [GEO][geo]', 'see [*GEO*][geo]', 'cited as [1][2]', 'escaped \\[a\\]\\[b\\]',
+      // A tag quoted inside a comment is no link.
+      '<!-- <img src=fig.png> --> text',
     ]) {
       expect(nonAbsoluteMarkdownTargets(md), md).toEqual([]);
     }
@@ -616,6 +619,9 @@ describe('site-relative hrefs in the API', () => {
     // An attribute-like run in visible text, or in a comment, is not read as an attribute.
     expect(() => assertAbsoluteLinks('<a href="https://x.org/view?id=1&amp;src=GEO">https://x.org/view?id=1&amp;src=GEO</a>')).not.toThrow();
     expect(() => assertAbsoluteLinks('<p>see <!-- src=fig.png --> here</p>')).not.toThrow();
+    expect(() => assertAbsoluteLinks('<p><!-- <img src="x.png"> --></p>')).not.toThrow();
+    // A quoted '>' does not end the tag, so a later src is still read.
+    expect(() => assertAbsoluteLinks('<img alt="a > b" src="../fig.png">')).toThrow(/not an absolute URL/);
   });
 
   it('fails the build on a cell link left not absolute, naming the row and the file once', () => {

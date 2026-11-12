@@ -25,6 +25,15 @@ describe('buildDatasetInventory refuses a stray inventory table (tucca-cellag/ca
     writeFileSync(page, `${readFileSync(page, 'utf-8')}${table}`);
     expect(() => buildDatasetInventory(root)).toThrow(/pnpm parse: Datasets\/CrossSpecies\.md has a "## Complete data inventory" table/);
   });
+
+  it('throws on an inventory page that defines a reference-link target, which a served cell could not resolve (tucca-cellag/caail-planning#348)', () => {
+    const root = mkdtempSync(join(tmpdir(), 'caail-inventory-refdef-'));
+    cpSync(join(REPO_ROOT, 'Datasets'), join(root, 'Datasets'), { recursive: true });
+    expect(() => buildDatasetInventory(root)).not.toThrow();
+    const page = join(root, 'Datasets', 'Cow.md');
+    writeFileSync(page, `${readFileSync(page, 'utf-8')}\n[geo]: https://www.ncbi.nlm.nih.gov/geo/\n`);
+    expect(() => buildDatasetInventory(root)).toThrow(/pnpm parse: Datasets\/Cow\.md defines the reference-link target \[geo\]/);
+  });
 });
 
 describe('parseSubseries', () => {

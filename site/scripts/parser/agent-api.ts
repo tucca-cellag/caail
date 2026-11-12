@@ -161,28 +161,24 @@ const NO_LINK_SYNTAX = /^(?:(?!:\/\/|www\.)[^\]<])*$/i;
  */
 const HTML_LINK_ATTR = /(?<![\w-])(href|src)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/gi;
 
-/** An HTML start tag. A comment (`<!--`) or closing tag is none, and neither is text between tags. */
-const HTML_START_TAG = /<[a-z][^>]*>/gi;
+/**
+ * An HTML start tag: its name, then attributes whose quoted values may hold `>`. A
+ * closing tag or text between tags is none.
+ */
+const HTML_START_TAG = /<[a-z][a-z0-9-]*(?:\s+[^\s"'>/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'=<>`]+))?)*\s*\/?>/gi;
 
 /**
- * The `href` and `src` attributes of the start tags in HTML, as name and value. Only
- * tag text is read, so `…&amp;src=GEO` in a link's visible text, or `src=` in a
- * comment, is not mistaken for an attribute.
+ * The `href` and `src` attributes of the start tags in HTML, as name and value. Comments
+ * are removed first, and only tag text is read, so a tag quoted in a comment, or
+ * `…&amp;src=GEO` in a link's visible text, is not mistaken for a link.
  */
 function htmlLinkAttrs(html: string): { name: string; value: string }[] {
   const out: { name: string; value: string }[] = [];
-  for (const tag of html.matchAll(HTML_START_TAG)) {
+  for (const tag of html.replace(/<!--[\s\S]*?-->/g, '').matchAll(HTML_START_TAG)) {
     for (const m of tag[0].matchAll(HTML_LINK_ATTR)) out.push({ name: m[1]!, value: m[2] ?? m[3] ?? m[4]! });
   }
   return out;
 }
-
-/**
- * A full (`[text][ref]`) or collapsed (`[ref][]`) reference link, which takes its target
- * from a definition elsewhere on the page. Served alone, a cell's reference link has no
- * target, so it is reported rather than served.
- */
-const REFERENCE_LINK = /\[[^\]]*\]\[[^\]]*\]/g;
 
 /**
  * What a cell is parsed behind, so its text is read as the inline content of one line,
@@ -195,21 +191,20 @@ const INLINE_PREFIX = 'x ';
 interface LinkTarget { url: string; at: { start: number; end: number } | null }
 
 /**
- * Where `node`'s destination is written in `md`: after the `](` (a definition's `]:`)
- * that closes its label, past any whitespace and an opening `<`. A link's label ends
- * at its last child, so a title or text holding `](url` is never taken for the
- * destination. Null where the destination is not written as the URL remark reads
- * (escaped or entity-encoded), or there is none (a GFM autolink).
+ * Where a link or image `node`'s destination is written in `md`: after the `](` that
+ * closes its label, past any whitespace and an opening `<`. A link's label ends at its
+ * last child, so a title or text holding `](url` is never taken for the destination.
+ * Null where the destination is not written as the URL remark reads (escaped or
+ * entity-encoded), or there is none (a GFM autolink).
  */
 function destinationAt(md: string, node: any): { start: number; end: number } | null {
   const s: number | undefined = node.position?.start.offset;
   const e: number | undefined = node.position?.end.offset;
   if (s === undefined || e === undefined || !node.url) return null;
-  const opener = node.type === 'definition' ? ']:' : '](';
   const label = node.type === 'link' ? node.children?.at(-1)?.position?.end.offset : undefined;
-  const i = md.indexOf(opener, label ?? s);
+  const i = md.indexOf('](', label ?? s);
   if (i === -1 || i >= e) return null;
-  let j = i + opener.length;
+  let j = i + 2;
   while (j < e && /\s/.test(md[j]!)) j++;
   if (md[j] === '<') j++;
   return md.startsWith(node.url, j) ? { start: j, end: j + node.url.length } : null;
@@ -218,25 +213,23 @@ function destinationAt(md: string, node: any): { start: number; end: number } | 
 /**
  * Every link target in a line of Markdown as the site's parser reads it inside a table
  * cell (`parseMarkdown`, remark with GFM, behind `INLINE_PREFIX`): each link and image
- * destination with where it is written, and each `href`/`src` in an inline HTML tag and
- * each reference link (`REFERENCE_LINK`), which are checked but never rewritten.
- * Parsing, not a pattern, keeps a code span's `[x](y)`
- * from counting as a link and reads every destination form remark does. Its one walk
- * serves the rewrite and the check.
+ * destination with where it is written, and each `href`/`src` in an inline HTML tag,
+ * which is checked but never rewritten. Parsing, not a pattern, keeps a code span's
+ * `[x](y)` from counting as a link and reads every destination form remark does. Its
+ * one walk serves the rewrite and the check. A reference link (`[x][ref]`) is a link
+ * only where its page defines `[ref]:`, which no dataset page may
+ * (`buildDatasetInventory` refuses one), so in a cell it is text, here and on the site.
  */
 function markdownLinkTargets(md: string): LinkTarget[] {
   if (NO_LINK_SYNTAX.test(md)) return [];
   const src = INLINE_PREFIX + md;
   const out: LinkTarget[] = [];
   visit(parseMarkdown(src), (node: any) => {
-    if (node.type === 'link' || node.type === 'image' || node.type === 'definition') {
+    if (node.type === 'link' || node.type === 'image') {
       const at = destinationAt(src, node);
       out.push({ url: node.url, at: at && { start: at.start - INLINE_PREFIX.length, end: at.end - INLINE_PREFIX.length } });
     } else if (node.type === 'html') {
       for (const a of htmlLinkAttrs(String(node.value))) out.push({ url: a.value, at: null });
-    } else if (node.type === 'text') {
-      // Parsed alone, a reference link has no definition and reads as text.
-      for (const m of String(node.value).matchAll(REFERENCE_LINK)) out.push({ url: m[0], at: null });
     }
   });
   return out;
@@ -279,8 +272,7 @@ export function absolutizeCellLinks(md: string, sourceFile: string): { md: strin
 
 /**
  * The link targets in a line of Markdown that are not `isAbsoluteLink`: every link and
- * image destination, every `href`/`src` in an inline HTML tag, and every reference link,
- * which has no target outside its page. What the endpoint tests check
+ * image destination, and every `href`/`src` in an inline HTML tag. What the endpoint tests check
  * every served string with.
  */
 export function nonAbsoluteMarkdownTargets(md: string): string[] {

@@ -25,6 +25,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { toString as mdastToString } from 'mdast-util-to-string';
+import { visit } from 'unist-util-visit';
 
 import { ACCESSION, idAccession } from '../db/lib.js';
 import { bareDoi, doiRelation } from './doi-relation.js';
@@ -378,6 +379,24 @@ export function cellText(cell: string): string {
   return mdastToString(parseMarkdown(cell)).trim();
 }
 
+/**
+ * Throw if an inventory page defines a reference-link target (`[ref]: url`). The agent
+ * API serves each inventory cell alone (`absolutizeCellLinks` in agent-api.ts), where a
+ * `[text][ref]` has no definition and so no target. With no definition on the page it is
+ * no link on the site either, so a cell reads the same in both places
+ * (tucca-cellag/caail-planning#348). No dataset page has one today.
+ */
+function refuseReferenceDefinitions(page: string, repoRoot: string): void {
+  const path = join(repoRoot, 'Datasets', `${page}.md`);
+  if (!existsSync(path)) return;
+  let label: string | undefined;
+  visit(parseMarkdown(readFileSync(path, 'utf-8')), 'definition', (n: any) => { label ??= n.label ?? n.identifier; });
+  if (label !== undefined) {
+    throw new Error(`pnpm parse: Datasets/${page}.md defines the reference-link target [${label}]. Inventory cells ` +
+      'are served alone in api/datasets.json, where a reference link has no target: write the link inline.');
+  }
+}
+
 function readRows(ndjsonDir: string): RowNdjson[] {
   const path = join(ndjsonDir, 'dataset_rows.ndjson');
   const text = existsSync(path) ? readFileSync(path, 'utf-8').trim() : '';
@@ -417,6 +436,7 @@ export function buildDatasetInventory(
   /** item_id -> its raw member accessions, resolved once every page has been read. */
   const pending = new Map<string, string[]>();
   for (const page of pages) {
+    refuseReferenceDefinitions(page, repoRoot);
     const read = readInventoryHeader(page, repoRoot);
     if ('problem' in read) {
       throw new Error(`dataset-inventory: page "${page}" (${byPage.get(page)!.length} row(s)): ${read.problem}.`);
