@@ -32,6 +32,7 @@ import {
   assertAbsoluteLinks,
   absolutizeMarkdownLinks,
   assertAbsoluteMarkdownLinks,
+  unresolvableMarkdownTargets,
 } from './agent-api.js';
 import { RETIRED_BASES, SITE_BASE, SITE_ORIGIN, SITE_URL } from '../../src/content/site-config.ts';
 import { buildPapersModel } from './papers.js';
@@ -548,27 +549,62 @@ describe('site-relative hrefs in the API', () => {
     // A fragment resolves against the cell's own page, where it was written to resolve.
     expect(absolutizeMarkdownLinks('[above](#featured-atlases)', 'Datasets/Pig.md'))
       .toBe('[above](https://github.com/tucca-cellag/caail/blob/main/Datasets/Pig.md#featured-atlases)');
-    // A title survives, and an absolute link is left as written.
-    expect(absolutizeMarkdownLinks('[c](./Cow.md "Cow page")', 'Datasets/Pig.md')).toBe(`[c](${SITE_URL}datasets/cow/ "Cow page")`);
+    // Every title and destination form remark reads is rewritten, and only the destination changes.
+    for (const [md, want] of [
+      ['[c](./Cow.md "Cow page")', `[c](${SITE_URL}datasets/cow/ "Cow page")`],
+      ["[c](./Cow.md 'Cow')", `[c](${SITE_URL}datasets/cow/ 'Cow')`],
+      ['[c](./Cow.md (Cow))', `[c](${SITE_URL}datasets/cow/ (Cow))`],
+      ['[c](<./Cow.md>)', `[c](<${SITE_URL}datasets/cow/>)`],
+    ] as const) {
+      expect(absolutizeMarkdownLinks(md, 'Datasets/Pig.md'), md).toBe(want);
+    }
     const absolute = '[`GSE1`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE1) and [m](mailto:a@b.c)';
     expect(absolutizeMarkdownLinks(absolute, 'Datasets/Pig.md')).toBe(absolute);
+    // Link syntax quoted in a code span is not a link, so it is left as written.
+    expect(absolutizeMarkdownLinks('write `[x](./Cow.md)` to link', 'Datasets/Pig.md')).toBe('write `[x](./Cow.md)` to link');
   });
 
-  it('fails on a Markdown link the API cannot make absolute', () => {
-    // A relative non-.md target passes the rewrite untouched and resolves nowhere off-site.
-    for (const md of ['[s](./site/db/schema.sql)', '[s](../x.csv "t")', '![f](fig.png)']) {
-      expect(() => assertAbsoluteMarkdownLinks(md), md).toThrow(/not an absolute URL/);
+  it('finds every link target that would not resolve off-site, and nothing in a code span', () => {
+    for (const md of [
+      '[s](./site/db/schema.sql)', '[s](<../a b.csv>)', "[x](../a.csv 't')", '[x](../a.csv (t))',
+      '[x](../wiki_(a).csv)', '![f](fig.png)', '<a href="../x.csv">x</a>', '[x](#)',
+      '[x](https://github.com/tucca-cellag/caail/blob/main/../outside.md)', '[x](https://h.org/a/./b)',
+    ]) {
+      expect(unresolvableMarkdownTargets(md), md).toHaveLength(1);
     }
-    expect(() => assertAbsoluteMarkdownLinks('[x](https://x.org/) [m](mailto:a@b.c)')).not.toThrow();
+    for (const md of ['[x](https://x.org/a?b=1#c) [m](mailto:a@b.c)', 'quoted `[x](../y.csv)` syntax', 'see https://x.org/a', 'no links']) {
+      expect(unresolvableMarkdownTargets(md), md).toEqual([]);
+    }
+  });
+
+  it('fails the build on a target the rewrite leaves unresolved, naming the file once', () => {
+    expect(() => assertAbsoluteMarkdownLinks('[s](./site/db/schema.sql)', 'Datasets/Pig.md'))
+      .toThrow(/^Datasets\/Pig\.md: Markdown link target "\.\/site\/db\/schema\.sql" is not an absolute URL/);
+    // An empty fragment is not rewritten to a URL ending in a bare '#'; the check refuses it.
+    expect(absolutizeMarkdownLinks('[x](#)', 'Datasets/Pig.md')).toBe('[x](#)');
+    expect(() => assertAbsoluteMarkdownLinks('[x](https://x.org/) [m](mailto:a@b.c)', 'Datasets/Pig.md')).not.toThrow();
   });
 
   it('ships no relative Markdown link target in any emitted endpoint', () => {
     // An agent reading the JSON off-site resolves ../Papers.md against the API URL and 404s.
-    const files = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
-    expect(JSON.stringify(inventory)).toMatch(/\]\(\.\.?\//); // the input really has them
-    for (const f of files) {
-      const targets = [...JSON.stringify(f.body).matchAll(/\]\(([^()\s]+)/g)].map((m) => m[1]!);
-      expect(targets.filter((t) => !/^(?:https?:|mailto:)/i.test(t)), f.name).toEqual([]);
+    // A row of its own carries the relative links, so this holds whatever the corpus says.
+    const fixture: typeof inventory = {
+      ...inventory,
+      inventory: [...inventory.inventory, {
+        ...inventory.inventory[0]!, id: 'ds:fixture-relative-links', page: 'Pig',
+        columns: { Description: 'see [Cow.md](./Cow.md) and [Papers.md #193](../Papers.md#193)' },
+      }],
+    };
+    const files = buildAgentApi({ papers, catalog, datasets, inventory: fixture, topics, taxonomy, reports, corpusDate: DATE });
+    const row = (files.find((f) => f.name === 'datasets.json')!.body as any).inventory
+      .find((r: any) => r.id === 'ds:fixture-relative-links');
+    expect(row.columns.Description).toBe(
+      `see [Cow.md](${SITE_URL}datasets/cow/) and [Papers.md #193](https://github.com/tucca-cellag/caail/blob/main/Papers.md#193)`);
+    const strings = (v: unknown): string[] =>
+      typeof v === 'string' ? [v] : v && typeof v === 'object' ? Object.values(v).flatMap(strings) : [];
+    for (const f of files.filter((f) => f.name !== 'openapi.json')) {
+      const bad = strings(f.body).filter((s) => /\]|href|src/.test(s)).flatMap(unresolvableMarkdownTargets);
+      expect(bad, f.name).toEqual([]);
     }
   });
 
@@ -597,8 +633,7 @@ describe('site/public/api/datasets.json (the shipped file)', () => {
   it('carries no relative Markdown link in any inventory cell (tucca-cellag/caail-planning#348)', () => {
     const relative = (shipped.inventory ?? []).flatMap((r: any) =>
       Object.values(r.columns as Record<string, string>).flatMap((cell) =>
-        [...cell.matchAll(/\]\(([^()\s]+)/g)].map((m) => m[1]!).filter((t) => !/^(?:https?:|mailto:)/i.test(t))
-          .map((t) => `${r.id}: ${t}`)));
+        unresolvableMarkdownTargets(cell).map((t) => `${r.id}: ${t}`)));
     expect(relative).toEqual([]);
   });
 
