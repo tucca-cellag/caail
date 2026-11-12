@@ -45,6 +45,8 @@ describe('computeCounts — talks counting (fixture)', () => {
       areas: [],
       hasCode: false,
       hasData: false,
+      modelUrls: [],
+      notices: [],
       slug: `stub-2022${'abcdefghijklmnopqrstuvwxyz'[i] ?? String(i)}`,
     })),
   };
