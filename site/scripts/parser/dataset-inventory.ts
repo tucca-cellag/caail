@@ -380,20 +380,24 @@ export function cellText(cell: string): string {
 }
 
 /**
- * Throw if an inventory page defines a reference-link target (`[ref]: url`). The agent
- * API serves each inventory cell alone (`absolutizeCellLinks` in agent-api.ts), where a
- * `[text][ref]` has no definition and so no target. With no definition on the page it is
- * no link on the site either, so a cell reads the same in both places
- * (tucca-cellag/caail-planning#348). No dataset page has one today.
+ * Throw if an inventory page defines a reference-link target (`[ref]: url`) or a GFM
+ * footnote (`[^1]: text`). The agent API serves each inventory cell alone
+ * (`absolutizeCellLinks` in agent-api.ts), where a `[text][ref]` or `[^1]` has no
+ * definition and so no target. With none on the page it is no link on the site either,
+ * so a cell reads the same in both places (tucca-cellag/caail-planning#348). No dataset
+ * page has one today.
  */
 function refuseReferenceDefinitions(page: string, repoRoot: string): void {
   const path = join(repoRoot, 'Datasets', `${page}.md`);
   if (!existsSync(path)) return;
   let label: string | undefined;
-  visit(parseMarkdown(readFileSync(path, 'utf-8')), 'definition', (n: any) => { label ??= n.label ?? n.identifier; });
+  visit(parseMarkdown(readFileSync(path, 'utf-8')), (n: any) => {
+    if (n.type === 'definition') label ??= n.label ?? n.identifier;
+    else if (n.type === 'footnoteDefinition') label ??= `^${n.label ?? n.identifier}`;
+  });
   if (label !== undefined) {
-    throw new Error(`pnpm parse: Datasets/${page}.md defines the reference-link target [${label}]. Inventory cells ` +
-      'are served alone in api/datasets.json, where a reference link has no target: write the link inline.');
+    throw new Error(`pnpm parse: Datasets/${page}.md defines [${label}]:. Inventory cells are served alone in ` +
+      'api/datasets.json, where a reference link or footnote has no target: write the link or note inline.');
   }
 }
 

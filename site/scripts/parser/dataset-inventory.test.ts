@@ -32,7 +32,10 @@ describe('buildDatasetInventory refuses a stray inventory table (tucca-cellag/ca
     expect(() => buildDatasetInventory(root)).not.toThrow();
     const page = join(root, 'Datasets', 'Cow.md');
     writeFileSync(page, `${readFileSync(page, 'utf-8')}\n[geo]: https://www.ncbi.nlm.nih.gov/geo/\n`);
-    expect(() => buildDatasetInventory(root)).toThrow(/pnpm parse: Datasets\/Cow\.md defines the reference-link target \[geo\]/);
+    expect(() => buildDatasetInventory(root)).toThrow(/pnpm parse: Datasets\/Cow\.md defines \[geo\]:/);
+    // A GFM footnote leaves the same gap.
+    writeFileSync(page, `${readFileSync(join(REPO_ROOT, 'Datasets', 'Cow.md'), 'utf-8')}\n[^1]: Reads counted after QC.\n`);
+    expect(() => buildDatasetInventory(root)).toThrow(/pnpm parse: Datasets\/Cow\.md defines \[\^1\]:/);
   });
 });
 

@@ -583,17 +583,18 @@ describe('site-relative hrefs in the API', () => {
     for (const md of [
       '[s](./site/db/schema.sql)', '[s](<../a b.csv>)', "[x](../a.csv 't')", '[x](../a.csv (t))',
       '[x](../wiki_(a).csv)', '![f](fig.png)', '<a href="../x.csv">x</a>', '[x](#)',
-      '[x](https://github.com/tucca-cellag/caail/blob/main/../outside.md)', '[x](https://h.org/a/./b)',
-      // An unquoted value with a '/' parses as text, not HTML, so it is no link; one without does.
-      '<a href=data.csv>x</a>', "<img src='fig.png'>", '<img alt="a > b" src="../fig.png">',
-      // A bare URL is held to the same rule as a written link.
-      'www.example.org/a/../b', 'see www.example.org/a# here',
+      '[x](https://github.com/tucca-cellag/caail/blob/main/../outside.md)',
+      '[x](https://github.com/tucca-cellag/caail/blob/main/Datasets/Pig.md#)',
+      // An unquoted value: remark reads one holding '/' as text, but CommonMark reads it as a tag.
+      '<a href=data.csv>x</a>', '<a href=../data/x.csv>x</a>', "<img src='fig.png'>", '<img alt="a > b" src="../fig.png">',
     ]) {
       expect(nonAbsoluteMarkdownTargets(md), md).toHaveLength(1);
     }
     for (const md of [
       '[x](https://x.org/a?b=1#c) [m](mailto:a@b.c)', 'quoted `[x](../y.csv)` syntax', 'see https://x.org/a', 'no links',
       '[ENA FTP](ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR123/)', '[q](https://x.org/view?path=./data)',
+      // Another site's URL is taken as written, dot segment, empty fragment and all.
+      '[x](https://h.org/a/./b)', 'www.example.org/a/../b', 'see https://tool.org/app# here',
       // data-src is no link a browser follows.
       '<img data-src="fig.png" src="https://x.org/a.png">',
       // Attribute-like text outside a tag is not an attribute, nor is a comment.
@@ -609,8 +610,12 @@ describe('site-relative hrefs in the API', () => {
   });
 
   it('holds the catalog HTML check to the same rule as the dataset Markdown check', () => {
-    for (const url of ['https://github.com/tucca-cellag/caail/blob/main/../x.md', 'https://x.org/#']) {
+    for (const url of ['https://github.com/tucca-cellag/caail/blob/main/../x.md', `${SITE_URL}datasets/cow/#`]) {
       expect(() => assertAbsoluteLinks(`<a href="${url}">x</a>`), url).toThrow(/not an absolute URL/);
+    }
+    // A third-party link with a dot segment or an empty fragment is that site's own URL.
+    for (const url of ['https://host.org/docs/./index.html', 'https://tool.org/app#']) {
+      expect(() => assertAbsoluteLinks(`<a href="${url}">x</a>`), url).not.toThrow();
     }
     expect(() => assertAbsoluteLinks('<a href="ftp://ftp.ebi.ac.uk/pub/">f</a>')).not.toThrow();
     // It finds single-quoted and bare values too, and passes over data-src.
@@ -635,6 +640,14 @@ describe('site-relative hrefs in the API', () => {
     };
     expect(() => buildAgentApi({ papers, catalog, datasets, inventory: bad, topics, taxonomy, reports, corpusDate: DATE }))
       .toThrow(/^agent-api: inventory row ds:fixture-bad-link: Datasets\/Pig\.md: Markdown link target "\.\/site\/db\/schema\.sql" is not an absolute URL\.$/);
+    const empty: typeof inventory = {
+      ...inventory,
+      inventory: [...inventory.inventory, {
+        ...inventory.inventory[0]!, id: 'ds:fixture-empty-link', page: 'Pig', columns: { Description: 'see [GEO]()' },
+      }],
+    };
+    expect(() => buildAgentApi({ papers, catalog, datasets, inventory: empty, topics, taxonomy, reports, corpusDate: DATE }))
+      .toThrow(/Datasets\/Pig\.md: a link has an empty target/);
     // An empty fragment is not rewritten to a URL ending in a bare '#'; it is reported instead.
     expect(absolutizeCellLinks('[x](#)', 'Datasets/Pig.md')).toEqual({ md: '[x](#)', notAbsolute: ['#'] });
   });

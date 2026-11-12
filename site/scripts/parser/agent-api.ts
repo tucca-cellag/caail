@@ -136,15 +136,18 @@ function fragmentUrl(sourceFile: string, anchor: string): string {
 
 /**
  * Whether a URL is absolute in a form that does not depend on where the file is fetched
- * from: an http(s) or ftp(s) URL with a host, or a mailto, with no `.` or `..` segment
- * in its path (a `blob/main/../x.md` climbs out of the repo) and no empty fragment. It
- * checks form, not that the target exists. The one rule the catalog HTML check
- * (`assertAbsoluteLinks`) and the dataset Markdown check share.
+ * from: an http(s) or ftp(s) URL with a host, or a mailto. A URL into CAAIL's own site or
+ * GitHub blob, which is what the rewrites produce, must also have no `.` or `..` path
+ * segment (a `blob/main/../x.md` climbs out of the repo) and no empty fragment; another
+ * site's URL is taken as written. It checks form, not that the target exists. The one
+ * rule the catalog HTML check (`assertAbsoluteLinks`) and the dataset Markdown check share.
  */
 const isAbsoluteLink = (url: string): boolean => {
   if (/^mailto:/i.test(url)) return true;
   const m = url.match(/^(?:https?|ftps?):\/\/[^/?#\s]+([^?#]*)/i);
-  return m !== null && !/(?:^|\/)\.{1,2}(?:\/|$)/.test(m[1]!) && !url.endsWith('#');
+  if (m === null) return false;
+  const ours = url.startsWith(`${GITHUB_BLOB_BASE}/`) || url.startsWith(SITE_URL);
+  return !ours || (!/(?:^|\/)\.{1,2}(?:\/|$)/.test(m[1]!) && !url.endsWith('#'));
 };
 
 /**
@@ -228,7 +231,9 @@ function markdownLinkTargets(md: string): LinkTarget[] {
     if (node.type === 'link' || node.type === 'image') {
       const at = destinationAt(src, node);
       out.push({ url: node.url, at: at && { start: at.start - INLINE_PREFIX.length, end: at.end - INLINE_PREFIX.length } });
-    } else if (node.type === 'html') {
+    } else if (node.type === 'html' || node.type === 'text') {
+      // micromark reads `<a href=../x.csv>` (a bare value holding `/`) as text, but
+      // CommonMark and GitHub's cmark-gfm read it as a tag, so an agent may render it as one.
       for (const a of htmlLinkAttrs(String(node.value))) out.push({ url: a.value, at: null });
     }
   });
@@ -287,7 +292,10 @@ function inventoryForApi(rows: DatasetInventoryRow[]): DatasetInventoryRow[] {
       const columns = Object.fromEntries(Object.entries(r.columns).map(([label, cell]) => {
         const { md, notAbsolute } = absolutizeCellLinks(cell, file);
         if (notAbsolute.length > 0) {
-          throw new Error(`${file}: Markdown link target "${notAbsolute[0]}" is not an absolute URL.`);
+          const t = notAbsolute[0]!;
+          throw new Error(t === ''
+            ? `${file}: a link has an empty target; give it its URL, or write it as text.`
+            : `${file}: Markdown link target "${t}" is not an absolute URL.`);
         }
         return [label, md];
       }));
