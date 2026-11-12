@@ -577,8 +577,14 @@ export function buildManifest(
           'To tell whether a dataset find is already held, match the find\'s own identifier ' +
           'against the inventory rows\' `accession`, `dataDoi`, `dataUrl` and `links` (every URL ' +
           'in the row, secondary deposits included; keep a URL\'s query string, many name their ' +
-          'record there), and against the entries\' `url`, and their `doi` where `doiRelation` is ' +
-          '"own" (a data host\'s DOI, naming the item itself). Compare DOIs as bare lowercase ' +
+          'record there), and against the entries\' `url`, their `accessions` (the entry\'s own ' +
+          'repository deposits, bare, primary first; `[]` when none is recorded), their ' +
+          '`dataLinks` (links to the entry\'s own deposits that its `accessions` do not name, such ' +
+          'as a Zenodo record, a code repository or an SRA run, a DOI as its https://doi.org/ link; `[]` when none ' +
+          'is recorded; an accession outside the `accessions` families, such as an SRA run or a CNGB project, ' +
+          'appears only inside one of these URLs, as a whole path segment or query value, so match it there ' +
+          'too), and their `doi` ' +
+          'where `doiRelation` is "own" (a data host\'s DOI, naming the item itself). Compare DOIs as bare lowercase ' +
           'strings and accessions case-insensitively, ignoring a version suffix (SRA051669.1 is ' +
           'SRA051669). Some deposits have only a `dataUrl`. ' +
           'A row\'s `paperDoi`, and an entry\'s `doi` where `doiRelation` is "publication", name ' +
@@ -589,9 +595,8 @@ export function buildManifest(
           'that same paper match. Use `id` only to re-find an item you already recorded, since an ' +
           'id can be minted from data a row merely mentions. ' +
           '`accession` is the primary deposit as the Data cell\'s badge names it, served as ' +
-          'written. Secondary deposits are named only in the row\'s prose (Description), and on ' +
-          'page "CrossSpecies", which has no Data column, a row\'s own deposits can be named ' +
-          'only in its Scope. One accession can sit on several rows, on one page or several, ' +
+          'written. Secondary deposits are named only in the row\'s prose (Description). ' +
+          'One accession can sit on several rows, on one page or several, ' +
           'when more than one study uses a deposit. ' +
           'A third array, `onRequest`, lists studies whose own data availability statement ' +
           'says their data are shared only on request, each with its `paperDoi` and ' +

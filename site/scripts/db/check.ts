@@ -22,26 +22,36 @@
  *    Research-area axis only; the method-row axis is deliberately not gated.
  *  - inventory Data cells: a deposit link, `supplementary` or `unavailable`, read by the
  *    parser's own `readDataCell` (checkInventoryCells).
+ *  - inventory pages: no page outside INVENTORY_PAGES carries an inventory table
+ *    (checkInventoryPages).
+ *  - twins: no curated entry and inventory row on one page name the same deposit
+ *    (checkEntryRowTwins).
+ *  - curated entries' own accessions: keys resolve, values are bare accessions, the column
+ *    matches dataset-accessions.json (checkAccessions).
+ *  - curated entries' own deposit links: keys resolve, values are http(s) links to a deposit
+ *    rather than a paper or a family accession, the column matches dataset-data-links.json
+ *    (checkDataLinks).
  */
 
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { importNdjson, ACCESSION_EXACT, idAccession, REPO_ROOT, SITE_ROOT, type Db } from './lib.js';
-import { THEME_SLUGS, THEMES, FINE_TAGS, pageOrdinals } from './seed.js';
+import { importNdjson, ACCESSION_EXACT, ACCESSION_SOURCE, idAccession, REPO_ROOT, SITE_ROOT, type Db } from './lib.js';
+import { THEME_SLUGS, THEMES, FINE_TAGS, pageOrdinals, DATASET_ACCESSIONS_PATH, DATASET_DATA_LINKS_PATH } from './seed.js';
 import { ON_REQUEST_PAGES } from '../parser/datasets.js';
+import { strayInventoryTables } from './extract.js';
 import { buildTaxonomyModel } from '../parser/taxonomy.js';
 import { AREAS } from '../parser/areas.js';
 import { MATRIX_SECTION } from '../parser/types.js';
 import { seriesRecency, EDITION_SORT_RULE } from '../parser/reports.js';
 import type { TaxonomyData } from '../parser/types.js';
-import { bareDoi, DOI_SHAPE } from '../parser/doi-relation.js';
+import { bareDoi, doiRelation, DOI_SHAPE } from '../parser/doi-relation.js';
 import { parseMarkdown } from '../parser/markdown.js';
 import { toString as mdastToString } from 'mdast-util-to-string';
 import { visit } from 'unist-util-visit';
 import type { Definition, FootnoteDefinition } from 'mdast';
 import {
-  DATA_CELL_FORMS, fitsDoiLink, labelCells, parseRowCells, readDataCell, readInventoryHeader, readLinkCell, statedDoi,
+  DATA_CELL_FORMS, fitsDoiLink, labelCells, parseRowCells, readDataCell, readInventoryHeader, statedDoi, WEB_ADDRESS,
   linkDestinations,
   type InventoryHeader,
 } from '../parser/dataset-inventory.js';
@@ -562,13 +572,277 @@ export function checkSubseries(db: Db, subseriesPath: string = SUBSERIES_PATH): 
 }
 
 export const INVENTORY_CELLS_LABEL =
-  `dataset_rows: every Data cell is ${DATA_CELL_FORMS} (CrossSpecies: its DOI / URL cell is a link)`;
+  `dataset_rows: every Data cell is ${DATA_CELL_FORMS}`;
 
 export const ON_REQUEST_LABEL =
-  'datasets_on_request: every row has a bare DOI that fits a link and that no inventory row\'s Paper or DOI / URL ' +
+  'datasets_on_request: every row has a bare DOI that fits a link and that no inventory row\'s Paper ' +
   'cell links and no curated entry\'s doi or heading link names, a non-Benchmarks dataset page, a study and a ' +
   'statement that fit a table cell, a statement that renders as stored, and an ordinal counting its page\'s ' +
   'list from 0';
+
+/**
+ * The accession families `ACCESSION_SOURCE` admits, as a curator reads them (`GSE…, PRJ…, E-MTAB-…`):
+ * each alternative's literal prefix, so a family added there is named here without a second edit.
+ */
+export const ACCESSION_FAMILIES = ACCESSION_SOURCE.split('|')
+  .map((alt) => `${alt.match(/^[A-Z-]+/)?.[0] ?? alt}…`)
+  .join(', ');
+
+export const ACCESSIONS_LABEL =
+  'dataset_entries.accessions: every dataset-accessions.json key is a curated dataset entry, every value a ' +
+  'non-empty list of distinct repository accessions its heading or description names, and the stored column ' +
+  'matches the file';
+
+/** A curated entry as the entry-list guards read it. */
+interface ListEntry { item_id: string; url: string | null; doi: string | null; heading_md: string; body_md: string }
+
+/** One value of an entry's list: the key it is compared by and the text it must appear as, or why it is refused. */
+type ListValue = { key: string; text: string } | { problem: string };
+
+/** A character that always continues a link written in prose. */
+const ADDRESS_CHAR = /[A-Za-z0-9\-_~/=&%+@$]/;
+
+/** Punctuation that ends a sentence or a Markdown link, and continues a link only when more address follows. */
+const TRAILING_PUNCT = /[.?#:;,!'()*[\]]/;
+
+/**
+ * Whether `text` appears in `prose` as a whole token: not inside a longer accession or link, so a
+ * value missing its last digit, or a link cut short, is not found inside the full one. A link
+ * continues past any address character (`ADDRESS_CHAR`), and past punctuation (`TRAILING_PUNCT`)
+ * that more address follows, so `…view?acc` is not found inside `…view?acc=ERP1`, nor `…/zenodo`
+ * inside `…/zenodo.11357327`, while a link that ends a sentence (`….`) or a Markdown link (`…)`) is
+ * whole. An accession continues only past a letter, digit, `_`, `-` or `/`: one followed by `.` and
+ * digits is that accession with a version suffix.
+ */
+function namedIn(prose: string, text: string): boolean {
+  const link = /^https?:\/\//i.test(text);
+  for (let i = prose.indexOf(text); i !== -1; i = prose.indexOf(text, i + 1)) {
+    const before = prose[i - 1] ?? '';
+    const next = prose[i + text.length] ?? '';
+    const then = prose[i + text.length + 1] ?? '';
+    const continues = link
+      ? ADDRESS_CHAR.test(next) || (TRAILING_PUNCT.test(next) && ADDRESS_CHAR.test(then))
+      : /[A-Za-z0-9_\-/]/.test(next);
+    if (!/[A-Za-z0-9]/.test(before) && !continues) return true;
+  }
+  return false;
+}
+
+/** A link's path, query and fragment: what follows its scheme and host, so a host is never read. */
+const pathOf = (url: string): string => url.replace(/^https?:\/\/[^/?#]*/i, '');
+
+/**
+ * The end of an identifier that is a whole path segment or query value: an optional version suffix
+ * (`.2`), then the end of the link or a `/`, `?`, `&` or `#`. Its start is a `/` or `=`.
+ */
+const SEGMENT_END = String.raw`(?:\.\d+)?(?=$|[/?&#])`;
+
+/**
+ * Whether `link` names `accession` as a whole path segment, as written, or as a whole query value,
+ * in any case. That is the rule the data-links guard refuses a family accession by
+ * (`FAMILY_IN_SEGMENT`, `FAMILY_IN_QUERY`), since a path segment can be a name (a repository `cra2`)
+ * while a query value is an identifier slot. `…/GSE1`, `…?acc=gse1` and `…/GSE1.2` (a version
+ * suffix) name `GSE1`; `…/gse1`, `…acc=GSE12`, a repository `…/Zebrafish-GEM-v2` (for
+ * `Zebrafish-GEM`) and a host (`zenodo.org`) do not.
+ */
+export function accessionNamedIn(link: string, accession: string): boolean {
+  const needle = accession.trim();
+  if (!needle) return false;
+  const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const path = pathOf(link);
+  return new RegExp(`(?<=/)${escaped}${SEGMENT_END}`).test(path)
+    || new RegExp(`(?<==)${escaped}${SEGMENT_END}`, 'i').test(path);
+}
+
+/**
+ * The skeleton the curated entries' list guards share (`checkAccessions`, `checkDataLinks`), as
+ * `seedEntryList` is the one fold behind both. Each key in the file must be a curated dataset entry,
+ * each value a non-empty list, and each item one `read` accepts. No item may repeat by its key. Each
+ * must be named in the entry's own heading or description (tucca-cellag/caail-planning#752, review
+ * round 3), so a mistyped accession or link cannot be served as the entry's own deposit: the file is
+ * hand-typed beside prose that already names the deposit, and this makes the two agree. The stored
+ * column must equal what the file says, so an edit to the file without `db:reseed-axes`, or a
+ * hand-edited column, fails here rather than shipping a stale value.
+ */
+function checkEntryList(
+  db: Db, path: string, file: string, column: 'accessions' | 'data_links', label: string, noun: string,
+  read: (item: unknown, entry: ListEntry) => ListValue,
+): CheckResult[] {
+  const problems: string[] = [];
+  const manual = readEntryListFile(path, file, problems);
+  const entries = new Map((db.prepare('SELECT item_id, url, doi, heading_md, body_md FROM dataset_entries').all() as ListEntry[])
+    .map((e) => [e.item_id, e]));
+  const expected = new Map<string, string>();
+  for (const [id, list] of Object.entries(manual)) {
+    const e = entries.get(id);
+    if (!e) { problems.push(`${id}: not a curated dataset entry`); continue; }
+    if (!Array.isArray(list) || list.length === 0) { problems.push(`${id}: needs a non-empty list of ${noun}`); continue; }
+    const seen = new Set<string>();
+    const prose = `${e.heading_md}\n${e.body_md}`;
+    for (const item of list) {
+      const v = read(item, e);
+      if ('problem' in v) { problems.push(`${id}: ${v.problem}`); continue; }
+      if (seen.has(v.key)) problems.push(`${id}: lists ${v.text} twice`);
+      else if (!namedIn(prose, v.text)) {
+        problems.push(`${id}: ${v.text} is named nowhere in its heading or description; check it against the entry, or name it there`);
+      }
+      seen.add(v.key);
+    }
+    expected.set(id, JSON.stringify(list.map((x) => String(x).trim())));
+  }
+  for (const r of db.prepare(`SELECT item_id, ${column} AS stored FROM dataset_entries ORDER BY item_id`).all() as { item_id: string; stored: string | null }[]) {
+    const want = expected.get(r.item_id) ?? null;
+    const have = r.stored ?? null;
+    if (have !== want) {
+      problems.push(`${r.item_id}: stored ${column} ${have ?? 'NULL'} differ from ${file} (${want ?? 'none'}); run db:reseed-axes`);
+    }
+  }
+  return [ok(label, problems.length === 0, `${problems.length} problem(s): ${problems.slice(0, 10).join('; ')}`)];
+}
+
+/**
+ * Guard for curated entries' own repository accessions (tucca-cellag/caail-planning#752), the
+ * `accessions` column `seedAccessions` folds from `scripts/db/dataset-accessions.json`, through
+ * `checkEntryList`. Each item must be exactly one accession of the families in `ACCESSION_SOURCE`,
+ * uppercase, with no URL or version suffix: the same vocabulary the `ds:` id minter and the subseries
+ * guard use, and the shape `api/datasets.json` serves. A deposit outside those families goes in
+ * `dataset-data-links.json` as its link, and the refusal says so.
+ */
+export function checkAccessions(db: Db, path: string = DATASET_ACCESSIONS_PATH): CheckResult[] {
+  return checkEntryList(db, path, 'dataset-accessions.json', 'accessions', ACCESSIONS_LABEL, 'accessions', (a) =>
+    typeof a === 'string' && ACCESSION_EXACT.test(a)
+      ? { key: a, text: a }
+      : { problem: `${JSON.stringify(a)} is not one bare accession (${ACCESSION_FAMILIES}); ` +
+          'a deposit outside these families goes in dataset-data-links.json as its link' });
+}
+
+/**
+ * The `datasets` object of a `{ "datasets": { "ds:…": [...] } }` file, or `{}` when the file is
+ * absent. A file that is not JSON, or has no such object, is a problem named by `name`.
+ */
+function readEntryListFile(path: string, name: string, problems: string[]): Record<string, unknown> {
+  if (!existsSync(path)) return {};
+  let parsed: unknown = undefined;
+  try { parsed = JSON.parse(readFileSync(path, 'utf-8')); } catch { problems.push(`${name} is not JSON`); }
+  const datasets = (parsed as { datasets?: unknown } | undefined)?.datasets;
+  if (parsed !== undefined && (typeof datasets !== 'object' || datasets === null || Array.isArray(datasets))) {
+    problems.push(`${name} has no "datasets" object`);
+    return {};
+  }
+  return (datasets as Record<string, unknown> | undefined) ?? {};
+}
+
+export const DATA_LINKS_LABEL =
+  'dataset_entries.data_links: every dataset-data-links.json key is a curated dataset entry, every value a ' +
+  'non-empty list of distinct http(s) links to a deposit its heading or description names, none a paper, ' +
+  'an accession dataset-accessions.json takes, or the entry\'s doi or heading link, and the stored column ' +
+  'matches the file';
+
+/** A Zenodo record page, whose DOI Zenodo mints as `10.5281/zenodo.<record>`. */
+const ZENODO_RECORD = /^https?:\/\/(?:www\.)?zenodo\.org\/records?\/(\d+)\/?(?:[?#].*)?$/i;
+
+/**
+ * An accession of `ACCESSION_SOURCE`'s families as a whole path segment, as the families write it
+ * (uppercase), or as a whole query value in any case (`?acc=gse158430`), since a query value is an
+ * identifier slot while a path segment can be a name. Captured without a version suffix and read
+ * against `pathOf`, so a host, a repository `cra2` and a longer segment such as `GSE1.csv` are not
+ * accessions.
+ */
+const FAMILY_IN_SEGMENT = new RegExp(`(?<=/)(${ACCESSION_SOURCE})${SEGMENT_END}`);
+const FAMILY_IN_QUERY = new RegExp(`(?<==)(${ACCESSION_SOURCE})${SEGMENT_END}`, 'i');
+
+/**
+ * A deposit link as the twin check and the data-links guard compare it. A link that states a DOI
+ * (`statedDoi`: a doi.org link on any host form, or a `doi:` token) is that DOI, bare and lowercase,
+ * and so is a Zenodo record page, whose DOI Zenodo mints from its record number. Any other link is
+ * compared without its scheme or a trailing slash, and case-insensitively. A host that merely embeds a
+ * DOI in its path with no such token is compared as a link, since `statedDoi` will not guess.
+ */
+const depositKey = (url: string): string => {
+  const zenodo = url.match(ZENODO_RECORD);
+  const doi = statedDoi(url) ?? (zenodo ? `10.5281/zenodo.${zenodo[1]}` : null);
+  return doi ? `DOI ${doi}` : `link ${url.replace(/^https?:\/\//i, '').replace(/\/+$/, '').toLowerCase()}`;
+};
+
+/**
+ * The last character of a link copied with the sentence or Markdown around it (`…/FoodML),`): the
+ * punctuation `namedIn` lets end a link in prose, so the copy is still found there verbatim.
+ */
+const COPIED_PUNCT = /[.,;:!?)\]'"*]$/;
+
+/** A DOI-shaped token in a link's path, such as a publisher's `/doi/10.1002/…` page: refused below, never used as a key. */
+const PATH_DOI = /^https?:\/\/[^/?#]+\/(?:[^?#]*\/)?(10\.\d{4,9}\/[^\s?#]+)/i;
+
+/**
+ * The first query value of a link that is a DOI, decoded, such as PLOS's article page
+ * (`…/article?id=10.1371/journal.pone.…`): refused below like `PATH_DOI`, never used as a key.
+ */
+const queryDoi = (url: string): string | null => {
+  const query = url.match(/\?([^#]*)/)?.[1];
+  if (!query) return null;
+  for (const value of new URLSearchParams(query).values()) {
+    const doi = bareDoi(value.trim());
+    if (doi) return doi;
+  }
+  return null;
+};
+
+/**
+ * Guard for curated entries' own deposit links (tucca-cellag/caail-planning#752), the `data_links`
+ * column `seedDataLinks` folds from `scripts/db/dataset-data-links.json`, through `checkEntryList`:
+ * the deposits the entry's accessions do not name, such as a Zenodo record or a code repository
+ * holding the data. Each item must be one link to an http(s) address with a host (`WEB_ADDRESS`, the
+ * Data-cell reader's own test, with no whitespace), and may not end in the punctuation that ends a
+ * sentence or a Markdown link (`COPIED_PUNCT`), which is copied with a link rather than part of it.
+ *
+ * A link may not name a paper. One that states a DOI whose registrant is not a data host is refused,
+ * as a Data cell refuses it (`readDataCell`), with the same pointer to the registrant list for a
+ * deposit on a host it lacks, and so is one whose path or query value carries such a DOI (a
+ * publisher's article page, `PATH_DOI` and `queryDoi`). A publisher page with no DOI in its address
+ * (ScienceDirect's `/pii/`) cannot be told from a deposit by its form, and is left to review. Nor
+ * may a link repeat what the entry already serves, its `doi` or its heading link, since `dataLinks`
+ * is the deposits the entry serves nowhere else. Links are compared by `depositKey`. It checks a link's form and registrant, not that it reaches the deposit.
+ *
+ * Nor may a link name an accession of the families `dataset-accessions.json` takes as a whole path
+ * segment or query value (`FAMILY_IN_SEGMENT`, `FAMILY_IN_QUERY`): that deposit is served as an
+ * accession, which is how a consumer and the twin check match it, so the link would hide it from
+ * both. And a Zenodo record page is refused in favour of its `https://doi.org/` link, which is how
+ * `dataLinks` writes a deposit DOI, so a consumer comparing DOIs finds it.
+ */
+export function checkDataLinks(db: Db, path: string = DATASET_DATA_LINKS_PATH): CheckResult[] {
+  return checkEntryList(db, path, 'dataset-data-links.json', 'data_links', DATA_LINKS_LABEL, 'links', (a, e) => {
+    const url = typeof a === 'string' ? a.trim() : '';
+    if (!WEB_ADDRESS.test(url) || /\s/.test(url)) return { problem: `${JSON.stringify(a)} is not one link to an http(s) address with a host` };
+    if (COPIED_PUNCT.test(url)) {
+      return { problem: `${url} ends in "${url.slice(-1)}", punctuation copied with the link: drop it, or percent-encode it if the address needs it` };
+    }
+    const key = depositKey(url);
+    const ownDoi = bareDoi(e.doi);
+    if (e.url && depositKey(e.url) === key) return { problem: `${url} is already its heading link` };
+    if (ownDoi && key === `DOI ${ownDoi}`) return { problem: `${url} is already its doi` };
+    const path = pathOf(url);
+    const accession = (path.match(FAMILY_IN_SEGMENT) ?? path.match(FAMILY_IN_QUERY))?.[1]?.toUpperCase();
+    if (accession) {
+      return { problem: `${url} names ${accession}, an accession of a family dataset-accessions.json takes: list ${accession} there instead` };
+    }
+    const record = url.match(ZENODO_RECORD)?.[1];
+    if (record) {
+      return { problem: `${url} is a Zenodo record page: write its DOI link, https://doi.org/10.5281/zenodo.${record}, and name that in the entry` };
+    }
+    const stated = statedDoi(url);
+    const inPath = stated ? null : bareDoi(url.match(PATH_DOI)?.[1]?.replace(/\/+$/, '') ?? null);
+    const paper = [stated, inPath, queryDoi(url)].find((d) => d && doiRelation(d) === 'publication');
+    if (paper) {
+      return { problem: `${url} links ${paper}, whose registrant is not a data host: a paper is the entry's doi, ` +
+        'and a deposit on an unlisted host needs its registrant added to DATA_REPOSITORY_REGISTRANTS ' +
+        '(site/scripts/parser/doi-relation.ts)' };
+    }
+    return { key, text: url };
+  });
+}
+
+export const ENTRY_ROW_TWINS_LABEL =
+  'dataset_entries x dataset_rows: no curated entry and inventory row on one page name the same deposit';
 
 /**
  * A statement stored inside its own quotes: it opens and closes with a mark of one family,
@@ -641,8 +915,8 @@ export function pageDefinitions(src: string): string {
  * from the pages, so adding a row to one page renumbers no other. A hand-typed ordinal that
  * leaves a gap or repeats one fails here rather than reordering the page on the next emit.
  *
- * It also refuses a DOI that any link in an inventory row's Paper cell (or CrossSpecies' DOI /
- * URL cell) states, whatever its registrant, or that a curated entry carries in its `doi`
+ * It also refuses a DOI that any link in an inventory row's Paper cell states, whatever its
+ * registrant, or that a curated entry carries in its `doi`
  * column or its heading link, since that study holds public data. Only those places are read,
  * and only for that exact DOI: a row whose Paper cell links the preprint while the list names
  * the journal version, or an entry that mentions the DOI only in its prose, gets past it. It
@@ -666,11 +940,9 @@ export function checkOnRequest(db: Db, repoRoot: string = REPO_ROOT): CheckResul
     const h = headers.get(d.page)!;
     const parsed = parseRowCells(d.cells_json);
     const cols = 'header' in h && 'cells' in parsed ? labelCells(h.header, parsed.cells) : null;
-    for (const cell of [cols?.['Paper'], cols?.['DOI / URL']]) {
-      for (const url of linkDestinations(cell ?? '')) {
-        const doi = statedDoi(url);
-        if (doi) hold(doi, d.item_id);
-      }
+    for (const url of linkDestinations(cols?.['Paper'] ?? '')) {
+      const doi = statedDoi(url);
+      if (doi) hold(doi, d.item_id);
     }
   }
   // An entry can name its paper in its `doi` column, in the doi.org link its heading is built
@@ -710,6 +982,130 @@ export function checkOnRequest(db: Db, repoRoot: string = REPO_ROOT): CheckResul
   return [ok(ON_REQUEST_LABEL, problems.length === 0, `${problems.length} problem(s): ${problems.slice(0, 10).join('; ')}`)];
 }
 
+/**
+ * Twin guard (tucca-cellag/caail-planning#752). A curated entry and an inventory row on the same page
+ * that name the same deposit list one dataset twice, and the datasets total and `api/datasets.json`
+ * count it twice. The integrity check cannot see this: it asserts a dataset id sits in exactly one of
+ * the two tables, and twins carry different ids. CrossSpecies held seven such pairs.
+ *
+ * Deposits are compared, never papers, as decided on that ticket: one paper can describe several
+ * deposits, which is how the datasets endpoint reads a paper DOI, so an entry and a row from one paper
+ * may be two datasets. An entry's deposits are its `doi` where the DOI's registrant is a data host,
+ * its heading link unless that states a paper's DOI, its `accessions` and its `dataLinks`. A row's
+ * deposit is its Data cell, read by the same `readDataCell` that fills the API's `dataUrl`,
+ * `dataDoi` and `accession`; a status word names none, and its Paper and Description cells are not
+ * read. A link that states a DOI is compared as that DOI, any other link without a trailing slash
+ * and case-insensitively, and an accession case-insensitively and without a version suffix, as the
+ * endpoint tells consumers to. An accession on one side is also shared when a deposit link on the
+ * other names it as a whole path segment, as written, or a whole query value, in any case
+ * (`accessionNamedIn`), so an entry's link to an SRA run page meets a row badged with that run, and a
+ * row's ENA link meets an entry listing the project, while a repository named `cra2` does not meet a
+ * row badged `CRA2`.
+ *
+ * An entry that names its deposit only in its description is not compared, which is why its deposits
+ * belong in `dataset-accessions.json` or `dataset-data-links.json`.
+ *
+ * It compares within a page only. A resource that covers several species counts once for each species
+ * (tucca-cellag/caail-planning#791), so the same deposit on two species pages is not a twin. Two
+ * inventory rows on one page that share a deposit are tucca-cellag/caail-planning#715's case, not this
+ * one. A row whose cells cannot be read is skipped here, because `checkInventoryCells` already fails
+ * it. Each pair is reported once, naming every deposit the two share.
+ */
+export function checkEntryRowTwins(
+  db: Db,
+  repoRoot: string = REPO_ROOT,
+  headerFor: (page: string) => InventoryHeader = (page) => readInventoryHeader(page, repoRoot),
+): CheckResult[] {
+  /** A link's key, or null for a link that states a paper's DOI. */
+  const linkKeyOf = (url: string): string | null => {
+    const doi = statedDoi(url);
+    return doi && doiRelation(doi) !== 'own' ? null : depositKey(url);
+  };
+  /** A badge or accession as written, without a version suffix after its digits. */
+  const unversioned = (a: string): string => a.trim().replace(/(\d)\.\d+$/, '$1');
+  /** The key an accession is compared by: unversioned and uppercase. */
+  const accessionKey = (a: string): string => `accession ${a.toUpperCase()}`;
+  const list = (raw: string | null): string[] => {
+    if (!raw) return [];
+    try {
+      const v: unknown = JSON.parse(raw);
+      return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
+    } catch { return []; } // checkAccessions and checkDataLinks name a malformed column
+  };
+  /**
+   * One side's deposits: its keys, its deposit links, and its accessions unversioned but as
+   * written, since a link names one in a path segment only as written (`accessionNamedIn`).
+   */
+  interface Deposits { keys: Set<string>; links: string[]; accessions: string[] }
+  const deposits = (doiKey: string | null, links: string[], accessions: string[]): Deposits => {
+    const own = links.filter((url) => linkKeyOf(url) !== null);
+    const written = accessions.map(unversioned);
+    const keys = [doiKey, ...own.map(linkKeyOf), ...written.map(accessionKey)];
+    return { keys: new Set(keys.filter((k): k is string => k !== null)), links: own, accessions: written };
+  };
+  /** The deposits two sides share, by key or by an accession one side's link names. */
+  const sharedBy = (a: Deposits, b: Deposits): string[] => {
+    const out = new Set([...a.keys].filter((k) => b.keys.has(k)));
+    for (const [x, y] of [[a, b], [b, a]] as const) {
+      for (const acc of x.accessions) if (y.links.some((url) => accessionNamedIn(url, acc))) out.add(accessionKey(acc));
+    }
+    return [...out];
+  };
+  /** page -> the rows on that page that name a deposit. */
+  const rowsOn = new Map<string, { id: string; deposits: Deposits }[]>();
+  const headers = new Map<string, InventoryHeader>();
+  for (const d of db.prepare('SELECT item_id, page, cells_json FROM dataset_rows ORDER BY page, ordinal, item_id')
+    .all() as { item_id: string; page: string; cells_json: string }[]) {
+    if (!headers.has(d.page)) headers.set(d.page, headerFor(d.page));
+    const h = headers.get(d.page)!;
+    const parsed = parseRowCells(d.cells_json);
+    const cols = 'header' in h && 'cells' in parsed ? labelCells(h.header, parsed.cells) : null;
+    if (!cols || !('Data' in cols)) continue;
+    const data = readDataCell(cols['Data']!);
+    if (data.kind !== 'deposit') continue;
+    const rows = rowsOn.get(d.page) ?? [];
+    rowsOn.set(d.page, rows);
+    rows.push({
+      id: d.item_id,
+      deposits: deposits(data.doi ? `DOI ${data.doi}` : null, [data.url], data.accession ? [data.accession] : []),
+    });
+  }
+  const problems: string[] = [];
+  for (const e of db.prepare('SELECT item_id, page, url, doi, accessions, data_links FROM dataset_entries ORDER BY page, ordinal, item_id')
+    .all() as { item_id: string; page: string; url: string | null; doi: string | null; accessions: string | null; data_links: string | null }[]) {
+    const doi = bareDoi(e.doi);
+    const own = deposits(
+      doi && doiRelation(doi) === 'own' ? `DOI ${doi}` : null,
+      [...(e.url ? [e.url] : []), ...list(e.data_links)],
+      list(e.accessions),
+    );
+    for (const row of rowsOn.get(e.page) ?? []) {
+      const keys = sharedBy(own, row.deposits);
+      if (keys.length > 0) {
+        problems.push(`${e.item_id} and ${row.id} on ${e.page} both name ${keys.join(' and ')}, so one dataset is listed twice; keep one copy`);
+      }
+    }
+  }
+  return [ok(ENTRY_ROW_TWINS_LABEL, problems.length === 0, `${problems.length} twin(s): ${problems.slice(0, 10).join('; ')}`)];
+}
+
+export const INVENTORY_PAGES_LABEL =
+  'Datasets pages: only a page in INVENTORY_PAGES carries a "## Complete data inventory" table';
+
+/**
+ * Inventory-page guard (tucca-cellag/caail-planning#752, review round 3). Reports every page outside
+ * INVENTORY_PAGES that carries a `## Complete data inventory` table, which nothing that counts reads;
+ * `strayInventoryTables` says why for each kind of page. `db:emit` and `db:bootstrap` refuse the same
+ * pages before writing (`refuseStrayInventory`), so the emit never regenerates such a table empty,
+ * and `pnpm parse` refuses them too (`buildDatasetInventory`), since `build` runs no `db:check`.
+ * CrossSpecies, which carried one until tucca-cellag/caail-planning#752 removed its rows, is the page
+ * most likely to grow one again.
+ */
+export function checkInventoryPages(repoRoot: string = REPO_ROOT): CheckResult[] {
+  const stray = strayInventoryTables(repoRoot);
+  return [ok(INVENTORY_PAGES_LABEL, stray.length === 0, stray.join('; '))];
+}
+
 /** How many problems one failing run names; the count always covers them all. */
 export const INVENTORY_CELLS_SHOWN = 10;
 
@@ -731,10 +1127,8 @@ export const INVENTORY_CELLS_SHOWN = 10;
  * API build uses, which trims labels and refuses a repeated one, and a cell that is not a string is
  * refused before either reader sees it.
  *
- * `CrossSpecies.md` has no Data column. Its `DOI / URL` cell is read by `readLinkCell` and must be a
- * link to an http(s) address (the paper, a deposit's DOI, or where the data sit); it takes no status
- * word, since a resource with nothing to link has no row. A page with neither column, or no table,
- * fails rather than being skipped, so a new table shape cannot drop out of the check.
+ * A page with no Data column, or no table, fails rather than being skipped, so a new table shape
+ * cannot drop out of the check.
  */
 export function checkInventoryCells(
   db: Db,
@@ -769,11 +1163,8 @@ export function checkInventoryCells(
     if ('Data' in columns) {
       const data = readDataCell(columns['Data']!);
       if (data.kind === 'off-schema') problems.push(`${r.item_id}: Data cell ${shown(columns['Data']!)} ${data.reason}`);
-    } else if ('DOI / URL' in columns) {
-      const link = readLinkCell(columns['DOI / URL']!);
-      if (link.kind === 'off-schema') problems.push(`${r.item_id}: DOI / URL cell ${shown(columns['DOI / URL']!)} ${link.reason}`);
     } else {
-      pageProblem(r.page, 'has neither a Data nor a DOI / URL column', r.item_id);
+      pageProblem(r.page, 'has no Data column', r.item_id);
     }
   }
   // One line per page however many rows disagree, so a header edit cannot crowd out the rest.
@@ -1068,7 +1459,7 @@ export function runChecks(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
     ...checkTopicTiers(db), ...checkAxisBijection(db, repoRoot),
     ...checkCatalogHeadings(db), ...checkLicenses(db), ...checkManualLicenseKeys(db),
     ...checkDois(db), ...checkManualDoiKeys(db), ...checkRelatedDois(db), ...checkSubseries(db),
-    ...checkInventoryCells(db, repoRoot), ...checkOnRequest(db, repoRoot),
+    ...checkInventoryCells(db, repoRoot), ...checkInventoryPages(repoRoot), ...checkOnRequest(db, repoRoot), ...checkEntryRowTwins(db, repoRoot), ...checkAccessions(db), ...checkDataLinks(db),
     ...checkSeries(db), ...checkFineTagSeedDrift(db), ...checkRowTagParity(db)];
 }
 

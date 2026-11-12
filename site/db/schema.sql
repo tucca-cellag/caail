@@ -141,6 +141,8 @@ CREATE TABLE dataset_entries (
   doi            TEXT,                 -- associated-publication DOI (bare); NULL = none recorded
   doi_source     TEXT CHECK (doi_source IN ('auto','manual')),
   related_dois   TEXT,                 -- JSON array of sibling version DOIs (bare) summed into the badge; NULL = none (#102)
+  accessions     TEXT,                 -- JSON array of the entry's own repository accessions (bare, primary first); NULL = none (tucca-cellag/caail-planning#752)
+  data_links     TEXT,                 -- JSON array of the entry's own deposit links (http(s), primary first); NULL = none (tucca-cellag/caail-planning#752)
   ordinal    INTEGER NOT NULL          -- document order across all dataset pages
 );
 

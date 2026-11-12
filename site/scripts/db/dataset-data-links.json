@@ -1,0 +1,8 @@
+{
+  "datasets": {
+    "ds:lions-mane-mushroom-steak-characterization": ["https://github.com/LivingMatterLab/CANN/tree/main/ARTMEAT/LionsManeMushroomSteak"],
+    "ds:mycelium-mechanics-taste-of-fungi-steak": ["https://github.com/LivingMatterLab/CANN/tree/main/ARTMEAT/FungiSteak"],
+    "ds:nmr-metabolomics-of-plant-and-yeast-based-hydrolysates": ["https://doi.org/10.5281/zenodo.11357327"],
+    "ds:plant-based-meat-textural-properties-training-table-kircali-ata-et-al-2023": ["https://github.com/sezinata/FoodML"]
+  }
+}

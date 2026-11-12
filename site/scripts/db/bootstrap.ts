@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 import { buildPapersModel } from '../parser/papers.js';
 import { openDb, exportNdjson, REPO_ROOT, NDJSON_DIR, type Db } from './lib.js';
 import { extractCatalogEntries, extractReports } from './extract.js';
-import { seedPapers, seedCatalog, seedReports, seedDatasets, seedOnRequest, seedTopics, seedLicenses, seedDois, seedRelatedDois, seedSubseries } from './seed.js';
+import { seedPapers, seedCatalog, seedReports, seedDatasets, seedOnRequest, seedTopics, seedLicenses, seedDois, seedRelatedDois, seedAccessions, seedDataLinks, seedSubseries } from './seed.js';
 
 /**
  * Preserve retired paper-id tombstones across a re-bootstrap. They aren't in the
@@ -198,6 +198,8 @@ export function main(): void {
   const licenseSummary = seedLicenses(db);
   const doiSummary = seedDois(db);
   const relatedDoiSummary = seedRelatedDois(db);
+  const accessionSummary = seedAccessions(db);
+  const dataLinkSummary = seedDataLinks(db);
   const subseriesSummary = seedSubseries(db);
 
   const counts = exportNdjson(db, NDJSON_DIR);
@@ -221,6 +223,8 @@ export function main(): void {
   console.log(`  licenses      ${licenseSummary.manual} manual, ${licenseSummary.auto} auto (GitHub SPDX)`);
   console.log(`  dois          ${doiSummary.manual} manual (associated-publication DOIs)`);
   console.log(`  related dois  ${relatedDoiSummary.rows} sibling-version sets (#102)`);
+  console.log(`  accessions    ${accessionSummary.rows} curated-entry accession sets (tucca-cellag/caail-planning#752)`);
+  console.log(`  data links    ${dataLinkSummary.rows} curated-entry data-link sets (tucca-cellag/caail-planning#752)`);
   console.log(`  subseries     ${subseriesSummary.rows} SuperSeries member sets (tucca-cellag/caail-planning#226)`);
   console.log(`  -> NDJSON written to ${NDJSON_DIR}`);
 }

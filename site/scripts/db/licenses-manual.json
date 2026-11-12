@@ -78,6 +78,9 @@
     "https://www.wikipathways.org/": "CC0-1.0"
   },
   "datasets": {
-    "ds:parse-biosciences-10m-pbmc-atlas": "CC-BY-NC-4.0"
+    "ds:growth-factor-thermostability-dataset": "CC-BY-4.0",
+    "ds:nmr-metabolomics-of-plant-and-yeast-based-hydrolysates": "CC-BY-4.0",
+    "ds:parse-biosciences-10m-pbmc-atlas": "CC-BY-NC-4.0",
+    "ds:plant-based-meat-textural-properties-training-table-kircali-ata-et-al-2023": "CC-BY-4.0 + MIT"
   }
 }

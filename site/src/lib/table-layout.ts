@@ -43,8 +43,8 @@
  * Header cells below which a table is prose furniture rather than data.
  *
  * Three is the floor the Cards view has always used, and it is what separates
- * the per-species inventories (8–9 columns), the benchmark and cross-species
- * tables (6) and the chapter index (4) from the two-column "label → target"
+ * the per-species inventories (8–9 columns), the chapter index (4) and the Data
+ * on request lists (3) from the two-column "label → target"
  * tables on `/community/` and `/datasets/readme/`. Raising it is a
  * presentation decision about which tables deserve the width, and belongs with
  * the rest of the table-presentation question rather than here.

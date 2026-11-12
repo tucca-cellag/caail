@@ -129,31 +129,24 @@ describe('rowIdentity: the Data cell', () => {
     expect(rowIdentity({ Data: '' })).toMatchObject({ dataStatus: null });
   });
 
-  it('gives all-null fields for a table with neither a Data nor a DOI / URL column', () => {
+  it('gives all-null fields for a table with no Data column', () => {
     expect(rowIdentity({ Resource: 'x', Scope: 'y' })).toEqual({
       paperDoi: null, dataStatus: null, accession: null, dataUrl: null, dataDoi: null,
     });
   });
-});
 
-describe('rowIdentity: the CrossSpecies DOI / URL cell', () => {
-  it('reads a data-repository DOI as the deposit itself', () => {
-    expect(rowIdentity({ 'DOI / URL': '[10.5281/zenodo.19339684](https://doi.org/10.5281/zenodo.19339684)' })).toEqual({
-      paperDoi: null, dataStatus: 'deposit', accession: null,
-      dataUrl: 'https://doi.org/10.5281/zenodo.19339684', dataDoi: '10.5281/zenodo.19339684',
-    });
-  });
-
-  it('reads a journal DOI as the paper, with the deposit left unstated', () => {
-    expect(rowIdentity({ 'DOI / URL': '[10.1186/s12915-019-0726-5](https://doi.org/10.1186/s12915-019-0726-5)' })).toEqual({
-      paperDoi: '10.1186/s12915-019-0726-5', dataStatus: null, accession: null, dataUrl: null, dataDoi: null,
-    });
-  });
-
-  it('reads a non-DOI link as where the data sit', () => {
-    expect(rowIdentity({ 'DOI / URL': '[GitHub](https://github.com/sezinata/FoodML)' })).toEqual({
-      paperDoi: null, dataStatus: 'deposit', accession: null, dataUrl: 'https://github.com/sezinata/FoodML', dataDoi: null,
-    });
+  it('reads nothing from a DOI / URL cell, the column CrossSpecies dropped with its rows (tucca-cellag/caail-planning#752)', () => {
+    // No page carries that column now, and db:check refuses a table without a Data column, so
+    // a deposit or a paper written there is not identity.
+    for (const cell of [
+      '[10.5281/zenodo.19339684](https://doi.org/10.5281/zenodo.19339684)',
+      '[10.1186/s12915-019-0726-5](https://doi.org/10.1186/s12915-019-0726-5)',
+      '[GitHub](https://github.com/sezinata/FoodML)',
+    ]) {
+      expect(rowIdentity({ Resource: 'x', 'DOI / URL': cell }), cell).toEqual({
+        paperDoi: null, dataStatus: null, accession: null, dataUrl: null, dataDoi: null,
+      });
+    }
   });
 });
 
@@ -175,10 +168,9 @@ describe('inventory identity — real corpus', () => {
     for (const r of named) expect(r.paperDoi, `${r.id}: ${r.columns.Paper}`).not.toBeNull();
   });
 
-  it('gives every CrossSpecies row a DOI or a data link from its DOI / URL cell', () => {
-    for (const r of rows.filter((x) => 'DOI / URL' in x.columns)) {
-      expect(r.paperDoi ?? r.dataUrl, r.id).not.toBeNull();
-    }
+  it('serves every row from a table with a Data column, so no row reaches the API without one', () => {
+    expect(rows.length).toBeGreaterThan(150);
+    for (const r of rows) expect('Data' in r.columns, `${r.id} on ${r.page}`).toBe(true);
   });
 
   it('gives every deposit row a link, and an accession or a DOI only alongside one', () => {

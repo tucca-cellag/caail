@@ -231,6 +231,15 @@ export const DatasetEntrySchema = z.object({
   citationSources: z.number().int().nonnegative().default(0),
   /** the DOIs whose counts were summed — the works the badge/hub link opens (#102) */
   citationDois: z.array(z.string()).default([]),
+  /** the entry's own repository deposits as bare accessions (`PRJEB27455`, `GSE158430`), primary
+   *  first; `[]` when none is recorded. Curated in `scripts/db/dataset-accessions.json`
+   *  (tucca-cellag/caail-planning#752). Reused third-party data is not listed. */
+  accessions: z.array(z.string()).default([]),
+  /** links to the entry's own deposits that its `accessions` do not name (a Zenodo record, a code
+   *  repository holding the data, an archive outside the accession families), primary first, a deposit DOI as its `https://doi.org/` link;
+   *  `[]` when none is recorded. Curated in `scripts/db/dataset-data-links.json`
+   *  (tucca-cellag/caail-planning#752). Never the entry's paper, never data it reuses. */
+  dataLinks: z.array(z.string()).default([]),
 });
 
 /** Schema for datasets.json — the curated dataset entries across the Datasets/ pages. */
@@ -288,9 +297,9 @@ export type ReportsData = z.infer<typeof ReportsDataSchema>;
  * deliberately and whose manifest already advertises them.
  *
  * `columns` is keyed by the page's own header labels because the tables genuinely differ
- * — the species pages use Study/Paper/Data/Type/Tissue/…, Fish and the invertebrates add
- * a Species column, and CrossSpecies is a different table entirely. A positional array
- * would be unreadable without fetching the Markdown, which is the cost this removes.
+ * — the species pages use Study/Paper/Data/Type/Tissue/…, and Fish and the invertebrates add
+ * a Species column. A positional array would be unreadable without fetching the Markdown,
+ * which is the cost this removes.
  * Values are the RAW markdown cell, so nothing is lost; `links` is the convenience
  * extraction of the URLs inside them.
  */
@@ -307,11 +316,10 @@ export const DatasetInventoryRowSchema = z.object({
   columns: z.record(z.string(), z.string()),
   /** every URL appearing in the row, in document order, deduped */
   links: z.array(z.string()),
-  /** bare lowercase DOI of the row's paper or preprint (its Paper cell, or a CrossSpecies DOI / URL
-   *  cell holding a journal DOI); null when none is named */
+  /** bare lowercase DOI of the row's paper or preprint, from its Paper cell; null when none is named */
   paperDoi: z.string().nullable().default(null),
-  /** what the row says about its data: from the Data cell, or `deposit` for a CrossSpecies DOI / URL
-   *  link to the data itself; null when it states none (tucca-cellag/caail-planning#367) */
+  /** what the row's Data cell says about its data; null when it states none
+   *  (tucca-cellag/caail-planning#367) */
   dataStatus: z.enum(['deposit', 'supplementary', 'unavailable']).nullable().default(null),
   /** the identifier the Data cell's badge names, served as written and never read from the id:
    *  usually an archive accession (GSE…, PRJNA…, SRA…, versioned where the badge is), sometimes
@@ -614,9 +622,9 @@ export const MetricsSpeciesSchema = z.object({
 export const MetricsDatasetsSchema = z.object({
   /** == counts.datasets; the sum of the four parts below */
   total: z.number().int().nonnegative(),
-  /** `## Complete data inventory` rows over the species + CrossSpecies pages */
+  /** `## Complete data inventory` rows over the inventory pages (`INVENTORY_PAGES`) */
   speciesRows: z.number().int().nonnegative(),
-  /** curated `###` entries (featured atlases, GEMs) ON the species + CrossSpecies pages */
+  /** curated `###` entries (featured atlases, GEMs) ON the inventory pages (`INVENTORY_PAGES`) */
   curatedEntries: z.number().int().nonnegative(),
   /** `###` dataset entries over the reference pages */
   referenceEntries: z.number().int().nonnegative(),

@@ -29,7 +29,7 @@ import { toString as mdastToString } from 'mdast-util-to-string';
 import { ACCESSION, idAccession } from '../db/lib.js';
 import { bareDoi, doiRelation } from './doi-relation.js';
 import type { DoiRelation } from './types.js';
-import { extractInventory } from '../db/extract.js';
+import { extractInventory, refuseStrayInventory } from '../db/extract.js';
 import { parseMarkdown } from './markdown.js';
 import { topicsByItemId } from './topics.js';
 import { INVENTORY_PAGES } from './datasets.js';
@@ -195,8 +195,8 @@ const isStatusWord = (s: string): s is StatusWord => (STATUS_WORDS as readonly s
 /** The forms a Data cell may take, worded for a check's label and a curator's reason; the words are quoted as literals. */
 export const DATA_CELL_FORMS = ['a deposit link', ...STATUS_WORDS.map((w) => `"${w}"`)].join(', ').replace(/, (?=[^,]*$)/, ' or ');
 
-/** An http(s) address with a host. */
-const WEB_ADDRESS = /^https?:\/\/[^\s/?#]+/i;
+/** An http(s) address with a host. Shared with db:check's data-links guard. */
+export const WEB_ADDRESS = /^https?:\/\/[^\s/?#]+/i;
 
 /**
  * Whole labels from the schema's own vocabulary that name no deposit: `none named` (the Paper
@@ -211,21 +211,19 @@ export const NON_DEPOSIT_LABELS: readonly string[] = ['none named', 'see paper']
 export const SUPPLEMENT_PREFIX = 'supplement';
 
 /**
- * Why a link's text names no deposit, or null when it may name one. In any link cell: blank
- * text, or a whole label in NON_DEPOSIT_LABELS. In a Data cell only, where the status words
- * exist: a whole label that is a status word (which stands alone), and a label starting with
- * SUPPLEMENT_PREFIX (written as the bare word "supplementary", with the file named in
- * Description). A CrossSpecies DOI / URL cell has no status word, so a link to a supplement
- * there may be exactly where the data sit. Any other label passes, including one like
- * "Embargoed" or "upon request" that a curator should have written another way: the guard does
- * not check that a link reaches the deposit it names.
+ * Why a Data-cell link's text names no deposit, or null when it may name one: blank text, a
+ * whole label in NON_DEPOSIT_LABELS, a whole label that is a status word (which stands alone),
+ * or a label starting with SUPPLEMENT_PREFIX (written as the bare word "supplementary", with the
+ * file named in Description). Any other label passes, including one like "Embargoed" or "upon
+ * request" that a curator should have written another way: the guard does not check that a
+ * link reaches the deposit it names.
  */
-function nonDepositLabel(raw: string, cell: 'data' | 'link'): string | null {
+function nonDepositLabel(raw: string): string | null {
   const text = raw.trim();
   if (text === '') return 'is a link with no text';
   const lower = text.toLowerCase();
-  if (cell === 'data' && isStatusWord(lower)) return `writes the status word "${lower}" as a link; a status word stands alone`;
-  if (cell === 'data' && lower.startsWith(SUPPLEMENT_PREFIX)) {
+  if (isStatusWord(lower)) return `writes the status word "${lower}" as a link; a status word stands alone`;
+  if (lower.startsWith(SUPPLEMENT_PREFIX)) {
     return `is a link labelled "${text}": a supplementary results table is written as the bare word "supplementary", with the file named in Description`;
   }
   if (NON_DEPOSIT_LABELS.includes(lower)) return `is a link labelled "${text}", which names no deposit`;
@@ -275,7 +273,7 @@ export function readDataCell(cell: string): DataCellReading {
       : `is not ${DATA_CELL_FORMS}`;
     return { kind: 'off-schema', reason };
   }
-  const label = nonDepositLabel(badge?.[1] ?? named?.[1] ?? '', 'data');
+  const label = nonDepositLabel(badge?.[1] ?? named?.[1] ?? '');
   if (label) return { kind: 'off-schema', reason: label };
   if (badge && /\s/.test(badge[1]!.trim())) {
     return { kind: 'off-schema', reason: `is a badge whose text "${badge[1]!.trim()}" is not one identifier; a badge names one accession` };
@@ -291,36 +289,6 @@ export function readDataCell(cell: string): DataCellReading {
     };
   }
   return { kind: 'deposit', accession: badge ? badge[1]!.trim() : null, url, doi };
-}
-
-/** What a CrossSpecies `DOI / URL` cell holds, or why it is outside the schema. */
-export type LinkCellReading =
-  | { kind: 'paper'; doi: string }
-  | { kind: 'deposit'; url: string; doi: string | null }
-  | { kind: 'off-schema'; reason: string };
-
-/**
- * Read a CrossSpecies `DOI / URL` cell: one link to an http(s) address. A stated DOI whose
- * registrant is a data host is the deposit itself; any other DOI is the paper, with the
- * deposit left unstated; a link with no DOI is where the data sit. No status word applies,
- * since a resource with nothing to link has no row.
- */
-export function readLinkCell(cell: string): LinkCellReading {
-  const trimmed = cell.trim();
-  if (BADGE_LINK.test(trimmed)) {
-    return { kind: 'off-schema', reason: 'is a code-styled badge; on this page write the link text plain, as [10.…](https://doi.org/10.…)' };
-  }
-  const link = trimmed.match(NAMED_LINK);
-  if (!link) {
-    return { kind: 'off-schema', reason: LINK_LIKE.test(trimmed) ? unreadableLink(trimmed, 'one [text](address) link') : 'is not a link' };
-  }
-  const label = nonDepositLabel(link[1]!, 'link');
-  if (label) return { kind: 'off-schema', reason: label };
-  const url = link[2]!;
-  if (!WEB_ADDRESS.test(url)) return { kind: 'off-schema', reason: `links "${url}", which is not an http(s) address with a host` };
-  const doi = statedDoi(url);
-  if (doi && doiRelation(doi) === 'publication') return { kind: 'paper', doi };
-  return { kind: 'deposit', url, doi };
 }
 
 /** A page's inventory header labels, or why they cannot be read. */
@@ -374,9 +342,6 @@ export function labelCells(header: readonly string[], cells: readonly string[]):
  * - **Paper**: a `[DOI](https://doi.org/…)` or `[preprint](…)` link, or `none named`.
  * - **Data**: an accession badge (`` [`GSE…`](url) ``), a named-repository link
  *   (`[Zenodo](url)`), or one of the status words `supplementary` and `unavailable`.
- * - **DOI / URL** (CrossSpecies, which has neither column above): one link. A stated DOI
- *   whose registrant is a data host is the deposit itself; any other DOI is the paper, with
- *   the deposit left unstated; a link with no DOI is where the data sit.
  *
  * The accession comes from the Data cell ONLY, never from the row's id: an id can be
  * minted from data a row merely mentions (tucca-cellag/caail-planning#715), which is the claim this field
@@ -384,9 +349,9 @@ export function labelCells(header: readonly string[], cells: readonly string[]):
  * cell that links a paper's DOI is treated as off-schema. A cell outside these shapes yields
  * nulls rather than throwing, since a throw here would take the build down for a curation
  * typo. Rejecting it is db:check's job: `checkInventoryCells` (site/scripts/db/check.ts,
- * tucca-cellag/caail-planning#740) reads every cell with the same `readDataCell` and
- * `readLinkCell` this function uses and fails any it puts outside the schema, so `db:add`
- * refuses such a cell before it reaches the Markdown.
+ * tucca-cellag/caail-planning#740) reads every cell with the same `readDataCell` this function
+ * uses and fails any it puts outside the schema, so `db:add` refuses such a cell before it
+ * reaches the Markdown.
  */
 export function rowIdentity(columns: Readonly<Record<string, string>>): RowIdentity {
   const paperLink = (columns['Paper']?.trim() ?? '').match(PAPER_LINK);
@@ -399,13 +364,6 @@ export function rowIdentity(columns: Readonly<Record<string, string>>): RowIdent
     if (data.kind === 'status') return { ...NO_IDENTITY, paperDoi, dataStatus: data.status };
     if (data.kind === 'off-schema') return { ...NO_IDENTITY, paperDoi };
     return { paperDoi, dataStatus: 'deposit', accession: data.accession, dataUrl: data.url, dataDoi: data.doi };
-  }
-
-  if ('DOI / URL' in columns) {
-    const link = readLinkCell(columns['DOI / URL']!);
-    if (link.kind === 'off-schema') return { ...NO_IDENTITY, paperDoi };
-    if (link.kind === 'paper') return { ...NO_IDENTITY, paperDoi: paperDoi ?? link.doi };
-    return { paperDoi, dataStatus: 'deposit', accession: null, dataUrl: link.url, dataDoi: link.doi };
   }
 
   return { ...NO_IDENTITY, paperDoi };
@@ -429,6 +387,11 @@ function readRows(ndjsonDir: string): RowNdjson[] {
 /**
  * Build the inventory model, in page order then table order.
  *
+ * A page outside INVENTORY_PAGES that carries an inventory table throws first
+ * (`refuseStrayInventory`), as a stray Data on request section does (`readPagesOnRequest`): its
+ * rows are in no NDJSON, so they would be shown on the page and counted nowhere, and `pnpm parse`
+ * and `build`, which run no `db:check`, would pass them (tucca-cellag/caail-planning#752).
+ *
  * @param repoRoot  Repository root (override in tests to point at a fixture directory).
  * @param ndjsonDir Committed NDJSON directory (defaults to `site/db/ndjson`).
  */
@@ -436,6 +399,7 @@ export function buildDatasetInventory(
   repoRoot: string = DEFAULT_REPO_ROOT,
   ndjsonDir: string = NDJSON_DIR,
 ): DatasetInventory {
+  refuseStrayInventory(repoRoot, 'pnpm parse');
   const byId = topicsByItemId();
   const rows = readRows(ndjsonDir);
 

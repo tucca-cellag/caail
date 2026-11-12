@@ -1,14 +1,17 @@
 # Cross-species datasets
 
-Editorial intro for the cross-species inventory-table fixture.
+Editorial intro for the cross-species fixture: a reference-style page of curated entries, with no inventory table.
 
-## Complete data inventory
+## Cross-species regulatory reference
 
-| Study | Species | Type | Accession |
-|---|---|---|---|
-| Study X | multi | proteomics | PXD0001 |
-| Study Y | multi | texture | MTBLS0002 |
+### Study X atlas
+
+Prose about a multi-species proteomics resource.
+
+### Study Y texture reference
+
+Prose about a species-agnostic texture resource.
 
 ## Further reading
 
-Footer.
+- A bullet, not a dataset entry.

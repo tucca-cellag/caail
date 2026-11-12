@@ -8,8 +8,12 @@
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { importNdjson, type Db } from './lib.js';
 import { reseedAxes } from './reseed-axes.js';
+import { seedAccessions, seedDataLinks, seedSubseries } from './seed.js';
 
 describe('reseedAxes (real corpus, in memory)', () => {
   let db: Db;
@@ -64,5 +68,26 @@ describe('reseedAxes (real corpus, in memory)', () => {
     const before = topicsSnapshot(db);
     reseedAxes(db);
     expect(topicsSnapshot(db)).toBe(before);
+  });
+});
+
+describe('a side file that is not JSON (tucca-cellag/caail-planning#752, review round 4)', () => {
+  it('fails naming the file, for each fold that takes a path', () => {
+    const bad = join(mkdtempSync(join(tmpdir(), 'caail-bad-json-')), 'broken.json');
+    writeFileSync(bad, '{ "datasets": {');
+    const db = importNdjson();
+    for (const fold of [seedAccessions, seedDataLinks, seedSubseries]) {
+      expect(() => fold(db, bad), fold.name).toThrow(`${bad} is not JSON`);
+    }
+  });
+
+  it('fails naming the file when it is JSON but not an object', () => {
+    for (const body of ['null', '[]', '"datasets"']) {
+      const bad = join(mkdtempSync(join(tmpdir(), 'caail-not-object-')), 'side.json');
+      writeFileSync(bad, body);
+      for (const fold of [seedAccessions, seedDataLinks, seedSubseries]) {
+        expect(() => fold(importNdjson(), bad), `${fold.name} ${body}`).toThrow(`${bad} is not a JSON object`);
+      }
+    }
   });
 });

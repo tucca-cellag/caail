@@ -25,7 +25,9 @@
       "citationSources": 1,
       "citationDois": [
         "10.1093/bib/bbaa294"
-      ]
+      ],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:chickengtex-portal",
@@ -67,7 +69,9 @@
       "citationSources": 1,
       "citationDois": [
         "10.1038/s41588-025-02155-9"
-      ]
+      ],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:sinke-et-al-2023-cultivated-meat-ex-ante-lci",
@@ -94,7 +98,9 @@
       "citationSources": 1,
       "citationDois": [
         "10.1007/s11367-022-02128-8"
-      ]
+      ],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:gene-switch",
@@ -124,7 +130,9 @@
       "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
-      "citationDois": []
+      "citationDois": [],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:ies1300-gallus-gallus-chicken",
@@ -181,7 +189,9 @@
       "citationSources": 1,
       "citationDois": [
         "10.1371/journal.pone.0254270"
-      ]
+      ],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:cattlegtex",
@@ -223,7 +233,9 @@
       "citationSources": 1,
       "citationDois": [
         "10.1038/s41588-025-02329-5"
-      ]
+      ],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:bovreg",
@@ -258,7 +270,9 @@
       "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
-      "citationDois": []
+      "citationDois": [],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:aqua-faang",
@@ -293,7 +307,9 @@
       "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
-      "citationDois": []
+      "citationDois": [],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:salarecon-salmo-salar-atlantic-salmon",
@@ -340,7 +356,9 @@
       "citationSources": 1,
       "citationDois": [
         "10.1371/journal.pcbi.1010194"
-      ]
+      ],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:piggtex-portal",
@@ -372,7 +390,9 @@
       "citationSources": 1,
       "citationDois": [
         "10.1038/s41588-023-01585-7"
-      ]
+      ],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:gene-switch-2",
@@ -402,7 +422,9 @@
       "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
-      "citationDois": []
+      "citationDois": [],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:pigbiobank",
@@ -434,7 +456,9 @@
       "citationSources": 1,
       "citationDois": [
         "10.1093/nar/gkad1080"
-      ]
+      ],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:pcpigmnet2025-sus-scrofa-porcine",
@@ -486,7 +510,9 @@
       "citationSources": 1,
       "citationDois": [
         "10.1016/j.ymben.2026.01.001"
-      ]
+      ],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:issus3744-sus-scrofa-porcine",
@@ -548,7 +574,9 @@
       "citationSources": 1,
       "citationDois": [
         "10.64898/2026.05.28.728221"
-      ]
+      ],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:sheepgtex-portal",
@@ -585,7 +613,9 @@
       "citationSources": 1,
       "citationDois": [
         "10.1101/2025.11.03.686346"
-      ]
+      ],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:growth-factor-thermostability-dataset",
@@ -622,15 +652,17 @@
           "theme": "media-growth-factors"
         }
       ],
-      "license": null,
-      "licenseSource": null,
-      "tier": "unknown",
+      "license": "CC-BY-4.0",
+      "licenseSource": "manual",
+      "tier": "permissive",
       "doi": "10.5281/zenodo.19339684",
       "doiSource": "manual",
       "doiRelation": "own",
       "citationCount": null,
       "citationSources": 0,
-      "citationDois": []
+      "citationDois": [],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:nmr-metabolomics-of-plant-and-yeast-based-hydrolysates",
@@ -672,9 +704,9 @@
           "theme": "media-growth-factors"
         }
       ],
-      "license": null,
-      "licenseSource": null,
-      "tier": "unknown",
+      "license": "CC-BY-4.0",
+      "licenseSource": "manual",
+      "tier": "permissive",
       "doi": "10.1016/j.crfs.2024.100855",
       "doiSource": "manual",
       "doiRelation": "publication",
@@ -682,6 +714,10 @@
       "citationSources": 1,
       "citationDois": [
         "10.1016/j.crfs.2024.100855"
+      ],
+      "accessions": [],
+      "dataLinks": [
+        "https://doi.org/10.5281/zenodo.11357327"
       ]
     },
     {
@@ -724,9 +760,9 @@
           "theme": "sensory-flavor"
         }
       ],
-      "license": null,
-      "licenseSource": null,
-      "tier": "unknown",
+      "license": "CC-BY-4.0 + MIT",
+      "licenseSource": "manual",
+      "tier": "permissive",
       "doi": "10.3390/foods12020344",
       "doiSource": "manual",
       "doiRelation": "publication",
@@ -734,6 +770,10 @@
       "citationSources": 1,
       "citationDois": [
         "10.3390/foods12020344"
+      ],
+      "accessions": [],
+      "dataLinks": [
+        "https://github.com/sezinata/FoodML"
       ]
     },
     {
@@ -761,7 +801,13 @@
       "citationSources": 1,
       "citationDois": [
         "10.1186/s12915-019-0726-5"
-      ]
+      ],
+      "accessions": [
+        "PRJEB27455",
+        "PRJEB27111",
+        "PRJEB27364"
+      ],
+      "dataLinks": []
     },
     {
       "id": "ds:comparative-chromatin-accessibility-in-cattle-pig-and-mouse",
@@ -782,7 +828,11 @@
       "citationSources": 1,
       "citationDois": [
         "10.1186/s12864-020-07078-9"
-      ]
+      ],
+      "accessions": [
+        "PRJEB14330"
+      ],
+      "dataLinks": []
     },
     {
       "id": "ds:mycelium-mechanics-taste-of-fungi-steak",
@@ -824,6 +874,10 @@
       "citationSources": 1,
       "citationDois": [
         "10.1016/j.actbio.2025.07.002"
+      ],
+      "accessions": [],
+      "dataLinks": [
+        "https://github.com/LivingMatterLab/CANN/tree/main/ARTMEAT/FungiSteak"
       ]
     },
     {
@@ -864,7 +918,11 @@
       "doiRelation": "publication",
       "citationCount": null,
       "citationSources": 0,
-      "citationDois": []
+      "citationDois": [],
+      "accessions": [],
+      "dataLinks": [
+        "https://github.com/LivingMatterLab/CANN/tree/main/ARTMEAT/LionsManeMushroomSteak"
+      ]
     },
     {
       "id": "ds:genecorpus-30m",
@@ -911,7 +969,9 @@
       "citationSources": 1,
       "citationDois": [
         "10.1038/s41586-023-06139-9"
-      ]
+      ],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:genecorpus-104m",
@@ -946,7 +1006,9 @@
       "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
-      "citationDois": []
+      "citationDois": [],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:mouse-genecorpus-20m",
@@ -983,7 +1045,9 @@
       "citationSources": 1,
       "citationDois": [
         "10.1371/journal.pgen.1011420"
-      ]
+      ],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:perturb-sapiens",
@@ -1038,7 +1102,9 @@
       "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
-      "citationDois": []
+      "citationDois": [],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:scperturb",
@@ -1090,7 +1156,9 @@
       "citationSources": 1,
       "citationDois": [
         "10.1038/s41592-023-02144-y"
-      ]
+      ],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:arc-virtual-cell-atlas",
@@ -1150,7 +1218,9 @@
       "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
-      "citationDois": []
+      "citationDois": [],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:parse-biosciences-10m-pbmc-atlas",
@@ -1205,7 +1275,9 @@
       "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
-      "citationDois": []
+      "citationDois": [],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:human-skeletal-muscle-single-cell-atlas-de-micheli-et-al-2020",
@@ -1242,7 +1314,9 @@
       "citationSources": 1,
       "citationDois": [
         "10.1186/s13395-020-00236-3"
-      ]
+      ],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:human-and-mouse-white-adipose-tissue-single-cell-atlas-emont-et-al-2022",
@@ -1279,7 +1353,9 @@
       "citationSources": 1,
       "citationDois": [
         "10.1038/s41586-022-04518-2"
-      ]
+      ],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:sasp-atlas",
@@ -1306,7 +1382,9 @@
       "citationSources": 1,
       "citationDois": [
         "10.1371/journal.pbio.3000599"
-      ]
+      ],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:recon3d-human1-hmr-homo-sapiens-template-upstream-reference",
@@ -1351,7 +1429,9 @@
       "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
-      "citationDois": []
+      "citationDois": [],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:icho1766-icho2048-chompact-chinese-hamster-ovary-biopharma-adjacent-reference",
@@ -1401,7 +1481,9 @@
       "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
-      "citationDois": []
+      "citationDois": [],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:cho-gs-media-component-critical-quality-attributes-gangwar-et-al-2024",
@@ -1438,7 +1520,9 @@
       "citationSources": 1,
       "citationDois": [
         "10.1007/s00253-024-13147-w"
-      ]
+      ],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:cho-multi-omic-culture-ph-profiling-dataset-lee-et-al-2021",
@@ -1490,7 +1574,9 @@
       "citationSources": 1,
       "citationDois": [
         "10.1002/bit.27899"
-      ]
+      ],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:cho-antibody-producer-multi-omic-dataset-gopalakrishnan-et-al-2024",
@@ -1547,7 +1633,9 @@
       "citationSources": 1,
       "citationDois": [
         "10.1016/j.ymben.2024.07.009"
-      ]
+      ],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:cho-clone-selection-productivity-biomarkers-barberi-et-al-2025",
@@ -1604,7 +1692,9 @@
       "citationSources": 1,
       "citationDois": [
         "10.1002/aic.18602"
-      ]
+      ],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:cho-process-mode-uptake-and-secretion-rates-venkatarama-reddy-et-al-2026",
@@ -1651,7 +1741,9 @@
       "citationSources": 1,
       "citationDois": [
         "10.1016/j.ymben.2026.102552"
-      ]
+      ],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:yeast9-saccharomyces-cerevisiae-precision-fermentation-host-reference",
@@ -1718,7 +1810,9 @@
       "citationSources": 1,
       "citationDois": [
         "10.1038/s44320-024-00060-7"
-      ]
+      ],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:imt1026-imt1026-v30-komagataella-phaffii-pichia-pastoris",
@@ -1775,7 +1869,9 @@
       "citationSources": 1,
       "citationDois": [
         "10.1371/journal.pone.0148031"
-      ]
+      ],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:bioml-bench",
@@ -1815,7 +1911,9 @@
       "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
-      "citationDois": []
+      "citationDois": [],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:biomysterybench",
@@ -1850,7 +1948,9 @@
       "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
-      "citationDois": []
+      "citationDois": [],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:bixbench",
@@ -1885,7 +1985,9 @@
       "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
-      "citationDois": []
+      "citationDois": [],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:blade",
@@ -1920,7 +2022,9 @@
       "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
-      "citationDois": []
+      "citationDois": [],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:compbiobench-v1",
@@ -1965,7 +2069,9 @@
       "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
-      "citationDois": []
+      "citationDois": [],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:flip-fitness-landscape-inference-for-proteins",
@@ -2020,7 +2126,9 @@
       "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
-      "citationDois": []
+      "citationDois": [],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:frontierscience",
@@ -2050,7 +2158,9 @@
       "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
-      "citationDois": []
+      "citationDois": [],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:genebench-pro",
@@ -2090,7 +2200,9 @@
       "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
-      "citationDois": []
+      "citationDois": [],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:gpqa",
@@ -2125,7 +2237,9 @@
       "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
-      "citationDois": []
+      "citationDois": [],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:humanitys-last-exam",
@@ -2155,7 +2269,9 @@
       "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
-      "citationDois": []
+      "citationDois": [],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:iumami-scm",
@@ -2195,7 +2311,9 @@
       "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
-      "citationDois": []
+      "citationDois": [],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:lab-bench",
@@ -2230,7 +2348,9 @@
       "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
-      "citationDois": []
+      "citationDois": [],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:massspecgym",
@@ -2275,7 +2395,9 @@
       "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
-      "citationDois": []
+      "citationDois": [],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:mmlu-pro",
@@ -2305,7 +2427,9 @@
       "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
-      "citationDois": []
+      "citationDois": [],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:proteingym",
@@ -2360,7 +2484,9 @@
       "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
-      "citationDois": []
+      "citationDois": [],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:scihorizon-gene",
@@ -2395,7 +2521,9 @@
       "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
-      "citationDois": []
+      "citationDois": [],
+      "accessions": [],
+      "dataLinks": []
     },
     {
       "id": "ds:swe-bench",
@@ -2430,7 +2558,9 @@
       "doiRelation": null,
       "citationCount": null,
       "citationSources": 0,
-      "citationDois": []
+      "citationDois": [],
+      "accessions": [],
+      "dataLinks": []
     }
   ],
   "inventory": [
@@ -8792,274 +8922,6 @@
         }
       ],
       "subseries": []
-    },
-    {
-      "id": "ds:growth-factor-thermostability",
-      "kind": "inventory",
-      "page": "CrossSpecies",
-      "name": "Growth factor thermostability dataset (Ng et al.)",
-      "columns": {
-        "Resource": "Growth factor thermostability dataset (Ng et al.)",
-        "Year": "2026",
-        "Format": "XLSX (single file, 93.2 kB)",
-        "Scope": "513 melting-temperature values across growth factors and variants used in cultured meat/seafood; 15-protein FoldX in silico subset",
-        "DOI / URL": "[10.5281/zenodo.19339684](https://doi.org/10.5281/zenodo.19339684)",
-        "License": "CC-BY-4.0"
-      },
-      "links": [
-        "https://doi.org/10.5281/zenodo.19339684"
-      ],
-      "paperDoi": null,
-      "dataStatus": "deposit",
-      "accession": null,
-      "dataUrl": "https://doi.org/10.5281/zenodo.19339684",
-      "dataDoi": "10.5281/zenodo.19339684",
-      "topics": [
-        {
-          "slug": "growth-factors",
-          "label": "Growth factors",
-          "theme": "media-growth-factors"
-        },
-        {
-          "slug": "media-growth-factors",
-          "label": "Media & Growth Factors",
-          "theme": "media-growth-factors"
-        }
-      ],
-      "subseries": []
-    },
-    {
-      "id": "ds:nmr-metabolomics-of",
-      "kind": "inventory",
-      "page": "CrossSpecies",
-      "name": "NMR metabolomics of plant and yeast-based hydrolysates (Combe et al.)",
-      "columns": {
-        "Resource": "NMR metabolomics of plant and yeast-based hydrolysates (Combe et al.)",
-        "Year": "2024",
-        "Format": "NMR metabolite profiles",
-        "Scope": "Comprehensive assessment of plant- and yeast-based hydrolysates intended as serum-free media components for cultivated meat; NMR spectra, metabolite concentration tables and the R analysis code, deposited with the paper (Combe et al. 2024, *Current Research in Food Science*, [10.1016/j.crfs.2024.100855](https://doi.org/10.1016/j.crfs.2024.100855))",
-        "DOI / URL": "[10.5281/zenodo.11357327](https://doi.org/10.5281/zenodo.11357327)",
-        "License": "CC-BY-4.0"
-      },
-      "links": [
-        "https://doi.org/10.1016/j.crfs.2024.100855",
-        "https://doi.org/10.5281/zenodo.11357327"
-      ],
-      "paperDoi": null,
-      "dataStatus": "deposit",
-      "accession": null,
-      "dataUrl": "https://doi.org/10.5281/zenodo.11357327",
-      "dataDoi": "10.5281/zenodo.11357327",
-      "topics": [
-        {
-          "slug": "mass-spectrometry",
-          "label": "Mass spectrometry & metabolomics",
-          "theme": "sensory-flavor"
-        },
-        {
-          "slug": "media-growth-factors",
-          "label": "Media & Growth Factors",
-          "theme": "media-growth-factors"
-        },
-        {
-          "slug": "metabolic-modeling",
-          "label": "Metabolic modeling",
-          "theme": "metabolism-modeling"
-        },
-        {
-          "slug": "metabolism-modeling",
-          "label": "Metabolism & Modeling",
-          "theme": "metabolism-modeling"
-        },
-        {
-          "slug": "sensory-flavor",
-          "label": "Sensory & Flavor",
-          "theme": "sensory-flavor"
-        },
-        {
-          "slug": "serum-free-media",
-          "label": "Serum-free media",
-          "theme": "media-growth-factors"
-        }
-      ],
-      "subseries": []
-    },
-    {
-      "id": "ds:plant-based-meat-textural-properties",
-      "kind": "inventory",
-      "page": "CrossSpecies",
-      "name": "Plant-based meat textural-properties training table (Kircali Ata et al.)",
-      "columns": {
-        "Resource": "Plant-based meat textural-properties training table (Kircali Ata et al.)",
-        "Year": "2023",
-        "Format": "Tabular (Supplementary Table S3; CSV on GitHub)",
-        "Scope": "Proximate composition (% protein/fat/carbohydrate/fibre/ash/moisture) + targeted moisture content → textural properties for plant-based meat analogs; training data for the Ridge / XGBoost / etc. regressors of [Papers.md #171](../Papers.md#171); 54 samples compiled from three earlier studies, in Supplementary Table S3 of Kircali Ata et al. 2023, *Foods* ([10.3390/foods12020344](https://doi.org/10.3390/foods12020344)), and as CSV (`data/additional_30_12_12.csv`) in the paper's GitHub repository",
-        "DOI / URL": "[GitHub](https://github.com/sezinata/FoodML)",
-        "License": "CC-BY-4.0 (*Foods* open access, Table S3); MIT (GitHub repository)"
-      },
-      "links": [
-        "https://doi.org/10.3390/foods12020344",
-        "https://github.com/sezinata/FoodML"
-      ],
-      "paperDoi": null,
-      "dataStatus": "deposit",
-      "accession": null,
-      "dataUrl": "https://github.com/sezinata/FoodML",
-      "dataDoi": null,
-      "topics": [
-        {
-          "slug": "ai-methods-tooling",
-          "label": "AI Methods & Tooling",
-          "theme": "ai-methods-tooling"
-        }
-      ],
-      "subseries": []
-    },
-    {
-      "id": "ds:prjeb27455",
-      "kind": "inventory",
-      "page": "CrossSpecies",
-      "name": "FR-AgENCODE multi-species farm-animal regulatory atlas (Foissac et al.)",
-      "columns": {
-        "Resource": "FR-AgENCODE multi-species farm-animal regulatory atlas (Foissac et al.)",
-        "Year": "2019",
-        "Format": "RNA-seq + ATAC-seq + Hi-C (ENA / FAANG DCC)",
-        "Scope": "First FAANG multi-species, multi-assay genome annotation across cattle, goat, chicken, and pig (liver + CD4+/CD8+ T cells): extended transcript catalogs, differentially accessible chromatin, and Hi-C TADs / A/B compartments, with a conserved core of regulatory regions. ENA accessions PRJEB27455 (RNA-seq), PRJEB27111 (ATAC-seq), PRJEB27364 (Hi-C)",
-        "DOI / URL": "[10.1186/s12915-019-0726-5](https://doi.org/10.1186/s12915-019-0726-5)",
-        "License": "CC-BY-4.0 (*BMC Biology* open access)"
-      },
-      "links": [
-        "https://doi.org/10.1186/s12915-019-0726-5"
-      ],
-      "paperDoi": "10.1186/s12915-019-0726-5",
-      "dataStatus": null,
-      "accession": null,
-      "dataUrl": null,
-      "dataDoi": null,
-      "topics": [
-        {
-          "slug": "cell-lines-engineering",
-          "label": "Cell Lines & Engineering",
-          "theme": "cell-lines-engineering"
-        }
-      ],
-      "subseries": []
-    },
-    {
-      "id": "ds:prjeb14330",
-      "kind": "inventory",
-      "page": "CrossSpecies",
-      "name": "Comparative chromatin accessibility in cattle, pig, and mouse (Halstead et al.)",
-      "columns": {
-        "Resource": "Comparative chromatin accessibility in cattle, pig, and mouse (Halstead et al.)",
-        "Year": "2020",
-        "Format": "ATAC-seq (ENA / CNGB)",
-        "Scope": "Consensus and tissue-specific open-chromatin maps across cattle, pig, and mouse tissues, with interspecies conservation assessed via the EPO whole-genome alignment. New cattle + pig ATAC-seq at ENA PRJEB14330; mouse ATAC-seq reused from CNGB CNP0000198",
-        "DOI / URL": "[10.1186/s12864-020-07078-9](https://doi.org/10.1186/s12864-020-07078-9)",
-        "License": "CC-BY-4.0 (*BMC Genomics* open access)"
-      },
-      "links": [
-        "https://doi.org/10.1186/s12864-020-07078-9"
-      ],
-      "paperDoi": "10.1186/s12864-020-07078-9",
-      "dataStatus": null,
-      "accession": null,
-      "dataUrl": null,
-      "dataDoi": null,
-      "topics": [],
-      "subseries": []
-    },
-    {
-      "id": "ds:mycelium-mechanics",
-      "kind": "inventory",
-      "page": "CrossSpecies",
-      "name": "Mycelium mechanics & taste of fungi steak (Vervenne et al.)",
-      "columns": {
-        "Resource": "Mycelium mechanics & taste of fungi steak (Vervenne et al.)",
-        "Year": "2025",
-        "Format": "Per-specimen mechanical and rheological data (XLS, TXT)",
-        "Scope": "Fungal cell-ag texture reference: mechanical, rheological, and taste characterization of mycelium \"fungi steak\" as a whole-cut analog (its moist, fibrous signature), informing scaffold and texture targets reused across cultivated and fungal meats. Species-agnostic (fungal, not livestock). Vervenne et al. 2025, *Acta Biomaterialia* ([10.1016/j.actbio.2025.07.002](https://doi.org/10.1016/j.actbio.2025.07.002))",
-        "DOI / URL": "[GitHub](https://github.com/LivingMatterLab/CANN/tree/main/ARTMEAT/FungiSteak)",
-        "License": "None stated (GitHub repository with no licence file)"
-      },
-      "links": [
-        "https://doi.org/10.1016/j.actbio.2025.07.002",
-        "https://github.com/LivingMatterLab/CANN/tree/main/ARTMEAT/FungiSteak"
-      ],
-      "paperDoi": null,
-      "dataStatus": "deposit",
-      "accession": null,
-      "dataUrl": "https://github.com/LivingMatterLab/CANN/tree/main/ARTMEAT/FungiSteak",
-      "dataDoi": null,
-      "topics": [
-        {
-          "slug": "flavor-sensory",
-          "label": "Flavor & sensory prediction",
-          "theme": "sensory-flavor"
-        },
-        {
-          "slug": "scaffolding-biomaterials",
-          "label": "Scaffolding & Biomaterials",
-          "theme": "scaffolding-biomaterials"
-        },
-        {
-          "slug": "scaffolds-biomaterials",
-          "label": "Scaffolds & biomaterials",
-          "theme": "scaffolding-biomaterials"
-        },
-        {
-          "slug": "sensory-flavor",
-          "label": "Sensory & Flavor",
-          "theme": "sensory-flavor"
-        }
-      ],
-      "subseries": []
-    },
-    {
-      "id": "ds:lions-mane-mushroom-steak",
-      "kind": "inventory",
-      "page": "CrossSpecies",
-      "name": "Lion's mane mushroom-steak characterization (St. Pierre et al.)",
-      "columns": {
-        "Resource": "Lion's mane mushroom-steak characterization (St. Pierre et al.)",
-        "Year": "2026",
-        "Format": "Per-specimen mechanical, rheological and texture-profile tables (XLSX)",
-        "Scope": "Fungal cell-ag texture reference: mechanical, rheological, and sensory characterization of a lion's mane mushroom steak as a whole-cut analog, with texture/scaffold relevance across cultivated and fungal meats. St. Pierre et al. 2026, *Current Research in Food Science* ([10.1016/j.crfs.2026.101403](https://doi.org/10.1016/j.crfs.2026.101403)); species-agnostic (fungal)",
-        "DOI / URL": "[GitHub](https://github.com/LivingMatterLab/CANN/tree/main/ARTMEAT/LionsManeMushroomSteak)",
-        "License": "None stated (GitHub repository with no licence file)"
-      },
-      "links": [
-        "https://doi.org/10.1016/j.crfs.2026.101403",
-        "https://github.com/LivingMatterLab/CANN/tree/main/ARTMEAT/LionsManeMushroomSteak"
-      ],
-      "paperDoi": null,
-      "dataStatus": "deposit",
-      "accession": null,
-      "dataUrl": "https://github.com/LivingMatterLab/CANN/tree/main/ARTMEAT/LionsManeMushroomSteak",
-      "dataDoi": null,
-      "topics": [
-        {
-          "slug": "flavor-sensory",
-          "label": "Flavor & sensory prediction",
-          "theme": "sensory-flavor"
-        },
-        {
-          "slug": "scaffolding-biomaterials",
-          "label": "Scaffolding & Biomaterials",
-          "theme": "scaffolding-biomaterials"
-        },
-        {
-          "slug": "scaffolds-biomaterials",
-          "label": "Scaffolds & biomaterials",
-          "theme": "scaffolding-biomaterials"
-        },
-        {
-          "slug": "sensory-flavor",
-          "label": "Sensory & Flavor",
-          "theme": "sensory-flavor"
-        }
-      ],
-      "subseries": []
     }
   ],
   "onRequest": [
@@ -9092,5 +8954,5 @@
       "dataStatus": "on-request"
     }
   ],
-  "corpusDate": "2026-11-09"
+  "corpusDate": "2026-11-10"
 }

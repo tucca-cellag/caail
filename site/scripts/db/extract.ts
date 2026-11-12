@@ -10,7 +10,8 @@ import { join } from 'node:path';
 import { isPublishedMarkdown } from '../../src/lib/canonical-files.js';
 import { parseMarkdown, sectionsAfter } from '../parser/markdown.js';
 import {
-  BENCHMARKS_PAGE, entryHeadingDepth, isEntryHeading, isOnRequestHeading, ON_REQUEST_HEADING, ON_REQUEST_PAGES, pageFromPath,
+  BENCHMARKS_PAGE, entryHeadingDepth, INVENTORY_PAGES, isEntryHeading, isOnRequestHeading, ON_REQUEST_HEADING, ON_REQUEST_PAGES,
+  pageFromPath, REFERENCE_PAGES,
 } from '../parser/datasets.js';
 import { isEditionSort, invalidEditionSort } from '../parser/reports.js';
 import { slugify } from './lib.js';
@@ -359,24 +360,62 @@ export function readOnRequestSection(src: string, tree: Root, page: string): OnR
 }
 
 /**
+ * The published pages in `Datasets/` outside `listed` for which `has` holds, sorted. The
+ * directory is listed rather than the page lists, so a page no list names yet is read too: that
+ * is the case the guards built on this exist to catch.
+ */
+function unlistedPagesWith(repoRoot: string, listed: readonly string[], has: (path: string) => boolean): string[] {
+  const dir = join(repoRoot, 'Datasets');
+  return existsSync(dir)
+    ? readdirSync(dir).sort()
+      .filter((f) => isPublishedMarkdown(f) && !listed.includes(f.replace(/\.md$/, '')) && has(join(dir, f)))
+    : [];
+}
+
+/**
  * Throw if any published page in `Datasets/` outside ON_REQUEST_PAGES has a `## Data on
  * request` section. Benchmarks and the README carry none, and a new page that no page list
  * names yet is read by no gate, so bootstrap would drop its section unseen and db:emit would
- * delete it from Benchmarks. The directory is listed rather than the page lists, since an
- * unlisted page is the case being caught. `who` names the caller in the message.
+ * delete it from Benchmarks. `who` names the caller in the message.
  */
 export function refuseUnlistedOnRequest(repoRoot: string, who: string): void {
-  const dir = join(repoRoot, 'Datasets');
-  const unlisted = existsSync(dir)
-    ? readdirSync(dir).filter((f) => isPublishedMarkdown(f) && !ON_REQUEST_PAGES.includes(f.replace(/\.md$/, '')))
-    : [];
-  for (const file of unlisted) {
-    if (extractOnRequest(join(dir, file)) === null) continue;
+  for (const file of unlistedPagesWith(repoRoot, ON_REQUEST_PAGES, (p) => extractOnRequest(p) !== null)) {
     const why = file === `${BENCHMARKS_PAGE}.md` || file === 'README.md'
       ? 'and that page carries none'
       : 'and only a page in ON_REQUEST_PAGES carries one. That list is built in site/scripts/parser/datasets.ts from SPECIES_PAGES (a species page), INVENTORY_PAGES (any other page with an inventory table) and REFERENCE_PAGES (a page of curated entries only), so add the page to the one that fits first';
     throw new Error(`${who}: ${file} has a "## ${ON_REQUEST_HEADING}" section, ${why}`);
   }
+}
+
+/**
+ * Why each published page in `Datasets/` outside INVENTORY_PAGES that carries a `## Complete
+ * data inventory` table is refused, one message per page (tucca-cellag/caail-planning#752).
+ * `db:bootstrap` seeds rows only from INVENTORY_PAGES, so such rows are counted nowhere. On a
+ * page of entries (REFERENCE_PAGES or the benchmarks page), `db:emit`, which treats any page with
+ * an inventory table as DB-owned (`isDbOwnedDatasetPage`), would also regenerate the table from
+ * the page's DB rows, of which it has none. A page in no list is never emitted or counted, and
+ * the README is no dataset page. `db:check` reports these (`checkInventoryPages`); `db:emit`
+ * and `db:bootstrap` refuse them (`refuseStrayInventory`), so no emit runs over the rows, and so
+ * does `pnpm parse` (`buildDatasetInventory`), so no build ships rows that nothing counts.
+ */
+export function strayInventoryTables(repoRoot: string): string[] {
+  return unlistedPagesWith(repoRoot, INVENTORY_PAGES, (p) => extractInventory(p) !== null).map((f) => {
+    const page = f.replace(/\.md$/, '');
+    const head = `Datasets/${f} has a "## Complete data inventory" table, but`;
+    if (f === 'README.md') return `${head} the directory's README lists no datasets: move the rows to a dataset page`;
+    return REFERENCE_PAGES.includes(page) || page === BENCHMARKS_PAGE
+      ? `${head} ${page} is not in INVENTORY_PAGES (site/scripts/parser/datasets.ts), so its rows are never seeded or ` +
+        'counted and db:emit would regenerate the table empty: add the page to INVENTORY_PAGES, or record its datasets ' +
+        'as curated entries'
+      : `${head} ${page} is in no page list (site/scripts/parser/datasets.ts), so nothing seeds, counts or emits it: ` +
+        'add the page to INVENTORY_PAGES';
+  });
+}
+
+/** Throw before any write if a page carries an inventory table it cannot (`strayInventoryTables`). */
+export function refuseStrayInventory(repoRoot: string, who: string): void {
+  const stray = strayInventoryTables(repoRoot);
+  if (stray.length > 0) throw new Error(`${who}: ${stray.join('; ')}`);
 }
 
 /**

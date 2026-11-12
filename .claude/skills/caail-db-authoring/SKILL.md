@@ -98,6 +98,19 @@ Folded into a `related_dois` column by `db:reseed-axes`; the badge then shows a 
 describing the SAME resource** (verify each names it); `db:check` guards format, key resolution, and
 no-overlap-with-primary. Re-run `fetch:citations` after adding related DOIs so their counts are cached.
 
+A **curated dataset entry's own repository deposits** go in `site/scripts/db/dataset-accessions.json`
+(`{ "datasets": { "ds:…": ["PRJEB…", …] } }`, bare accessions, primary first, never reused data),
+since an entry has no Data cell. Folded into the `accessions` column by `db:reseed-axes` and served as
+the entry's `accessions` in `api/datasets.json`. `db:check` refuses an unknown key, a value outside
+`ACCESSION_SOURCE`'s families, a repeat, a value the entry's heading or description does not name, and a
+column that no longer matches the file. A deposit with
+no accession in those families (a Zenodo record, a code repository holding the data, or an accession
+the families leave out, such as an SRA run or a CNGB project) goes in
+`site/scripts/db/dataset-data-links.json` instead, same shape, as its http(s) link (a DOI as its
+`https://doi.org/` link), folded into `data_links` and served as `dataLinks`. `db:check` refuses there a
+link to a paper's DOI, one naming an accession of those families (list it in `dataset-accessions.json`), and
+one repeating the entry's `doi` or heading link, as well as the same unknown-key, repeat and stale-column cases.
+
 Topics are **two-tier**: a fixed 7-**theme** backbone + earned **fine tags** (each `tier='tag'` under
 one `theme_slug`; theme and tag slugs share one namespace, so they must be disjoint). When tagging an
 item, prefer an existing fine tag; mint a new fine tag only when ≥3 items cluster under it (curator

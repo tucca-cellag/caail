@@ -4,9 +4,9 @@
  * "Datasets" is not one uniform shape in the corpus, so each page contributes
  * its natural, deterministic unit:
  *
- *   - inventory pages (the 10 species pages + CrossSpecies): data rows in the
+ *   - inventory pages (the 10 species pages): data rows in the
  *     page's `## Complete data inventory` GFM table.
- *   - reference pages (HumanReference, CHOReference): one `###` heading per
+ *   - reference pages (HumanReference, CHOReference, CrossSpecies, ...): one `###` heading per
  *     curated dataset entry. The `## Further reading` footers use bullet lists
  *     (no H3), so a raw H3 count yields exactly the dataset entries.
  *   - the benchmarks page (Benchmarks): one `##` heading per benchmark dataset
@@ -37,12 +37,22 @@ export const SPECIES_PAGES: readonly string[] = [
   'Goat', 'Mollusk', 'Pig', 'Sheep', 'Turkey',
 ];
 
-/** Pages whose datasets are counted as `## Complete data inventory` table rows. */
-export const INVENTORY_PAGES: readonly string[] = [...SPECIES_PAGES, 'CrossSpecies'];
+/**
+ * Pages whose datasets are counted as `## Complete data inventory` table rows: the species pages,
+ * and any other page with an inventory table, which joins here rather than SPECIES_PAGES.
+ */
+export const INVENTORY_PAGES: readonly string[] = [...SPECIES_PAGES];
 
-/** Pages whose datasets are counted as `###` (H3) entries (no inventory table). */
+/**
+ * Pages whose datasets are counted as `###` (H3) entries (no inventory table). CrossSpecies
+ * joined them when its seven inventory rows went: each was a second listing of one of its
+ * curated entries (tucca-cellag/caail-planning#752). It comes first because `db:bootstrap`
+ * numbers entries in page-list order (`ENTRY_PAGES` in `scripts/db/seed.ts`), and first keeps
+ * its entries where they were as the last inventory page, between the species pages and
+ * HumanReference.
+ */
 export const REFERENCE_PAGES: readonly string[] = [
-  'HumanReference', 'CHOReference', 'MicrobialHostReference', 'FoodSafety', 'Sustainability',
+  'CrossSpecies', 'HumanReference', 'CHOReference', 'MicrobialHostReference', 'FoodSafety', 'Sustainability',
 ];
 
 /** The benchmarks page, whose datasets are counted as `##` (H2) entries. */
@@ -212,7 +222,7 @@ export type DatasetSourceKind = 'inventory' | 'curated' | 'reference' | 'benchma
 export interface DatasetBreakdown {
   /** total catalogued datasets across the whole Datasets/ directory */
   total: number;
-  /** inventory-table rows over INVENTORY_PAGES (species + CrossSpecies) */
+  /** inventory-table rows over INVENTORY_PAGES */
   speciesRows: number;
   /** curated H3 entries (featured atlases, GEMs) ON the inventory pages */
   curatedEntries: number;

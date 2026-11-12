@@ -7,9 +7,25 @@
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
+import { cpSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 import { buildDatasetInventory, parseSubseries, idAccession, rowDepositAccession } from './dataset-inventory.js';
+import { REPO_ROOT } from '../db/lib.js';
 import type { DatasetInventoryRow } from './types.js';
+
+describe('buildDatasetInventory refuses a stray inventory table (tucca-cellag/caail-planning#752)', () => {
+  it('throws on a reference page carrying one, which pnpm parse would otherwise pass uncounted', () => {
+    const root = mkdtempSync(join(tmpdir(), 'caail-inventory-stray-'));
+    cpSync(join(REPO_ROOT, 'Datasets'), join(root, 'Datasets'), { recursive: true });
+    expect(() => buildDatasetInventory(root)).not.toThrow();
+    const page = join(root, 'Datasets', 'CrossSpecies.md');
+    const table = '\n## Complete data inventory\n\n| Study | Paper | Data |\n| --- | --- | --- |\n| A hand-added row | x | supplementary |\n';
+    writeFileSync(page, `${readFileSync(page, 'utf-8')}${table}`);
+    expect(() => buildDatasetInventory(root)).toThrow(/pnpm parse: Datasets\/CrossSpecies\.md has a "## Complete data inventory" table/);
+  });
+});
 
 describe('parseSubseries', () => {
   it('returns [] for a row that is not a SuperSeries', () => {

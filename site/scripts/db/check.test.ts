@@ -11,8 +11,8 @@ import { writeFileSync, mkdtempSync, mkdirSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { openDb, importNdjson, REPO_ROOT, type Db } from './lib.js';
-import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkAxisBijection, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, checkRowTagParity, checkFineTagSeedDrift, checkInventoryCells, INVENTORY_CELLS_LABEL, INVENTORY_CELLS_SHOWN, runChecks } from './check.js';
+import { openDb, importNdjson, REPO_ROOT, ACCESSION_SOURCE, type Db } from './lib.js';
+import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkAxisBijection, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, checkRowTagParity, checkFineTagSeedDrift, checkInventoryCells, INVENTORY_CELLS_LABEL, INVENTORY_CELLS_SHOWN, checkInventoryPages, INVENTORY_PAGES_LABEL, checkEntryRowTwins, ENTRY_ROW_TWINS_LABEL, checkAccessions, ACCESSIONS_LABEL, ACCESSION_FAMILIES, checkDataLinks, DATA_LINKS_LABEL, runChecks } from './check.js';
 import { NON_DEPOSIT_LABELS, parseRowCells, readInventoryHeader, STATUS_WORDS, SUPPLEMENT_PREFIX } from '../parser/dataset-inventory.js';
 import { THEME_SLUGS, FINE_TAGS } from './seed.js';
 
@@ -740,11 +740,11 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
   const SPECIES = ['Study', 'Paper', 'Data', 'Type', 'Tissue', 'Description', 'Size', 'Area of research'];
   // Data at a position no real page uses, so reading the cell by index rather than by label fails.
   const SHIFTED = ['Study', 'Species', 'Paper', 'Data', 'Description'];
-  const CROSS = ['Resource', 'Year', 'Format', 'Scope', 'DOI / URL', 'License'];
-  // A table carrying both a Paper and a DOI / URL column: the guard must judge the DOI / URL cell itself.
-  const BOTH = ['Resource', 'Paper', 'DOI / URL'];
+  // The table CrossSpecies carried before its rows went (tucca-cellag/caail-planning#752): a link
+  // column, but no Data column, which no page may use now.
+  const LINK_ONLY = ['Resource', 'Year', 'Format', 'Scope', 'DOI / URL', 'License'];
   const headers: Record<string, string[]> = {
-    Cow: SPECIES, Shifted: SHIFTED, CrossSpecies: CROSS, Both: BOTH, Odd: ['Study', 'Notes'],
+    Cow: SPECIES, Shifted: SHIFTED, LinkOnly: LINK_ONLY, Odd: ['Study', 'Notes'],
   };
   const headerFor = (page: string) => (headers[page] ? { header: headers[page]! } : { problem: `Datasets/${page}.md does not exist` });
   const BADGE = '[`GSE1`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE1)';
@@ -826,13 +826,6 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
     expect(r.detail).toContain('bare word "supplementary"');
   });
 
-  it('lets a CrossSpecies link to a supplement stand, since that page has no status word, but refuses none named', () => {
-    for (const link of ['[Supplementary data](https://example.org/s1.xlsx)', '[supplementary](https://example.org/s1.xlsx)']) {
-      expect(withRow('CrossSpecies', { 'DOI / URL': link }).ok, link).toBe(true);
-    }
-    expect(withRow('CrossSpecies', { 'DOI / URL': '[none named](https://example.org)' }).ok).toBe(false);
-  });
-
   it('judges any other label by shape alone, words inside it included', () => {
     // A word rule refused real deposits ("request via DAC") while passing "Embargoed"; the
     // guard checks shape, not truth, so these pass and curation catches the mislabelled ones.
@@ -842,7 +835,6 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
     ]) {
       expect(withRow('Cow', { Data: data }).ok, data).toBe(true);
     }
-    expect(withRow('CrossSpecies', { 'DOI / URL': '[https://www.ebi.ac.uk/none](https://www.ebi.ac.uk/none)' }).ok).toBe(true);
   });
 
   it('rejects a badge whose text is more than one identifier', () => {
@@ -860,12 +852,10 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
     ]) {
       expect(withRow('Cow', { Data: data }).detail, data).toContain('is not one link in a form the parser reads');
     }
-    expect(withRow('CrossSpecies', { 'DOI / URL': '[GitHub](https://github.com/a b)' }).detail).toContain('one [text](address) link');
   });
 
-  it('calls an empty label an empty label, in either kind of link cell', () => {
+  it('calls an empty label an empty label', () => {
     expect(withRow('Cow', { Data: '[](https://zenodo.org/records/1)' }).detail).toContain('is a link with no text');
-    expect(withRow('CrossSpecies', { 'DOI / URL': '[](https://example.org)' }).detail).toContain('is a link with no text');
   });
 
   it('reports cell-count mismatches once per page, with the number of rows', () => {
@@ -877,10 +867,6 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
   it('rejects a link with blank text, or to an address with no host', () => {
     expect(withRow('Cow', { Data: '[ ](https://example.org)' }).detail).toContain('no text');
     expect(withRow('Cow', { Data: '[Zenodo](https://)' }).detail).toContain('with a host');
-  });
-
-  it('names a code-styled badge in a CrossSpecies DOI / URL cell for what it is', () => {
-    expect(withRow('CrossSpecies', { 'DOI / URL': '[`10.5281/zenodo.1`](https://doi.org/10.5281/zenodo.1)' }).detail).toContain('badge');
   });
 
   it('says when cells_json is not an array, rather than reporting a count mismatch', () => {
@@ -928,19 +914,6 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
     expect(withRow('Shifted', { Paper: 'none named', Data: BADGE }).ok).toBe(true);
   });
 
-  it('requires a CrossSpecies DOI / URL cell to be a link to an http(s) address, and takes no status word there', () => {
-    expect(withRow('CrossSpecies', { 'DOI / URL': 'supplementary' }).ok).toBe(false);
-    expect(withRow('CrossSpecies', { 'DOI / URL': 'on request' }).ok).toBe(false);
-    expect(withRow('CrossSpecies', { 'DOI / URL': '[contact](mailto:author@example.org)' }).ok).toBe(false);
-    for (const link of ['[10.5281/zenodo.1](https://doi.org/10.5281/zenodo.1)', '[10.1186/x](https://doi.org/10.1186/x)', '[GitHub](https://github.com/a/b)']) {
-      expect(withRow('CrossSpecies', { 'DOI / URL': link }).ok, link).toBe(true);
-    }
-  });
-
-  it('judges the DOI / URL cell itself, even when a Paper cell supplies a DOI', () => {
-    expect(withRow('Both', { Paper: '[DOI](https://doi.org/10.1038/x)', 'DOI / URL': 'on request' }).ok).toBe(false);
-  });
-
   it(`names up to ${INVENTORY_CELLS_SHOWN} problems and counts them all`, () => {
     const db = miniDb();
     for (let i = 0; i < 12; i++) insRow(db, `ds:study-${String(i).padStart(2, '0')}`, 'Cow', cellsFor(SPECIES, { Data: 'on request' }));
@@ -966,10 +939,16 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
     expect(r.detail).toContain('repeats a column label');
   });
 
-  it('fails a page whose inventory has neither a Data nor a DOI / URL column, rather than skipping it', () => {
+  it('fails a page whose inventory has no Data column, rather than skipping it', () => {
     const r = withRow('Odd', {});
     expect(r.ok).toBe(false);
-    expect(r.detail).toContain('Odd');
+    expect(r.detail).toContain('page Odd: has no Data column');
+  });
+
+  it('fails a link-column table with no Data column, the shape CrossSpecies carried, however good its link', () => {
+    const r = withRow('LinkOnly', { 'DOI / URL': '[10.5281/zenodo.1](https://doi.org/10.5281/zenodo.1)' });
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('page LinkOnly: has no Data column');
   });
 
   it('fails a row on a page with no inventory table, and a row whose cell count differs from its header', () => {
@@ -977,6 +956,479 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
     expect(result(noTable).ok).toBe(false);
     const short = miniDb(); insRow(short, 'ds:study-c', 'Cow', [BADGE]);
     expect(result(short).ok).toBe(false);
+  });
+});
+
+describe('checkInventoryPages (tucca-cellag/caail-planning#752)', () => {
+  const TABLE = '## Complete data inventory\n\n| Study | Paper | Data |\n| --- | --- | --- |\n| A | none named | supplementary |\n';
+  const rootWith = (pages: Record<string, string>): string => {
+    const root = mkdtempSync(join(tmpdir(), 'caail-inv-pages-'));
+    mkdirSync(join(root, 'Datasets'));
+    for (const [page, body] of Object.entries(pages)) writeFileSync(join(root, 'Datasets', `${page}.md`), `# ${page}\n\n${body}`);
+    return root;
+  };
+  const result = (root: string) => checkInventoryPages(root).find((r) => r.label === INVENTORY_PAGES_LABEL)!;
+
+  it('fails an inventory table on a page outside INVENTORY_PAGES, CrossSpecies or an unlisted page, naming each', () => {
+    const r = result(rootWith({ CrossSpecies: TABLE, Brandnew: TABLE, Cow: TABLE }));
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('Datasets/CrossSpecies.md has a "## Complete data inventory" table');
+    expect(r.detail).toContain('Datasets/Brandnew.md');
+    expect(r.detail).not.toContain('Cow.md');
+  });
+
+  it('passes an inventory table on an inventory page, and a reference page of entries only', () => {
+    expect(result(rootWith({ Cow: TABLE, CrossSpecies: '## Section\n\n### An entry\n\nProse.\n' })).ok).toBe(true);
+  });
+
+  it('says what becomes of the rows, which differs between a page of entries and a page in no list', () => {
+    const lines = result(rootWith({ CrossSpecies: TABLE, Brandnew: TABLE })).detail.split('; ');
+    const cross = lines.find((l) => l.includes('CrossSpecies.md'))!;
+    const unlisted = lines.find((l) => l.includes('Brandnew.md'))!;
+    expect(cross).toContain('db:emit would regenerate the table empty');
+    expect(unlisted).toContain('in no page list');
+    expect(unlisted).not.toContain('db:emit would regenerate');
+  });
+
+  it("tells the directory's README to move its rows rather than join a page list", () => {
+    const detail = result(rootWith({ README: TABLE })).detail;
+    expect(detail).toContain('Datasets/README.md has a "## Complete data inventory" table');
+    expect(detail).toContain('move the rows to a dataset page');
+    expect(detail).not.toContain('add the page to INVENTORY_PAGES');
+  });
+});
+
+describe('checkEntryRowTwins (tucca-cellag/caail-planning#752)', () => {
+  const SPECIES = ['Study', 'Paper', 'Data', 'Type', 'Tissue', 'Description', 'Size', 'Area of research'];
+  const headers: Record<string, string[]> = { Cow: SPECIES, Pig: SPECIES };
+  const headerFor = (page: string) => (headers[page] ? { header: headers[page]! } : { problem: `Datasets/${page}.md does not exist` });
+  const PAPER = '10.1038/s41586-020-0001-1';
+  const DEPOSIT = 'https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE1';
+  const ZENODO = '10.5281/zenodo.11357327';
+  const REPO = 'https://github.com/example/data';
+  const row = (db: Db, id: string, page: string, cells: Record<string, string>): void => {
+    db.prepare("INSERT INTO items(id,type,slug) VALUES(?,'dataset',?)").run(id, id.slice(3));
+    db.prepare('INSERT INTO dataset_rows(item_id,page,cells_json,subseries,ordinal) VALUES(?,?,?,NULL,0)')
+      .run(id, page, JSON.stringify(headers[page]!.map((h) => cells[h] ?? 'x')));
+  };
+  const entry = (
+    db: Db, id: string, page: string, url: string | null, doi: string | null,
+    lists: { accessions?: string[]; dataLinks?: string[] } = {},
+  ): void => {
+    db.prepare("INSERT INTO items(id,type,slug) VALUES(?,'dataset',?)").run(id, id.slice(3));
+    db.prepare(`INSERT INTO dataset_entries(item_id,name,url,page,section,kind,heading_md,body_md,doi,doi_source,accessions,data_links,ordinal)
+      VALUES(?,'An entry',?,?,'S','other',?,'body',?,?,?,?,0)`)
+      .run(id, url, page, url ? `[An entry](${url})` : 'An entry', doi, doi ? 'manual' : null,
+        lists.accessions ? JSON.stringify(lists.accessions) : null, lists.dataLinks ? JSON.stringify(lists.dataLinks) : null);
+  };
+  const result = (db: Db) => checkEntryRowTwins(db, undefined, headerFor).find((r) => r.label === ENTRY_ROW_TWINS_LABEL)!;
+
+  it("fails an entry whose own deposit DOI is a row's Data deposit, naming both", () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-a', 'Cow', `https://zenodo.org/records/11357327`, ZENODO);
+    row(db, 'ds:row-a', 'Cow', { Paper: `[DOI](https://doi.org/${PAPER})`, Data: `[Zenodo](https://doi.org/${ZENODO})` });
+    const r = result(db);
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('ds:entry-a and ds:row-a on Cow both name DOI 10.5281/zenodo.11357327');
+  });
+
+  it("fails an entry whose heading links a row's deposit, whatever the trailing slash or case", () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-c', 'Cow', `${DEPOSIT.toUpperCase()}/`, null);
+    row(db, 'ds:row-c', 'Cow', { Data: `[\`GSE1\`](${DEPOSIT})` });
+    expect(result(db).ok).toBe(false);
+  });
+
+  it("fails an entry whose accessions name a row's badge, whatever the case or version suffix", () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-h', 'Cow', `https://doi.org/${PAPER}`, PAPER, { accessions: ['GSE1'] });
+    row(db, 'ds:row-h', 'Cow', { Data: '[`gse1.2`](https://example.org/geo/gse1)' });
+    const r = result(db);
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('accession GSE1');
+  });
+
+  it("fails an entry whose dataLinks name a row's deposit link", () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-i', 'Cow', `https://doi.org/${PAPER}`, PAPER, { dataLinks: [REPO] });
+    row(db, 'ds:row-i', 'Cow', { Data: `[GitHub](${REPO}/)` });
+    expect(result(db).ok).toBe(false);
+  });
+
+  it('fails a twin whatever the scheme, and reads a Zenodo record page as its DOI', () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-m', 'Cow', 'http://example.org/data/x', null);
+    row(db, 'ds:row-m', 'Cow', { Data: '[Lab](https://example.org/data/x)' });
+    entry(db, 'ds:entry-n', 'Pig', `https://doi.org/${PAPER}`, ZENODO);
+    row(db, 'ds:row-n', 'Pig', { Data: '[Zenodo](https://zenodo.org/record/11357327)' });
+    const r = result(db);
+    expect(r.detail).toMatch(/^2 twin\(s\): /);
+    expect(r.detail).toContain('ds:entry-n and ds:row-n on Pig both name DOI 10.5281/zenodo.11357327');
+  });
+
+  it('reports a pair once, naming every deposit the two share', () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-j', 'Cow', DEPOSIT, null, { accessions: ['GSE1'] });
+    row(db, 'ds:row-j', 'Cow', { Data: `[\`GSE1\`](${DEPOSIT})` });
+    const r = result(db);
+    expect(r.detail).toMatch(/^1 twin\(s\): /);
+    expect(r.detail).toContain('and accession GSE1');
+  });
+
+  it("fails an entry whose data link names a row's badge accession as a whole token", () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-o', 'Cow', `https://doi.org/${PAPER}`, PAPER, { dataLinks: ['https://www.ncbi.nlm.nih.gov/sra/SRR1234567'] });
+    row(db, 'ds:row-o', 'Cow', { Data: '[`SRR1234567`](https://trace.ncbi.nlm.nih.gov/Traces/?run=SRR1234567)' });
+    const r = result(db);
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('ds:entry-o and ds:row-o on Cow both name accession SRR1234567');
+  });
+
+  it("fails an entry whose accession a row's deposit link names", () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-p', 'Cow', `https://doi.org/${PAPER}`, PAPER, { accessions: ['PRJEB14330'] });
+    row(db, 'ds:row-p', 'Cow', { Data: '[ENA](https://www.ebi.ac.uk/ena/browser/view/PRJEB14330)' });
+    expect(result(db).detail).toContain('ds:entry-p and ds:row-p on Cow both name accession PRJEB14330');
+  });
+
+  it('passes a badge a link holds only inside a longer segment or in its host', () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-r', 'Cow', 'https://github.com/SysBioChalmers/Zebrafish-GEM-v2', null);
+    row(db, 'ds:row-r', 'Cow', { Data: '[`Zebrafish-GEM`](https://github.com/SysBioChalmers/Zebrafish-GEM)' });
+    entry(db, 'ds:entry-s', 'Pig', `https://doi.org/${PAPER}`, PAPER, { dataLinks: ['https://zenodo.org/records/7'] });
+    row(db, 'ds:row-s', 'Pig', { Data: '[`zenodo.5`](https://example.org/z5)' });
+    const r = result(db);
+    expect(r.ok, r.detail).toBe(true);
+  });
+
+  it('passes a repository named like a badge in another case, as the data-links guard reads a path segment', () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-t', 'Cow', `https://doi.org/${PAPER}`, PAPER, { dataLinks: ['https://github.com/lab/cra2/tree/main/data'] });
+    row(db, 'ds:row-t', 'Cow', { Data: '[`CRA2`](https://ngdc.cncb.ac.cn/gsa/browse/CRA2)' });
+    const r = result(db);
+    expect(r.ok, r.detail).toBe(true);
+  });
+
+  it('fails a link naming a badge in a path segment as written, or in a query value in any case', () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-v', 'Cow', `https://doi.org/${PAPER}`, PAPER, { dataLinks: ['https://www.ncbi.nlm.nih.gov/sra/?term=srr1234567'] });
+    row(db, 'ds:row-v', 'Cow', { Data: '[`SRR1234567`](https://trace.ncbi.nlm.nih.gov/Traces/?run=SRR1234567)' });
+    entry(db, 'ds:entry-w', 'Pig', 'https://github.com/SysBioChalmers/Zebrafish-GEM', null);
+    row(db, 'ds:row-w', 'Pig', { Data: '[`Zebrafish-GEM`](https://doi.org/10.5281/zenodo.9)' });
+    const r = result(db);
+    expect(r.detail).toMatch(/^2 twin\(s\): /);
+    expect(r.detail).toContain('ds:entry-v and ds:row-v on Cow both name accession SRR1234567');
+    expect(r.detail).toContain('ds:entry-w and ds:row-w on Pig both name accession ZEBRAFISH-GEM');
+  });
+
+  it('passes a link that holds an accession only inside a longer one', () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-q', 'Cow', `https://doi.org/${PAPER}`, PAPER, { dataLinks: ['https://www.ncbi.nlm.nih.gov/sra/SRR12345678'] });
+    row(db, 'ds:row-q', 'Cow', { Data: '[`SRR1234567`](https://trace.ncbi.nlm.nih.gov/Traces/?run=SRR1234567)' });
+    expect(result(db).ok).toBe(true);
+  });
+
+  it('passes an entry and a row that share only their paper, since one paper can describe several deposits', () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-k', 'Cow', `https://doi.org/${PAPER}`, PAPER, { dataLinks: [REPO] });
+    row(db, 'ds:row-k', 'Cow', { Paper: `[DOI](https://doi.org/${PAPER})`, Data: `[\`GSE1\`](${DEPOSIT})` });
+    expect(result(db).ok).toBe(true);
+  });
+
+  it('passes a row whose Data cell is a status word, which names no deposit', () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-l', 'Cow', `https://doi.org/${PAPER}`, PAPER);
+    row(db, 'ds:row-l', 'Cow', { Paper: `[DOI](https://doi.org/${PAPER})`, Data: 'supplementary' });
+    expect(result(db).ok).toBe(true);
+  });
+
+  it('passes the same deposit on two species pages, since a multi-species resource counts once per species (tucca-cellag/caail-planning#791)', () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-d', 'Pig', DEPOSIT, null, { accessions: ['GSE1'] });
+    row(db, 'ds:row-d', 'Cow', { Data: `[\`GSE1\`](${DEPOSIT})` });
+    expect(result(db).ok).toBe(true);
+  });
+
+  it("passes a deposit a row only mentions in its Description, which names data it reuses, not its own", () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-f', 'Cow', REPO, null);
+    row(db, 'ds:row-f', 'Cow', { Description: `reuses [their data](${REPO})`, Data: `[\`GSE1\`](${DEPOSIT})` });
+    expect(result(db).ok).toBe(true);
+  });
+});
+
+describe('checkAccessions (tucca-cellag/caail-planning#752)', () => {
+  const ENTRY = 'ds:atlas-a';
+  const withEntry = (
+    stored: string | null,
+    body = 'Deposited at ENA (PRJEB27455, PRJEB27111), ArrayExpress E-MTAB-9622 and GEO `GSE1`.',
+  ): Db => {
+    const db = miniDb();
+    db.prepare("INSERT INTO items(id,type,slug) VALUES(?,'dataset','atlas-a')").run(ENTRY);
+    db.prepare(`INSERT INTO dataset_entries(item_id,name,url,page,section,kind,heading_md,body_md,accessions,ordinal)
+      VALUES(?,'An atlas',NULL,'Cow','S','atlas','An atlas',?,?,0)`)
+      .run(ENTRY, body, stored);
+    db.prepare("INSERT INTO items(id,type,slug) VALUES('ds:row-a','dataset','row-a')").run();
+    db.prepare("INSERT INTO dataset_rows(item_id,page,cells_json,subseries,ordinal) VALUES('ds:row-a','Cow','[]',NULL,0)").run();
+    return db;
+  };
+  const fileWith = (datasets: Record<string, unknown>): string => {
+    const dir = mkdtempSync(join(tmpdir(), 'caail-accessions-'));
+    const path = join(dir, 'dataset-accessions.json');
+    writeFileSync(path, JSON.stringify({ datasets }));
+    return path;
+  };
+  const result = (db: Db, path: string) => checkAccessions(db, path).find((r) => r.label === ACCESSIONS_LABEL)!;
+
+  it('passes a curated entry whose distinct accessions are stored as the file lists them', () => {
+    const list = ['PRJEB27455', 'PRJEB27111', 'E-MTAB-9622'];
+    expect(result(withEntry(JSON.stringify(list)), fileWith({ [ENTRY]: list })).ok).toBe(true);
+  });
+
+  it('passes an empty file with nothing stored', () => {
+    expect(result(withEntry(null), fileWith({})).ok).toBe(true);
+  });
+
+  it('rejects a key that is an inventory row or no item at all', () => {
+    for (const id of ['ds:row-a', 'ds:nowhere']) {
+      const r = result(withEntry(null), fileWith({ [id]: ['GSE1'] }));
+      expect(r.ok, id).toBe(false);
+      expect(r.detail, id).toContain('not a curated dataset entry');
+    }
+  });
+
+  it('rejects a value that is not one bare accession from the shared families', () => {
+    for (const bad of ['prjeb27455', 'https://www.ebi.ac.uk/ena/browser/view/PRJEB27455', 'CNP0000198', 'GSE1 GSE2', '']) {
+      const r = result(withEntry(JSON.stringify([bad])), fileWith({ [ENTRY]: [bad] }));
+      expect(r.ok, bad).toBe(false);
+      expect(r.detail, bad).toContain('not one bare accession');
+    }
+  });
+
+  it('refuses an accession its entry names nowhere, such as one missing a digit', () => {
+    for (const typo of ['PRJEB2745', 'PRJEB27456']) {
+      const r = result(withEntry(JSON.stringify([typo])), fileWith({ [ENTRY]: [typo] }));
+      expect(r.ok, typo).toBe(false);
+      expect(r.detail, typo).toContain('named nowhere in its heading or description');
+    }
+  });
+
+  it('finds an accession its entry writes with a version suffix', () => {
+    const r = result(withEntry(JSON.stringify(['PRJEB27455']), 'Deposited at ENA as PRJEB27455.1.'), fileWith({ [ENTRY]: ['PRJEB27455'] }));
+    expect(r.ok).toBe(true);
+  });
+
+  it('sends an accession outside the families to the data links, rather than leaving it nowhere', () => {
+    const r = result(withEntry(JSON.stringify(['SRA051669'])), fileWith({ [ENTRY]: ['SRA051669'] }));
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('dataset-data-links.json as its link');
+  });
+
+  it('names every family ACCESSION_SOURCE admits, read from it rather than typed beside it', () => {
+    const families = ACCESSION_SOURCE.split('|');
+    expect(families.length).toBeGreaterThan(5);
+    const detail = result(withEntry(JSON.stringify(['x'])), fileWith({ [ENTRY]: ['x'] })).detail;
+    for (const alt of families) {
+      const prefix = alt.match(/^[A-Z-]+/)![0];
+      expect(ACCESSION_FAMILIES, alt).toContain(`${prefix}…`);
+      expect(detail, alt).toContain(`${prefix}…`);
+    }
+  });
+
+  it('rejects an accession listed twice, and an empty list', () => {
+    expect(result(withEntry(JSON.stringify(['GSE1', 'GSE1'])), fileWith({ [ENTRY]: ['GSE1', 'GSE1'] })).detail).toContain('twice');
+    expect(result(withEntry(null), fileWith({ [ENTRY]: [] })).detail).toContain('non-empty list');
+  });
+
+  it('rejects a stored column that differs from the file, in either direction', () => {
+    expect(result(withEntry(null), fileWith({ [ENTRY]: ['GSE1'] })).detail).toContain('db:reseed-axes');
+    expect(result(withEntry(JSON.stringify(['GSE1'])), fileWith({})).detail).toContain('db:reseed-axes');
+  });
+});
+
+describe('checkDataLinks (tucca-cellag/caail-planning#752)', () => {
+  const ENTRY = 'ds:texture-a';
+  const PAPER = '10.1016/j.actbio.2025.07.002';
+  const HEADING = `https://doi.org/${PAPER}`;
+  const REPO = 'https://github.com/LivingMatterLab/CANN/tree/main/ARTMEAT/FungiSteak';
+  const ZENODO = 'https://doi.org/10.5281/zenodo.11357327';
+  const BODY = `The data are in [the authors' repository](${REPO}) and at [Zenodo](${ZENODO}).`;
+  const withEntry = (stored: string | null, doi: string | null = PAPER, body: string = BODY): Db => {
+    const db = miniDb();
+    db.prepare("INSERT INTO items(id,type,slug) VALUES(?,'dataset','texture-a')").run(ENTRY);
+    db.prepare(`INSERT INTO dataset_entries(item_id,name,url,page,section,kind,heading_md,body_md,doi,doi_source,data_links,ordinal)
+      VALUES(?,'A texture reference',?,'CrossSpecies','S','other',?,?,?,?,?,0)`)
+      .run(ENTRY, HEADING, `[A texture reference](${HEADING})`, body, doi, doi ? 'manual' : null, stored);
+    db.prepare("INSERT INTO items(id,type,slug) VALUES('ds:row-a','dataset','row-a')").run();
+    db.prepare("INSERT INTO dataset_rows(item_id,page,cells_json,subseries,ordinal) VALUES('ds:row-a','Cow','[]',NULL,0)").run();
+    return db;
+  };
+  const fileWith = (datasets: Record<string, unknown>): string => {
+    const dir = mkdtempSync(join(tmpdir(), 'caail-data-links-'));
+    const path = join(dir, 'dataset-data-links.json');
+    writeFileSync(path, JSON.stringify({ datasets }));
+    return path;
+  };
+  const result = (db: Db, path: string) => checkDataLinks(db, path).find((r) => r.label === DATA_LINKS_LABEL)!;
+  const listed = (list: unknown[]) => result(withEntry(JSON.stringify(list)), fileWith({ [ENTRY]: list }));
+
+  it('passes a code repository and a data host DOI link, stored as the file lists them', () => {
+    expect(listed([REPO, ZENODO]).ok).toBe(true);
+  });
+
+  it('passes an empty file with nothing stored', () => {
+    expect(result(withEntry(null), fileWith({})).ok).toBe(true);
+  });
+
+  it('rejects a key that is an inventory row or no item at all', () => {
+    for (const id of ['ds:row-a', 'ds:nowhere']) {
+      const r = result(withEntry(null), fileWith({ [id]: [REPO] }));
+      expect(r.ok, id).toBe(false);
+      expect(r.detail, id).toContain('not a curated dataset entry');
+    }
+  });
+
+  it('rejects a value that is not one link to an http(s) address with a host', () => {
+    for (const bad of ['github.com/a/b', 'mailto:author@example.org', 'https://', 'https://example.org/a b', '', 7]) {
+      const r = listed([bad]);
+      expect(r.ok, String(bad)).toBe(false);
+      expect(r.detail, String(bad)).toContain('not one link to an http(s) address');
+    }
+  });
+
+  it("rejects the entry's own paper, as its heading link, as its doi, or as any paper's DOI", () => {
+    expect(listed([HEADING]).detail).toContain('already its heading link');
+    expect(listed([`${HEADING.toUpperCase()}/`]).detail).toContain('already its heading link');
+    // Another host form of the heading's DOI is the same link.
+    expect(listed([`https://dx.doi.org/${PAPER}`]).detail).toContain('already its heading link');
+    const other = listed(['https://doi.org/10.1038/s41586-020-0001-1']);
+    expect(other.ok).toBe(false);
+    expect(other.detail).toContain('DATA_REPOSITORY_REGISTRANTS');
+  });
+
+  it("rejects a link that repeats an entry's own deposit DOI, the Zenodo record page for it included", () => {
+    const r = result(withEntry(JSON.stringify([ZENODO]), '10.5281/zenodo.11357327'), fileWith({ [ENTRY]: [ZENODO] }));
+    expect(r.detail).toContain('already its doi');
+    const record = 'https://zenodo.org/records/11357327';
+    const page = result(withEntry(JSON.stringify([record]), '10.5281/zenodo.11357327', `[Zenodo](${record})`), fileWith({ [ENTRY]: [record] }));
+    expect(page.detail).toContain('already its doi');
+  });
+
+  it("rejects a publisher's article page whose path carries a paper DOI", () => {
+    const article = 'https://onlinelibrary.wiley.com/doi/10.1002/jsfa.12345';
+    const r = result(withEntry(JSON.stringify([article]), PAPER, `See [the article](${article}).`), fileWith({ [ENTRY]: [article] }));
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('links 10.1002/jsfa.12345');
+    // A data host's DOI in a path is a deposit, and passes.
+    const record = 'https://zenodo.org/doi/10.5281/zenodo.11357327';
+    expect(result(withEntry(JSON.stringify([record]), PAPER, `At [Zenodo](${record}).`), fileWith({ [ENTRY]: [record] })).ok).toBe(true);
+  });
+
+  it("rejects a publisher's article page whose query value is a paper DOI, encoded or not", () => {
+    for (const [article, doi] of [
+      ['https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0123456', '10.1371/journal.pone.0123456'],
+      ['https://example.org/view?type=html&doi=10.1002%2Fjsfa.12345', '10.1002/jsfa.12345'],
+    ] as const) {
+      const r = result(withEntry(JSON.stringify([article]), PAPER, `See [the article](${article}).`), fileWith({ [ENTRY]: [article] }));
+      expect(r.ok, article).toBe(false);
+      expect(r.detail, article).toContain(`links ${doi}, whose registrant is not a data host`);
+    }
+    // A data host's DOI in a query value is a deposit, and passes.
+    const deposit = 'https://example.org/browse?doi=10.5281/zenodo.11357327';
+    expect(result(withEntry(JSON.stringify([deposit]), PAPER, `At [the browser](${deposit}).`), fileWith({ [ENTRY]: [deposit] })).ok).toBe(true);
+  });
+
+  it('refuses a link its entry names nowhere, such as one cut short', () => {
+    const cut = REPO.slice(0, -1);
+    expect(listed([cut]).detail).toContain('named nowhere in its heading or description');
+  });
+
+  it('refuses a link cut short at a dot, a ? or a #, and passes one that ends a sentence', () => {
+    const body = 'At https://doi.org/10.5281/zenodo.11357327, [the query](https://example.org/data?id=1), ' +
+      '[the docs](https://example.org/docs#data), and https://github.com/a/b.';
+    for (const cut of ['https://doi.org/10.5281/zenodo', 'https://example.org/data', 'https://example.org/docs']) {
+      const r = result(withEntry(JSON.stringify([cut]), PAPER, body), fileWith({ [ENTRY]: [cut] }));
+      expect(r.detail, cut).toContain('named nowhere in its heading or description');
+    }
+    const whole = 'https://github.com/a/b';
+    expect(result(withEntry(JSON.stringify([whole]), PAPER, body), fileWith({ [ENTRY]: [whole] })).ok).toBe(true);
+  });
+
+  it('refuses a link whose path segment or query value is an accession dataset-accessions.json takes, and passes others', () => {
+    const at = (link: string) => result(withEntry(JSON.stringify([link]), PAPER, `At [the archive](${link}).`), fileWith({ [ENTRY]: [link] }));
+    for (const [link, accession] of [
+      ['https://www.ebi.ac.uk/ena/browser/view/PRJEB27455', 'PRJEB27455'],
+      ['https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE12345', 'GSE12345'],
+      ['https://www.ebi.ac.uk/pride/archive/projects/PXD012345.1', 'PXD012345'],
+    ] as const) {
+      const r = at(link);
+      expect(r.ok, link).toBe(false);
+      expect(r.detail, link).toContain(`names ${accession},`);
+      expect(r.detail, link).toContain(`list ${accession} there instead`);
+    }
+    // An archive the families leave out, a family prefix inside a longer segment or a file name,
+    // and a lowercase lookalike (the families are uppercase) are links.
+    for (const link of [
+      'https://www.ncbi.nlm.nih.gov/sra/SRR1234567', 'https://github.com/example/gsm8k-data',
+      'https://github.com/lab/cra2/tree/main/data', 'https://zenodo.org/records/5/files/GSE1.csv',
+    ]) {
+      expect(at(link).ok, link).toBe(true);
+    }
+  });
+
+  it('refuses a link cut short before any address character, and passes one followed by punctuation and a space', () => {
+    const body = 'See [ENA](https://www.ebi.ac.uk/ena/browser/view?acc=ERP1&display=xml), ' +
+      '[the set](https://example.org/data%20set) and https://github.com/a/b: the code.';
+    for (const cut of ['https://www.ebi.ac.uk/ena/browser/view?acc', 'https://www.ebi.ac.uk/ena/browser/view?acc=ERP1', 'https://example.org/data']) {
+      const r = result(withEntry(JSON.stringify([cut]), PAPER, body), fileWith({ [ENTRY]: [cut] }));
+      expect(r.detail, cut).toContain('named nowhere in its heading or description');
+    }
+    const whole = 'https://github.com/a/b';
+    expect(result(withEntry(JSON.stringify([whole]), PAPER, body), fileWith({ [ENTRY]: [whole] })).ok).toBe(true);
+  });
+
+  it('refuses a link ending in punctuation copied with it, though the prose holds the copy verbatim', () => {
+    const body = 'Code: [FoodML](https://github.com/sezinata/FoodML), at https://github.com/a/b. ' +
+      'See (https://example.org/x) and "https://example.org/y"; *https://example.org/z* or https://example.org/w!';
+    for (const copied of [
+      'https://github.com/sezinata/FoodML),', 'https://github.com/sezinata/FoodML)', 'https://github.com/a/b.',
+      'https://example.org/x)', 'https://example.org/y"', 'https://example.org/y";', 'https://example.org/z*',
+      'https://example.org/w!',
+    ]) {
+      const r = result(withEntry(JSON.stringify([copied]), PAPER, body), fileWith({ [ENTRY]: [copied] }));
+      expect(r.ok, copied).toBe(false);
+      expect(r.detail, copied).toContain(`ends in "${copied.slice(-1)}", punctuation copied with the link`);
+    }
+    for (const whole of ['https://github.com/sezinata/FoodML', 'https://github.com/a/b']) {
+      expect(result(withEntry(JSON.stringify([whole]), PAPER, body), fileWith({ [ENTRY]: [whole] })).ok, whole).toBe(true);
+    }
+  });
+
+  it('refuses a Zenodo record page, naming the DOI link to write instead', () => {
+    const record = 'https://zenodo.org/records/123';
+    const r = result(withEntry(JSON.stringify([record]), PAPER, `At [Zenodo](${record}).`), fileWith({ [ENTRY]: [record] }));
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('write its DOI link, https://doi.org/10.5281/zenodo.123');
+  });
+
+  it('refuses a family accession in a query value whatever its case', () => {
+    const link = 'https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=gse158430';
+    const r = result(withEntry(JSON.stringify([link]), PAPER, `At [GEO](${link}).`), fileWith({ [ENTRY]: [link] }));
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('names GSE158430,');
+  });
+
+  it('rejects a link listed twice, however its case or trailing slash, and an empty list', () => {
+    expect(listed([REPO, `${REPO.toLowerCase()}/`]).detail).toContain('twice');
+    expect(listed([REPO, REPO.replace('https://', 'http://')]).detail).toContain('twice');
+    // One DOI written on two hosts, in two cases, is one deposit.
+    expect(listed([ZENODO, 'https://dx.doi.org/10.5281/ZENODO.11357327/']).detail).toContain('twice');
+    expect(result(withEntry(null), fileWith({ [ENTRY]: [] })).detail).toContain('non-empty list');
+  });
+
+  it('rejects a stored column that differs from the file, in either direction', () => {
+    expect(result(withEntry(null), fileWith({ [ENTRY]: [REPO] })).detail).toContain('db:reseed-axes');
+    expect(result(withEntry(JSON.stringify([REPO])), fileWith({})).detail).toContain('db:reseed-axes');
   });
 });
 

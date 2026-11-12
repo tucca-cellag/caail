@@ -23,7 +23,32 @@ interface EntryRow {
   item_id: string; name: string; url: string | null; page: string;
   section: string; kind: 'atlas' | 'gem' | 'other'; heading_md: string; body_md: string;
   license: string | null; license_source: 'auto' | 'manual' | null;
-  doi: string | null; doi_source: 'auto' | 'manual' | null; related_dois: string | null; ordinal: number;
+  doi: string | null; doi_source: 'auto' | 'manual' | null; related_dois: string | null;
+  accessions?: string | null; data_links?: string | null; ordinal: number;
+}
+
+/**
+ * Parse the `accessions` JSON-array column (tucca-cellag/caail-planning#752) into a list. NULL or an
+ * absent key is no accession. Anything but an array of strings throws: `db:check` refuses such a
+ * value, so reaching here with one means the NDJSON was edited around the guard.
+ */
+export function parseAccessions(id: string, raw: string | null | undefined): string[] {
+  return parseStringList(id, 'accessions', raw);
+}
+
+/** Parse the `data_links` JSON-array column (tucca-cellag/caail-planning#752), as `parseAccessions` does. */
+export function parseDataLinks(id: string, raw: string | null | undefined): string[] {
+  return parseStringList(id, 'data_links', raw);
+}
+
+function parseStringList(id: string, column: string, raw: string | null | undefined): string[] {
+  if (raw === null || raw === undefined) return [];
+  let list: unknown;
+  try { list = JSON.parse(raw); } catch { throw new Error(`${id}: ${column} is not JSON: ${raw}`); }
+  if (!Array.isArray(list) || !list.every((a) => typeof a === 'string')) {
+    throw new Error(`${id}: ${column} is not a JSON array of strings: ${raw}`);
+  }
+  return list as string[];
 }
 
 /** lowercase, spaces→`-`, strip all but [a-z0-9-], collapse repeats (mirrors catalog). */
@@ -77,6 +102,8 @@ export function buildDatasetsModel(): DatasetsData {
       topics: byId.get(r.item_id) ?? [],
       ...licenseInfo(r.license, r.license_source),
       ...citationInfo(r.doi, r.doi_source, counts, parseRelatedDois(r.related_dois)),
+      accessions: parseAccessions(r.item_id, r.accessions),
+      dataLinks: parseDataLinks(r.item_id, r.data_links),
     };
   });
 

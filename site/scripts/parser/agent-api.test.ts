@@ -463,8 +463,8 @@ describe('datasets.json inventory', () => {
   });
 
   it('names its columns, since they differ per page', () => {
-    // Cow/Chicken tables are 8 columns, Fish/Crustacean/Mollusk 9 (an extra Species),
-    // CrossSpecies a different 6 — positional cells would be unreadable without headers.
+    // Cow/Chicken tables are 8 columns, Fish/Crustacean/Mollusk 9 (an extra Species), so
+    // positional cells would be unreadable without headers.
     const cow = (body.inventory ?? []).filter((r: any) => r.page === 'Cow');
     expect(cow.length).toBe(cowTable.rows.length);
     for (const r of cow) expect(Object.keys(r.columns)).toEqual(cowTable.header);

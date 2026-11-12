@@ -65,7 +65,8 @@ small enough that nothing has to be dropped from it.
 
 For "what could I combine my own run with", read `inventory`, not `entries`. The curated entries are
 portals, atlases and model files; the inventory rows are the individual deposits, each carrying its
-accession, assay type, tissue and size under the source page's own column labels.
+accession, assay type, tissue and size under the source page's own column labels. An entry lists its
+own deposits in `accessions` and `dataLinks`.
 
 For a field report, recommend the record with `current: true` for its series and treat any record
 carrying a `supersededBy` id as historical only — the latest edition is derived, so it stays right as

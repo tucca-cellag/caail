@@ -18,7 +18,7 @@ import { INVENTORY_PAGES, REFERENCE_PAGES, BENCHMARKS_PAGE } from '../parser/dat
 import { REPO_ROOT, SITE_ROOT, assignId, frozenSlug, type Db } from './lib.js';
 import {
   extractCatalogEntries, extractInventory, extractMatrixHeaders, extractPaperBlockquotes,
-  extractDatasetEntries, extractReports, readPagesOnRequest, type CatalogRaw, type ReportRaw,
+  extractDatasetEntries, extractReports, readPagesOnRequest, refuseStrayInventory, type CatalogRaw, type ReportRaw,
 } from './extract.js';
 
 // --- papers ----------------------------------------------------------------
@@ -165,6 +165,8 @@ export function seedDatasetEntries(db: Db, seen: Set<string>): number {
  * collision-free across both tables.
  */
 export function seedDatasets(db: Db): { rows: Record<string, number>; entries: number } {
+  // An inventory table on a page outside INVENTORY_PAGES would be seeded by nothing.
+  refuseStrayInventory(REPO_ROOT, 'db:bootstrap');
   const seen = new Set<string>();
   const rows: Record<string, number> = {};
   for (const page of INVENTORY_PAGES) {
@@ -346,8 +348,25 @@ export function repoFromUrl(url: string): string | null {
 interface LicenseCache { repos: Record<string, { spdx?: string | null }>; }
 interface ManualLicenses { catalog: Record<string, string>; datasets: Record<string, string>; }
 
-const readJson = <T>(path: string, fallback: T): T =>
-  existsSync(path) ? (JSON.parse(readFileSync(path, 'utf-8')) as T) : fallback;
+/**
+ * A committed side file's JSON object, or `fallback` when the file is absent. Every side file is one
+ * object, so a file that is not JSON, or is JSON but not an object (`null`, a list), fails naming
+ * itself: `db:reseed-axes` and `db:bootstrap` read several, and a bare SyntaxError or TypeError names
+ * none.
+ */
+const readJson = <T>(path: string, fallback: T): T => {
+  if (!existsSync(path)) return fallback;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(readFileSync(path, 'utf-8'));
+  } catch (err) {
+    throw new Error(`${path} is not JSON: ${(err as Error).message}`);
+  }
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    throw new Error(`${path} is not a JSON object`);
+  }
+  return parsed as T;
+};
 
 /**
  * Seed license + license_source onto catalog + dataset_entries from two committed,
@@ -456,6 +475,54 @@ export function seedRelatedDois(db: Db): { rows: number } {
   for (const [id, list] of Object.entries(manDatasets)) {
     const json = norm(list);
     if (json && setDs.run(json, id).changes) rows++;
+  }
+  return { rows };
+}
+
+interface ManualAccessions { datasets: Record<string, string[]> }
+
+/** The committed file a curated dataset entry's own repository accessions are read from. */
+export const DATASET_ACCESSIONS_PATH = join(SITE_ROOT, 'scripts', 'db', 'dataset-accessions.json');
+
+/**
+ * Seed `accessions` onto dataset_entries from the committed `scripts/db/dataset-accessions.json`:
+ * the entry's OWN repository deposits, by `ds:` id, primary first (tucca-cellag/caail-planning#752).
+ * An inventory row names its deposit in its Data cell, but a curated entry has no such cell, so
+ * without this an entry whose data sit at ENA or GEO cannot be matched by accession. Reused
+ * third-party data is not listed, as for a row. Values are stored as written (trimmed), so a
+ * malformed one reaches `db:check`, which names it, rather than being quietly repaired here.
+ * Stored as a JSON string; an empty or absent list leaves NULL. DB-only, like the DOI axis.
+ * Folded by `db:reseed-axes` and `db:bootstrap`; validated by `checkAccessions`.
+ */
+export function seedAccessions(db: Db, path: string = DATASET_ACCESSIONS_PATH): { rows: number } {
+  return seedEntryList(db, path, 'accessions');
+}
+
+/** The committed file a curated dataset entry's own deposit links are read from. */
+export const DATASET_DATA_LINKS_PATH = join(SITE_ROOT, 'scripts', 'db', 'dataset-data-links.json');
+
+/**
+ * Seed `data_links` onto dataset_entries from the committed `scripts/db/dataset-data-links.json`:
+ * the http(s) links of the entry's OWN deposits, by `ds:` id, primary first, a deposit DOI written
+ * as its `https://doi.org/` link (tucca-cellag/caail-planning#752). The companion of
+ * `seedAccessions` for a deposit no accession names, such as a Zenodo record or a code repository
+ * holding the data: an inventory row serves such a deposit from its Data cell, and without this an
+ * entry could name it only in prose. Same contract as the accessions: stored as written (trimmed),
+ * an empty or absent list leaves NULL, folded by `db:reseed-axes` and `db:bootstrap`, validated by
+ * `checkDataLinks`.
+ */
+export function seedDataLinks(db: Db, path: string = DATASET_DATA_LINKS_PATH): { rows: number } {
+  return seedEntryList(db, path, 'data_links');
+}
+
+/** Fold one `{ "datasets": { "ds:…": [...] } }` file into a JSON-array column of dataset_entries. */
+function seedEntryList(db: Db, path: string, column: 'accessions' | 'data_links'): { rows: number } {
+  const manual = readJson<ManualAccessions>(path, { datasets: {} });
+  const set = db.prepare(`UPDATE dataset_entries SET ${column}=? WHERE item_id=?`);
+  let rows = 0;
+  for (const [id, list] of Object.entries(manual.datasets ?? {})) {
+    const trimmed = (Array.isArray(list) ? list : []).map((a) => String(a).trim());
+    if (trimmed.length && set.run(JSON.stringify(trimmed), id).changes) rows++;
   }
   return { rows };
 }
