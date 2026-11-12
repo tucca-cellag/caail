@@ -381,17 +381,60 @@ describe('labeledLinksAfter', () => {
     ]);
   });
 
-  it('merges a label met twice, case-insensitively, keeping its first spelling', () => {
+  it('returns each label occurrence, in document order, as written', () => {
     const src = [
       '<a id="10">10</a> Author (2021). Title. https://doi.org/10.10/y',
       '',
       '> **Correction**: https://doi.org/10.1/one',
       '',
-      '> **correction**: https://doi.org/10.1/two',
+      '> **Erratum**: https://doi.org/10.1/two',
+      '',
+      '> **correction**: https://doi.org/10.1/three',
     ].join('\n');
     expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([
-      { label: 'Correction', urls: ['https://doi.org/10.1/one', 'https://doi.org/10.1/two'] },
+      { label: 'Correction', urls: ['https://doi.org/10.1/one'] },
+      { label: 'Erratum', urls: ['https://doi.org/10.1/two'] },
+      { label: 'correction', urls: ['https://doi.org/10.1/three'] },
     ]);
+  });
+
+  it('ends a label where a line starts without one, so a later link is not its URL', () => {
+    const src = [
+      '<a id="12">12</a> Author (2021). Title. https://doi.org/10.12/w',
+      '',
+      '> **Correction**: https://doi.org/10.1/fix',
+      '> See also [the dataset](https://zenodo.org/x)',
+    ].join('\n');
+    expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([
+      { label: 'Correction', urls: ['https://doi.org/10.1/fix'] },
+    ]);
+  });
+
+  it('reads a label written without a colon, with the colon inside the bold, or with a parenthesis', () => {
+    const src = [
+      '<a id="13">13</a> Author (2021). Title. https://doi.org/10.13/v',
+      '',
+      '> **Code** https://github.com/x/y',
+      '',
+      '> **Erratum:** https://doi.org/10.1/err',
+      '',
+      '> **Correction** (2025): https://doi.org/10.1/cor',
+    ].join('\n');
+    expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([
+      { label: 'Code', urls: ['https://github.com/x/y'] },
+      { label: 'Erratum', urls: ['https://doi.org/10.1/err'] },
+      { label: 'Correction', urls: ['https://doi.org/10.1/cor'] },
+    ]);
+  });
+
+  it('takes only the URL from a text run GFM did not autolink', () => {
+    // GFM leaves a URL with a malformed host unlinked, so it stays in a text run.
+    const src = [
+      '<a id="14">14</a> Author (2021). Title. https://doi.org/10.14/u',
+      '',
+      '> **Data**: https://-bad-/a (mirror)',
+    ].join('\n');
+    expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([{ label: 'Data', urls: ['https://-bad-/a'] }]);
   });
 
   it('(d) stops at the first non-blockquote sibling', () => {

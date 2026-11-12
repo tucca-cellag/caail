@@ -180,7 +180,22 @@ describe('buildPapersModel — reference blockquote labels', () => {
 
   it('fails on a Code or Data label with more than the one URL its field holds', () => {
     expect(() => withRef4(['> **Data**: https://zenodo.org/a, https://www.ncbi.nlm.nih.gov/geo/b']))
-      .toThrow(/ref 4: blockquote label "Data" has 2 URLs, but a reference serves one Data URL/);
+      .toThrow(/ref 4: its Data blockquotes hold 2 URLs, but a reference serves one Data URL/);
+    // Two Code blockquotes are two Code URLs too.
+    expect(() => withRef4(['> **Code**: https://github.com/x/a', '> **Code**: https://github.com/x/b']))
+      .toThrow(/ref 4: its Code blockquotes hold 2 URLs/);
+  });
+
+  it('serves notices in document order, a repeated label in its own place', () => {
+    const r = ref4(withRef4([
+      '> **Correction**: https://doi.org/10.1/one', '> **Erratum:** https://doi.org/10.1/two',
+      '> **Correction**: https://doi.org/10.1/three',
+    ]));
+    expect(r.notices).toEqual([
+      { label: 'Correction', url: 'https://doi.org/10.1/one' },
+      { label: 'Erratum', url: 'https://doi.org/10.1/two' },
+      { label: 'Correction', url: 'https://doi.org/10.1/three' },
+    ]);
   });
 
   it('serves a notice under its canonical label, whatever case the blockquote wrote', () => {

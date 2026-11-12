@@ -172,20 +172,24 @@ function referenceLinks(id: number, labeled: Array<{ label: string; urls: string
   PartialReference, 'codeUrl' | 'dataUrl' | 'modelUrls' | 'notices'
 > {
   for (const { label, urls } of labeled) {
-    const key = label.toLowerCase();
-    if (!CANONICAL.has(key)) {
+    if (!CANONICAL.has(label.toLowerCase())) {
       throw new Error(
         `Papers.md ref ${id}: blockquote label "${label}" is neither a resource (${RESOURCE_LABELS.join(', ')}) nor a ` +
         `post-publication notice (${NOTICE_LABELS.join(', ')}). A retraction is not a notice: raise it with the curator.`,
       );
     }
     if (urls.length === 0) throw new Error(`Papers.md ref ${id}: blockquote label "${label}" has no http(s) URL.`);
-    if ((key === 'code' || key === 'data') && urls.length > 1) {
-      throw new Error(`Papers.md ref ${id}: blockquote label "${label}" has ${urls.length} URLs, but a reference serves one ` +
-        `${CANONICAL.get(key)} URL: keep the primary one.`);
+  }
+  /** Every URL under a label, across its occurrences, in document order. */
+  const urlsFor = (name: string): string[] =>
+    labeled.filter((e) => e.label.toLowerCase() === name).flatMap((e) => e.urls);
+  for (const key of ['code', 'data']) {
+    const n = urlsFor(key).length;
+    if (n > 1) {
+      throw new Error(`Papers.md ref ${id}: its ${CANONICAL.get(key)} blockquotes hold ${n} URLs, but a reference serves ` +
+        `one ${CANONICAL.get(key)} URL: keep the primary one.`);
     }
   }
-  const urlsFor = (name: string): string[] => labeled.find((e) => e.label.toLowerCase() === name)?.urls ?? [];
   return {
     codeUrl: urlsFor('code')[0] ?? null,
     dataUrl: urlsFor('data')[0] ?? null,
