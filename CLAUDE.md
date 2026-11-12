@@ -166,7 +166,7 @@ LICENSE                MIT License
 
      That blank line is load-bearing and nothing checks it: two adjacent `>` lines render as one run-on on GitHub, which is where these are read, and every gate in the repo passes either form.
 
-     **The label is the claim, so it has to be the publisher's own word.** An expression of concern says the publisher doubts the work and has fixed nothing, and filing one under `Correction` tells every reader the opposite of what was published. The sanctioned words are `NOTICE_LABELS` in `site/scripts/parser/papers.ts`: `Correction`, `Erratum`, `Expression of concern`, `Corrigendum`, `Author Correction`, `Publisher Correction` and `Addendum`, all deposited by real publishers. The list is closed in code on purpose: a publisher's word not yet on it fails `pnpm parse` (below), so it is added there deliberately, never filed under a nearby word.
+     **The label is the claim, so it has to be the publisher's own word.** An expression of concern says the publisher doubts the work and has fixed nothing, and filing one under `Correction` tells every reader the opposite of what was published. The sanctioned words are `NOTICE_LABELS` in `site/scripts/parser/papers.ts`, each one a real publisher deposits (an expression of concern and a corrigendum among them); read the list there rather than from a copy. It is closed in code on purpose: a publisher's word not yet on it fails `pnpm parse` (below), so it is added there deliberately, never filed under a nearby word.
 
      Record one even when it looks cosmetic. The correction on ref 289 changed a single word of the abstract, 2-fold to 5-fold cross-validation, which is precisely the claim an abstract-only classification would have rested on.
 
