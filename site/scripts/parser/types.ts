@@ -1114,6 +1114,8 @@ export const ApiPaperIndexRowSchema = z.strictObject({
   doi: z.string().nullable(),
   hasCode: z.boolean(),
   hasData: z.boolean(),
+  /** True when the paper carries a post-publication notice (a correction, an expression of concern…); papers.json has them. */
+  hasNotice: z.boolean(),
 });
 
 export const ApiPapersIndexSchema = z.strictObject({

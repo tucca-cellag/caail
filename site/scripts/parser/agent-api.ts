@@ -652,6 +652,7 @@ export function buildPapersIndex(papers: PapersData, corpusDate: string): unknow
       doi: r.doi ?? null,
       hasCode: Boolean(r.hasCode),
       hasData: Boolean(r.hasData),
+      hasNotice: (r.notices ?? []).length > 0,
     })),
   };
 }

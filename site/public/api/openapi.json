@@ -1330,6 +1330,9 @@
           },
           "hasData": {
             "type": "boolean"
+          },
+          "hasNotice": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -1343,7 +1346,8 @@
           "areas",
           "doi",
           "hasCode",
-          "hasData"
+          "hasData",
+          "hasNotice"
         ],
         "additionalProperties": false
       },
