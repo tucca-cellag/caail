@@ -169,7 +169,12 @@ export const API_ENDPOINTS: readonly ApiEndpointSpec[] = [
       'Two arrays of datasets, and one of studies that are not. `entries` are the curated portals, atlases and GEMs. `inventory` are the ' +
       'per-study deposits — accession, assay type, tissue, size — keyed by the source page\'s ' +
       'own column labels, since the tables differ per page. Filter either by `page`. Use ' +
-      '`inventory` for "what could I combine my own run with". ' +
+      '`inventory` for "what could I combine my own run with". Each `columns` value is the ' +
+      'cell\'s Markdown. A link the page writes relative is served absolute: one to another ' +
+      'CAAIL page points at that page on the CAAIL site or at its Markdown on GitHub, and one ' +
+      'to a section of the same page at that page\'s Markdown on GitHub. Links the page writes ' +
+      'absolute are served as written, so no link in a cell depends on where this file was ' +
+      'fetched from; that is a property of each link\'s form, not a check that its target exists. ' +
       'When an inventory row\'s deposit is a SuperSeries, its `subseries` lists the member ' +
       'accessions: a SuperSeries accession is a container that resolves to no analysable ' +
       'data, so the parent row alone will not tell you the assay or design of anything you ' +

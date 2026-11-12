@@ -64,6 +64,9 @@ describe('rewritePrimerUrl', () => {
       url: 'https://github.com/tucca-cellag/caail/blob/main/Papers.md#50',
       internal: false,
     });
+    // A root-relative path is read from the repo root, as GitHub and resolveCaailHref read it.
+    expect(rewritePrimerUrl('/Papers.md', 'Primers').url).toBe(`${SITE_BASE}/papers/explorer/`);
+    expect(rewritePrimerUrl('/Papers.md#50', 'Primers').url).toBe('https://github.com/tucca-cellag/caail/blob/main/Papers.md#50');
     expect(rewritePrimerUrl('../Talks.md#applied-aiml-for-cellular-agriculture', 'Primers').url).toBe(
       `${SITE_BASE}/talks/#applied-ai-ml-for-cellular-agriculture`,
     );

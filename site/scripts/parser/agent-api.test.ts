@@ -30,6 +30,8 @@ import {
   absolutizeSiteHrefs,
   absolutizeFragments,
   assertAbsoluteLinks,
+  absolutizeCellLinks,
+  nonAbsoluteMarkdownTargets,
 } from './agent-api.js';
 import { RETIRED_BASES, SITE_BASE, SITE_ORIGIN, SITE_URL } from '../../src/content/site-config.ts';
 import { buildPapersModel } from './papers.js';
@@ -537,6 +539,151 @@ describe('site-relative hrefs in the API', () => {
       .toBe('<a href="https://github.com/tucca-cellag/caail/blob/main/Software.md#causalbench">x</a>');
   });
 
+  it("resolves a dataset cell's relative links: a .md target as the site does, a fragment to the page's GitHub source (tucca-cellag/caail-planning#348)", () => {
+    const rewrite = (md: string): string => absolutizeCellLinks(md, 'Datasets/Pig.md').md;
+    // A card or island route takes no unknown anchor, so Papers.md#193 keeps its GitHub blob.
+    expect(rewrite('companion to [Papers.md #193](../Papers.md#193)'))
+      .toBe('companion to [Papers.md #193](https://github.com/tucca-cellag/caail/blob/main/Papers.md#193)');
+    // A root-relative target is read from the repo root, as GitHub reads it.
+    expect(rewrite('[r](/Papers.md#193)')).toBe('[r](https://github.com/tucca-cellag/caail/blob/main/Papers.md#193)');
+    // A rendered prose page becomes its site route.
+    expect(rewrite('see [Cow.md](./Cow.md)')).toBe(`see [Cow.md](${SITE_URL}datasets/cow/)`);
+    // A fragment resolves against the cell's own page, where it was written to resolve.
+    expect(rewrite('[above](#featured-atlases)'))
+      .toBe('[above](https://github.com/tucca-cellag/caail/blob/main/Datasets/Pig.md#featured-atlases)');
+    // Every title and destination form remark reads is rewritten, and only the destination changes.
+    for (const [md, want] of [
+      ['[c](./Cow.md "Cow page")', `[c](${SITE_URL}datasets/cow/ "Cow page")`],
+      ["[c](./Cow.md 'Cow')", `[c](${SITE_URL}datasets/cow/ 'Cow')`],
+      ['[c](./Cow.md (Cow))', `[c](${SITE_URL}datasets/cow/ (Cow))`],
+      ['[c](<./Cow.md>)', `[c](<${SITE_URL}datasets/cow/>)`],
+    ] as const) {
+      expect(rewrite(md), md).toBe(want);
+    }
+    const absolute = '[`GSE1`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE1) and [m](mailto:a@b.c)';
+    expect(rewrite(absolute)).toBe(absolute);
+    // Link syntax quoted in a code span is not a link, so it is left as written.
+    expect(rewrite('write `[x](./Cow.md)` to link')).toBe('write `[x](./Cow.md)` to link');
+    // A title holding the destination's own text is not mistaken for the destination.
+    expect(rewrite('[Cow](./Cow.md "see ](./Cow.md")'))
+      .toBe(`[Cow](${SITE_URL}datasets/cow/ "see ](./Cow.md")`);
+    // A cell is inline content, as in its table: HTML at its start cannot hide its links,
+    // and text shaped like a definition is text.
+    for (const [md, want] of [
+      ['<div>[x](./Cow.md)</div>', `<div>[x](${SITE_URL}datasets/cow/)</div>`],
+      ['<!-- note --> [x](./Cow.md)', `<!-- note --> [x](${SITE_URL}datasets/cow/)`],
+      ['<details><summary>s</summary>[x](./Cow.md)</details>', `<details><summary>s</summary>[x](${SITE_URL}datasets/cow/)</details>`],
+      ['[a]: ./Cow.md', '[a]: ./Cow.md'],
+    ] as const) {
+      expect(rewrite(md), md).toBe(want);
+    }
+  });
+
+  it('finds every link target that is not absolute, and nothing in a code span', () => {
+    for (const md of [
+      '[s](./site/db/schema.sql)', '[s](<../a b.csv>)', "[x](../a.csv 't')", '[x](../a.csv (t))',
+      '[x](../wiki_(a).csv)', '![f](fig.png)', '<a href="../x.csv">x</a>', '[x](#)',
+      '[x](https://github.com/tucca-cellag/caail/blob/main/../outside.md)',
+      '[x](https://github.com/tucca-cellag/caail/blob/main/Datasets/Pig.md#)',
+      // An unquoted value: remark reads one holding '/' as text, but CommonMark reads it as a tag.
+      '<a href=data.csv>x</a>', '<a href=../data/x.csv>x</a>', "<img src='fig.png'>", '<img alt="a > b" src="../fig.png">',
+      '<a title="<!--" href="../x.csv">x</a> <!-- note -->',
+    ]) {
+      expect(nonAbsoluteMarkdownTargets(md), md).toHaveLength(1);
+    }
+    for (const md of [
+      '[x](https://x.org/a?b=1#c) [m](mailto:a@b.c)', 'quoted `[x](../y.csv)` syntax', 'see https://x.org/a', 'no links',
+      '[ENA FTP](ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR123/)', '[q](https://x.org/view?path=./data)',
+      // Another site's URL is taken as written, dot segment, empty fragment and all.
+      '[x](https://h.org/a/./b)', 'www.example.org/a/../b', 'see https://tool.org/app# here',
+      // data-src is no link a browser follows.
+      '<img data-src="fig.png" src="https://x.org/a.png">',
+      // Attribute-like text outside a tag is not an attribute, nor is a comment.
+      '[v](https://x.org/view?id=1&src=GEO)', '<!-- src=fig.png --> text', 'cited as [1] and [2]', 'quoted `[a][b]` syntax',
+      // A reference link is a link only where its page defines the label, which no dataset
+      // page may, so in a cell it is text; so are citation brackets and escaped brackets.
+      'see [GEO][geo]', 'see [*GEO*][geo]', 'cited as [1][2]', 'escaped \\[a\\]\\[b\\]',
+      // A tag quoted inside a comment is no link.
+      '<!-- <img src=fig.png> --> text',
+    ]) {
+      expect(nonAbsoluteMarkdownTargets(md), md).toEqual([]);
+    }
+  });
+
+  it('holds the catalog HTML check to the same rule as the dataset Markdown check', () => {
+    for (const url of ['https://github.com/tucca-cellag/caail/blob/main/../x.md', `${SITE_URL}datasets/cow/#`]) {
+      expect(() => assertAbsoluteLinks(`<a href="${url}">x</a>`), url).toThrow(/not an absolute URL/);
+    }
+    // A third-party link with a dot segment or an empty fragment is that site's own URL.
+    for (const url of ['https://host.org/docs/./index.html', 'https://tool.org/app#']) {
+      expect(() => assertAbsoluteLinks(`<a href="${url}">x</a>`), url).not.toThrow();
+    }
+    expect(() => assertAbsoluteLinks('<a href="ftp://ftp.ebi.ac.uk/pub/">f</a>')).not.toThrow();
+    // It finds single-quoted and bare values too, and passes over data-src.
+    for (const html of ["<a href='../x.md'>x</a>", '<a href=x.csv>x</a>']) {
+      expect(() => assertAbsoluteLinks(html), html).toThrow(/not an absolute URL/);
+    }
+    expect(() => assertAbsoluteLinks('<img data-src="fig.png" src="https://x.org/a.png">')).not.toThrow();
+    // An attribute-like run in visible text, or in a comment, is not read as an attribute.
+    expect(() => assertAbsoluteLinks('<a href="https://x.org/view?id=1&amp;src=GEO">https://x.org/view?id=1&amp;src=GEO</a>')).not.toThrow();
+    expect(() => assertAbsoluteLinks('<p>see <!-- src=fig.png --> here</p>')).not.toThrow();
+    expect(() => assertAbsoluteLinks('<p><!-- <img src="x.png"> --></p>')).not.toThrow();
+    // A quoted '>' does not end the tag, so a later src is still read.
+    expect(() => assertAbsoluteLinks('<img alt="a > b" src="../fig.png">')).toThrow(/not an absolute URL/);
+    // It never reads less than the whole-string check before it: no space between
+    // attributes, an empty comment, and a '<!--' quoted inside a tag all still fail.
+    for (const html of [
+      '<a href="/software/"title="t">x</a>', '<!--> <a href="../x.md">x</a> <!-- n -->',
+      '<a title="<!--" href="../x.csv">x</a> <!-- note -->',
+    ]) {
+      expect(() => assertAbsoluteLinks(html), html).toThrow(/not an absolute URL/);
+    }
+  });
+
+  it('fails the build on a cell link left not absolute, naming the row and the file once', () => {
+    const bad: typeof inventory = {
+      ...inventory,
+      inventory: [...inventory.inventory, {
+        ...inventory.inventory[0]!, id: 'ds:fixture-bad-link', page: 'Pig', columns: { Description: '[s](./site/db/schema.sql)' },
+      }],
+    };
+    expect(() => buildAgentApi({ papers, catalog, datasets, inventory: bad, topics, taxonomy, reports, corpusDate: DATE }))
+      .toThrow(/^agent-api: inventory row ds:fixture-bad-link: Datasets\/Pig\.md: Markdown link target "\.\/site\/db\/schema\.sql" is not an absolute URL\.$/);
+    const empty: typeof inventory = {
+      ...inventory,
+      inventory: [...inventory.inventory, {
+        ...inventory.inventory[0]!, id: 'ds:fixture-empty-link', page: 'Pig', columns: { Description: 'see [GEO]()' },
+      }],
+    };
+    expect(() => buildAgentApi({ papers, catalog, datasets, inventory: empty, topics, taxonomy, reports, corpusDate: DATE }))
+      .toThrow(/Datasets\/Pig\.md: a link has an empty target/);
+    // An empty fragment is not rewritten to a URL ending in a bare '#'; it is reported instead.
+    expect(absolutizeCellLinks('[x](#)', 'Datasets/Pig.md')).toEqual({ md: '[x](#)', notAbsolute: ['#'] });
+  });
+
+  it('ships no relative Markdown link target in any emitted endpoint', () => {
+    // An agent reading the JSON off-site resolves ../Papers.md against the API URL and 404s.
+    // A row of its own carries the relative links, so this holds whatever the corpus says.
+    const fixture: typeof inventory = {
+      ...inventory,
+      inventory: [...inventory.inventory, {
+        ...inventory.inventory[0]!, id: 'ds:fixture-relative-links', page: 'Pig',
+        columns: { Description: 'see [Cow.md](./Cow.md) and [Papers.md #193](../Papers.md#193)' },
+      }],
+    };
+    const files = buildAgentApi({ papers, catalog, datasets, inventory: fixture, topics, taxonomy, reports, corpusDate: DATE });
+    const row = (files.find((f) => f.name === 'datasets.json')!.body as any).inventory
+      .find((r: any) => r.id === 'ds:fixture-relative-links');
+    expect(row.columns.Description).toBe(
+      `see [Cow.md](${SITE_URL}datasets/cow/) and [Papers.md #193](https://github.com/tucca-cellag/caail/blob/main/Papers.md#193)`);
+    const strings = (v: unknown): string[] =>
+      typeof v === 'string' ? [v] : v && typeof v === 'object' ? Object.values(v).flatMap(strings) : [];
+    for (const f of files.filter((f) => f.name !== 'openapi.json')) {
+      const bad = strings(f.body).flatMap(nonAbsoluteMarkdownTargets);
+      expect(bad, f.name).toEqual([]);
+    }
+  });
+
   it('ships no root-relative or fragment-only href in any emitted endpoint', () => {
     // An agent reading the JSON off-site (or from the raw mirror) cannot resolve
     // "/…" or "#…"; the parser's catalog summaries carry both forms for the site.
@@ -558,6 +705,13 @@ describe('site/public/api/datasets.json (the shipped file)', () => {
     readFileSync(join(REPO_ROOT, 'site', 'public', 'api', 'datasets.json'), 'utf-8'),
   );
   const cowTable = extractInventory(join(REPO_ROOT, 'Datasets', 'Cow.md'))!;
+
+  it('carries no relative Markdown link in any inventory cell (tucca-cellag/caail-planning#348)', () => {
+    const relative = (shipped.inventory ?? []).flatMap((r: any) =>
+      Object.values(r.columns as Record<string, string>).flatMap((cell) =>
+        nonAbsoluteMarkdownTargets(cell).map((t) => `${r.id}: ${t}`)));
+    expect(relative).toEqual([]);
+  });
 
   it('shows an agent as many bovine datasets as a reader of Datasets/Cow.md sees', () => {
     const cow = [...(shipped.entries ?? []), ...(shipped.inventory ?? [])].filter(

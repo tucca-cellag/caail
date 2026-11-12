@@ -26,36 +26,40 @@ import { dedicatedLink, GITHUB_BLOB_BASE } from '../dedicated-links.ts';
  */
 export function rewriteCaailLinks(options: { base: string; sourcePath: string }) {
   const base = options.base.replace(/\/$/, '');
-  const srcDir = posix.dirname(options.sourcePath);
   return (tree: Root) => {
     visit(tree, 'link', (node: any) => {
-      const url: string = node.url;
-      // External (scheme:), intra-page (#…), or protocol-relative (//…) → leave.
-      if (/^[a-z]+:/i.test(url) || url.startsWith('#') || url.startsWith('//')) return;
-      const [rawPath, anchor] = url.split('#');
-      // A link to a directory (trailing slash, e.g. `./Datasets/`) resolves to
-      // that directory's README index, mirroring how GitHub serves the folder.
-      const path = rawPath.endsWith('/') ? rawPath + 'README.md' : rawPath;
-      if (!/\.md$/i.test(path)) return;
-      const repoRel = posix.normalize(posix.join(srcDir, path)).replace(/^\.\//, '');
-      const idBase = repoRel.replace(/\.md$/i, '');
-      const id = CAAIL_PAGES.idForSourcePath(idBase);
-      if (CAAIL_PAGES.byId(id)) {
-        node.url = `${base}/${id}/`;
-        return;
-      }
-      let dedicated: string | undefined;
-      try {
-        dedicated = dedicatedLink(repoRel, anchor);
-      } catch (e) {
-        // Name the file holding the bad link, not only the file it points at.
-        throw new Error(`${options.sourcePath}: ${(e as Error).message}`);
-      }
-      if (dedicated) {
-        node.url = `${base}${dedicated}`;
-      } else {
-        node.url = `${GITHUB_BLOB_BASE}/${repoRel}${anchor ? '#' + anchor : ''}`;
-      }
+      const url = resolveCaailHref(node.url, options.sourcePath, base);
+      if (url !== undefined) node.url = url;
     });
   };
+}
+
+/**
+ * Where a link written in the canonical file at `sourcePath` resolves, by the rules
+ * above, with site routes under `base` (no trailing slash). Undefined for a link
+ * left as written: external, intra-page (`#…`), protocol-relative, or not to a
+ * `.md` file. The agent API resolves the Markdown it serves with this too, so an
+ * agent gets the link a reader of the same page gets (tucca-cellag/caail-planning#348).
+ */
+export function resolveCaailHref(url: string, sourcePath: string, base: string): string | undefined {
+  // External (scheme:), intra-page (#…), or protocol-relative (//…) → leave.
+  if (/^[a-z]+:/i.test(url) || url.startsWith('#') || url.startsWith('//')) return undefined;
+  const [rawPath, anchor] = url.split('#');
+  // A link to a directory (trailing slash, e.g. `./Datasets/`) resolves to
+  // that directory's README index, mirroring how GitHub serves the folder.
+  const path = rawPath.endsWith('/') ? rawPath + 'README.md' : rawPath;
+  if (!/\.md$/i.test(path)) return undefined;
+  // A root-relative path (`/Papers.md`) is read from the repo root, as GitHub reads it.
+  const repoRel = (path.startsWith('/') ? posix.normalize(path.slice(1)) : posix.normalize(posix.join(posix.dirname(sourcePath), path)))
+    .replace(/^\.\//, '');
+  const id = CAAIL_PAGES.idForSourcePath(repoRel.replace(/\.md$/i, ''));
+  if (CAAIL_PAGES.byId(id)) return `${base}/${id}/`;
+  let dedicated: string | undefined;
+  try {
+    dedicated = dedicatedLink(repoRel, anchor);
+  } catch (e) {
+    // Name the file holding the bad link, not only the file it points at.
+    throw new Error(`${sourcePath}: ${(e as Error).message}`);
+  }
+  return dedicated ? `${base}${dedicated}` : `${GITHUB_BLOB_BASE}/${repoRel}${anchor ? '#' + anchor : ''}`;
 }

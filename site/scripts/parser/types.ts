@@ -300,8 +300,10 @@ export type ReportsData = z.infer<typeof ReportsDataSchema>;
  * — the species pages use Study/Paper/Data/Type/Tissue/…, and Fish and the invertebrates add
  * a Species column. A positional array would be unreadable without fetching the Markdown,
  * which is the cost this removes.
- * Values are the RAW markdown cell, so nothing is lost; `links` is the convenience
- * extraction of the URLs inside them.
+ * Values are the markdown cell, so nothing is lost; `links` is the convenience
+ * extraction of the URLs inside them. The agent API makes each cell's link targets
+ * absolute before serving it (`absolutizeCellLinks` in agent-api.ts), since a
+ * page-relative `../Papers.md` resolves nowhere off-site.
  */
 export const DatasetInventoryRowSchema = z.object({
   /** frozen ds: id, shared with the curated entries' namespace */
@@ -312,9 +314,13 @@ export const DatasetInventoryRowSchema = z.object({
   page: z.string(),
   /** plain text of the first column — the study/resource name */
   name: z.string(),
-  /** the page's header labels → that row's raw markdown cell, in table order */
+  /** the page's header labels → that row's markdown cell, in table order (the agent API serves its relative links made absolute) */
   columns: z.record(z.string(), z.string()),
-  /** every URL appearing in the row, in document order, deduped */
+  /**
+   * the http(s) URLs the row writes out in full, in document order, deduped. Its relative
+   * links to CAAIL's own pages (`../Papers.md#193`), which `columns` serves made absolute,
+   * are not deposits and are not listed.
+   */
   links: z.array(z.string()),
   /** bare lowercase DOI of the row's paper or preprint, from its Paper cell; null when none is named */
   paperDoi: z.string().nullable().default(null),
