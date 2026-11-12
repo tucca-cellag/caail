@@ -117,8 +117,9 @@ export const API_ENDPOINTS: readonly ApiEndpointSpec[] = [
     summary: 'Every reference, one compact row each',
     description:
       'Prefer this over papers.json unless you need a full record. One row per reference — ' +
-      'id, title, year, first author, section, methods, areas, DOI, and whether code or data ' +
-      'is linked — at roughly a sixth the size, because a fetch tool that converts a page to ' +
+      'id, title, year, first author, section, methods, areas, DOI, whether code or data is ' +
+      'linked, and whether a post-publication notice is recorded (`hasNotice`; the notices ' +
+      'themselves are in papers.json) — at roughly a sixth the size, because a fetch tool that converts a page to ' +
       'text and summarises it truncates the full endpoint and then answers confidently from ' +
       'the part it kept. Use this to decide WHICH references you want, then fetch papers.json ' +
       'for their full records. Carries `matrixNote`: a reference with empty `methods` and ' +

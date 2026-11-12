@@ -43,7 +43,7 @@
     },
     {
       "path": "papers-index.json",
-      "use": "START HERE for papers. Every reference, one compact row: id, title, year, first author, section, methods, areas, DOI, code/data flags. A sixth the size of papers.json, so it survives a fetch tool that truncates. Enumerate here, then fetch full records."
+      "use": "START HERE for papers. Every reference, one compact row: id, title, year, first author, section, methods, areas, DOI, code/data flags, and whether a post-publication notice is recorded (`hasNotice`). A sixth the size of papers.json, so it survives a fetch tool that truncates. Enumerate here, then fetch full records."
     },
     {
       "path": "papers.json",
