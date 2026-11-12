@@ -316,7 +316,11 @@ export const DatasetInventoryRowSchema = z.object({
   name: z.string(),
   /** the page's header labels → that row's raw markdown cell, in table order */
   columns: z.record(z.string(), z.string()),
-  /** every URL appearing in the row, in document order, deduped */
+  /**
+   * every absolute URL written in the row, in document order, deduped. The page's relative
+   * links to CAAIL's own pages (`../Papers.md#193`), which `columns` serves made absolute,
+   * are not deposits and are not listed.
+   */
   links: z.array(z.string()),
   /** bare lowercase DOI of the row's paper or preprint, from its Paper cell; null when none is named */
   paperDoi: z.string().nullable().default(null),
