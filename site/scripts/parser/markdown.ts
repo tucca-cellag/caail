@@ -186,9 +186,10 @@ const ABSOLUTE_URL_RE = /^https?:\/\//i;
  *     regardless of authoring style.
  *
  * Every line of those blockquotes is returned, one entry each, in document order.
- * A line that opens with a label gives `{ label, urls }`; any other line gives
+ * A line that opens with a label gives `{ label, urls }`; any other line, and a line
+ * that holds a second label later on (bold followed by a colon), gives
  * `{ label: null, text }`, its plain text, so a caller can refuse it rather than
- * lose it. A label is bold that starts the line and is followed by a colon,
+ * misread it. A label is bold that starts the line and is followed by a colon,
  * inside the bold or after it with at most a parenthesis between
  * (`> **Erratum:** url`, `> **Correction** (2025): url`), or straight by a URL
  * (`> **Code** url`). Bold that runs into words (`> **Note** that …`,
@@ -219,7 +220,10 @@ export function labeledLinksAfter(nodes: RootContent[], index: number): Blockquo
       }
       for (const line of linesOf((child as Paragraph).children)) {
         const label = labelOf(line);
-        if (label === null) {
+        // A second label later on the line makes it no single label: its URLs would
+        // otherwise be read as the first label's.
+        const second = line.some((inline, k) => k > 0 && labelOf(line.slice(k), true) !== null);
+        if (label === null || second) {
           result.push({ label: null, text: line.map((inline) => mdastToString(inline)).join('').trim() });
           continue;
         }
@@ -236,7 +240,7 @@ export function labeledLinksAfter(nodes: RootContent[], index: number): Blockquo
   return result;
 }
 
-/** One line of a reference's trailing blockquotes: a label and its URLs, or a line that opens no label. */
+/** One line of a reference's trailing blockquotes: a label and its URLs, or a line that is not one label and its URLs. */
 export type BlockquoteLine = { label: string; urls: string[] } | { label: null; text: string };
 
 type Inline = Paragraph['children'][number];
@@ -268,25 +272,43 @@ function linesOf(inlines: Inline[]): Inline[][] {
 /** A URL written out in a text run that GFM did not autolink, up to whitespace or a comma. */
 const TEXT_URL = /https?:\/\/[^\s,]+/g;
 /** The punctuation a sentence leaves after such a URL, which GFM's own autolinks exclude too. */
-const TRAILING_PUNCTUATION = /[.;:!?'")\]>]+$/;
+const TRAILING_PUNCTUATION = /[.;:!?'"\]>]+$/;
 
+/**
+ * The URLs in a text run, each without the punctuation a sentence put after it. A
+ * closing parenthesis goes only when it is unbalanced, as GFM decides for the URLs it
+ * links, so `…/Foo_(bar).` keeps its `)` and `…/a).` loses it.
+ */
 function textUrls(text: string): string[] {
-  return [...text.matchAll(TEXT_URL)].map((m) => m[0].replace(TRAILING_PUNCTUATION, ''));
+  const count = (s: string, c: string): number => s.split(c).length - 1;
+  return [...text.matchAll(TEXT_URL)].map((m) => {
+    let url = m[0];
+    for (let last = ''; url !== last;) {
+      last = url;
+      url = url.replace(TRAILING_PUNCTUATION, '');
+      if (url.endsWith(')') && count(url, '(') < count(url, ')')) url = url.slice(0, -1);
+    }
+    return url;
+  });
 }
 
 /**
  * The label a line opens, or null when it opens none: a leading `strong` whose text
- * ends with a colon, or that is followed straight by a link, by a colon (after at
- * most a parenthesis), or by a URL written out (see `labeledLinksAfter`).
+ * ends with a colon, or that is followed by a colon (after at most a parenthesis),
+ * straight by a link, or by a URL written out (see `labeledLinksAfter`). `colonOnly`
+ * admits only the colon forms, which is how a second label is told from bold prose
+ * that happens to come before a URL later on a line.
  */
-function labelOf(line: Inline[]): string | null {
+function labelOf(line: Inline[], colonOnly = false): string | null {
   const first = line[0];
   if (first?.type !== 'strong') return null;
   const text = mdastToString(first).trim();
   if (text.endsWith(':')) return text.slice(0, -1).trim();
   // A space or tab between the bold and an autolinked URL is no content of its own.
   const next = line[1]?.type === 'text' && /^[ \t]*$/.test(line[1].value) ? line[2] : line[1];
+  if (next?.type === 'text' && /^\s*(?:\([^)]*\)\s*)?:/.test(next.value)) return text;
+  if (colonOnly) return null;
   if (next?.type === 'link') return text;
-  if (next?.type === 'text' && /^\s*(?:\([^)]*\)\s*)?:|^\s*https?:\/\//.test(next.value)) return text;
+  if (next?.type === 'text' && /^\s*https?:\/\//.test(next.value)) return text;
   return null;
 }

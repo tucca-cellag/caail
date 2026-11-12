@@ -71,6 +71,21 @@ export const LicenseFieldsSchema = z.object({
 });
 export type LicenseTier = z.infer<typeof LicenseTierSchema>;
 
+/**
+ * The post-publication notices that leave a paper standing, served in a reference's
+ * `notices` (tucca-cellag/caail-planning#656). Each is the publisher's own word, which is
+ * the claim the label makes (`CLAUDE.md`, the `Papers.md` schema). A retraction is not one
+ * of these: whether a retracted paper keeps its cells is a curator decision, so a
+ * `Retraction` label fails the parse like any other unknown label. Defined here, not in
+ * `papers.ts`, so the schema below and the published OpenAPI contract type a notice's label
+ * by the same closed list the parser enforces.
+ */
+export const NOTICE_LABELS = [
+  'Correction', 'Erratum', 'Expression of concern', 'Corrigendum',
+  'Author Correction', 'Publisher Correction', 'Addendum',
+] as const;
+export type NoticeLabel = (typeof NOTICE_LABELS)[number];
+
 export const ReferenceSchema = z.object({
   /** Stable numeric ID — never renumbered after assignment */
   id: z.number().int().positive(),
@@ -109,7 +124,7 @@ export const ReferenceSchema = z.object({
    * own word, whatever case the blockquote used) and its URL, in order; [] if none. A
    * retraction is never one of these.
    */
-  notices: z.array(z.object({ label: z.string(), url: z.string().url() })).default([]),
+  notices: z.array(z.object({ label: z.enum(NOTICE_LABELS), url: z.string().url() })).default([]),
   /** True if section === "References" AND ≥1 matrix cell cites this ref */
   isPrimary: z.boolean(),
   /** Method labels whose cells cite this reference */

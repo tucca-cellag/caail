@@ -407,6 +407,28 @@ describe('labeledLinksAfter', () => {
     ]);
   });
 
+  it('returns a line holding a second label as a line that is not one label, not as more URLs of the first', () => {
+    const src = [
+      '<a id="19">19</a> Author (2021). Title. https://doi.org/10.19/p',
+      '',
+      '> **Models**: https://huggingface.co/a/one **Correction**: https://doi.org/10.1/c',
+    ].join('\n');
+    expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([
+      { label: null, text: 'Models: https://huggingface.co/a/one Correction: https://doi.org/10.1/c' },
+    ]);
+  });
+
+  it('reads bold prose later on a label line, before a URL, as no second label', () => {
+    const src = [
+      '<a id="20">20</a> Author (2021). Title. https://doi.org/10.20/o',
+      '',
+      '> **Data**: https://zenodo.org/a (**mirror** https://zenodo.org/b)',
+    ].join('\n');
+    expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([
+      { label: 'Data', urls: ['https://zenodo.org/a', 'https://zenodo.org/b'] },
+    ]);
+  });
+
   it('returns an unbolded label, a bare URL and a list item each as a line with no label', () => {
     const src = [
       '<a id="17">17</a> Author (2021). Title. https://doi.org/10.17/r',
@@ -489,6 +511,21 @@ describe('labeledLinksAfter', () => {
         `> **Data**: https://-bad-/a${tail}`,
       ].join('\n');
       expect(labeledLinksAfter(parseMarkdown(src).children, 0), tail).toEqual([{ label: 'Data', urls: ['https://-bad-/a'] }]);
+    }
+  });
+
+  it('keeps a closing parenthesis that belongs to an unlinked URL, as GFM does for a linked one', () => {
+    // GFM leaves a URL with a malformed host in a text run (with a well-formed host it
+    // autolinks, even straight after the colon, and keeps a balanced parenthesis itself).
+    for (const tail of ['', '.', ').']) {
+      const src = [
+        '<a id="21">21</a> Author (2021). Title. https://doi.org/10.21/n',
+        '',
+        `> **Data**: https://-bad-/wiki/Foo_(bar)${tail}`,
+      ].join('\n');
+      expect(labeledLinksAfter(parseMarkdown(src).children, 0), tail).toEqual([
+        { label: 'Data', urls: ['https://-bad-/wiki/Foo_(bar)'] },
+      ]);
     }
   });
 

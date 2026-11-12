@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url';
 
 import { buildPapersModel, NOTICE_LABELS, PAPERS_MD_PATH } from './papers.js';
 import { EDITOR_ROLES_RE, stripItalics } from './apa.js';
-import { PapersDataSchema, type PapersData } from './types.js';
+import { PapersDataSchema, ReferenceSchema, type PapersData } from './types.js';
 
 const FIXTURE_PATH = join(
   fileURLToPath(import.meta.url),
@@ -203,21 +203,37 @@ describe('buildPapersModel — reference blockquote labels', () => {
       .toEqual([{ label: 'Expression of concern', url: 'https://doi.org/10.1/eoc' }]);
   });
 
-  it('fails on a blockquote line that opens no label, naming the reference and the line', () => {
+  it('fails on a blockquote line that is not one label and its URLs, naming the reference and the line', () => {
     const lines: Record<string, string> = {
       'a URL wrapped onto its own line': '> **Models**: https://huggingface.co/a/one,\n> https://huggingface.co/a/two',
       'an unbolded label': '> Correction: https://doi.org/10.1/x',
       'a bare URL': '> https://doi.org/10.1/y',
       'bold prose with a colon later': '> **Important** caveat: see https://example.org/a',
+      'a second label on the line': '> **Models**: https://huggingface.co/a/one **Correction**: https://doi.org/10.1/c',
     };
     const text: Record<string, string> = {
       'a URL wrapped onto its own line': 'https://huggingface.co/a/two',
       'an unbolded label': 'Correction: https://doi.org/10.1/x',
       'a bare URL': 'https://doi.org/10.1/y',
       'bold prose with a colon later': 'Important caveat: see https://example.org/a',
+      'a second label on the line': 'Models: https://huggingface.co/a/one Correction: https://doi.org/10.1/c',
     };
     for (const [name, blockquote] of Object.entries(lines)) {
-      expect(() => withRef4([blockquote]), name).toThrow(`Papers.md ref 4: a line of its blockquotes opens no label: "${text[name]}"`);
+      expect(() => withRef4([blockquote]), name)
+        .toThrow(`Papers.md ref 4: a line of its blockquotes is not one label and its URLs: "${text[name]}"`);
+    }
+  });
+
+  it('fails on a notice line holding more than one URL, since a notice is one document', () => {
+    expect(() => withRef4(['> **Correction**: https://doi.org/10.1/x (see also https://pubpeer.com/p/1)']))
+      .toThrow(/ref 4: its Correction line holds 2 URLs, but a notice is one document/);
+  });
+
+  it('types a notice label as one of NOTICE_LABELS, so the schema refuses any other word', () => {
+    const notices = ReferenceSchema.shape.notices;
+    expect(notices.parse([{ label: 'Corrigendum', url: 'https://doi.org/10.1/a' }])).toHaveLength(1);
+    for (const label of ['correction', 'Retraction', 'Note']) {
+      expect(notices.safeParse([{ label, url: 'https://doi.org/10.1/a' }]).success, label).toBe(false);
     }
   });
 

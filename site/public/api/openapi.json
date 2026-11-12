@@ -1139,7 +1139,16 @@
               "type": "object",
               "properties": {
                 "label": {
-                  "type": "string"
+                  "type": "string",
+                  "enum": [
+                    "Correction",
+                    "Erratum",
+                    "Expression of concern",
+                    "Corrigendum",
+                    "Author Correction",
+                    "Publisher Correction",
+                    "Addendum"
+                  ]
                 },
                 "url": {
                   "type": "string",

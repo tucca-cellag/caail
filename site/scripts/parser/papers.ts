@@ -29,7 +29,7 @@ import { parseApa } from './apa.js';
 import { areaKeyForLabel } from './areas.js';
 import { topicsByItemId } from './topics.js';
 import { doiKey } from './citations.js';
-import { MATRIX_SECTION } from './types.js';
+import { MATRIX_SECTION, NOTICE_LABELS, type NoticeLabel } from './types.js';
 import { loadCitedByCounts, loadPaperLicenses, loadPaperIsOa } from './citation-counts.js';
 import {
   PapersDataSchema,
@@ -145,71 +145,74 @@ type PartialReference = Omit<Reference, 'isPrimary' | 'methods' | 'areas' | 'slu
 /** The labels of a reference's own resources, served as `codeUrl`, `dataUrl` and `modelUrls`. */
 export const RESOURCE_LABELS = ['Code', 'Data', 'Models'] as const;
 
-/**
- * The post-publication notices that leave a paper standing, served in `notices`
- * (tucca-cellag/caail-planning#656). Each is the publisher's own word, which is the
- * claim the label makes (`CLAUDE.md`, the `Papers.md` schema). A retraction is not
- * one of these: whether a retracted paper keeps its cells is a curator decision, so
- * a `Retraction` label fails the parse like any other unknown label.
- */
-export const NOTICE_LABELS = [
-  'Correction', 'Erratum', 'Expression of concern', 'Corrigendum',
-  'Author Correction', 'Publisher Correction', 'Addendum',
-] as const;
+/** The sanctioned notice words, defined in `types.ts` so the schema types `notices` by them. */
+export { NOTICE_LABELS };
 
-const NOTICE_KEYS = new Set(NOTICE_LABELS.map((l) => l.toLowerCase()));
-/** Each known label by its lowercase key, so a label matched in any case is served in its canonical form. */
-const CANONICAL = new Map<string, string>([...RESOURCE_LABELS, ...NOTICE_LABELS].map((l) => [l.toLowerCase(), l]));
+/** Each resource word by its lowercase key, so a label is matched in any case. */
+const RESOURCE_BY_KEY = new Map<string, string>(RESOURCE_LABELS.map((l) => [l.toLowerCase(), l]));
+/** Each notice word by its lowercase key, so a notice matched in any case is served in its canonical form. */
+const NOTICE_BY_KEY = new Map<string, NoticeLabel>(NOTICE_LABELS.map((l) => [l.toLowerCase(), l]));
 
 /**
  * A reference's trailing blockquotes, sorted into its resources and its notices. A
- * line that opens no label (prose, or a URL wrapped onto its own line), a label the
- * parser does not know, a known one with no http(s) URL, or a Code or Data label with
- * more than the one URL its field holds, throws naming the reference, so no blockquote
- * content is dropped silently. An exact repeat (the same URL under one resource, or
- * the same notice twice) is served once. A notice is served under its canonical label,
- * whatever case the blockquote wrote it in.
+ * line that is not one label and its URLs (prose, a URL wrapped onto its own line, or
+ * a second label on the line), a label the parser does not know, a known one with no
+ * http(s) URL, a notice line with more than one URL, or a Code or Data label with more
+ * than the one URL its field holds, throws naming the reference, so no blockquote
+ * content is dropped or misread silently. Models takes every URL on its line. An
+ * exact repeat (the same URL under one resource, or the same notice twice) is served
+ * once. A notice is served under its canonical label, whatever case the blockquote
+ * wrote it in.
  */
 function referenceLinks(id: number, lines: BlockquoteLine[]): Pick<
   PartialReference, 'codeUrl' | 'dataUrl' | 'modelUrls' | 'notices'
 > {
-  const labeled: Array<{ label: string; urls: string[] }> = [];
+  const labeled: Array<{ key: string; urls: string[] }> = [];
   for (const line of lines) {
     if (line.label === null) {
       throw new Error(
-        `Papers.md ref ${id}: a line of its blockquotes opens no label: "${line.text}". Each line there is one label and ` +
-        `its URLs (\`> **Code**: url\`): put a wrapped URL back on its label's line, and keep prose out.`,
+        `Papers.md ref ${id}: a line of its blockquotes is not one label and its URLs: "${line.text}". Each line there ` +
+        `is one label and its URLs (\`> **Code**: url\`): put a wrapped URL back on its label's line, give a second ` +
+        `label its own line, and keep prose out.`,
       );
     }
-    labeled.push(line);
-  }
-  for (const { label, urls } of labeled) {
-    if (!CANONICAL.has(label.toLowerCase())) {
+    const key = line.label.toLowerCase();
+    const notice = NOTICE_BY_KEY.get(key);
+    if (notice === undefined && !RESOURCE_BY_KEY.has(key)) {
       throw new Error(
-        `Papers.md ref ${id}: blockquote label "${label}" is neither a resource (${RESOURCE_LABELS.join(', ')}) nor a ` +
+        `Papers.md ref ${id}: blockquote label "${line.label}" is neither a resource (${RESOURCE_LABELS.join(', ')}) nor a ` +
         `post-publication notice (${NOTICE_LABELS.join(', ')}). A retraction is not a notice: raise it with the curator.`,
       );
     }
-    if (urls.length === 0) throw new Error(`Papers.md ref ${id}: blockquote label "${label}" has no http(s) URL.`);
+    if (line.urls.length === 0) throw new Error(`Papers.md ref ${id}: blockquote label "${line.label}" has no http(s) URL.`);
+    if (notice !== undefined && line.urls.length > 1) {
+      throw new Error(`Papers.md ref ${id}: its ${notice} line holds ${line.urls.length} URLs, but a notice is one ` +
+        `document: give each notice its own line, and keep other links off it.`);
+    }
+    labeled.push({ key, urls: line.urls });
   }
-  /** Every URL under a label, across its occurrences, in document order, each once. */
-  const urlsFor = (name: string): string[] =>
-    [...new Set(labeled.filter((e) => e.label.toLowerCase() === name).flatMap((e) => e.urls))];
+  /** Every URL under a resource, across its lines, in document order, each once. */
+  const urlsFor = (key: string): string[] => [...new Set(labeled.filter((e) => e.key === key).flatMap((e) => e.urls))];
   for (const key of ['code', 'data']) {
     const n = urlsFor(key).length;
     if (n > 1) {
-      throw new Error(`Papers.md ref ${id}: its ${CANONICAL.get(key)} blockquotes hold ${n} URLs, but a reference serves ` +
-        `one ${CANONICAL.get(key)} URL: keep the primary one.`);
+      const name = RESOURCE_BY_KEY.get(key);
+      throw new Error(`Papers.md ref ${id}: its ${name} blockquotes hold ${n} URLs, but a reference serves one ${name} ` +
+        `URL: keep the primary one.`);
     }
+  }
+  /** Each notice once, by its canonical label and its one URL, in document order. */
+  const notices = new Map<string, { label: NoticeLabel; url: string }>();
+  for (const { key, urls } of labeled) {
+    const label = NOTICE_BY_KEY.get(key);
+    const url = urls[0]!;
+    if (label !== undefined && !notices.has(`${label}\n${url}`)) notices.set(`${label}\n${url}`, { label, url });
   }
   return {
     codeUrl: urlsFor('code')[0] ?? null,
     dataUrl: urlsFor('data')[0] ?? null,
     modelUrls: urlsFor('models'),
-    notices: [...new Map(labeled
-      .filter((e) => NOTICE_KEYS.has(e.label.toLowerCase()))
-      .flatMap((e) => e.urls.map((url) => ({ label: CANONICAL.get(e.label.toLowerCase())!, url })))
-      .map((n) => [`${n.label}\n${n.url}`, n] as const)).values()],
+    notices: [...notices.values()],
   };
 }
 
