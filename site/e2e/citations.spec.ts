@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { awaitHydrated } from './hydration';
+import { papers } from './data';
 
 test('Software cards with a DOI show a "cited by N" badge linking to OpenAlex', async ({ page }) => {
   await page.goto('./software/');
@@ -66,6 +67,20 @@ test('the /citations/ hub has no axe violations', async ({ page }) => {
   await page.goto('./citations/');
   await expect(page.locator('.ch-band-card').first()).toBeVisible();
   const results = await new AxeBuilder({ page }).analyze();
+  expect(results.violations).toEqual([]);
+});
+
+test('a paper card in the Papers Explorer shows its post-publication notice apart from Code and Data (tucca-cellag/caail-planning#656)', async ({ page }) => {
+  const noticed = papers.references.find((r) => r.notices.length > 0 && r.section === 'References' && r.title);
+  expect(noticed, 'a primary reference with a notice').toBeDefined();
+  await page.goto('./papers/explorer/');
+  await awaitHydrated(page, 'PapersExplorer');
+  await page.getByPlaceholder(/Search authors/).fill(noticed!.title!);
+  const card = page.locator('.px-ref', { hasText: noticed!.title! }).first();
+  for (const n of noticed!.notices) {
+    await expect(card.locator('.px-bdg.notice', { hasText: n.label })).toHaveAttribute('href', n.url);
+  }
+  const results = await new AxeBuilder({ page }).include('.px-ref').analyze();
   expect(results.violations).toEqual([]);
 });
 

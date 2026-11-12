@@ -18,6 +18,7 @@ type Ref = {
   authors: string[] | null; authorsText: string;
   year: number | null; title: string | null; journal: string | null;
   doi: string | null; codeUrl: string | null; dataUrl: string | null;
+  modelUrls?: string[]; notices?: { label: string; url: string }[];
   isPrimary: boolean; hasCode: boolean; hasData: boolean;
   slug: string; methods: string[]; areas: string[]; topics: TopicRef[];
   citedByOpenAlex: number | null;
@@ -197,6 +198,12 @@ export default function PapersExplorer() {
         {r.doi && <a class="px-bdg doi" href={`https://doi.org/${r.doi}`}>{r.doi}</a>}
         {r.codeUrl && <a class="px-bdg code" href={r.codeUrl}>⟨⟩ Code</a>}
         {r.dataUrl && <a class="px-bdg data" href={r.dataUrl}>▤ Data</a>}
+        {(r.modelUrls ?? []).map((url, i, all) => (
+          <a key={url} class="px-bdg models" href={url}>◇ {all.length > 1 ? `Model ${i + 1}` : 'Model'}</a>
+        ))}
+        {(r.notices ?? []).map((n) => (
+          <a key={n.url} class="px-bdg notice" href={n.url} title={`Post-publication notice: ${n.label}`}>ⓘ {n.label}</a>
+        ))}
         <CitationBadge doi={r.doi} citationCount={r.citedByOpenAlex} />
         <LicenseBadge
           license={r.license ?? null}
