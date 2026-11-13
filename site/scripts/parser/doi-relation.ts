@@ -102,22 +102,33 @@ export function zenodoRecordId(key: string): string | null {
 /** The committed Zenodo resource types, written by the opt-in `fetch:zenodo-types`. */
 export const ZENODO_TYPES_PATH = join(dirname(fileURLToPath(import.meta.url)), 'zenodo-types.json');
 
+/** One recorded Zenodo resource type: a record's `metadata.resource_type`, its subtype where it has one. */
+export type ZenodoTypeEntry = { type: string; subtype?: string };
+
 /**
- * Load `bare DOI -> Zenodo resource type` (a record's `metadata.resource_type.type`) from
- * the committed cache, each key reduced to its bare lowercase DOI so a key written in another
- * form still matches. Empty if absent; a cache that is present but malformed, or holds a key
- * that is no DOI, throws.
+ * The committed cache's entries, each keyed by its bare lowercase DOI so a key written in another
+ * form (a doi.org link, another case) still matches: what the parse reads and what the fetch
+ * keeps. Empty if absent. A cache that is present but malformed throws, as does a key that is no
+ * DOI, an entry with no type, or one DOI written twice, which would leave the winner to key order.
  */
-export function loadZenodoTypes(path: string = ZENODO_TYPES_PATH): Map<string, string> {
+export function loadZenodoTypeEntries(path: string = ZENODO_TYPES_PATH): Map<string, ZenodoTypeEntry> {
   if (!existsSync(path)) return new Map();
-  const raw = JSON.parse(readFileSync(path, 'utf-8')) as { types?: Record<string, { type?: unknown }> };
-  if (raw.types === undefined || typeof raw.types !== 'object') throw new Error(`${path}: no "types" object`);
-  return new Map(Object.entries(raw.types).map(([written, v]) => {
+  const raw = JSON.parse(readFileSync(path, 'utf-8')) as { types?: Record<string, { type?: unknown; subtype?: unknown }> };
+  if (raw.types === undefined || raw.types === null || typeof raw.types !== 'object') throw new Error(`${path}: no "types" object`);
+  const entries = new Map<string, ZenodoTypeEntry>();
+  for (const [written, v] of Object.entries(raw.types)) {
     const key = bareDoi(written);
     if (key === null) throw new Error(`${path}: "${written}" is not a DOI`);
     if (typeof v?.type !== 'string') throw new Error(`${path}: ${written} has no resource type`);
-    return [key, v.type];
-  }));
+    if (entries.has(key)) throw new Error(`${path}: ${key} is recorded twice`);
+    entries.set(key, typeof v.subtype === 'string' ? { type: v.type, subtype: v.subtype } : { type: v.type });
+  }
+  return entries;
+}
+
+/** `bare DOI -> Zenodo resource type` from the committed cache, read by `loadZenodoTypeEntries`. */
+export function loadZenodoTypes(path: string = ZENODO_TYPES_PATH): Map<string, string> {
+  return new Map([...loadZenodoTypeEntries(path)].map(([key, entry]) => [key, entry.type]));
 }
 
 /** The committed types, read on first use and kept for the process, which is one parse or one check. */

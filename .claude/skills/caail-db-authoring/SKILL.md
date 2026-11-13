@@ -97,7 +97,9 @@ entry is read by its record's Zenodo resource type, since Zenodo mints DOIs for 
 documentation and reports as well as deposits (tucca-cellag/caail-planning#760). After adding or
 changing one, run the opt-in `pnpm --dir site fetch:zenodo-types` and commit
 `site/scripts/parser/zenodo-types.json` with the entry: `pnpm parse`, `db:check` and `pnpm test`
-all refuse a Zenodo DOI with no recorded type.
+all refuse a Zenodo DOI with no recorded type. Where Zenodo cannot answer for a DOI (one that is
+no `zenodo.<record>` DOI, or a record id it answers 404 to), record the type by hand in that file,
+read from the record itself; the fetch keeps a type recorded that way.
 
 For a **versioned resource** that publishes a paper per release (STRING, UniProt, KEGG, …), list its
 **sibling version DOIs** in `site/scripts/db/dois-related.json` (catalog by url, datasets by `ds:` id →

@@ -9,19 +9,25 @@
  * parse, `db:check` and `pnpm test` all refuse an item's Zenodo DOI with no recorded type. It
  * sends one request per DOI to Zenodo's public records API, five seconds apart, under a
  * generic client name (`USER_AGENT`). A concept DOI's record id redirects to its latest
- * version, whose type is recorded under the concept DOI.
+ * version, whose type is recorded under the concept DOI: measured 2026-11-13, record
+ * 23124562 (Project PISCES's concept DOI) answered 302 to record 23124563.
  *
  * It keeps what it already knows: a DOI it cannot read (a failed request, an error status, a
  * body that is not the record) keeps its earlier entry, if any, is reported, and the run goes
  * on; a 429 or 503 stops the run, since the service is asking for less, and every DOI it did
  * not fetch is named. What it has is written either way. A DOI no item carries drops out.
+ *
+ * Where Zenodo cannot answer for a DOI at all (one that is no `zenodo.<record>` DOI, or a
+ * record id it answers 404 to), the way out is to record the type by hand in
+ * `zenodo-types.json`. The fetch keeps a type recorded for such a DOI and does not report
+ * it as failed, so a run after that exits cleanly.
  */
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 import { zenodoItemDois } from './citation-counts.js';
-import { ZENODO_TYPES_PATH, zenodoRecordId } from './doi-relation.js';
+import { loadZenodoTypeEntries, ZENODO_TYPES_PATH, zenodoRecordId, type ZenodoTypeEntry } from './doi-relation.js';
 
 /**
  * A generic client name and nothing else: no person, project, organisation or repository
@@ -31,7 +37,10 @@ import { ZENODO_TYPES_PATH, zenodoRecordId } from './doi-relation.js';
 const USER_AGENT = 'zenodo-types-fetch/1.0';
 const PAUSE_MS = 5_000;
 
-export type ZenodoTypeEntry = { type: string; subtype?: string };
+export type { ZenodoTypeEntry };
+
+/** The way out named wherever Zenodo cannot answer for a DOI. */
+const BY_HAND = 'record its type by hand in zenodo-types.json';
 
 /** The slice of `fetch` this script uses, so a test can stub the network. */
 export type ZenodoFetch = (url: string, init: { headers: Record<string, string> }) =>
@@ -55,10 +64,23 @@ export async function fetchZenodoTypes(
     failed.push(`${doi}: ${why}`);
     if (known[doi]) types[doi] = known[doi]!;
   };
+  /**
+   * A DOI Zenodo cannot answer for: a type already recorded is kept and is no failure, since
+   * recording it by hand is the way out; with none recorded, that way out is named.
+   */
+  const unanswerable = (doi: string, why: string, wayOut: string = BY_HAND): void => {
+    const entry = known[doi];
+    if (entry) {
+      types[doi] = entry;
+      log(`${doi}: ${why}; kept its recorded type, ${entry.type}`);
+    } else {
+      failed.push(`${doi}: ${why}; ${wayOut}`);
+    }
+  };
   for (const [i, doi] of dois.entries()) {
     const id = zenodoRecordId(doi);
     if (id === null) {
-      keep(doi, 'not a zenodo.<record> DOI, so there is no record id to ask for');
+      unanswerable(doi, 'not a zenodo.<record> DOI, so there is no record id to ask for');
       continue;
     }
     if (i > 0) await sleep(PAUSE_MS);
@@ -69,6 +91,10 @@ export async function fetchZenodoTypes(
         keep(doi, `HTTP ${res.status}, so the run stopped here`);
         for (const rest of dois.slice(i + 1)) keep(rest, 'not tried after the stop');
         break;
+      }
+      if (res.status === 404) {
+        unanswerable(doi, `HTTP 404, so Zenodo has no record ${id} to read`, `if the DOI is right, ${BY_HAND}`);
+        continue;
       }
       if (!res.ok) {
         keep(doi, `HTTP ${res.status} ${res.statusText}`);
@@ -90,10 +116,13 @@ export async function fetchZenodoTypes(
   return { types, failed };
 }
 
-/** The entries already committed. */
-function committed(): Record<string, ZenodoTypeEntry> {
-  if (!existsSync(ZENODO_TYPES_PATH)) return {};
-  return (JSON.parse(readFileSync(ZENODO_TYPES_PATH, 'utf-8')) as { types?: Record<string, ZenodoTypeEntry> }).types ?? {};
+/**
+ * The entries already committed, keyed by bare DOI as the parse reads them
+ * (`loadZenodoTypeEntries`), so a key written by hand in another form is matched rather than
+ * dropped on the next run.
+ */
+export function committedZenodoTypes(path: string = ZENODO_TYPES_PATH): Record<string, ZenodoTypeEntry> {
+  return Object.fromEntries(loadZenodoTypeEntries(path));
 }
 
 const isMain = import.meta.url === pathToFileURL(process.argv[1] ?? '').href;
@@ -101,7 +130,7 @@ const isMain = import.meta.url === pathToFileURL(process.argv[1] ?? '').href;
 if (isMain) {
   (async () => {
     const dois = zenodoItemDois();
-    const { types, failed } = await fetchZenodoTypes(dois, committed());
+    const { types, failed } = await fetchZenodoTypes(dois, committedZenodoTypes());
     const sorted = Object.fromEntries(Object.keys(types).sort().map((k) => [k, types[k]!]));
     writeFileSync(ZENODO_TYPES_PATH, `${JSON.stringify({ types: sorted }, null, 2)}\n`);
     console.log(`fetch-zenodo-types: wrote ${Object.keys(sorted).length} of ${dois.length} types to ${ZENODO_TYPES_PATH}`);

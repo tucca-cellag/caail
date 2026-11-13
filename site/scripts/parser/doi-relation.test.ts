@@ -40,6 +40,9 @@ describe('itemDoiRelation (tucca-cellag/caail-planning#760)', () => {
     expect([...loadZenodoTypes(file)]).toEqual([['10.5281/zenodo.5', 'dataset']]);
     writeFileSync(file, JSON.stringify({ types: { 'not a doi': { type: 'dataset' } } }));
     expect(() => loadZenodoTypes(file)).toThrow(/"not a doi" is not a DOI/);
+    // Two forms of one DOI would leave which type wins to key order.
+    writeFileSync(file, JSON.stringify({ types: { '10.5281/zenodo.5': { type: 'dataset' }, 'https://doi.org/10.5281/ZENODO.5': { type: 'publication' } } }));
+    expect(() => loadZenodoTypes(file)).toThrow(/10\.5281\/zenodo\.5 is recorded twice/);
   });
 
   it('tells a Zenodo DOI by its exact registrant', () => {
