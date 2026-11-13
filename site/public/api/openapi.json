@@ -55,7 +55,7 @@
       "get": {
         "operationId": "getPapersIndex",
         "summary": "Every reference, one compact row each",
-        "description": "Prefer this over papers.json unless you need a full record. One row per reference — id, title, year, first author, section, methods, areas, DOI, and whether code or data is linked — at roughly a sixth the size, because a fetch tool that converts a page to text and summarises it truncates the full endpoint and then answers confidently from the part it kept. Use this to decide WHICH references you want, then fetch papers.json for their full records. Carries `matrixNote`: a reference with empty `methods` and `areas` is indexed but sits in no matrix cell, so the matrix alone will not find it.",
+        "description": "Prefer this over papers.json unless you need a full record. One row per reference — id, title, year, first author, section, methods, areas, DOI, whether code or data is linked, and whether a post-publication notice is recorded (`hasNotice`; the notices themselves are in papers.json) — at roughly a sixth the size, because a fetch tool that converts a page to text and summarises it truncates the full endpoint and then answers confidently from the part it kept. Use this to decide WHICH references you want, then fetch papers.json for their full records. Carries `matrixNote`: a reference with empty `methods` and `areas` is indexed but sits in no matrix cell, so the matrix alone will not find it.",
         "responses": {
           "200": {
             "description": "Every reference, one compact row each",
@@ -74,7 +74,7 @@
       "get": {
         "operationId": "getPapers",
         "summary": "Every reference, in full",
-        "description": "DOI, code URL, data URL, topics, license and citation count per reference. Spans six sections; only References is matrix-eligible, so say which population you counted. This file is large: if your fetch summarises rather than returning bytes, it may be silently truncated, and a \"not found\" from it is not evidence of absence. Use papers-index.json to enumerate, and come here for the records you selected.",
+        "description": "DOI, code URL, data URL, model URLs, topics, license and citation count per reference, and its post-publication notices (`notices`: a correction, an erratum, an expression of concern…, each its label, one of a closed list of the words publishers use, spelled as that list spells it whatever case the source used, and its URL); a notice leaves the paper standing, and none is a retraction. Spans six sections; only References is matrix-eligible, so say which population you counted. This file is large: if your fetch summarises rather than returning bytes, it may be silently truncated, and a \"not found\" from it is not evidence of absence. Use papers-index.json to enumerate, and come here for the records you selected.",
         "responses": {
           "200": {
             "description": "Every reference, in full",
@@ -1124,6 +1124,44 @@
               }
             ]
           },
+          "modelUrls": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "notices": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string",
+                  "enum": [
+                    "Correction",
+                    "Erratum",
+                    "Expression of concern",
+                    "Corrigendum",
+                    "Author Correction",
+                    "Publisher Correction",
+                    "Addendum"
+                  ]
+                },
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              },
+              "required": [
+                "label",
+                "url"
+              ],
+              "additionalProperties": false
+            }
+          },
           "isPrimary": {
             "type": "boolean"
           },
@@ -1219,6 +1257,8 @@
           "doi",
           "codeUrl",
           "dataUrl",
+          "modelUrls",
+          "notices",
           "isPrimary",
           "methods",
           "areas",
@@ -1299,6 +1339,9 @@
           },
           "hasData": {
             "type": "boolean"
+          },
+          "hasNotice": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -1312,7 +1355,8 @@
           "areas",
           "doi",
           "hasCode",
-          "hasData"
+          "hasData",
+          "hasNotice"
         ],
         "additionalProperties": false
       },

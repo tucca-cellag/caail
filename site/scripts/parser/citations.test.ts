@@ -43,6 +43,8 @@ function mkRef(id: number, doi: string | null): Reference {
     areas: [],
     hasCode: false,
     hasData: false,
+    modelUrls: [],
+    notices: [],
     slug: `ref-${id}`,
   };
 }

@@ -36,6 +36,8 @@ function makeRef(overrides: Partial<Reference> & { id: number }): Reference {
     areas: [],
     hasCode: false,
     hasData: false,
+    modelUrls: [],
+    notices: [],
     slug: `ref-${overrides.id}`,
     ...overrides,
   };

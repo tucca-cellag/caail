@@ -38,7 +38,7 @@ https://caail.tufts.edu/api/ if you want to read one in a browser.
 | "What's the latest field / state-of-the-industry report?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/reports.json — recurring institutional surveys (GFI State of the Industry, etc.), one record per edition |
 | "What does CAAIL mean by <method or area>?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/taxonomy.json — read before trusting or disputing a placement |
 
-The papers endpoint carries DOI, code URL, data URL, topics, license and citation count per entry, so
+The papers endpoint carries DOI, code, data and model URLs, post-publication `notices`, topics, license and citation count per entry, so
 you can usually answer without fetching anything else.
 
 **Fetch the `-index` file first, and treat a "not found" from a big one with suspicion.** `papers.json`

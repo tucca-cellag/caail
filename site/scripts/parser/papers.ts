@@ -24,12 +24,12 @@ import { toString as mdToString } from 'mdast-util-to-string';
 import { visit } from 'unist-util-visit';
 import type { Root, TableRow } from 'mdast';
 
-import { parseMarkdown, firstTable, sectionsAfter, anchorParagraphs, labeledLinksAfter } from './markdown.js';
+import { parseMarkdown, firstTable, sectionsAfter, anchorParagraphs, labeledLinksAfter, type BlockquoteLine } from './markdown.js';
 import { parseApa } from './apa.js';
 import { areaKeyForLabel } from './areas.js';
 import { topicsByItemId } from './topics.js';
 import { doiKey } from './citations.js';
-import { MATRIX_SECTION } from './types.js';
+import { MATRIX_SECTION, NOTICE_LABELS, type NoticeLabel } from './types.js';
 import { loadCitedByCounts, loadPaperLicenses, loadPaperIsOa } from './citation-counts.js';
 import {
   PapersDataSchema,
@@ -142,10 +142,121 @@ function parseMatrix(root: Root): MatrixResult {
 /** A reference with the cell-derived fields not yet filled in. */
 type PartialReference = Omit<Reference, 'isPrimary' | 'methods' | 'areas' | 'slug'>;
 
+/** The labels of a reference's own resources, served as `codeUrl`, `dataUrl` and `modelUrls`. */
+const RESOURCE_LABELS = ['Code', 'Data', 'Models'] as const;
+
+/** A doi.org URL, in any of the host forms `doiKey` folds. */
+const DOI_URL = /^https?:\/\/(?:www\.|dx\.)?doi\.org\//i;
+
+/** Each resource word by its lowercase key, so a label is matched in any case. */
+const RESOURCE_BY_KEY = new Map<string, string>(RESOURCE_LABELS.map((l) => [l.toLowerCase(), l]));
+/** Each notice word by its lowercase key, so a notice matched in any case is served in its canonical form. */
+const NOTICE_BY_KEY = new Map<string, NoticeLabel>(NOTICE_LABELS.map((l) => [l.toLowerCase(), l]));
+
+/**
+ * A reference's trailing blockquotes, sorted into its resources and its notices. A
+ * line that is not one label and its URLs (prose, a URL wrapped onto its own line, or
+ * a second label on the line), a label the parser does not know, a known one with no
+ * http(s) URL, a doi.org URL naming no DOI, a notice line with more than one URL, one
+ * notice URL under two labels, a
+ * notice URL that is the reference's own DOI or one of its resource links, or a Code or
+ * Data label with more than the one URL its field holds, throws naming the reference
+ * (`doi`, its bare DOI, is what the own-DOI check compares against), so no blockquote
+ * content is dropped or misread silently. Code and Models may share a URL. Models takes
+ * every URL on its line. An exact repeat (the same URL under one resource, or the same
+ * notice twice) is served once. A notice is served under its canonical label, whatever
+ * case the blockquote wrote it in.
+ */
+function referenceLinks(id: number, doi: string | null, lines: BlockquoteLine[]): Pick<
+  PartialReference, 'codeUrl' | 'dataUrl' | 'modelUrls' | 'notices'
+> {
+  // Refused before any label is checked, so a URL wrapped off an empty label is reported
+  // as the wrap it is, not as a label with no URL.
+  const stray = lines.find((line): line is Extract<BlockquoteLine, { label: null }> => line.label === null);
+  if (stray !== undefined) {
+    throw new Error(
+      `Papers.md ref ${id}: a line of its blockquotes is not one label and its URLs: "${stray.text}". Each line there ` +
+      `is one label and its URLs (\`> **Code**: url\`): put a wrapped URL back on its label's line, give a second ` +
+      `label its own line, and keep prose out.`,
+    );
+  }
+  const labeled: Array<{ key: string; urls: string[] }> = [];
+  for (const line of lines) {
+    if (line.label === null) continue;
+    const key = line.label.toLowerCase();
+    const notice = NOTICE_BY_KEY.get(key);
+    if (notice === undefined && !RESOURCE_BY_KEY.has(key)) {
+      throw new Error(
+        `Papers.md ref ${id}: blockquote label "${line.label}" is neither a resource (${RESOURCE_LABELS.join(', ')}) nor a ` +
+        `post-publication notice (${NOTICE_LABELS.join(', ')}). A retraction is not a notice: raise it with the curator.`,
+      );
+    }
+    if (line.urls.length === 0) throw new Error(`Papers.md ref ${id}: blockquote label "${line.label}" has no http(s) URL.`);
+    const noDoi = line.urls.find((url) => DOI_URL.test(url) && doiKey(url) === null);
+    if (noDoi !== undefined) {
+      throw new Error(`Papers.md ref ${id}: its ${notice ?? RESOURCE_BY_KEY.get(key)} URL ${noDoi} names no DOI.`);
+    }
+    if (notice !== undefined && line.urls.length > 1) {
+      throw new Error(`Papers.md ref ${id}: its ${notice} line holds ${line.urls.length} URLs, but a notice is one ` +
+        `document: give each notice its own line, and keep other links off it.`);
+    }
+    labeled.push({ key, urls: line.urls });
+  }
+  /** Every URL under a resource, across its lines, in document order, each once. */
+  const urlsFor = (key: string): string[] => [...new Set(labeled.filter((e) => e.key === key).flatMap((e) => e.urls))];
+  for (const key of ['code', 'data']) {
+    const n = urlsFor(key).length;
+    if (n > 1) {
+      const name = RESOURCE_BY_KEY.get(key);
+      throw new Error(`Papers.md ref ${id}: its ${name} blockquotes hold ${n} URLs, but a reference serves one ${name} ` +
+        `URL: keep the primary one.`);
+    }
+  }
+  /**
+   * A URL's identity: a doi.org URL is its DOI, one DOI in any case or host form; any
+   * other URL is itself, case included, since a path's case can name a different page.
+   * A doi.org URL naming no DOI was refused above, so `doiKey` has one to return.
+   */
+  const identity = (url: string): string => (DOI_URL.test(url) ? doiKey(url)! : url);
+  const ownDoi = doiKey(doi);
+  /**
+   * Each notice once, by its one URL, in document order. One document carries one label,
+   * and a notice is the publisher's own document, so it is neither the paper itself nor
+   * one of the paper's own resources.
+   */
+  const notices = new Map<string, { label: NoticeLabel; url: string }>();
+  for (const { key, urls } of labeled) {
+    const label = NOTICE_BY_KEY.get(key);
+    const url = urls[0]!;
+    if (label === undefined) continue;
+    if (ownDoi !== null && identity(url) === ownDoi) {
+      throw new Error(`Papers.md ref ${id}: notice ${url} is the reference's own DOI, not a notice on it.`);
+    }
+    const resource = labeled.find((e) => RESOURCE_BY_KEY.has(e.key) && e.urls.some((u) => identity(u) === identity(url)));
+    if (resource !== undefined) {
+      throw new Error(`Papers.md ref ${id}: notice ${url} is also its ${RESOURCE_BY_KEY.get(resource.key)} link; a notice ` +
+        `is the publisher's own document, so one of the two lines is wrong.`);
+    }
+    const seen = notices.get(identity(url));
+    if (seen !== undefined && seen.label !== label) {
+      throw new Error(`Papers.md ref ${id}: notice ${url} is labelled both ${seen.label} and ${label}; one document has ` +
+        `one type, so keep the publisher's word and drop the other line.`);
+    }
+    if (seen === undefined) notices.set(identity(url), { label, url });
+  }
+  return {
+    codeUrl: urlsFor('code')[0] ?? null,
+    dataUrl: urlsFor('data')[0] ?? null,
+    modelUrls: urlsFor('models'),
+    notices: [...notices.values()],
+  };
+}
+
 /**
  * Walk every `##` section and build a PartialReference for each anchor
- * paragraph. Code/Data URLs are pulled from the blockquotes that immediately
- * follow the reference paragraph (associated by node index within the section).
+ * paragraph. Code, Data and Models URLs and post-publication notices are pulled
+ * from the blockquotes that immediately follow the reference paragraph
+ * (associated by node index within the section; see `referenceLinks`).
  *
  * `src` is the raw markdown source. We slice it by the paragraph node's
  * `position` offsets to recover the ORIGINAL markdown for `parseApa` — the
@@ -177,9 +288,7 @@ function parseReferences(root: Root, src: string): PartialReference[] {
 
       const fields = parseApa(raw);
 
-      const labeled = labeledLinksAfter(nodes, i);
-      const codeUrl = labeled.find((e) => e.label.toLowerCase() === 'code')?.url ?? null;
-      const dataUrl = labeled.find((e) => e.label.toLowerCase() === 'data')?.url ?? null;
+      const { codeUrl, dataUrl, modelUrls, notices } = referenceLinks(id, fields.doi, labeledLinksAfter(nodes, i, src));
 
       refs.push({
         id,
@@ -194,6 +303,8 @@ function parseReferences(root: Root, src: string): PartialReference[] {
         doi: fields.doi,
         codeUrl,
         dataUrl,
+        modelUrls,
+        notices,
         hasCode: codeUrl !== null,
         hasData: dataUrl !== null,
       });

@@ -75,6 +75,8 @@ describe('runLint() on a model with a dangling citation', () => {
         doi: '10.1/real',
         codeUrl: null,
         dataUrl: null,
+        modelUrls: [],
+        notices: [],
         isPrimary: false,
         methods: [],
         areas: [],

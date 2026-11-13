@@ -13,7 +13,7 @@ import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
 import { toString as mdastToString } from 'mdast-util-to-string';
-import type { Root, Table, RootContent, Heading, Paragraph, Blockquote } from 'mdast';
+import type { Root, Table, RootContent, Heading, Paragraph } from 'mdast';
 
 // ---------------------------------------------------------------------------
 // Parser
@@ -153,90 +153,78 @@ export function anchorParagraphs(
 // labeledLinksAfter
 // ---------------------------------------------------------------------------
 
-/** Only absolute http(s) URLs are accepted as deposit links. */
-const ABSOLUTE_URL_RE = /^https?:\/\//i;
+/**
+ * One URL on a label line: http(s), with no whitespace, comma, backslash or `<` (where
+ * GFM's autolink stops), and not ending in a character that autolink drops from a URL's
+ * end. A closing parenthesis may end one only if it closes one the URL opened, which
+ * `labeledLinksAfter` checks, as GFM does. The GFM-parity test in `markdown.test.ts`
+ * holds this to what GitHub renders.
+ */
+const LINE_URL = String.raw`https?://[^\s,\\<]*[^\s,\\<.;:!?'"*_~]`;
+/** A label, bold with no whitespace just inside its asterisks (GFM renders no other as bold), and what follows its colon. */
+const LABEL_LINE = /^\*\*([^*\s](?:[^*]*[^*\s])?)\*\*:(?: (.*))?$/;
+/** What may follow a label's colon: one URL, or several separated by a comma and a space. */
+const URL_LIST = new RegExp(String.raw`^${LINE_URL}(?:, ${LINE_URL})*$`);
 
 /**
  * Starting at `nodes[index]`, scan FORWARD over immediately-following
- * `blockquote` nodes and extract labeled deposit links of the form
- * `> **Label**: https://…`.
+ * `blockquote` nodes and read each of their lines from `src`, the Markdown the
+ * nodes were parsed from.
  *
  * The scan stops at the FIRST non-blockquote sibling — it does not skip over
- * intervening paragraphs or headings.
+ * intervening paragraphs or headings. A blank line between two labels gives two
+ * blockquote nodes, and no blank line gives one; either way each line is read.
  *
- * Handles both authoring styles that remark produces:
- *
- *   Separate-node style (blank line between entries):
- *     ```
- *     > **Code**: https://…
- *
- *     > **Data**: https://…
- *     ```
- *     remark emits two blockquote nodes, each with one paragraph child.
- *
- *   Single-node style (no blank line between entries):
- *     ```
- *     > **Code**: https://…
- *     > **Data**: https://…
- *     ```
- *     remark folds both lines into ONE blockquote node — either two paragraph
- *     children, or one paragraph whose inline children are joined by a soft
- *     `break` node. This function scans ALL paragraph children and ALL
- *     `strong`→`link` pairs within each paragraph so both labels are recovered
- *     regardless of authoring style.
- *
- * Only absolute http(s) URLs are returned — a relative link such as
- * `[Datasets/](./Datasets/)` inside a prose blockquote is not a deposit URL
- * and is silently skipped.
+ * Every non-blank line is returned, one entry each, in document order, and is held
+ * to one strict rule: `> **Label**: url`, or `> **Label**: url, url, …` for several,
+ * exactly. Such a line gives `{ label, urls }` (the label as written with its
+ * whitespace collapsed, each URL once); a label with nothing after its colon gives
+ * `urls: []`. Any other line gives `{ label: null, text }`, the line as written less
+ * its `>`, so a caller can refuse it rather than misread it: an annotation after the
+ * URLs, a second label, a Markdown link, a wrapped URL and the line it left, another
+ * spelling of a label (`**Code** url`, `**Erratum:** url`, `**Code **:`), and a URL
+ * GitHub would link differently (one ending in punctuation, `_`, `*`, `~`, an unopened
+ * `)` or a hard-break backslash). The rule is the shape `db:emit` writes and every line
+ * in `Papers.md` has (tucca-cellag/caail-planning#656); it replaced a set of heuristics
+ * over the parsed Markdown whose every refinement let through a new misreading. A
+ * GFM-parity test in `markdown.test.ts` asserts that every line it accepts renders on
+ * GitHub as the same bold label linking exactly the same URLs.
  *
  * @param nodes Sibling nodes to scan
  * @param index Index of the reference paragraph node (scan begins at index+1)
- * @returns Array of `{ label, url }` pairs in encounter order; label is the
- *   original-case bold text (e.g. `"Code"`, `"Data"`).
+ * @param src The Markdown `nodes` were parsed from, whose offsets their positions carry
+ * @returns One entry per non-blank line, in document order
  */
-export function labeledLinksAfter(
-  nodes: RootContent[],
-  index: number,
-): Array<{ label: string; url: string }> {
-  const result: Array<{ label: string; url: string }> = [];
-  const seen = new Set<string>();
+export function labeledLinksAfter(nodes: RootContent[], index: number, src: string): BlockquoteLine[] {
+  const result: BlockquoteLine[] = [];
 
   for (let i = index + 1; i < nodes.length; i++) {
     const node = nodes[i];
     if (node.type !== 'blockquote') break;
 
-    for (const child of (node as Blockquote).children) {
-      if (child.type !== 'paragraph') continue;
-
-      // Walk inline children: a `strong` sets the current label; the next
-      // link (or http text run) is its URL.  This handles both one-pair and
-      // multi-pair (soft-break-joined) paragraphs.
-      let currentLabel: string | null = null;
-      for (const inline of (child as Paragraph).children) {
-        if (inline.type === 'strong') {
-          currentLabel = mdastToString(inline).trim();
-          continue;
-        }
-        if (currentLabel === null) continue;
-
-        let url: string | null = null;
-        if (inline.type === 'link') {
-          url = inline.url;
-        } else if (inline.type === 'text' && inline.value.trim().startsWith('http')) {
-          url = inline.value.trim();
-        }
-
-        if (url !== null && ABSOLUTE_URL_RE.test(url)) {
-          const key = currentLabel.toLowerCase();
-          if (!seen.has(key)) {
-            seen.add(key);
-            result.push({ label: currentLabel, url });
-          }
-          currentLabel = null; // consume this label slot
-        }
+    const { start, end } = node.position!;
+    for (const raw of src.slice(start.offset, end.offset).split('\n')) {
+      const line = raw.replace(/^\s*>\s?/, '').trim();
+      if (line === '') continue;
+      const m = LABEL_LINE.exec(line);
+      const rest = m?.[2] ?? '';
+      const urls = rest === '' ? [] : rest.split(', ');
+      if (m === null || (rest !== '' && !URL_LIST.test(rest)) || urls.some(closesUnopened)) {
+        result.push({ label: null, text: line });
+        continue;
       }
+      const label = m[1]!.replace(/\s+/g, ' ');
+      result.push({ label, urls: [...new Set(urls)] });
     }
   }
 
   return result;
 }
+
+/** Whether `url` ends in a `)` it never opened, which GFM's autolink drops from the link. */
+function closesUnopened(url: string): boolean {
+  return url.endsWith(')') && url.split('(').length < url.split(')').length;
+}
+
+/** One line of a reference's trailing blockquotes: a label and its URLs, or a line that is not one label and its URLs. */
+export type BlockquoteLine = { label: string; urls: string[] } | { label: null; text: string };

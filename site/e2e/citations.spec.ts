@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { awaitHydrated } from './hydration';
+import { papers } from './data';
 
 test('Software cards with a DOI show a "cited by N" badge linking to OpenAlex', async ({ page }) => {
   await page.goto('./software/');
@@ -66,6 +67,25 @@ test('the /citations/ hub has no axe violations', async ({ page }) => {
   await page.goto('./citations/');
   await expect(page.locator('.ch-band-card').first()).toBeVisible();
   const results = await new AxeBuilder({ page }).analyze();
+  expect(results.violations).toEqual([]);
+});
+
+test('a paper card in the Papers Explorer shows its post-publication notice apart from Code and Data (tucca-cellag/caail-planning#656)', async ({ page }) => {
+  const noticed = papers.references.find((r) => r.notices.length > 0 && r.section === 'References' && r.doi);
+  expect(noticed, 'a primary reference with a notice and a DOI').toBeDefined();
+  await page.goto('./papers/explorer/');
+  await awaitHydrated(page, 'PapersExplorer');
+  // Search by DOI, and find the card by its own paper: id, so a title's formatting cannot miss it.
+  await page.getByPlaceholder(/Search authors/).fill(noticed!.doi!);
+  const card = page.locator('.px-ref', { has: page.locator(`a.report-link[href$="item=paper%3A${noticed!.id}"]`) });
+  // One badge per notice, in document order, each its own link and label.
+  const badges = card.locator('a.px-bdg.notice');
+  await expect(badges).toHaveCount(noticed!.notices.length);
+  for (const [i, n] of noticed!.notices.entries()) {
+    await expect(badges.nth(i)).toHaveAttribute('href', n.url);
+    await expect(badges.nth(i)).toContainText(n.label);
+  }
+  const results = await new AxeBuilder({ page }).include('.px-ref').analyze();
   expect(results.violations).toEqual([]);
 });
 

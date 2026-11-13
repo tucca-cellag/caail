@@ -7,12 +7,14 @@
  */
 
 import { describe, it, expect } from 'vitest';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { buildPapersModel, PAPERS_MD_PATH } from './papers.js';
 import { EDITOR_ROLES_RE, stripItalics } from './apa.js';
-import { PapersDataSchema, type PapersData } from './types.js';
+import { NOTICE_LABELS, PapersDataSchema, ReferenceSchema, type PapersData } from './types.js';
 
 const FIXTURE_PATH = join(
   fileURLToPath(import.meta.url),
@@ -134,6 +136,172 @@ describe('buildPapersModel — fixture', () => {
 });
 
 // ---------------------------------------------------------------------------
+// A2. Reference blockquote labels (tucca-cellag/caail-planning#656)
+// ---------------------------------------------------------------------------
+
+describe('buildPapersModel: reference blockquote labels', () => {
+  const REF4 = '<a id="4">4</a> Jones, M. (2020).';
+  /** The fixture with `blockquotes` after ref 4, built into a model. */
+  const withRef4 = (blockquotes: string[]): PapersData => {
+    const src = readFileSync(FIXTURE_PATH, 'utf-8');
+    const at = src.indexOf(REF4);
+    const end = src.indexOf('\n', at);
+    expect(at).toBeGreaterThan(-1);
+    const path = join(mkdtempSync(join(tmpdir(), 'caail-papers-labels-')), 'Papers.md');
+    writeFileSync(path, `${src.slice(0, end)}\n\n${blockquotes.join('\n\n')}\n${src.slice(end)}`);
+    return buildPapersModel(path);
+  };
+  const ref4 = (m: PapersData) => m.references.find((r) => r.id === 4)!;
+
+  it('carries every sanctioned notice label, with its URL, in order', () => {
+    const notices = NOTICE_LABELS.map((label, i) => ({ label, url: `https://doi.org/10.1/notice.${i}` }));
+    const r = ref4(withRef4(notices.map((n) => `> **${n.label}**: ${n.url}`)));
+    expect(r.notices).toEqual(notices);
+    expect(r.codeUrl).toBeNull();
+  });
+
+  it('carries every Models URL, and keeps notices apart from Code, Data and Models', () => {
+    const r = ref4(withRef4([
+      '> **Code**: https://github.com/example/four',
+      '> **Models**: https://huggingface.co/a/one, https://huggingface.co/a/two',
+      '> **Corrigendum**: https://doi.org/10.1/fix',
+    ]));
+    expect(r.codeUrl).toBe('https://github.com/example/four');
+    expect(r.modelUrls).toEqual(['https://huggingface.co/a/one', 'https://huggingface.co/a/two']);
+    expect(r.notices).toEqual([{ label: 'Corrigendum', url: 'https://doi.org/10.1/fix' }]);
+  });
+
+  it('fails on a label it does not know, a retraction included, naming the reference', () => {
+    for (const label of ['Retraction', 'Note', 'Slides']) {
+      expect(() => withRef4([`> **${label}**: https://example.org/x`]), label)
+        .toThrow(new RegExp(`Papers\\.md ref 4: blockquote label "${label}" is neither a resource`));
+    }
+  });
+
+  it('fails on a Code or Data label with more than the one URL its field holds', () => {
+    expect(() => withRef4(['> **Data**: https://zenodo.org/a, https://www.ncbi.nlm.nih.gov/geo/b']))
+      .toThrow(/ref 4: its Data blockquotes hold 2 URLs, but a reference serves one Data URL/);
+    // Two Code blockquotes are two Code URLs too.
+    expect(() => withRef4(['> **Code**: https://github.com/x/a', '> **Code**: https://github.com/x/b']))
+      .toThrow(/ref 4: its Code blockquotes hold 2 URLs/);
+  });
+
+  it('serves notices in document order, a repeated label in its own place', () => {
+    const r = ref4(withRef4([
+      '> **Correction**: https://doi.org/10.1/one', '> **Erratum**: https://doi.org/10.1/two',
+      '> **Correction**: https://doi.org/10.1/three',
+    ]));
+    expect(r.notices).toEqual([
+      { label: 'Correction', url: 'https://doi.org/10.1/one' },
+      { label: 'Erratum', url: 'https://doi.org/10.1/two' },
+      { label: 'Correction', url: 'https://doi.org/10.1/three' },
+    ]);
+  });
+
+  it('serves a notice under its canonical label, whatever case the blockquote wrote', () => {
+    expect(ref4(withRef4(['> **expression OF concern**: https://doi.org/10.1/eoc'])).notices)
+      .toEqual([{ label: 'Expression of concern', url: 'https://doi.org/10.1/eoc' }]);
+  });
+
+  it('fails on a blockquote line that is not one label and its URLs, naming the reference and the line', () => {
+    const lines: Record<string, string> = {
+      'a URL wrapped onto its own line': '> **Models**: https://huggingface.co/a/one,\n> https://huggingface.co/a/two',
+      'an unbolded label': '> Correction: https://doi.org/10.1/x',
+      'a bare URL': '> https://doi.org/10.1/y',
+      'bold prose with a colon later': '> **Important** caveat: see https://example.org/a',
+      'a second label on the line': '> **Models**: https://huggingface.co/a/one **Correction**: https://doi.org/10.1/c',
+    };
+    const text: Record<string, string> = {
+      'a URL wrapped onto its own line': '**Models**: https://huggingface.co/a/one,',
+      'an unbolded label': 'Correction: https://doi.org/10.1/x',
+      'a bare URL': 'https://doi.org/10.1/y',
+      'bold prose with a colon later': '**Important** caveat: see https://example.org/a',
+      'a second label on the line': '**Models**: https://huggingface.co/a/one **Correction**: https://doi.org/10.1/c',
+    };
+    for (const [name, blockquote] of Object.entries(lines)) {
+      expect(() => withRef4([blockquote]), name)
+        .toThrow(`Papers.md ref 4: a line of its blockquotes is not one label and its URLs: "${text[name]}"`);
+    }
+  });
+
+  it('fails on a notice line holding more than one URL, since a notice is one document', () => {
+    expect(() => withRef4(['> **Correction**: https://doi.org/10.1/x, https://pubpeer.com/p/1']))
+      .toThrow(/ref 4: its Correction line holds 2 URLs, but a notice is one document/);
+  });
+
+  it('fails on one notice URL under two labels, since one document has one type', () => {
+    expect(() => withRef4(['> **Correction**: https://doi.org/10.1/x', '> **Erratum**: https://doi.org/10.1/x']))
+      .toThrow(/ref 4: notice https:\/\/doi\.org\/10\.1\/x is labelled both Correction and Erratum/);
+  });
+
+  it('fails on a notice whose URL is the reference itself or one of its own links', () => {
+    // Ref 4's own DOI, in another case and host form: still the paper, not a notice on it.
+    expect(() => withRef4(['> **Correction**: https://dx.doi.org/10.1093/BIOINFORMATICS/btaa001']))
+      .toThrow(/ref 4: notice https:\/\/dx\.doi\.org\/10\.1093\/BIOINFORMATICS\/btaa001 is the reference's own DOI/);
+    for (const resource of ['Code', 'Data', 'Models']) {
+      expect(() => withRef4([`> **${resource}**: https://zenodo.org/record/9`, '> **Erratum**: https://zenodo.org/record/9']), resource)
+        .toThrow(new RegExp(`ref 4: notice https://zenodo\\.org/record/9 is also its ${resource} link`));
+    }
+    // Code and Models may share a URL: one repository can hold both.
+    const r = ref4(withRef4(['> **Code**: https://huggingface.co/org/a', '> **Models**: https://huggingface.co/org/a']));
+    expect(r.codeUrl).toBe('https://huggingface.co/org/a');
+    expect(r.modelUrls).toEqual(['https://huggingface.co/org/a']);
+  });
+
+  it('names a URL wrapped onto the line after its label as a wrap, not as a label with no URL', () => {
+    expect(() => withRef4(['> **Code**:\n> https://github.com/x/y']))
+      .toThrow(/ref 4: a line of its blockquotes is not one label and its URLs: "https:\/\/github\.com\/x\/y"/);
+  });
+
+  it('fails on a doi.org URL that names no DOI', () => {
+    expect(() => withRef4(['> **Correction**: https://doi.org/'])).toThrow(/ref 4: its Correction URL https:\/\/doi\.org\/ names no DOI/);
+    expect(() => withRef4(['> **Data**: https://dx.doi.org/'])).toThrow(/ref 4: its Data URL https:\/\/dx\.doi\.org\/ names no DOI/);
+  });
+
+  it('tells two notice URLs apart by case, unless they are one DOI', () => {
+    const r = ref4(withRef4(['> **Correction**: https://example.org/notice/A1', '> **Erratum**: https://example.org/notice/a1']));
+    expect(r.notices).toEqual([
+      { label: 'Correction', url: 'https://example.org/notice/A1' },
+      { label: 'Erratum', url: 'https://example.org/notice/a1' },
+    ]);
+    expect(() => withRef4(['> **Correction**: https://doi.org/10.1/X', '> **Erratum**: https://doi.org/10.1/x']))
+      .toThrow(/labelled both Correction and Erratum/);
+  });
+
+  it('types a notice label as one of NOTICE_LABELS, so the schema refuses any other word', () => {
+    const notices = ReferenceSchema.shape.notices;
+    expect(notices.parse([{ label: 'Corrigendum', url: 'https://doi.org/10.1/a' }])).toHaveLength(1);
+    for (const label of ['correction', 'Retraction', 'Note']) {
+      expect(notices.safeParse([{ label, url: 'https://doi.org/10.1/a' }]).success, label).toBe(false);
+    }
+  });
+
+  it('drops an exact duplicate, so a repeated URL is one link and a repeated notice one notice', () => {
+    const r = ref4(withRef4([
+      '> **Models**: https://huggingface.co/a/one',
+      '> **Models**: https://huggingface.co/a/one, https://huggingface.co/a/two',
+      '> **Code**: https://github.com/x/a',
+      '> **Code**: https://github.com/x/a',
+      '> **Correction**: https://doi.org/10.1/c',
+      '> **correction**: https://doi.org/10.1/c',
+    ]));
+    expect(r.modelUrls).toEqual(['https://huggingface.co/a/one', 'https://huggingface.co/a/two']);
+    expect(r.codeUrl).toBe('https://github.com/x/a');
+    expect(r.notices).toEqual([{ label: 'Correction', url: 'https://doi.org/10.1/c' }]);
+  });
+
+  it('fails on a known label with no http(s) URL', () => {
+    expect(() => withRef4(['> **Correction**:'])).toThrow(/ref 4: blockquote label "Correction" has no http\(s\) URL/);
+  });
+
+  it('serves no notice and no model for a reference with neither', () => {
+    const r = ref4(withRef4([]));
+    expect(r.notices).toEqual([]);
+    expect(r.modelUrls).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // B. Real corpus integration
 // ---------------------------------------------------------------------------
 
@@ -165,6 +333,19 @@ describe('buildPapersModel — real Papers.md', () => {
   it('has 12 refs with an absolute data URL', () => {
     const withDataUrl = model.references.filter((r) => r.dataUrl !== null).length;
     expect(withDataUrl).toBe(12);
+  });
+
+  it("carries the corpus's post-publication notices and model links (tucca-cellag/caail-planning#656)", () => {
+    const noticed = model.references.filter((r) => r.notices.length > 0)
+      .map((r) => ({ id: r.id, notices: r.notices }));
+    expect(noticed).toEqual([
+      { id: 218, notices: [{ label: 'Corrigendum', url: 'https://doi.org/10.1016/j.foodres.2025.116857' }] },
+      { id: 289, notices: [{ label: 'Correction', url: 'https://doi.org/10.1093/biomethods/bpaf076' }] },
+      { id: 303, notices: [{ label: 'Correction', url: 'https://doi.org/10.1007/s11367-026-02697-y' }] },
+    ]);
+    expect(model.references.find((r) => r.id === 124)!.modelUrls).toEqual([
+      'https://huggingface.co/arcinstitute/Stack-Large', 'https://huggingface.co/arcinstitute/Stack-Large-Aligned',
+    ]);
   });
 
   it('has 6 distinct sections including References and Reviews & Perspectives', () => {

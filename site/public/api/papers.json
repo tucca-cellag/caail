@@ -1294,6 +1294,8 @@
       "doi": "10.1016/j.scitotenv.2023.164988",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Genetic Algorithms"
@@ -1344,6 +1346,8 @@
       "doi": "10.1002/elsc.202300005",
       "codeUrl": "https://github.com/ZacharyCosenza/GradStuff_Cosenza",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Bayesian Optimization"
@@ -1390,6 +1394,8 @@
       "doi": "10.1002/bit.28132",
       "codeUrl": "https://github.com/ZacharyCosenza/GradStuff_Cosenza",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Bayesian Optimization"
@@ -1431,6 +1437,8 @@
       "doi": "10.1093/bioinformatics/btw074",
       "codeUrl": "https://github.com/uci-cbcl/D-GEX",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Deep Learning"
@@ -1477,6 +1485,8 @@
       "doi": "10.1038/s41467-020-15851-3",
       "codeUrl": "https://github.com/eleozzr/desc",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Deep Learning"
@@ -1522,6 +1532,8 @@
       "doi": "10.1093/bioinformatics/btab083",
       "codeUrl": "https://github.com/jerryji1993/DNABERT",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Foundation Models: Masked Language Modeling"
@@ -1561,6 +1573,8 @@
       "doi": "10.3390/s141018941",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Chemometrics"
@@ -1599,6 +1613,8 @@
       "doi": "10.1093/bioinformatics/btab787",
       "codeUrl": "https://github.com/ciortanmadalina/graph-sc",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "GNN"
@@ -1643,6 +1659,8 @@
       "doi": "10.1186/s12859-020-3401-5",
       "codeUrl": "https://github.com/eugenelin1/DRA",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "GAN / VAE"
@@ -1698,6 +1716,8 @@
       "doi": "10.1038/s41467-022-32818-8",
       "codeUrl": "https://github.com/JanZrimec/ExpressionGAN",
       "dataUrl": "https://doi.org/10.5281/zenodo.6811225",
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "GAN / VAE"
@@ -1740,6 +1760,8 @@
       "doi": "10.1016/j.foodchem.2024.140919",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "CNN",
@@ -1799,6 +1821,8 @@
       "doi": "10.1016/j.ins.2022.11.049",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "GNN"
@@ -1850,6 +1874,8 @@
       "doi": "10.1038/s41467-021-22197-x",
       "codeUrl": "https://github.com/juexinwang/scGNN",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "GNN"
@@ -1905,6 +1931,8 @@
       "doi": "10.1126/science.ade4401",
       "codeUrl": "https://github.com/osmoai/publications/tree/main/lee_et_al_2023",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "GNN"
@@ -1945,6 +1973,8 @@
       "doi": "10.1016/j.jbiosc.2022.12.004",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Bayesian Optimization",
@@ -2001,6 +2031,8 @@
       "doi": "10.7554/eLife.77007",
       "codeUrl": "https://github.com/labauto/LabDroid_optimizer",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Bayesian Optimization",
@@ -2046,6 +2078,8 @@
       "doi": "10.1080/0305215X.2020.1826466",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Genetic Algorithms"
@@ -2083,6 +2117,8 @@
       "doi": null,
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Bayesian Optimization",
@@ -2123,6 +2159,8 @@
       "doi": "10.3390/ma14185278",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "CNN"
@@ -2167,6 +2205,8 @@
       "doi": "10.1088/1758-5090/ad6374",
       "codeUrl": "https://github.com/saeedrafieyan/MLATE",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Deep Learning",
@@ -2221,6 +2261,8 @@
       "doi": "10.1155/2014/269305",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "SVM"
@@ -2265,6 +2307,8 @@
       "doi": "10.3390/applmicrobiol3040091",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Active Learning"
@@ -2304,6 +2348,8 @@
       "doi": "10.1101/2022.12.24.521878",
       "codeUrl": "https://github.com/hashizume711/medium_optimization",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Active Learning"
@@ -2343,6 +2389,8 @@
       "doi": "10.1016/j.bej.2024.109591",
       "codeUrl": "https://github.com/yuki020527/medium_optimization",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Active Learning"
@@ -2384,6 +2432,8 @@
       "doi": "10.1016/j.foodchem.2022.135166",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "CNN",
@@ -2437,6 +2487,8 @@
       "doi": "10.1038/s41538-025-00435-6",
       "codeUrl": "https://github.com/illuminate6060/ML_S.cerevisiae",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Ensemble Learning"
@@ -2493,6 +2545,8 @@
       "doi": "10.1016/j.jfoodeng.2025.112676",
       "codeUrl": "https://github.com/llllhhhhkkkk/odor-prediction-ML",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "SVM",
@@ -2537,6 +2591,8 @@
       "doi": "10.1002/aic.16473",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Deep Learning"
@@ -2581,6 +2637,8 @@
       "doi": "10.1016/j.biortech.2013.03.194",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Deep Learning",
@@ -2626,6 +2684,8 @@
       "doi": "10.1016/j.biortech.2020.122781",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Genetic Algorithms",
@@ -2675,6 +2735,8 @@
       "doi": "10.1016/j.bej.2022.108578",
       "codeUrl": "https://github.com/garrettroell/SyngasMachineLearning",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "SVM",
@@ -2733,6 +2795,8 @@
       "doi": "10.1007/978-3-030-77964-1_29",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "CNN"
@@ -2777,6 +2841,8 @@
       "doi": "10.48550/ARXIV.2508.00769",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Genetic Algorithms"
@@ -2816,6 +2882,8 @@
       "doi": "10.1088/1478-3975/ad0019",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "GAN / VAE"
@@ -2864,6 +2932,8 @@
       "doi": "10.7554/eLife.82502",
       "codeUrl": "https://github.com/osmoai/publications/tree/main/qian_et_al_2023",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "GNN"
@@ -2913,6 +2983,8 @@
       "doi": "10.48550/arXiv.2503.10970",
       "codeUrl": "https://github.com/mims-harvard/TxAgent",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Domain-Specific Biomedical Agents"
@@ -2965,6 +3037,8 @@
       "doi": "10.48550/arXiv.2509.23426",
       "codeUrl": "https://github.com/mims-harvard/ToolUniverse",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Agent Infrastructure (Frameworks, KGs, Protocols)"
@@ -3008,6 +3082,8 @@
       "doi": "10.48550/arXiv.2605.06728",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Foundation Models (other modalities)"
@@ -3049,6 +3125,8 @@
       "doi": "10.48550/arXiv.2512.09964",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Domain-Specific Biomedical Agents"
@@ -3096,6 +3174,8 @@
       "doi": "10.48550/arXiv.2312.07559",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Scientific Literature & Discovery Agents"
@@ -3143,6 +3223,8 @@
       "doi": "10.48550/arXiv.2408.06292",
       "codeUrl": "https://github.com/SakanaAI/AI-Scientist",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Scientific Literature & Discovery Agents"
@@ -3188,6 +3270,8 @@
       "doi": "10.48550/arXiv.2409.13740",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Scientific Literature & Discovery Agents"
@@ -3237,6 +3321,8 @@
       "doi": "10.48550/arXiv.2504.08066",
       "codeUrl": "https://github.com/SakanaAI/AI-Scientist-v2",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Scientific Literature & Discovery Agents"
@@ -3289,6 +3375,8 @@
       "doi": "10.1038/s41587-024-02534-3",
       "codeUrl": "https://github.com/biocypher/biochatter",
       "dataUrl": "https://doi.org/10.5281/zenodo.10777945",
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Agent Infrastructure (Frameworks, KGs, Protocols)"
@@ -3353,6 +3441,8 @@
       "doi": "10.1126/science.adz4351",
       "codeUrl": "https://github.com/snap-stanford/Biomni",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "General-Purpose Biomedical Agents"
@@ -3407,6 +3497,8 @@
       "doi": "10.1186/s12859-025-06310-1",
       "codeUrl": "https://github.com/VirtualPatientEngine/AIAgents4Pharma",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Domain-Specific Biomedical Agents"
@@ -3457,6 +3549,8 @@
       "doi": "10.64898/2026.01.16.696667",
       "codeUrl": "https://github.com/mims-harvard/Medea",
       "dataUrl": "https://huggingface.co/datasets/mims-harvard/MedeaDB",
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Domain-Specific Biomedical Agents"
@@ -3508,6 +3602,8 @@
       "doi": null,
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "GNN"
@@ -3574,6 +3670,8 @@
       "doi": "10.48550/arXiv.2505.04638",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Benchmarks & Evaluation Frameworks"
@@ -3635,6 +3733,8 @@
       "doi": "10.1101/2023.02.28.530532",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Domain-Specific Biomedical Agents"
@@ -3682,6 +3782,8 @@
       "doi": "10.48550/arXiv.2512.03109",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Benchmarks & Evaluation Frameworks"
@@ -3752,6 +3854,8 @@
       "doi": "10.1101/2025.04.03.646459",
       "codeUrl": "https://github.com/Genentech/SpatialAgent",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Domain-Specific Biomedical Agents"
@@ -3820,6 +3924,8 @@
       "doi": "10.1101/2025.06.26.661135",
       "codeUrl": "https://github.com/ArcInstitute/state",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Deep Learning",
@@ -3871,6 +3977,8 @@
       "doi": "10.1038/s41467-025-61113-5",
       "codeUrl": "https://github.com/NHarini-1995/CellCultureBayesianOptimization",
       "dataUrl": "https://doi.org/10.6084/m9.figshare.27715134",
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Bayesian Optimization",
@@ -3910,6 +4018,8 @@
       "doi": "10.1038/s41540-026-00704-4",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Bayesian Optimization"
@@ -3970,6 +4080,8 @@
       "doi": "10.1101/2025.11.11.686354",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Robot Scientists & Lab Automation",
@@ -4028,6 +4140,8 @@
       "doi": "10.48550/arXiv.2507.01485",
       "codeUrl": "https://github.com/AlexandreQ27/BioMARS",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Robot Scientists & Lab Automation"
@@ -4084,6 +4198,8 @@
       "doi": "10.1038/s41467-022-31245-z",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Active Learning"
@@ -4142,6 +4258,8 @@
       "doi": "10.48550/arXiv.2408.10689",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Robot Scientists & Lab Automation"
@@ -4185,6 +4303,8 @@
       "doi": "10.1101/2025.06.24.661378",
       "codeUrl": "https://github.com/DanielBrunnsaker/GenExp",
       "dataUrl": "https://doi.org/10.5281/zenodo.15730908",
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Robot Scientists & Lab Automation"
@@ -4249,6 +4369,8 @@
       "doi": "10.1101/2023.01.03.521657",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Robot Scientists & Lab Automation"
@@ -4288,6 +4410,8 @@
       "doi": "10.1101/2025.09.10.675105",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Agent Infrastructure (Frameworks, KGs, Protocols)"
@@ -4339,6 +4463,8 @@
       "doi": "10.1101/2024.09.09.612023",
       "codeUrl": "https://github.com/LiLabTsinghua/D2Cell",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "GNN",
@@ -4389,6 +4515,8 @@
       "doi": "10.3390/ijms24087296",
       "codeUrl": "https://github.com/kmaeda16/KinModGPT",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Domain-Specific Biomedical Agents"
@@ -4434,6 +4562,8 @@
       "doi": "10.1038/s41586-023-06792-0",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Chemistry / Synthesis Agents"
@@ -4476,6 +4606,8 @@
       "doi": "10.1038/s42256-024-00832-8",
       "codeUrl": "https://github.com/ur-whitelab/chemcrow-public",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Chemistry / Synthesis Agents"
@@ -4520,6 +4652,8 @@
       "doi": "10.1073/pnas.2115865119",
       "codeUrl": "https://github.com/Resende-Lab/metabolomic_selection_for_enhanced_fruit_flavor",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "SVM",
@@ -4591,6 +4725,8 @@
       "doi": "10.1126/science.aal2014",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Ensemble Learning"
@@ -4634,6 +4770,8 @@
       "doi": "10.48550/arXiv.2508.08441",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Foundation Models: Next-Token Prediction"
@@ -4687,6 +4825,8 @@
       "doi": "10.48550/arXiv.2605.10876",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Benchmarks & Evaluation Frameworks"
@@ -4734,6 +4874,8 @@
       "doi": "10.48550/arXiv.2510.13896",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Domain-Specific Biomedical Agents"
@@ -4786,6 +4928,8 @@
       "doi": "10.1038/s42256-026-01226-8",
       "codeUrl": "https://github.com/TomAIDD/NaFM-Official",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Foundation Models (other modalities)"
@@ -4839,6 +4983,8 @@
       "doi": "10.1126/science.aec8514",
       "codeUrl": "https://virtualcellmodels.cziscience.com/model/transcriptformer",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Foundation Models: Next-Token Prediction"
@@ -4895,6 +5041,8 @@
       "doi": "10.48550/arXiv.2508.02276",
       "codeUrl": "https://github.com/gersteinlab/CellForge",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Domain-Specific Biomedical Agents",
@@ -4953,6 +5101,8 @@
       "doi": "10.1093/bioinformatics/btaf159",
       "codeUrl": "https://github.com/Jpickard1/BRAD",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "General-Purpose Biomedical Agents"
@@ -4996,6 +5146,8 @@
       "doi": "10.48550/arXiv.2504.03976",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "General-Purpose Biomedical Agents"
@@ -5036,6 +5188,8 @@
       "doi": "10.48550/arXiv.2507.02004",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "General-Purpose Biomedical Agents"
@@ -5082,6 +5236,8 @@
       "doi": "10.1101/2025.05.25.656020",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Active Learning",
@@ -5129,6 +5285,8 @@
       "doi": "10.1101/2023.10.29.564479",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "General-Purpose Biomedical Agents"
@@ -5171,6 +5329,8 @@
       "doi": "10.1038/s41598-017-12359-7",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Ensemble Learning"
@@ -5218,6 +5378,8 @@
       "doi": "10.1016/j.csbj.2020.12.030",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Ensemble Learning"
@@ -5260,6 +5422,8 @@
       "doi": "10.1186/s13321-022-00612-9",
       "codeUrl": "https://github.com/YuliSl/BitterMatch",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "K-Nearest Neighbors"
@@ -5305,6 +5469,8 @@
       "doi": "10.1021/acs.jafc.3c09767",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Ensemble Learning"
@@ -5355,6 +5521,8 @@
       "doi": "10.48550/arXiv.2503.00096",
       "codeUrl": "https://github.com/Future-House/BixBench",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Benchmarks & Evaluation Frameworks"
@@ -5426,6 +5594,8 @@
       "doi": "10.48550/arXiv.2410.23326",
       "codeUrl": "https://github.com/pluskal-lab/MassSpecGym",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Benchmarks & Evaluation Frameworks"
@@ -5469,6 +5639,8 @@
       "doi": "10.1093/bioadv/vbaf064",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Benchmarks & Evaluation Frameworks"
@@ -5516,6 +5688,8 @@
       "doi": "10.1038/s41586-023-06139-9",
       "codeUrl": "https://huggingface.co/ctheodoris/Geneformer",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Foundation Models: Masked Language Modeling"
@@ -5560,6 +5734,8 @@
       "doi": "10.1038/s42256-022-00534-z",
       "codeUrl": "https://github.com/TencentAILabHealthcare/scBERT",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Foundation Models: Masked Language Modeling"
@@ -5621,6 +5797,8 @@
       "doi": "10.1016/j.isci.2023.106536",
       "codeUrl": "https://github.com/deeplearningplus/tGPT",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Foundation Models: Next-Token Prediction"
@@ -5677,6 +5855,8 @@
       "doi": "10.1038/s41592-024-02305-7",
       "codeUrl": "https://github.com/biomap-research/scFoundation",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Foundation Models: Masked Language Modeling"
@@ -5735,6 +5915,8 @@
       "doi": "10.1038/s41592-024-02201-0",
       "codeUrl": "https://github.com/bowang-lab/scGPT",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Foundation Models: Next-Token Prediction",
@@ -5789,6 +5971,8 @@
       "doi": "10.1038/s41592-024-02191-z",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Deep Learning"
@@ -5837,6 +6021,8 @@
       "doi": "10.1101/2023.11.28.568918",
       "codeUrl": "https://github.com/snap-stanford/UCE",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Foundation Models: LM + Biological Priors"
@@ -5906,6 +6092,8 @@
       "doi": "10.1101/2025.04.14.648850",
       "codeUrl": "https://github.com/vandijklab/cell2sentence",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Reinforcement Learning",
@@ -5957,6 +6145,8 @@
       "doi": "10.1038/s41587-023-01905-6",
       "codeUrl": "https://github.com/snap-stanford/GEARS",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "GNN"
@@ -6006,6 +6196,8 @@
       "doi": "10.1101/2024.11.04.621938",
       "codeUrl": "https://github.com/snap-stanford/precice",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Deep Learning",
@@ -6057,6 +6249,8 @@
       "doi": "10.1101/2025.06.03.657653",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Deep Learning"
@@ -6112,6 +6306,11 @@
       "doi": "10.64898/2026.01.09.698608",
       "codeUrl": "https://github.com/ArcInstitute/stack",
       "dataUrl": null,
+      "modelUrls": [
+        "https://huggingface.co/arcinstitute/Stack-Large",
+        "https://huggingface.co/arcinstitute/Stack-Large-Aligned"
+      ],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Foundation Models: Cell-State & Perturbation Prediction"
@@ -6162,6 +6361,8 @@
       "doi": "10.48550/arXiv.2405.17631",
       "codeUrl": "https://github.com/snap-stanford/BioDiscoveryAgent",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Domain-Specific Biomedical Agents"
@@ -6223,6 +6424,8 @@
       "doi": "10.1101/2025.02.27.640494",
       "codeUrl": "https://github.com/ArcInstitute/scRecounter",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Domain-Specific Biomedical Agents"
@@ -6274,6 +6477,8 @@
       "doi": "10.1038/s42003-025-07764-y",
       "codeUrl": "https://github.com/causalbench/causalbench",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Benchmarks & Evaluation Frameworks"
@@ -6341,6 +6546,8 @@
       "doi": "10.1038/s41587-025-02900-9",
       "codeUrl": "https://github.com/biocontext-ai",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Agent Infrastructure (Frameworks, KGs, Protocols)"
@@ -6385,6 +6592,8 @@
       "doi": "10.48550/arXiv.2605.14812",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Deep Learning"
@@ -6440,6 +6649,8 @@
       "doi": "10.48550/arXiv.2407.10362",
       "codeUrl": "https://github.com/Future-House/lab-bench",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Benchmarks & Evaluation Frameworks"
@@ -6486,6 +6697,8 @@
       "doi": "10.48550/arXiv.2408.09667",
       "codeUrl": "https://blade-bench.github.io/",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Benchmarks & Evaluation Frameworks"
@@ -6542,6 +6755,8 @@
       "doi": "10.1101/2023.12.07.570727",
       "codeUrl": "https://github.com/OATML-Markslab/ProteinGym",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Benchmarks & Evaluation Frameworks"
@@ -6591,6 +6806,8 @@
       "doi": "10.48550/arXiv.2507.02083",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Benchmarks & Evaluation Frameworks"
@@ -6632,6 +6849,8 @@
       "doi": "10.64898/2026.04.06.716850",
       "codeUrl": "https://github.com/Genentech/compbiobench-runner",
       "dataUrl": "https://doi.org/10.5281/zenodo.19443185",
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Benchmarks & Evaluation Frameworks"
@@ -6688,6 +6907,8 @@
       "doi": "10.1038/s41586-026-10644-y",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Scientific Literature & Discovery Agents"
@@ -6738,6 +6959,8 @@
       "doi": "10.1038/s41586-026-10652-y",
       "codeUrl": "https://github.com/Future-House/robin",
       "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1464762",
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Scientific Literature & Discovery Agents",
@@ -6787,6 +7010,8 @@
       "doi": "10.48550/arXiv.2310.06770",
       "codeUrl": "https://github.com/SWE-bench/SWE-bench",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Benchmarks & Evaluation Frameworks"
@@ -6825,6 +7050,8 @@
       "doi": "10.48550/arXiv.2311.12022",
       "codeUrl": "https://github.com/idavidrein/gpqa",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Benchmarks & Evaluation Frameworks"
@@ -6878,6 +7105,8 @@
       "doi": "10.48550/arXiv.2406.01574",
       "codeUrl": "https://github.com/TIGER-AI-Lab/MMLU-Pro",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Benchmarks & Evaluation Frameworks"
@@ -6934,6 +7163,8 @@
       "doi": "10.1038/s41586-025-09962-4",
       "codeUrl": "https://github.com/centerforaisafety/hle",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Benchmarks & Evaluation Frameworks"
@@ -6982,6 +7213,8 @@
       "doi": "10.48550/arXiv.2601.21165",
       "codeUrl": null,
       "dataUrl": "https://huggingface.co/datasets/openai/frontierscience",
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Benchmarks & Evaluation Frameworks"
@@ -7023,6 +7256,8 @@
       "doi": "10.48550/arXiv.2412.21154",
       "codeUrl": "https://github.com/Future-House/aviary",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Agent Infrastructure (Frameworks, KGs, Protocols)"
@@ -7073,6 +7308,8 @@
       "doi": "10.48550/arXiv.2506.17238",
       "codeUrl": "https://github.com/Future-House/ether0",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Reinforcement Learning"
@@ -7120,6 +7357,8 @@
       "doi": "10.48550/arXiv.2605.22878",
       "codeUrl": "https://github.com/zjunlp/SciAtlas",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Agent Infrastructure (Frameworks, KGs, Protocols)"
@@ -7173,6 +7412,8 @@
       "doi": "10.48550/arXiv.2601.12805",
       "codeUrl": "https://github.com/CNIC-DSL/SciHorizonGene",
       "dataUrl": "https://huggingface.co/datasets/HankHuang/SciHorizon-Gene",
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Benchmarks & Evaluation Frameworks"
@@ -7221,6 +7462,8 @@
       "doi": "10.48550/arXiv.2603.21743",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Reinforcement Learning"
@@ -7282,6 +7525,8 @@
       "doi": "10.1038/s41586-026-10658-6",
       "codeUrl": "https://github.com/google-research/era",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Scientific Literature & Discovery Agents"
@@ -7325,6 +7570,8 @@
       "doi": null,
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Domain-Specific Biomedical Agents"
@@ -7368,6 +7615,8 @@
       "doi": "10.1016/j.nbt.2025.07.006",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Genetic Algorithms",
@@ -7409,6 +7658,8 @@
       "doi": "10.1007/s00253-024-13147-w",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Ensemble Learning"
@@ -7457,6 +7708,8 @@
       "doi": "10.3390/foods12020344",
       "codeUrl": "https://github.com/sezinata/FoodML",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Ensemble Learning",
@@ -7503,6 +7756,8 @@
       "doi": "10.1038/nature02236",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Active Learning",
@@ -7543,6 +7798,8 @@
       "doi": "10.1109/ASYU48272.2019.8946388",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "CNN"
@@ -7585,6 +7842,8 @@
       "doi": "10.1016/j.dib.2025.112045",
       "codeUrl": null,
       "dataUrl": "https://doi.org/10.5281/zenodo.16764338",
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "CNN"
@@ -7623,6 +7882,8 @@
       "doi": "10.48550/arXiv.2605.22391",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Deep Learning"
@@ -7664,6 +7925,8 @@
       "doi": "10.1016/j.compchemeng.2019.106649",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Reinforcement Learning"
@@ -7704,6 +7967,8 @@
       "doi": "10.1002/aic.17658",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Reinforcement Learning"
@@ -7748,6 +8013,8 @@
       "doi": "10.1002/bit.28784",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Reinforcement Learning"
@@ -7791,6 +8058,8 @@
       "doi": "10.1117/12.3059597",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Reinforcement Learning"
@@ -7829,6 +8098,8 @@
       "doi": "10.1002/cjce.25623",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Deep Learning"
@@ -7876,6 +8147,8 @@
       "doi": "10.1021/acs.iecr.4c01459",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Deep Learning",
@@ -7923,6 +8196,8 @@
       "doi": "10.1021/acsomega.3c00861",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "CNN"
@@ -7979,6 +8254,8 @@
       "doi": "10.1002/btpr.3493",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Ensemble Learning"
@@ -8019,6 +8296,8 @@
       "doi": "10.1002/btpr.70013",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "SVM",
@@ -8072,6 +8351,8 @@
       "doi": "10.1016/j.procbio.2015.12.005",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Genetic Algorithms"
@@ -8113,6 +8394,8 @@
       "doi": "10.1007/s11626-018-00317-0",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Genetic Algorithms"
@@ -8152,6 +8435,8 @@
       "doi": "10.1002/biot.202100228",
       "codeUrl": "https://github.com/ZacharyCosenza/GradStuff_Cosenza",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Genetic Algorithms"
@@ -8199,6 +8484,8 @@
       "doi": "10.1038/s41598-022-25104-6",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Genetic Algorithms"
@@ -8242,6 +8529,8 @@
       "doi": "10.3389/fbioe.2021.614324",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Ensemble Learning"
@@ -8282,6 +8571,8 @@
       "doi": "10.1063/5.0059724",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Ensemble Learning"
@@ -8331,6 +8622,8 @@
       "doi": "10.1002/advs.202412831",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Deep Learning"
@@ -8378,6 +8671,8 @@
       "doi": "10.1039/d4ra01257g",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Deep Learning",
@@ -8430,6 +8725,8 @@
       "doi": "10.1021/acsomega.5c06107",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Ensemble Learning"
@@ -8476,6 +8773,13 @@
       "doi": "10.1016/j.foodres.2025.116324",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [
+        {
+          "label": "Corrigendum",
+          "url": "https://doi.org/10.1016/j.foodres.2025.116857"
+        }
+      ],
       "isPrimary": true,
       "methods": [
         "CNN"
@@ -8521,6 +8825,8 @@
       "doi": "10.1093/bioinformatics/btaf031",
       "codeUrl": "https://github.com/EpistasisLab/ESCARGOT",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Agent Infrastructure (Frameworks, KGs, Protocols)"
@@ -8565,6 +8871,8 @@
       "doi": "10.1093/bioinformatics/btaf380",
       "codeUrl": "https://github.com/RTXteam/PloverDB",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Agent Infrastructure (Frameworks, KGs, Protocols)"
@@ -8606,6 +8914,8 @@
       "doi": "10.1093/gigascience/giaf109",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Scientific Literature & Discovery Agents"
@@ -8645,6 +8955,8 @@
       "doi": "10.48550/arXiv.2511.14631",
       "codeUrl": "https://github.com/CMBAgents/cmbagent",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Scientific Literature & Discovery Agents"
@@ -8690,6 +9002,8 @@
       "doi": "10.1101/2025.08.08.669291",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "General-Purpose Biomedical Agents"
@@ -8751,6 +9065,8 @@
       "doi": "10.1101/2024.12.10.627665",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Foundation Models (other modalities)"
@@ -8796,6 +9112,8 @@
       "doi": "10.1101/2025.09.01.673319",
       "codeUrl": "https://github.com/science-machine/biomlbench",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Benchmarks & Evaluation Frameworks"
@@ -8854,6 +9172,8 @@
       "doi": "10.1038/s41467-025-59926-5",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Foundation Models: Masked Language Modeling"
@@ -8903,6 +9223,8 @@
       "doi": "10.1038/s41538-026-00953-x",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Deep Learning"
@@ -8945,6 +9267,8 @@
       "doi": "10.48550/arXiv.2606.19396",
       "codeUrl": "https://github.com/coco11563/BioHarness",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "General-Purpose Biomedical Agents"
@@ -8989,6 +9313,8 @@
       "doi": "10.64898/2026.06.18.733198",
       "codeUrl": "https://github.com/BIMSBbioinfo/atlas_tissue_representation",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "GAN / VAE"
@@ -9055,6 +9381,8 @@
       "doi": "10.64898/2026.06.24.734302",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Benchmarks & Evaluation Frameworks"
@@ -9098,6 +9426,8 @@
       "doi": "10.64898/2026.06.29.735386",
       "codeUrl": "https://huggingface.co/datasets/ajh-oai/genebench-pro-public-package",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Benchmarks & Evaluation Frameworks"
@@ -9133,6 +9463,8 @@
       "doi": "10.1021/acs.jproteome.5b00354",
       "codeUrl": "https://bioconductor.org/packages/ropls/",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Chemometrics"
@@ -9178,6 +9510,8 @@
       "doi": "10.1371/journal.pcbi.1005752",
       "codeUrl": "https://github.com/mixOmicsTeam/mixOmics",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Chemometrics"
@@ -9220,6 +9554,8 @@
       "doi": "10.1016/j.isci.2025.112944",
       "codeUrl": null,
       "dataUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12308009/#mmc2",
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Bayesian Optimization"
@@ -9260,6 +9596,8 @@
       "doi": "10.1016/j.jbiosc.2025.12.002",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Active Learning"
@@ -9302,6 +9640,8 @@
       "doi": "10.48550/arXiv.2602.13398",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Bayesian Optimization"
@@ -9346,6 +9686,8 @@
       "doi": "10.1115/1.4045815",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Genetic Algorithms"
@@ -9392,6 +9734,8 @@
       "doi": "10.1002/bit.28405",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Deep Learning",
@@ -9442,6 +9786,8 @@
       "doi": "10.1021/acs.iecr.4c03986",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Deep Learning"
@@ -9485,6 +9831,8 @@
       "doi": "10.1002/bit.27437",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Hybrid Mechanistic-ML Models"
@@ -9524,6 +9872,8 @@
       "doi": "10.1002/bit.28912",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Bayesian Optimization"
@@ -9571,6 +9921,8 @@
       "doi": "10.1021/acsomega.3c02387",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Deep Learning"
@@ -9614,6 +9966,8 @@
       "doi": "10.1016/j.jbiotec.2019.05.001",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Genetic Algorithms"
@@ -9664,6 +10018,8 @@
       "doi": "10.1038/s41598-024-83114-y",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "SVM"
@@ -9715,6 +10071,8 @@
       "doi": "10.1007/s10047-021-01282-4",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "CNN"
@@ -9756,6 +10114,8 @@
       "doi": "10.1002/mbo3.1122",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "CNN"
@@ -9801,6 +10161,8 @@
       "doi": "10.1007/s00449-025-03194-6",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "SVM"
@@ -9852,6 +10214,8 @@
       "doi": "10.1038/s41586-022-04506-6",
       "codeUrl": null,
       "dataUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE163045",
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Deep Learning"
@@ -9893,6 +10257,8 @@
       "doi": "10.3389/frai.2025.1577027",
       "codeUrl": "https://github.com/food-ai-engineering-lab/bsc-fluorescence-prediction",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "CNN"
@@ -9937,6 +10303,8 @@
       "doi": "10.31083/fbl36266",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "CNN"
@@ -9986,6 +10354,8 @@
       "doi": "10.1021/acs.jafc.3c06919",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Linear & Regularized Models"
@@ -10028,6 +10398,8 @@
       "doi": "10.1021/acs.jcim.4c02394",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Foundation Models (other modalities)"
@@ -10067,6 +10439,8 @@
       "doi": "10.1038/s41598-019-43664-y",
       "codeUrl": "https://github.com/cosylabiiit/bittersweet",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Ensemble Learning"
@@ -10113,6 +10487,8 @@
       "doi": "10.1021/acs.jcim.0c00707",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Genetic Algorithms",
@@ -10155,6 +10531,8 @@
       "doi": "10.1093/bioinformatics/btab133",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Foundation Models (other modalities)"
@@ -10207,6 +10585,8 @@
       "doi": "10.1038/s41598-022-25935-3",
       "codeUrl": "https://github.com/lorenzopallante/VirtuousUmami",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "SVM"
@@ -10253,6 +10633,8 @@
       "doi": "10.1038/s41586-025-09442-9",
       "codeUrl": "https://github.com/zou-group/virtual-lab",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "General-Purpose Biomedical Agents"
@@ -10296,6 +10678,8 @@
       "doi": "10.1002/adma.202413523",
       "codeUrl": "https://github.com/lamm-mit/SciAgentsDiscovery",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Scientific Literature & Discovery Agents"
@@ -10349,6 +10733,8 @@
       "doi": "10.1016/j.matt.2024.10.015",
       "codeUrl": "https://github.com/ac-rad/organa",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Robot Scientists & Lab Automation"
@@ -10387,6 +10773,8 @@
       "doi": "10.1039/d4dd00013g",
       "codeUrl": "https://github.com/lamm-mit/ProtAgents",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Domain-Specific Biomedical Agents"
@@ -10442,6 +10830,8 @@
       "doi": "10.1038/s41551-025-01463-z",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Domain-Specific Biomedical Agents"
@@ -10500,6 +10890,8 @@
       "doi": "10.1002/advs.202407094",
       "codeUrl": "https://github.com/JoshuaChou2018/AutoBA",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Domain-Specific Biomedical Agents"
@@ -10551,6 +10943,8 @@
       "doi": "10.1038/s41538-026-00942-0",
       "codeUrl": "https://github.com/DiPizio-Lab/bitter-peptide-design",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "GNN",
@@ -10596,6 +10990,8 @@
       "doi": "10.1186/s13321-024-00909-x",
       "codeUrl": "https://github.com/srivastavaprashant/BitterGNN",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "GNN"
@@ -10642,6 +11038,8 @@
       "doi": "10.1021/acs.jafc.5c15770",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Chemometrics"
@@ -10691,6 +11089,13 @@
       "doi": "10.1093/biomethods/bpaf040",
       "codeUrl": "https://github.com/faezesarlakifar/AllerTrans",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [
+        {
+          "label": "Correction",
+          "url": "https://doi.org/10.1093/biomethods/bpaf076"
+        }
+      ],
       "isPrimary": true,
       "methods": [
         "Deep Learning"
@@ -10738,6 +11143,8 @@
       "doi": "10.1093/bib/bbaa294",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Ensemble Learning"
@@ -10783,6 +11190,8 @@
       "doi": "10.1016/j.foodhyd.2024.110786",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Ensemble Learning"
@@ -10819,6 +11228,8 @@
       "doi": "10.1016/j.crfs.2026.101458",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "CNN"
@@ -10853,6 +11264,8 @@
       "doi": "10.1093/bioadv/vbae041",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "GNN"
@@ -10898,6 +11311,8 @@
       "doi": "10.1038/s41598-024-70696-w",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "CNN"
@@ -10951,6 +11366,8 @@
       "doi": "10.1016/j.foodres.2023.113142",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Foundation Models: Masked Language Modeling"
@@ -10997,6 +11414,8 @@
       "doi": "10.1080/07391102.2023.2258415",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Ensemble Learning"
@@ -11044,6 +11463,8 @@
       "doi": "10.3390/foods12183386",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "GNN"
@@ -11094,6 +11515,8 @@
       "doi": "10.1016/j.foodchem.2022.134935",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Deep Learning"
@@ -11142,6 +11565,8 @@
       "doi": "10.1016/j.foodres.2022.110974",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Deep Learning"
@@ -11189,6 +11614,8 @@
       "doi": "10.3390/ijms22168958",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "SVM"
@@ -11236,6 +11663,8 @@
       "doi": "10.3390/ijms222313124",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Ensemble Learning"
@@ -11283,6 +11712,8 @@
       "doi": "10.1039/d1ra06551c",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Ensemble Learning"
@@ -11328,6 +11759,8 @@
       "doi": "10.1021/acs.jcim.0c01288",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Deep Learning",
@@ -11372,6 +11805,8 @@
       "doi": "10.3389/fchem.2018.00093",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Ensemble Learning"
@@ -11420,6 +11855,8 @@
       "doi": "10.3389/fchem.2018.00082",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Ensemble Learning"
@@ -11463,6 +11900,8 @@
       "doi": "10.1371/journal.pone.0157030",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Deep Learning"
@@ -11521,6 +11960,8 @@
       "doi": "10.3390/foods12173154",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "SVM",
@@ -11574,6 +12015,8 @@
       "doi": "10.1016/s0309-1740(02)00328-5",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Chemometrics"
@@ -11626,6 +12069,8 @@
       "doi": "10.1016/j.compbiomed.2022.106441",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Ensemble Learning"
@@ -11672,6 +12117,8 @@
       "doi": "10.3389/fchem.2019.00035",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Ensemble Learning"
@@ -11715,6 +12162,8 @@
       "doi": "10.1371/journal.pone.0198475",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Deep Learning"
@@ -11761,6 +12210,8 @@
       "doi": "10.1038/s41467-018-07439-9",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Linear & Regularized Models"
@@ -11809,6 +12260,8 @@
       "doi": "10.3389/fchem.2017.00053",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "K-Nearest Neighbors",
@@ -11855,6 +12308,8 @@
       "doi": "10.1016/j.foodres.2023.113576",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Ensemble Learning"
@@ -11908,6 +12363,8 @@
       "doi": "10.1038/s41538-024-00287-6",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Genetic Algorithms",
@@ -11956,6 +12413,8 @@
       "doi": "10.1016/j.crfs.2022.11.014",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Ensemble Learning"
@@ -12005,6 +12464,8 @@
       "doi": "10.1016/j.foodchem.2021.131249",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Ensemble Learning"
@@ -12051,6 +12512,8 @@
       "doi": "10.1016/j.foodchem.2020.126864",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Ensemble Learning"
@@ -12097,6 +12560,8 @@
       "doi": "10.1016/j.foodchem.2016.10.145",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "SVM",
@@ -12147,6 +12612,8 @@
       "doi": "10.1016/j.jfoodeng.2019.109693",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Chemometrics"
@@ -12197,6 +12664,8 @@
       "doi": "10.1016/j.lwt.2017.04.040",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Chemometrics"
@@ -12244,6 +12713,8 @@
       "doi": "10.1016/j.colsurfa.2026.140881",
       "codeUrl": "https://github.com/yangzhi1987-sketch/benchmark-food-gel-segmentation",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "CNN",
@@ -12291,6 +12762,8 @@
       "doi": "10.1093/bioinformatics/btag607",
       "codeUrl": "https://github.com/Amii-Applied-AI/amii-cell-ag-tools/tree/main/active-learning-for-cell-media",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": true,
       "methods": [
         "Benchmarks & Evaluation Frameworks"
@@ -12330,6 +12803,8 @@
       "doi": "10.1021/acs.jafc.9b00708",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -12372,6 +12847,8 @@
       "doi": "10.1021/acs.jafc.4c02316",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -12410,6 +12887,8 @@
       "doi": "10.1038/s41598-024-68247-4",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -12446,6 +12925,8 @@
       "doi": "10.1093/nar/gkr755",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -12485,6 +12966,8 @@
       "doi": "10.1093/nar/gky974",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -12521,6 +13004,8 @@
       "doi": "10.1093/nar/gkae1044",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -12556,6 +13041,8 @@
       "doi": "10.1002/iub.1694",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -12608,6 +13095,8 @@
       "doi": "10.1038/nbt.3597",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -12648,6 +13137,8 @@
       "doi": "10.1016/j.foodres.2019.04.007",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -12690,6 +13181,8 @@
       "doi": "10.3390/metabo10050188",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -12739,6 +13232,8 @@
       "doi": "10.1016/j.psj.2025.105700",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -12789,6 +13284,8 @@
       "doi": "10.1016/j.foodchem.2025.142946",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -12828,6 +13325,8 @@
       "doi": "10.1038/s41538-022-00157-z",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -12873,6 +13372,8 @@
       "doi": "10.1101/2024.12.09.627468",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -12913,6 +13414,8 @@
       "doi": "10.1371/journal.pone.0254270",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -12957,6 +13460,8 @@
       "doi": "10.1016/j.ymben.2026.01.001",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -13006,6 +13511,8 @@
       "doi": "10.1371/journal.pcbi.1010194",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -13078,6 +13585,8 @@
       "doi": "10.1016/j.cels.2016.10.020",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -13136,6 +13645,8 @@
       "doi": "10.1038/nbt.4072",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -13188,6 +13699,8 @@
       "doi": "10.1126/scisignal.aaz1482",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -13231,6 +13744,8 @@
       "doi": "10.64898/2026.05.28.728221",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -13276,6 +13791,8 @@
       "doi": "10.48550/arXiv.1706.03762",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -13306,6 +13823,8 @@
       "doi": "10.1073/pnas.1017017108",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -13335,6 +13854,8 @@
       "doi": "10.1038/nbt.1614",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -13369,6 +13890,8 @@
       "doi": "10.1038/s42256-019-0025-4",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -13397,6 +13920,8 @@
       "doi": "10.1038/s41592-022-01409-2",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -13424,6 +13949,8 @@
       "doi": "10.3390/metabo8010004",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -13463,6 +13990,8 @@
       "doi": "10.1007/978-1-0716-1831-8_5",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -13503,6 +14032,8 @@
       "doi": "10.1038/s41467-020-20063-w",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -13545,6 +14076,8 @@
       "doi": "10.1073/pnas.1319700110",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -13591,6 +14124,8 @@
       "doi": "10.1038/s41588-025-02121-5",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -13637,6 +14172,8 @@
       "doi": "10.1038/s41588-023-01585-7",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -13683,6 +14220,8 @@
       "doi": "10.1038/s41588-025-02155-9",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -13747,6 +14286,8 @@
       "doi": "10.1038/s41588-025-02329-5",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -13799,6 +14340,8 @@
       "doi": "10.1101/2025.11.03.686346",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -13870,6 +14413,8 @@
       "doi": "10.1093/nar/gkad1080",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -13916,6 +14461,8 @@
       "doi": "10.1093/nsr/nwaf048",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -13970,6 +14517,8 @@
       "doi": "10.1002/advs.202518238",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -14028,6 +14577,8 @@
       "doi": "10.1002/advs.202504961",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -14067,6 +14618,8 @@
       "doi": "10.1038/s41467-026-68978-0",
       "codeUrl": "https://omiga.bio/",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -14107,6 +14660,8 @@
       "doi": "10.1186/s13059-020-02197-8",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -14153,6 +14708,8 @@
       "doi": "10.1038/s41588-022-01153-5",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -14186,6 +14743,8 @@
       "doi": "10.1038/s41538-025-00441-8",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -14215,6 +14774,8 @@
       "doi": "10.1038/s44319-025-00492-8",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -14258,6 +14819,8 @@
       "doi": "10.1038/s43016-026-01380-7",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -14296,6 +14859,8 @@
       "doi": "10.1111/1541-4337.12964",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -14331,6 +14896,8 @@
       "doi": "10.1021/acs.jafc.1c03398",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -14368,6 +14935,8 @@
       "doi": "10.1016/j.jafr.2024.101036",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -14400,6 +14969,8 @@
       "doi": "10.3389/frai.2024.1424012",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -14468,6 +15039,8 @@
       "doi": "10.1016/j.cell.2024.11.015",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -14515,6 +15088,8 @@
       "doi": "10.1016/j.cell.2025.06.008",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -14545,6 +15120,8 @@
       "doi": "10.1038/s44222-026-00428-4",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -14579,6 +15156,8 @@
       "doi": "10.1016/j.biotechadv.2023.108293",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -14612,6 +15191,8 @@
       "doi": "10.1016/j.csbj.2025.06.035",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -14643,6 +15224,8 @@
       "doi": "10.1016/j.tifs.2024.104794",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -14677,6 +15260,8 @@
       "doi": "10.1111/1541-4337.13193",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -14716,6 +15301,8 @@
       "doi": "10.1002/aic.16235",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -14756,6 +15343,8 @@
       "doi": "10.1038/s41579-020-00440-4",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -14798,6 +15387,8 @@
       "doi": "10.1186/s13059-019-1730-3",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -14840,6 +15431,8 @@
       "doi": "10.1038/s41580-024-00768-2",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -14884,6 +15477,8 @@
       "doi": "10.1186/1759-4499-2-1",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -14928,6 +15523,8 @@
       "doi": "10.1016/j.tifs.2026.105731",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -14961,6 +15558,8 @@
       "doi": "10.1016/j.tifs.2025.105364",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -14993,6 +15592,8 @@
       "doi": "10.1038/s42256-024-00949-w",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -15041,6 +15642,8 @@
       "doi": "10.1038/s42256-024-00948-x",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -15087,6 +15690,8 @@
       "doi": "10.1111/1541-4337.12678",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -15118,6 +15723,8 @@
       "doi": "10.1093/bib/bbaf505",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -15154,6 +15761,8 @@
       "doi": "10.3389/fbioe.2023.1195294",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -15190,6 +15799,8 @@
       "doi": "10.48550/arXiv.2510.24272",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -15233,6 +15844,8 @@
       "doi": "10.48550/arXiv.2510.09901",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -15268,6 +15881,8 @@
       "doi": "10.1039/d4sc03921a",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -15305,6 +15920,8 @@
       "doi": "10.3389/fbioe.2022.913579",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -15346,6 +15963,8 @@
       "doi": "10.3390/polym17131873",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -15381,6 +16000,8 @@
       "doi": "10.18063/ijb.739",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -15416,6 +16037,8 @@
       "doi": "10.1016/j.cofs.2026.101435",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -15446,6 +16069,8 @@
       "doi": "10.1016/j.tibtech.2022.08.005",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -15475,6 +16100,8 @@
       "doi": "10.1111/1541-4337.70338",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -15503,6 +16130,8 @@
       "doi": "10.3390/ijms222111660",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -15535,6 +16164,8 @@
       "doi": "10.1038/s43016-023-00857-z",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -15565,6 +16196,8 @@
       "doi": "10.1016/j.isci.2024.110877",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -15599,6 +16232,8 @@
       "doi": "10.1146/annurev-food-030212-182623",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -15627,6 +16262,8 @@
       "doi": "10.36922/ijamd.2279",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -15662,6 +16299,8 @@
       "doi": "10.1002/elsc.202400023",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -15703,6 +16342,8 @@
       "doi": "10.1016/j.crfs.2024.100842",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -15743,6 +16384,8 @@
       "doi": "10.1016/j.tifs.2025.105193",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -15777,6 +16420,8 @@
       "doi": "10.1007/s11947-025-03853-2",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -15807,6 +16452,8 @@
       "doi": "10.1016/j.bprint.2025.e00441",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -15843,6 +16490,8 @@
       "doi": "10.48550/arXiv.2506.12322",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -15878,6 +16527,8 @@
       "doi": "10.1016/j.foodchem.2025.147506",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -15921,6 +16572,8 @@
       "doi": "10.1016/j.tifs.2026.105779",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -15957,6 +16610,8 @@
       "doi": "10.1080/10408398.2025.2497919",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -15990,6 +16645,8 @@
       "doi": "10.1002/bit.27848",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -16029,6 +16686,8 @@
       "doi": "10.3390/foods10010003",
       "codeUrl": "https://github.com/IBPA/IBPA-Collection-of-Reproducible-Code-and-Results/tree/master/2020_Artificial_Meat",
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -16068,6 +16727,8 @@
       "doi": "10.1002/bit.28324",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -16107,6 +16768,8 @@
       "doi": "10.1038/s43016-024-01022-w",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -16141,6 +16804,8 @@
       "doi": "10.1021/es200130u",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -16177,6 +16842,8 @@
       "doi": "10.1021/acs.est.5b01614",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -16214,6 +16881,8 @@
       "doi": "10.1007/s11367-022-02128-8",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -16249,6 +16918,8 @@
       "doi": "10.1016/j.scitotenv.2022.158051",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -16287,6 +16958,8 @@
       "doi": "10.1021/acsfoodscitech.4c00281",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -16330,6 +17003,8 @@
       "doi": "10.1007/s11367-024-02350-6",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -16366,6 +17041,13 @@
       "doi": "10.1007/s11367-026-02629-w",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [
+        {
+          "label": "Correction",
+          "url": "https://doi.org/10.1007/s11367-026-02697-y"
+        }
+      ],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -16401,6 +17083,8 @@
       "doi": "10.1038/s43016-024-01061-3",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -16437,6 +17121,8 @@
       "doi": "10.1021/acsfoodscitech.5c00908",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -16491,6 +17177,8 @@
       "doi": "10.1007/s11367-025-02562-4",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -16527,6 +17215,8 @@
       "doi": "10.1080/10408398.2025.2461262",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -16561,6 +17251,8 @@
       "doi": "10.1016/j.crfs.2025.101127",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -16602,6 +17294,8 @@
       "doi": "10.1007/s00217-022-04044-5",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -16634,6 +17328,8 @@
       "doi": "10.1016/j.tifs.2023.07.012",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -16665,6 +17361,8 @@
       "doi": "10.1016/j.tifs.2026.105805",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -16700,6 +17398,8 @@
       "doi": "10.1016/j.foodres.2025.117933",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -16731,6 +17431,8 @@
       "doi": "10.1111/1750-3841.17517",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -16761,6 +17463,8 @@
       "doi": "10.1016/j.crfs.2022.05.016",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -16792,6 +17496,8 @@
       "doi": "10.1016/j.cocis.2025.101937",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -16821,6 +17527,8 @@
       "doi": "10.1016/j.tifs.2025.105525",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -16850,6 +17558,8 @@
       "doi": "10.1016/j.ijpharm.2017.03.076",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -16894,6 +17604,8 @@
       "doi": "10.2903/j.efsa.2022.7044",
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],
@@ -16932,6 +17644,8 @@
       "doi": null,
       "codeUrl": null,
       "dataUrl": null,
+      "modelUrls": [],
+      "notices": [],
       "isPrimary": false,
       "methods": [],
       "areas": [],

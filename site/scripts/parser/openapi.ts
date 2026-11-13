@@ -117,8 +117,9 @@ export const API_ENDPOINTS: readonly ApiEndpointSpec[] = [
     summary: 'Every reference, one compact row each',
     description:
       'Prefer this over papers.json unless you need a full record. One row per reference — ' +
-      'id, title, year, first author, section, methods, areas, DOI, and whether code or data ' +
-      'is linked — at roughly a sixth the size, because a fetch tool that converts a page to ' +
+      'id, title, year, first author, section, methods, areas, DOI, whether code or data is ' +
+      'linked, and whether a post-publication notice is recorded (`hasNotice`; the notices ' +
+      'themselves are in papers.json) — at roughly a sixth the size, because a fetch tool that converts a page to ' +
       'text and summarises it truncates the full endpoint and then answers confidently from ' +
       'the part it kept. Use this to decide WHICH references you want, then fetch papers.json ' +
       'for their full records. Carries `matrixNote`: a reference with empty `methods` and ' +
@@ -130,7 +131,11 @@ export const API_ENDPOINTS: readonly ApiEndpointSpec[] = [
     schema: ApiPapersSchema,
     summary: 'Every reference, in full',
     description:
-      'DOI, code URL, data URL, topics, license and citation count per reference. Spans ' +
+      'DOI, code URL, data URL, model URLs, topics, license and citation count per reference, and ' +
+      'its post-publication notices (`notices`: a correction, an erratum, an expression of concern…, ' +
+      'each its label, one of a closed list of the words publishers use, spelled as that list ' +
+      'spells it whatever case the source used, and its URL); a notice leaves the paper standing, and ' +
+      'none is a retraction. Spans ' +
       'six sections; only References is matrix-eligible, so say which population you counted. ' +
       'This file is large: if your fetch summarises rather than returning bytes, it may be ' +
       'silently truncated, and a "not found" from it is not evidence of absence. Use ' +

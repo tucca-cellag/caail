@@ -861,4 +861,11 @@ describe('the compact indexes', () => {
     expect(() => buildCatalogIndex({ software: 'not an array' }, DATE)).not.toThrow();
     expect(() => buildPapersIndex({ references: null } as never, DATE)).not.toThrow();
   });
+
+  it('flags in the index exactly the papers that carry a post-publication notice (tucca-cellag/caail-planning#656)', () => {
+    const rows = (buildPapersIndex(papers, DATE) as { references: { id: number; hasNotice: boolean }[] }).references;
+    const noticed = papers.references.filter((r) => r.notices.length > 0).map((r) => r.id);
+    expect(noticed.length).toBeGreaterThan(0);
+    expect(rows.filter((r) => r.hasNotice).map((r) => r.id)).toEqual(noticed);
+  });
 });

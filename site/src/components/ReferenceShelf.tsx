@@ -5,6 +5,7 @@ import { useMemo, useState } from 'preact/hooks';
 import data from '../content/data/papers.json';
 import TopicChips from './TopicChips';
 import CitationBadge from './CitationBadge';
+import RefLinkBadges, { type RefLinks } from './RefLinkBadges';
 import ReportLink from './ReportLink';
 import type { TopicRef } from '../lib/topic-chips';
 
@@ -14,6 +15,10 @@ type Ref = {
   authors: string[] | null; authorsText: string;
   year: number | null; title: string | null; journal: string | null;
   doi: string | null; codeUrl: string | null; dataUrl: string | null;
+  // Typed from the parser's Reference, so a type-check holds these fields to what the badge
+  // component takes. papers.json reaches the card through a cast, not a schema check: the
+  // parser's own validation, at build time, is what guarantees the served labels.
+  modelUrls: RefLinks['modelUrls']; notices: RefLinks['notices'];
   isPrimary: boolean; hasCode: boolean; hasData: boolean;
   slug: string; methods: string[]; areas: string[]; topics: TopicRef[];
   citedByOpenAlex: number | null;
@@ -82,8 +87,7 @@ const renderRef = (r: Ref) => (
     <div class="px-ti">{r.title ?? ''}{r.journal ? <>. <span class="px-jo">{r.journal}</span></> : ''}</div>
     <div class="px-badges">
       {r.doi && <a class="px-bdg doi" href={`https://doi.org/${r.doi}`}>{r.doi}</a>}
-      {r.codeUrl && <a class="px-bdg code" href={r.codeUrl}>⟨⟩ Code</a>}
-      {r.dataUrl && <a class="px-bdg data" href={r.dataUrl}>▤ Data</a>}
+      <RefLinkBadges r={r} />
       <CitationBadge doi={r.doi} citationCount={r.citedByOpenAlex} />
       <ReportLink itemId={`paper:${r.id}`} label={r.title ?? `reference ${r.id}`} />
     </div>
