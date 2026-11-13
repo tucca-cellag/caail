@@ -59,6 +59,18 @@ describe('RefLinkBadges', () => {
     expect(new Set(names).size).toBe(names.length);
   });
 
+  it('names a model link by its repository, not by the branch or file after it', () => {
+    const r: RefLinks = {
+      ...none,
+      modelUrls: [
+        'https://huggingface.co/org/a/tree/main',
+        'https://huggingface.co/org/b/blob/main/model.safetensors',
+        'https://huggingface.co/org/c/resolve/main/weights.bin',
+      ],
+    };
+    expect(links(RefLinkBadges({ r })).map((l) => l.name)).toEqual(['Model 1: a', 'Model 2: b', 'Model 3: c']);
+  });
+
   it('names a lone model link Model, with no number', () => {
     const r: RefLinks = { ...none, modelUrls: ['https://huggingface.co/arcinstitute/Stack-Large'] };
     expect(links(RefLinkBadges({ r }))).toEqual([

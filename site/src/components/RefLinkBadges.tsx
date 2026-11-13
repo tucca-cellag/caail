@@ -9,11 +9,18 @@ import type { Reference } from '../../scripts/parser/types';
 
 export type RefLinks = Pick<Reference, 'codeUrl' | 'dataUrl' | 'modelUrls' | 'notices'>;
 
-/** What a model link names, for its accessible label: the URL's last path segment, else its host. */
+/**
+ * What a model link names, for its accessible label: the last path segment before a
+ * `tree`, `blob` or `resolve` segment (a repository's branch or file view, as Hugging Face
+ * and GitHub write them), so `…/org/a/tree/main` names `a` rather than `main`; else the
+ * last segment, else the host.
+ */
 function modelName(url: string): string {
   try {
     const u = new URL(url);
-    return u.pathname.split('/').filter(Boolean).at(-1) ?? u.host;
+    const segments = u.pathname.split('/').filter(Boolean);
+    const view = segments.findIndex((s) => s === 'tree' || s === 'blob' || s === 'resolve');
+    return (view > 0 ? segments.slice(0, view) : segments).at(-1) ?? u.host;
   } catch {
     return url;
   }
