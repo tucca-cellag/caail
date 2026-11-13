@@ -9,11 +9,19 @@
  * `requestIdleCallback`'s own, run the work after this many milliseconds even if the page is
  * not yet idle.
  *
- * Why 200: where a browser has no `requestIdleCallback`, as Safari and iOS have none, Astro's
- * idle directive already waits `setTimeout(cb, timeout || 200)`
- * (astro/dist/runtime/client/idle.js), so this value is also that fallback's delay. Every
- * browser then waits at most what Safari already waits. A larger value would delay Safari's
- * chat button by the difference.
+ * Why 200: in a browser with no `requestIdleCallback`, Astro's idle directive hydrates an island
+ * after `setTimeout(cb, timeout || 200)` (astro/dist/runtime/client/idle.js), so a `client:idle`
+ * island there waits this value, and it is the delay such a browser already had with no timeout.
+ * So no browser's islands wait longer than they did before the bound. A larger value would
+ * delay those browsers by the difference. `idle-timeout.test.ts` reads the installed Astro and
+ * fails if its fallback delay stops matching this value.
+ *
+ * Which browsers that is (a snapshot, read 2026-11-13 from MDN's browser-compat-data,
+ * api/Window.json): Safari ships `requestIdleCallback` only in its preview build behind a flag,
+ * and iOS Safari mirrors it, so both take that fallback.
+ *
+ * `Analytics.astro` keeps its own fallback for such a browser, `setTimeout(cb, 1)`: the bound
+ * here is the most it waits in a browser that has `requestIdleCallback`.
  *
  * The e2e specs read the same value: `chat-widget-hidden.spec.ts` waits for one idle callback
  * of its own with this timeout, queued after the island's, so it still runs after the island's

@@ -52,8 +52,11 @@ for (const route of ['./', './software/', './papers/explorer/', './privacy/']) {
 // returned: the privacy case timed out at 30 s in CI (tucca-cellag/caail-planning#604).
 test('the no-widget checks finish on a page that never goes idle', async ({ page }) => {
   const stop = await neverIdle(page);
-  await expectNoWidget(page, './privacy/');
-  await stop();
+  try {
+    await expectNoWidget(page, './privacy/');
+  } finally {
+    await stop();
+  }
 });
 
 test('the privacy statement says the feature is not offered at present', async ({ page }) => {

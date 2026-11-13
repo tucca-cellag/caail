@@ -59,9 +59,12 @@ for (const route of ROUTES) {
 // (tucca-cellag/caail-planning#604). The button must appear anyway.
 test('the chat button hydrates on a page that never goes idle', async ({ page }) => {
   const stop = await neverIdle(page);
-  await page.goto('./contributing/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.chat-fab')).toBeVisible({ timeout: 15_000 });
-  await stop();
+  try {
+    await page.goto('./contributing/', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('.chat-fab')).toBeVisible({ timeout: 15_000 });
+  } finally {
+    await stop();
+  }
 });
 
 test('the widget is portalled out of the isolated stacking context', async ({ page }) => {

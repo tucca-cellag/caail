@@ -205,9 +205,12 @@ test('citation network hydrates and renders the graph canvas', async ({ page }) 
 // mounts: this file's canvas waits timed out in CI (tucca-cellag/caail-planning#604).
 test('the citation network mounts on a page that never goes idle', async ({ page }) => {
   const stop = await neverIdle(page);
-  await page.goto('./papers/network/');
-  await page.waitForSelector('.ng-canvas canvas', { timeout: 20000 });
-  await stop();
+  try {
+    await page.goto('./papers/network/');
+    await page.waitForSelector('.ng-canvas canvas', { timeout: 20000 });
+  } finally {
+    await stop();
+  }
 });
 
 test('citation network has no serious/critical a11y violations', async ({ page }) => {

@@ -295,19 +295,25 @@ export const REGISTER: readonly UnreliableEntry[] = [
     shape: 'load',
     condition:
       'Recorded in tucca-cellag/caail-planning#2 as a hydration-timing race on the graph. The specs now wait for the ' +
-      'cytoscape canvas, and the hub specs wait for the filter bar, so the window is closed.',
+      'cytoscape canvas, and the hub specs wait for the filter bar, so that window is closed. A second cause came ' +
+      'later: on a page that never goes idle, as on a busy CI runner, the client:idle graph never mounted, so the ' +
+      'canvas wait itself timed out at 20 s (tucca-cellag/caail-planning#604).',
     evidence:
       '2026-08-13: 45/45 under --repeat-each=3; did not reproduce. Note that Playwright ran ' +
       'that as 3 workers, one per repeat group, despite --workers=12: tests in one file are ' +
       'serial in one worker unless fullyParallel is set. So this is weaker evidence than the ' +
-      '16-worker runs above, and it is a lower bound rather than a clean bill of health.',
+      '16-worker runs above, and it is a lower bound rather than a clean bill of health. ' +
+      '2026-11-13: the never-idle guard in this file failed with the CI symptom (a 20 s canvas wait) before the ' +
+      'graph\'s hydration was bounded, and passed after it.',
     reproduce:
       'cd site && CAAIL_E2E_PORT=<free> pnpm exec playwright test e2e/network-metrics.spec.ts ' +
       '--repeat-each=3',
     status: 'mitigated',
     mitigation:
-      "waitForSelector('.ng-canvas canvas') for the graph; retrying assertions on .hf-bar for the hub filters.",
-    tickets: ['tucca-cellag/caail-planning#207', 'tucca-cellag/caail-planning#2'],
+      "waitForSelector('.ng-canvas canvas') for the graph; retrying assertions on .hf-bar for the hub filters; " +
+      'and the graph hydrates on idle or after IDLE_TIMEOUT_MS (src/lib/idle-timeout.ts), whichever comes first, ' +
+      'with a never-idle guard in this file.',
+    tickets: ['tucca-cellag/caail-planning#207', 'tucca-cellag/caail-planning#2', 'tucca-cellag/caail-planning#604'],
   },
 
   // -------------------------------------------------------------------------
