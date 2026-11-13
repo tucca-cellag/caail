@@ -5,7 +5,7 @@ import { useMemo, useState } from 'preact/hooks';
 import data from '../content/data/papers.json';
 import TopicChips from './TopicChips';
 import CitationBadge from './CitationBadge';
-import RefLinkBadges from './RefLinkBadges';
+import RefLinkBadges, { type RefLinks } from './RefLinkBadges';
 import ReportLink from './ReportLink';
 import type { TopicRef } from '../lib/topic-chips';
 
@@ -15,7 +15,8 @@ type Ref = {
   authors: string[] | null; authorsText: string;
   year: number | null; title: string | null; journal: string | null;
   doi: string | null; codeUrl: string | null; dataUrl: string | null;
-  modelUrls: string[]; notices: { label: string; url: string }[];
+  // Typed from the parser, so the badge component's closed notice labels reach these cards.
+  modelUrls: RefLinks['modelUrls']; notices: RefLinks['notices'];
   isPrimary: boolean; hasCode: boolean; hasData: boolean;
   slug: string; methods: string[]; areas: string[]; topics: TopicRef[];
   citedByOpenAlex: number | null;
