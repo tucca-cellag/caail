@@ -9,7 +9,8 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { Root, Paragraph } from 'mdast';
+import type { Root, Paragraph, Blockquote, Link } from 'mdast';
+import { toString as mdastToString } from 'mdast-util-to-string';
 
 import {
   parseMarkdown,
@@ -387,6 +388,41 @@ describe('labeledLinksAfter', () => {
       '**Correction**: see the journal',
     ];
     for (const line of cases) expect(read(`> ${line}`), line).toEqual([{ label: null, text: line }]);
+  });
+
+  it('accepts only lines GitHub renders as that bold label linking exactly those URLs (GFM parity)', () => {
+    // The rule is checked against GFM's own parse rather than hand-copied from it: any line it
+    // accepts must render on GitHub, where these lines are read, as the same label and links.
+    const accepted = [
+      '**Code**: https://github.com/org/repo',
+      '**Models**: https://huggingface.co/a/one, https://huggingface.co/a/two',
+      '**Data**: https://en.wikipedia.org/wiki/Foo_(bar)',
+      '**Data**: https://example.org/a(b',
+      '**Data**: https://example.org/q?a=1&b=2',
+      '**Correction**: https://doi.org/10.1/x',
+    ];
+    const refused = [
+      // Endings GFM's autolink drops (R8-1), and a character it stops at.
+      '**Code**: https://github.com/org/repo_',
+      '**Code**: https://github.com/org/repo*',
+      '**Code**: https://github.com/org/repo~',
+      '**Data**: https://example.org/x)',
+      '**Code**: https://github.com/x<y',
+      // Bold GFM does not render (R8-2).
+      '**Code **: https://github.com/x',
+      '** Code**: https://github.com/x',
+    ];
+    for (const line of [...accepted, ...refused]) {
+      const src = `<a id="1">1</a> Author (2021). Title. https://doi.org/10.1/a\n\n> ${line}`;
+      const root = parseMarkdown(src);
+      const [entry] = labeledLinksAfter(root.children, 0, src);
+      expect(entry?.label !== null, line).toBe(accepted.includes(line));
+      if (entry === undefined || entry.label === null) continue;
+      const inlines = ((root.children[1] as Blockquote).children[0] as Paragraph).children;
+      expect(inlines[0]?.type, line).toBe('strong');
+      expect(mdastToString(inlines[0]!).replace(/\s+/g, ' '), line).toBe(entry.label);
+      expect(entry.urls, line).toEqual(inlines.filter((n) => n.type === 'link').map((n) => (n as Link).url));
+    }
   });
 
   it('returns a URL ending in sentence punctuation as no URL, rather than serving or trimming it', () => {

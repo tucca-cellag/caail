@@ -153,10 +153,16 @@ export function anchorParagraphs(
 // labeledLinksAfter
 // ---------------------------------------------------------------------------
 
-/** One URL on a label line: http(s), no whitespace, comma or backslash, and not ending in sentence punctuation. */
-const LINE_URL = String.raw`https?://[^\s,\\]*[^\s,\\.;:!?'"]`;
-/** A label and everything after its colon. */
-const LABEL_LINE = /^\*\*([^*]+)\*\*:(?: (.*))?$/;
+/**
+ * One URL on a label line: http(s), with no whitespace, comma, backslash or `<` (where
+ * GFM's autolink stops), and not ending in a character that autolink drops from a URL's
+ * end. A closing parenthesis may end one only if it closes one the URL opened, which
+ * `labeledLinksAfter` checks, as GFM does. The GFM-parity test in `markdown.test.ts`
+ * holds this to what GitHub renders.
+ */
+const LINE_URL = String.raw`https?://[^\s,\\<]*[^\s,\\<.;:!?'"*_~]`;
+/** A label, bold with no whitespace just inside its asterisks (GFM renders no other as bold), and what follows its colon. */
+const LABEL_LINE = /^\*\*([^*\s](?:[^*]*[^*\s])?)\*\*:(?: (.*))?$/;
 /** What may follow a label's colon: one URL, or several separated by a comma and a space. */
 const URL_LIST = new RegExp(String.raw`^${LINE_URL}(?:, ${LINE_URL})*$`);
 
@@ -176,11 +182,13 @@ const URL_LIST = new RegExp(String.raw`^${LINE_URL}(?:, ${LINE_URL})*$`);
  * `urls: []`. Any other line gives `{ label: null, text }`, the line as written less
  * its `>`, so a caller can refuse it rather than misread it: an annotation after the
  * URLs, a second label, a Markdown link, a wrapped URL and the line it left, another
- * spelling of a label (`**Code** url`, `**Erratum:** url`), and a URL ending in
- * sentence punctuation or a hard-break backslash. The rule is the shape `db:emit`
- * writes and every line in `Papers.md` has (tucca-cellag/caail-planning#656); it
- * replaced a set of heuristics over the parsed Markdown whose every refinement let
- * through a new misreading.
+ * spelling of a label (`**Code** url`, `**Erratum:** url`, `**Code **:`), and a URL
+ * GitHub would link differently (one ending in punctuation, `_`, `*`, `~`, an unopened
+ * `)` or a hard-break backslash). The rule is the shape `db:emit` writes and every line
+ * in `Papers.md` has (tucca-cellag/caail-planning#656); it replaced a set of heuristics
+ * over the parsed Markdown whose every refinement let through a new misreading. A
+ * GFM-parity test in `markdown.test.ts` asserts that every line it accepts renders on
+ * GitHub as the same bold label linking exactly the same URLs.
  *
  * @param nodes Sibling nodes to scan
  * @param index Index of the reference paragraph node (scan begins at index+1)
@@ -200,16 +208,22 @@ export function labeledLinksAfter(nodes: RootContent[], index: number, src: stri
       if (line === '') continue;
       const m = LABEL_LINE.exec(line);
       const rest = m?.[2] ?? '';
-      if (m === null || (rest !== '' && !URL_LIST.test(rest))) {
+      const urls = rest === '' ? [] : rest.split(', ');
+      if (m === null || (rest !== '' && !URL_LIST.test(rest)) || urls.some(closesUnopened)) {
         result.push({ label: null, text: line });
         continue;
       }
-      const label = m[1]!.replace(/\s+/g, ' ').trim();
-      result.push({ label, urls: rest === '' ? [] : [...new Set(rest.split(', '))] });
+      const label = m[1]!.replace(/\s+/g, ' ');
+      result.push({ label, urls: [...new Set(urls)] });
     }
   }
 
   return result;
+}
+
+/** Whether `url` ends in a `)` it never opened, which GFM's autolink drops from the link. */
+function closesUnopened(url: string): boolean {
+  return url.endsWith(')') && url.split('(').length < url.split(')').length;
 }
 
 /** One line of a reference's trailing blockquotes: a label and its URLs, or a line that is not one label and its URLs. */
