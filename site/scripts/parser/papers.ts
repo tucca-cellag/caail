@@ -145,9 +145,6 @@ type PartialReference = Omit<Reference, 'isPrimary' | 'methods' | 'areas' | 'slu
 /** The labels of a reference's own resources, served as `codeUrl`, `dataUrl` and `modelUrls`. */
 export const RESOURCE_LABELS = ['Code', 'Data', 'Models'] as const;
 
-/** The sanctioned notice words, defined in `types.ts` so the schema types `notices` by them. */
-export { NOTICE_LABELS };
-
 /** Each resource word by its lowercase key, so a label is matched in any case. */
 const RESOURCE_BY_KEY = new Map<string, string>(RESOURCE_LABELS.map((l) => [l.toLowerCase(), l]));
 /** Each notice word by its lowercase key, so a notice matched in any case is served in its canonical form. */
@@ -157,12 +154,12 @@ const NOTICE_BY_KEY = new Map<string, NoticeLabel>(NOTICE_LABELS.map((l) => [l.t
  * A reference's trailing blockquotes, sorted into its resources and its notices. A
  * line that is not one label and its URLs (prose, a URL wrapped onto its own line, or
  * a second label on the line), a label the parser does not know, a known one with no
- * http(s) URL, a notice line with more than one URL, or a Code or Data label with more
- * than the one URL its field holds, throws naming the reference, so no blockquote
- * content is dropped or misread silently. Models takes every URL on its line. An
- * exact repeat (the same URL under one resource, or the same notice twice) is served
- * once. A notice is served under its canonical label, whatever case the blockquote
- * wrote it in.
+ * http(s) URL, a notice line with more than one URL, one notice URL under two labels,
+ * or a Code or Data label with more than the one URL its field holds, throws naming
+ * the reference, so no blockquote content is dropped or misread silently. Models takes
+ * every URL on its line. An exact repeat (the same URL under one resource, or the same
+ * notice twice) is served once. A notice is served under its canonical label, whatever
+ * case the blockquote wrote it in.
  */
 function referenceLinks(id: number, lines: BlockquoteLine[]): Pick<
   PartialReference, 'codeUrl' | 'dataUrl' | 'modelUrls' | 'notices'
@@ -201,12 +198,18 @@ function referenceLinks(id: number, lines: BlockquoteLine[]): Pick<
         `URL: keep the primary one.`);
     }
   }
-  /** Each notice once, by its canonical label and its one URL, in document order. */
+  /** Each notice once, by its one URL, in document order; one document carries one label. */
   const notices = new Map<string, { label: NoticeLabel; url: string }>();
   for (const { key, urls } of labeled) {
     const label = NOTICE_BY_KEY.get(key);
     const url = urls[0]!;
-    if (label !== undefined && !notices.has(`${label}\n${url}`)) notices.set(`${label}\n${url}`, { label, url });
+    if (label === undefined) continue;
+    const seen = notices.get(url);
+    if (seen !== undefined && seen.label !== label) {
+      throw new Error(`Papers.md ref ${id}: notice ${url} is labelled both ${seen.label} and ${label}; one document has ` +
+        `one type, so keep the publisher's word and drop the other line.`);
+    }
+    if (seen === undefined) notices.set(url, { label, url });
   }
   return {
     codeUrl: urlsFor('code')[0] ?? null,

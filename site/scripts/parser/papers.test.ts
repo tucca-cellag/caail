@@ -12,9 +12,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { buildPapersModel, NOTICE_LABELS, PAPERS_MD_PATH } from './papers.js';
+import { buildPapersModel, PAPERS_MD_PATH } from './papers.js';
 import { EDITOR_ROLES_RE, stripItalics } from './apa.js';
-import { PapersDataSchema, ReferenceSchema, type PapersData } from './types.js';
+import { NOTICE_LABELS, PapersDataSchema, ReferenceSchema, type PapersData } from './types.js';
 
 const FIXTURE_PATH = join(
   fileURLToPath(import.meta.url),
@@ -227,6 +227,11 @@ describe('buildPapersModel — reference blockquote labels', () => {
   it('fails on a notice line holding more than one URL, since a notice is one document', () => {
     expect(() => withRef4(['> **Correction**: https://doi.org/10.1/x (see also https://pubpeer.com/p/1)']))
       .toThrow(/ref 4: its Correction line holds 2 URLs, but a notice is one document/);
+  });
+
+  it('fails on one notice URL under two labels, since one document has one type', () => {
+    expect(() => withRef4(['> **Correction**: https://doi.org/10.1/x', '> **Erratum**: https://doi.org/10.1/x']))
+      .toThrow(/ref 4: notice https:\/\/doi\.org\/10\.1\/x is labelled both Correction and Erratum/);
   });
 
   it('types a notice label as one of NOTICE_LABELS, so the schema refuses any other word', () => {
