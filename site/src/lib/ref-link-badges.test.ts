@@ -1,5 +1,5 @@
 /**
- * ref-link-badges.test.ts — the paper cards' link badges never give two links one name
+ * ref-link-badges.test.ts: the paper cards' link badges never give two links one name
  * (tucca-cellag/caail-planning#656).
  *
  * The component lives in `src/components/`, which vitest's include does not cover; it is
