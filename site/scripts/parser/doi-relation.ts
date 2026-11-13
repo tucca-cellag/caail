@@ -91,20 +91,32 @@ export function isZenodoDoi(key: string): boolean {
   return key.startsWith(`${ZENODO_REGISTRANT}/`);
 }
 
+/**
+ * The Zenodo record id a bare Zenodo DOI names (`10.5281/zenodo.123` is `123`), or null for a
+ * Zenodo DOI of any other shape, whose type `fetch:zenodo-types` cannot ask for.
+ */
+export function zenodoRecordId(key: string): string | null {
+  return isZenodoDoi(key) ? (/^zenodo\.(\d+)$/.exec(key.slice(ZENODO_REGISTRANT.length + 1))?.[1] ?? null) : null;
+}
+
 /** The committed Zenodo resource types, written by the opt-in `fetch:zenodo-types`. */
 export const ZENODO_TYPES_PATH = join(dirname(fileURLToPath(import.meta.url)), 'zenodo-types.json');
 
 /**
  * Load `bare DOI -> Zenodo resource type` (a record's `metadata.resource_type.type`) from
- * the committed cache. Empty if absent; a cache that is present but malformed throws.
+ * the committed cache, each key reduced to its bare lowercase DOI so a key written in another
+ * form still matches. Empty if absent; a cache that is present but malformed, or holds a key
+ * that is no DOI, throws.
  */
 export function loadZenodoTypes(path: string = ZENODO_TYPES_PATH): Map<string, string> {
   if (!existsSync(path)) return new Map();
   const raw = JSON.parse(readFileSync(path, 'utf-8')) as { types?: Record<string, { type?: unknown }> };
   if (raw.types === undefined || typeof raw.types !== 'object') throw new Error(`${path}: no "types" object`);
-  return new Map(Object.entries(raw.types).map(([doi, v]) => {
-    if (typeof v?.type !== 'string') throw new Error(`${path}: ${doi} has no resource type`);
-    return [doi, v.type];
+  return new Map(Object.entries(raw.types).map(([written, v]) => {
+    const key = bareDoi(written);
+    if (key === null) throw new Error(`${path}: "${written}" is not a DOI`);
+    if (typeof v?.type !== 'string') throw new Error(`${path}: ${written} has no resource type`);
+    return [key, v.type];
   }));
 }
 
@@ -140,8 +152,11 @@ export function itemDoiRelation(
   if (!isZenodoDoi(key)) return doiRelation(key);
   const type = typeOf(key);
   if (type === undefined) {
-    throw new Error(`doi-relation: ${key} has no recorded Zenodo resource type; run \`pnpm --dir site fetch:zenodo-types\` ` +
-      `and commit site/scripts/parser/zenodo-types.json.`);
+    throw new Error(zenodoRecordId(key) === null
+      ? `doi-relation: ${key} is not a zenodo.<record> DOI, so fetch:zenodo-types cannot read its type; correct the ` +
+        `DOI, or record its type by hand in site/scripts/parser/zenodo-types.json.`
+      : `doi-relation: ${key} has no recorded Zenodo resource type; run \`pnpm --dir site fetch:zenodo-types\` ` +
+        `and commit site/scripts/parser/zenodo-types.json.`);
   }
   return ZENODO_DOCUMENT_TYPES.has(type) ? 'publication' : 'own';
 }

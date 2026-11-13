@@ -1,5 +1,8 @@
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, it, expect } from 'vitest';
-import { bareDoi, doiRelation, itemDoiRelation, isZenodoDoi, DATA_REPOSITORY_REGISTRANTS, DOI_SHAPE } from './doi-relation.js';
+import { bareDoi, doiRelation, itemDoiRelation, isZenodoDoi, loadZenodoTypes, DATA_REPOSITORY_REGISTRANTS, DOI_SHAPE } from './doi-relation.js';
 
 describe('itemDoiRelation (tucca-cellag/caail-planning#760)', () => {
   const typed = (type: string | undefined) => () => type;
@@ -23,6 +26,20 @@ describe('itemDoiRelation (tucca-cellag/caail-planning#760)', () => {
     expect(itemDoiRelation('10.1038/s41586-021-03819-2', typed('dataset'))).toBe('publication');
     expect(itemDoiRelation(null, typed('dataset'))).toBeNull();
     expect(itemDoiRelation('not a doi', typed('dataset'))).toBeNull();
+  });
+
+  it('says a Zenodo DOI that is no record DOI cannot be fetched, rather than telling the curator to fetch it', () => {
+    expect(() => itemDoiRelation('10.5281/zenodo.12.v2', typed(undefined)))
+      .toThrow(/10\.5281\/zenodo\.12\.v2 is not a zenodo\.<record> DOI, so fetch:zenodo-types cannot read its type/);
+  });
+
+  it('reads the committed types keyed by bare DOI, whatever form a key was written in, and refuses one that is no DOI', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'caail-zenodo-types-'));
+    const file = join(dir, 'zenodo-types.json');
+    writeFileSync(file, JSON.stringify({ types: { 'https://doi.org/10.5281/Zenodo.5': { type: 'dataset' } } }));
+    expect([...loadZenodoTypes(file)]).toEqual([['10.5281/zenodo.5', 'dataset']]);
+    writeFileSync(file, JSON.stringify({ types: { 'not a doi': { type: 'dataset' } } }));
+    expect(() => loadZenodoTypes(file)).toThrow(/"not a doi" is not a DOI/);
   });
 
   it('tells a Zenodo DOI by its exact registrant', () => {

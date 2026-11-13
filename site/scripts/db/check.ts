@@ -45,7 +45,7 @@ import { AREAS } from '../parser/areas.js';
 import { MATRIX_SECTION } from '../parser/types.js';
 import { seriesRecency, EDITION_SORT_RULE } from '../parser/reports.js';
 import type { TaxonomyData } from '../parser/types.js';
-import { bareDoi, cachedZenodoType, doiRelation, DOI_SHAPE, itemDoiRelation } from '../parser/doi-relation.js';
+import { bareDoi, cachedZenodoType, doiRelation, DOI_SHAPE, isZenodoDoi, itemDoiRelation } from '../parser/doi-relation.js';
 import { parseMarkdown } from '../parser/markdown.js';
 import { toString as mdastToString } from 'mdast-util-to-string';
 import { visit } from 'unist-util-visit';
@@ -982,6 +982,29 @@ export function checkOnRequest(db: Db, repoRoot: string = REPO_ROOT): CheckResul
   return [ok(ON_REQUEST_LABEL, problems.length === 0, `${problems.length} problem(s): ${problems.slice(0, 10).join('; ')}`)];
 }
 
+export const ZENODO_TYPES_LABEL =
+  'zenodo types: every Zenodo DOI on a catalog item or curated entry has a recorded resource type (zenodo-types.json)';
+
+/**
+ * Every Zenodo DOI a catalog item or curated dataset entry carries must have its Zenodo resource
+ * type recorded in `site/scripts/parser/zenodo-types.json`, since the parse reads it to say whether
+ * the DOI names the item or a document about it, and refuses a guess (tucca-cellag/caail-planning#760).
+ * Reported here as a failed check naming each one, so a curator learns at `db:check` rather than at
+ * the parse, and the other guards still run.
+ */
+export function checkZenodoTypes(db: Db, typeOf: (key: string) => string | undefined = cachedZenodoType): CheckResult[] {
+  const missing: string[] = [];
+  const rows = db.prepare(
+    'SELECT item_id, doi FROM catalog WHERE doi IS NOT NULL UNION ALL SELECT item_id, doi FROM dataset_entries WHERE doi IS NOT NULL',
+  ).all() as { item_id: string; doi: string }[];
+  for (const r of rows.sort((a, b) => a.item_id.localeCompare(b.item_id))) {
+    const key = bareDoi(r.doi);
+    if (key !== null && isZenodoDoi(key) && typeOf(key) === undefined) missing.push(`${r.item_id} (${key})`);
+  }
+  return [ok(ZENODO_TYPES_LABEL, missing.length === 0, missing.length === 0 ? '' :
+    `${missing.length} unrecorded: ${missing.join(', ')}; run \`pnpm --dir site fetch:zenodo-types\` and commit zenodo-types.json`)];
+}
+
 /**
  * Twin guard (tucca-cellag/caail-planning#752). A curated entry and an inventory row on the same page
  * that name the same deposit list one dataset twice, and the datasets total and `api/datasets.json`
@@ -990,8 +1013,9 @@ export function checkOnRequest(db: Db, repoRoot: string = REPO_ROOT): CheckResul
  *
  * Deposits are compared, never papers, as decided on that ticket: one paper can describe several
  * deposits, which is how the datasets endpoint reads a paper DOI, so an entry and a row from one paper
- * may be two datasets. An entry's deposits are its `doi` where the DOI's registrant is a data host,
- * its heading link unless that states a paper's DOI, its `accessions` and its `dataLinks`. A row's
+ * may be two datasets. An entry's deposits are its `doi` where `itemDoiRelation` reads it as the
+ * item's own (a data host's DOI, unless its Zenodo record is a document), its heading link unless
+ * that states a paper's DOI or the entry's own document DOI, its `accessions` and its `dataLinks`. A row's
  * deposit is its Data cell, read by the same `readDataCell` that fills the API's `dataUrl`,
  * `dataDoi` and `accession`; a status word names none, and its Paper and Description cells are not
  * read. A link that states a DOI is compared as that DOI, any other link without a trailing slash
@@ -1017,6 +1041,14 @@ export function checkEntryRowTwins(
   headerFor: (page: string) => InventoryHeader = (page) => readInventoryHeader(page, repoRoot),
   zenodoTypeOf: (key: string) => string | undefined = cachedZenodoType,
 ): CheckResult[] {
+  /** An entry DOI's relation by `itemDoiRelation`, or by the registrant where its Zenodo type is unrecorded. */
+  const relationOf = (doi: string) => {
+    try {
+      return itemDoiRelation(doi, zenodoTypeOf);
+    } catch {
+      return doiRelation(doi);
+    }
+  };
   /**
    * A link's key, or null for a link that states a paper's DOI. A link is judged by the plain
    * registrant rule: an entry or row lists it as a deposit, so a data host's DOI there is one.
@@ -1078,12 +1110,17 @@ export function checkEntryRowTwins(
   for (const e of db.prepare('SELECT item_id, page, url, doi, accessions, data_links FROM dataset_entries ORDER BY page, ordinal, item_id')
     .all() as { item_id: string; page: string; url: string | null; doi: string | null; accessions: string | null; data_links: string | null }[]) {
     const doi = bareDoi(e.doi);
+    // The entry's own DOI is an item DOI, read as the API serves it (tucca-cellag/caail-planning#760).
+    // One with no recorded Zenodo type is `checkZenodoTypes`'s to report; here it reads as the
+    // registrant says, so the rest of the comparison still runs.
+    const relation = doi === null ? null : relationOf(doi);
     const own = deposits(
-      // The entry's own DOI is an item DOI, read as the API serves it (tucca-cellag/caail-planning#760).
-      doi && itemDoiRelation(doi, zenodoTypeOf) === 'own' ? `DOI ${doi}` : null,
+      relation === 'own' ? `DOI ${doi}` : null,
       [...(e.url ? [e.url] : []), ...list(e.data_links)],
       list(e.accessions),
     );
+    // A link to the entry's own document record names the document, not a deposit.
+    if (relation === 'publication' && doi !== null) own.keys.delete(`DOI ${doi}`);
     for (const row of rowsOn.get(e.page) ?? []) {
       const keys = sharedBy(own, row.deposits);
       if (keys.length > 0) {
@@ -1464,7 +1501,7 @@ export function runChecks(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
     ...checkTopicTiers(db), ...checkAxisBijection(db, repoRoot),
     ...checkCatalogHeadings(db), ...checkLicenses(db), ...checkManualLicenseKeys(db),
     ...checkDois(db), ...checkManualDoiKeys(db), ...checkRelatedDois(db), ...checkSubseries(db),
-    ...checkInventoryCells(db, repoRoot), ...checkInventoryPages(repoRoot), ...checkOnRequest(db, repoRoot), ...checkEntryRowTwins(db, repoRoot), ...checkAccessions(db), ...checkDataLinks(db),
+    ...checkInventoryCells(db, repoRoot), ...checkInventoryPages(repoRoot), ...checkOnRequest(db, repoRoot), ...checkZenodoTypes(db), ...checkEntryRowTwins(db, repoRoot), ...checkAccessions(db), ...checkDataLinks(db),
     ...checkSeries(db), ...checkFineTagSeedDrift(db), ...checkRowTagParity(db)];
 }
 
