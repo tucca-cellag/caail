@@ -6,6 +6,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Root, Paragraph } from 'mdast';
@@ -306,281 +307,130 @@ describe('anchorParagraphs', () => {
 // ---------------------------------------------------------------------------
 
 describe('labeledLinksAfter', () => {
+  /** The blockquote lines `md` after one reference, read as `parseReferences` reads them. */
+  const read = (...md: string[]) => {
+    const src = ['<a id="1">1</a> Author (2021). Title. https://doi.org/10.1/a', '', ...md].join('\n');
+    return labeledLinksAfter(parseMarkdown(src).children, 0, src);
+  };
+
   it('(a) separate blockquote nodes — both Code and Data recovered', () => {
     // Blank line between the two blockquotes → remark emits two separate nodes.
-    const src = [
-      '<a id="1">1</a> Author (2022). Title. https://doi.org/10.1/a',
-      '',
-      '> **Code**: https://github.com/org/repo',
-      '',
-      '> **Data**: https://zenodo.org/record/999',
-    ].join('\n');
-    const root = parseMarkdown(src);
-    const results = labeledLinksAfter(root.children, 0);
-    expect(results).toHaveLength(2);
-    expect(results[0].label).toBe('Code');
-    expect(results[0].urls).toEqual(['https://github.com/org/repo']);
-    expect(results[1].label).toBe('Data');
-    expect(results[1].urls).toEqual(['https://zenodo.org/record/999']);
+    expect(read('> **Code**: https://github.com/org/repo', '', '> **Data**: https://zenodo.org/record/999')).toEqual([
+      { label: 'Code', urls: ['https://github.com/org/repo'] },
+      { label: 'Data', urls: ['https://zenodo.org/record/999'] },
+    ]);
   });
 
   it('(b) single blockquote node (no blank line between Code and Data) — BOTH labels recovered', () => {
     // No blank line → remark folds both lines into ONE blockquote node.
-    // This is the regression that motivated the change; both labels MUST be returned.
-    const src = [
-      '<a id="2">2</a> Author (2023). Title. https://doi.org/10.2/b',
-      '',
-      '> **Code**: https://github.com/example/merged',
-      '> **Data**: https://zenodo.org/record/merged',
-    ].join('\n');
-    const root = parseMarkdown(src);
-    const results = labeledLinksAfter(root.children, 0);
-    const labels = results.map((r) => r.label);
-    expect(labels).toContain('Code');
-    expect(labels).toContain('Data');
-    const codeEntry = results.find((r) => r.label === 'Code')!;
-    const dataEntry = results.find((r) => r.label === 'Data')!;
-    expect(codeEntry.urls).toEqual(['https://github.com/example/merged']);
-    expect(dataEntry.urls).toEqual(['https://zenodo.org/record/merged']);
+    expect(read('> **Code**: https://github.com/example/merged', '> **Data**: https://zenodo.org/record/merged')).toEqual([
+      { label: 'Code', urls: ['https://github.com/example/merged'] },
+      { label: 'Data', urls: ['https://zenodo.org/record/merged'] },
+    ]);
   });
 
   it('(c) comma-separated URLs on one line — every URL recovered under its label (tucca-cellag/caail-planning#656)', () => {
     // `> **Models**: url1, url2` is how ref 124 lists its two model checkpoints.
-    const src = [
-      '<a id="3">3</a> Author (2021). Title. https://doi.org/10.3/c',
-      '',
-      '> **Models**: https://huggingface.co/a/one, https://huggingface.co/a/two',
-    ].join('\n');
-    const root = parseMarkdown(src);
-    expect(labeledLinksAfter(root.children, 0)).toEqual([
+    expect(read('> **Models**: https://huggingface.co/a/one, https://huggingface.co/a/two')).toEqual([
       { label: 'Models', urls: ['https://huggingface.co/a/one', 'https://huggingface.co/a/two'] },
     ]);
   });
 
-  it('returns a label with no http(s) URL, with no URLs, so a caller can refuse it', () => {
-    const src = [
-      '<a id="9">9</a> Author (2021). Title. https://doi.org/10.9/z',
-      '',
-      '> **Retraction**: see the journal',
-    ].join('\n');
-    expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([{ label: 'Retraction', urls: [] }]);
+  it('returns a label with nothing after its colon, with no URLs, so a caller can refuse it', () => {
+    expect(read('> **Retraction**:')).toEqual([{ label: 'Retraction', urls: [] }]);
   });
 
-  it('reads only a line-starting **Label**: as a label, and returns bold prose as a line with none', () => {
-    const src = [
-      '<a id="11">11</a> Author (2021). Title. https://doi.org/10.11/x',
-      '',
-      '> **Code**: https://github.com/x/y (**archived**)',
-      '',
-      '> See **also** [the repo](https://github.com/x/z) for more.',
-      '',
-      '> **Note** that this line has no colon after its bold.',
-    ].join('\n');
-    expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([
-      { label: 'Code', urls: ['https://github.com/x/y'] },
-      { label: null, text: 'See also the repo for more.' },
-      { label: null, text: 'Note that this line has no colon after its bold.' },
-    ]);
-  });
-
-  it('reads bold followed by words and then a colon as prose, not a label', () => {
-    const src = [
-      '<a id="15">15</a> Author (2021). Title. https://doi.org/10.15/t',
-      '',
-      '> **Important** caveat: see https://example.org/a',
-    ].join('\n');
-    expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([
-      { label: null, text: 'Important caveat: see https://example.org/a' },
-    ]);
-  });
-
-  it('returns a URL wrapped onto its own line as a line with no label, not as a URL of the label above', () => {
-    const src = [
-      '<a id="16">16</a> Author (2021). Title. https://doi.org/10.16/s',
-      '',
-      '> **Models**: https://huggingface.co/a/one,',
-      '> https://huggingface.co/a/two',
-    ].join('\n');
-    expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([
-      { label: 'Models', urls: ['https://huggingface.co/a/one'] },
-      { label: null, text: 'https://huggingface.co/a/two' },
-    ]);
-  });
-
-  it('returns a line holding a second label as a line that is not one label, not as more URLs of the first', () => {
-    const src = [
-      '<a id="19">19</a> Author (2021). Title. https://doi.org/10.19/p',
-      '',
-      '> **Models**: https://huggingface.co/a/one **Correction**: https://doi.org/10.1/c',
-    ].join('\n');
-    expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([
-      { label: null, text: 'Models: https://huggingface.co/a/one Correction: https://doi.org/10.1/c' },
-    ]);
-  });
-
-  it('reads a bold annotation with a colon inside parentheses as no second label', () => {
-    const src = [
-      '<a id="22">22</a> Author (2021). Title. https://doi.org/10.22/m',
-      '',
-      '> **Code**: https://github.com/x/y (**archived**: 2024)',
-    ].join('\n');
-    expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([
-      { label: 'Code', urls: ['https://github.com/x/y'] },
-    ]);
-  });
-
-  it('reads bold prose later on a label line, before a URL, as no second label', () => {
-    const src = [
-      '<a id="20">20</a> Author (2021). Title. https://doi.org/10.20/o',
-      '',
-      '> **Data**: https://zenodo.org/a (**mirror** https://zenodo.org/b)',
-    ].join('\n');
-    expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([
-      { label: 'Data', urls: ['https://zenodo.org/a', 'https://zenodo.org/b'] },
-    ]);
-  });
-
-  it('returns an unbolded label, a bare URL and a list item each as a line with no label', () => {
-    const src = [
-      '<a id="17">17</a> Author (2021). Title. https://doi.org/10.17/r',
-      '',
-      '> Correction: https://doi.org/10.1/x',
-      '',
-      '> https://doi.org/10.1/y',
-      '',
-      '> - a list item https://doi.org/10.1/z',
-    ].join('\n');
-    expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([
-      { label: null, text: 'Correction: https://doi.org/10.1/x' },
-      { label: null, text: 'https://doi.org/10.1/y' },
-      { label: null, text: 'a list item https://doi.org/10.1/z' },
-    ]);
-  });
-
-  it('returns each label occurrence, in document order, as written', () => {
-    const src = [
-      '<a id="10">10</a> Author (2021). Title. https://doi.org/10.10/y',
-      '',
-      '> **Correction**: https://doi.org/10.1/one',
-      '',
-      '> **Erratum**: https://doi.org/10.1/two',
-      '',
-      '> **correction**: https://doi.org/10.1/three',
-    ].join('\n');
-    expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([
+  it('returns each label occurrence, in document order, as written, with its whitespace collapsed', () => {
+    expect(read(
+      '> **Correction**: https://doi.org/10.1/one', '', '> **Erratum**: https://doi.org/10.1/two', '',
+      '> **correction**: https://doi.org/10.1/three', '', '> **Expression of  concern**: https://doi.org/10.1/four',
+    )).toEqual([
       { label: 'Correction', urls: ['https://doi.org/10.1/one'] },
       { label: 'Erratum', urls: ['https://doi.org/10.1/two'] },
       { label: 'correction', urls: ['https://doi.org/10.1/three'] },
+      { label: 'Expression of concern', urls: ['https://doi.org/10.1/four'] },
     ]);
   });
 
-  it('ends a label where a line starts without one, so a later link is not its URL', () => {
-    const src = [
-      '<a id="12">12</a> Author (2021). Title. https://doi.org/10.12/w',
-      '',
-      '> **Correction**: https://doi.org/10.1/fix',
-      '> See also [the dataset](https://zenodo.org/x)',
-    ].join('\n');
-    expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([
-      { label: 'Correction', urls: ['https://doi.org/10.1/fix'] },
-      { label: null, text: 'See also the dataset' },
+  it('serves a repeated URL on one line once', () => {
+    expect(read('> **Models**: https://huggingface.co/a/one, https://huggingface.co/a/one')).toEqual([
+      { label: 'Models', urls: ['https://huggingface.co/a/one'] },
     ]);
   });
 
-  it('reads a label written without a colon, with the colon inside the bold, or with a parenthesis', () => {
-    const src = [
-      '<a id="13">13</a> Author (2021). Title. https://doi.org/10.13/v',
-      '',
-      '> **Code** https://github.com/x/y',
-      '',
-      '> **Erratum:** https://doi.org/10.1/err',
-      '',
-      '> **Correction** (2025): https://doi.org/10.1/cor',
-    ].join('\n');
-    expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([
-      { label: 'Code', urls: ['https://github.com/x/y'] },
-      { label: 'Erratum', urls: ['https://doi.org/10.1/err'] },
-      { label: 'Correction', urls: ['https://doi.org/10.1/cor'] },
+  it('takes a URL whose last character is a parenthesis it opened', () => {
+    expect(read('> **Data**: https://en.wikipedia.org/wiki/Foo_(bar)')).toEqual([
+      { label: 'Data', urls: ['https://en.wikipedia.org/wiki/Foo_(bar)'] },
     ]);
   });
 
-  it('takes only the URL from a text run GFM did not autolink', () => {
-    // GFM leaves a URL with a malformed host unlinked, so it stays in a text run.
-    const src = [
-      '<a id="14">14</a> Author (2021). Title. https://doi.org/10.14/u',
-      '',
-      '> **Data**: https://-bad-/a (mirror)',
-    ].join('\n');
-    expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([{ label: 'Data', urls: ['https://-bad-/a'] }]);
+  it('returns any line that is not exactly a label and its URLs as it is written, with no label', () => {
+    const cases = [
+      // An annotation after the URLs (R7-3), bold or not, and a second label inside one (R7-1).
+      '**Code**: https://github.com/x/y (**archived**)',
+      '**Correction**: https://doi.org/10.1/x (Fig. 2 only)',
+      '**Models**: https://huggingface.co/a (see **Data**: https://zenodo.org/1)',
+      // A second label on the line.
+      '**Models**: https://huggingface.co/a/one **Correction**: https://doi.org/10.1/c',
+      // Label spellings the rule does not take: no colon, the colon inside the bold, a parenthesis.
+      '**Code** https://github.com/x/y',
+      '**Erratum:** https://doi.org/10.1/err',
+      '**Correction** (2025): https://doi.org/10.1/cor',
+      // Bold prose, an unbolded label, a bare URL, a Markdown link, prose.
+      '**Important** caveat: see https://example.org/a',
+      'Correction: https://doi.org/10.1/x',
+      'https://doi.org/10.1/y',
+      '**Code**: [the repo](https://github.com/x/y)',
+      'See also [Datasets/](./Datasets/) for more.',
+      // URLs joined with no space after the comma (R7-2), and words where a URL should be.
+      '**Models**: https://hf.co/a,https://hf.co/b',
+      '**Correction**: see the journal',
+    ];
+    for (const line of cases) expect(read(`> ${line}`), line).toEqual([{ label: null, text: line }]);
   });
 
-  it('trims the punctuation a sentence puts after a URL GFM did not autolink', () => {
-    for (const tail of ['.', ').', ';', ']', '>', ':']) {
-      const src = [
-        '<a id="18">18</a> Author (2021). Title. https://doi.org/10.18/q',
-        '',
-        `> **Data**: https://-bad-/a${tail}`,
-      ].join('\n');
-      expect(labeledLinksAfter(parseMarkdown(src).children, 0), tail).toEqual([{ label: 'Data', urls: ['https://-bad-/a'] }]);
+  it('returns a URL ending in sentence punctuation as no URL, rather than serving or trimming it', () => {
+    for (const tail of ['.', ';', ':', '!', '?']) {
+      const line = `**Data**: https://zenodo.org/record/1${tail}`;
+      expect(read(`> ${line}`), tail).toEqual([{ label: null, text: line }]);
     }
   });
 
-  it('keeps a closing parenthesis that belongs to an unlinked URL, as GFM does for a linked one', () => {
-    // GFM leaves a URL with a malformed host in a text run (with a well-formed host it
-    // autolinks, even straight after the colon, and keeps a balanced parenthesis itself).
-    for (const tail of ['', '.', ').']) {
-      const src = [
-        '<a id="21">21</a> Author (2021). Title. https://doi.org/10.21/n',
-        '',
-        `> **Data**: https://-bad-/wiki/Foo_(bar)${tail}`,
-      ].join('\n');
-      expect(labeledLinksAfter(parseMarkdown(src).children, 0), tail).toEqual([
-        { label: 'Data', urls: ['https://-bad-/wiki/Foo_(bar)'] },
-      ]);
-    }
+  it('returns a URL wrapped onto its own line, and the line it left, each with no label', () => {
+    expect(read('> **Models**: https://huggingface.co/a/one,', '> https://huggingface.co/a/two')).toEqual([
+      { label: null, text: '**Models**: https://huggingface.co/a/one,' },
+      { label: null, text: 'https://huggingface.co/a/two' },
+    ]);
+    // A lazy continuation line, with no `>`, is still part of the blockquote.
+    expect(read('> **Code**:', 'https://github.com/x/y')).toEqual([
+      { label: 'Code', urls: [] },
+      { label: null, text: 'https://github.com/x/y' },
+    ]);
+  });
+
+  it('returns a line ending in a hard-break backslash with no label, so the backslash never reaches a URL (R7-7)', () => {
+    expect(read('> **Code**: https://github.com/x\\', '> **Data**: https://zenodo.org/1')).toEqual([
+      { label: null, text: '**Code**: https://github.com/x\\' },
+      { label: 'Data', urls: ['https://zenodo.org/1'] },
+    ]);
+  });
+
+  it('returns a list inside the blockquote line by line, with no label', () => {
+    expect(read('> - a list item https://doi.org/10.1/z')).toEqual([{ label: null, text: '- a list item https://doi.org/10.1/z' }]);
   });
 
   it('(d) stops at the first non-blockquote sibling', () => {
-    const src = [
-      '<a id="4">4</a> Author (2020). Title. https://doi.org/10.4/d',
-      '',
-      '> **Code**: https://github.com/x/y',
-      '',
-      'This is a paragraph — scan must stop here.',
-      '',
-      '> **Data**: https://zenodo.org/record/000',
-    ].join('\n');
-    const root = parseMarkdown(src);
-    const results = labeledLinksAfter(root.children, 0);
-    expect(results).toHaveLength(1);
-    expect(results[0].label).toBe('Code');
-  });
-
-  it('(e) a prose blockquote with a relative link is a line with no label, not a labelled URL', () => {
-    const src = [
-      '<a id="5">5</a> Author (2019). Title. https://doi.org/10.5/e',
-      '',
-      '> See also [Datasets/](./Datasets/) for more.',
-    ].join('\n');
-    const root = parseMarkdown(src);
-    expect(labeledLinksAfter(root.children, 0)).toEqual([{ label: null, text: 'See also Datasets/ for more.' }]);
+    expect(read('> **Code**: https://github.com/x/y', '', 'This is a paragraph — scan must stop here.', '',
+      '> **Data**: https://zenodo.org/record/000')).toEqual([{ label: 'Code', urls: ['https://github.com/x/y'] }]);
   });
 
   it('(f) returns [] when nodes[index+1] is not a blockquote', () => {
-    const src = [
-      '<a id="6">6</a> Author (2018). Title. https://doi.org/10.6/f',
-      '',
-      '<a id="7">7</a> Other Author (2019). Title. https://doi.org/10.7/g',
-    ].join('\n');
-    const root = parseMarkdown(src);
-    // index 0 is ref #6, index 1 is ref #7 (paragraph, not blockquote)
-    const results = labeledLinksAfter(root.children, 0);
-    expect(results).toHaveLength(0);
+    expect(read('<a id="7">7</a> Other Author (2019). Title. https://doi.org/10.7/g')).toEqual([]);
   });
 
   it('works correctly with the disk fixture — ref 1 has Code, ref 2 has Code+Data, ref 3 has none', () => {
-    const root = parseFile(join(FIXTURES_DIR, 'sample.md'));
-    const sections = sectionsAfter(root, 2);
+    const src = readFileSync(join(FIXTURES_DIR, 'sample.md'), 'utf-8');
+    const sections = sectionsAfter(parseMarkdown(src), 2);
     const refs = sections.find((s) => s.heading === 'References')!;
 
     // Find node index for each anchor within refs.nodes
@@ -597,22 +447,15 @@ describe('labeledLinksAfter', () => {
     };
 
     // ref 1: one Code blockquote
-    const idx1 = nodeIndexFor(1);
-    const bq1 = labeledLinksAfter(refs.nodes, idx1);
+    const bq1 = labeledLinksAfter(refs.nodes, nodeIndexFor(1), src);
     expect(bq1).toHaveLength(1);
     expect(bq1[0].label).toBe('Code');
 
     // ref 2: Code + Data blockquotes (separate nodes in this fixture)
-    const idx2 = nodeIndexFor(2);
-    const bq2 = labeledLinksAfter(refs.nodes, idx2);
-    expect(bq2).toHaveLength(2);
-    const labels2 = bq2.map((b) => b.label);
-    expect(labels2).toContain('Code');
-    expect(labels2).toContain('Data');
+    const labels2 = labeledLinksAfter(refs.nodes, nodeIndexFor(2), src).map((b) => b.label);
+    expect(labels2).toEqual(['Code', 'Data']);
 
     // ref 3: no blockquote (followed immediately by ref 4)
-    const idx3 = nodeIndexFor(3);
-    const bq3 = labeledLinksAfter(refs.nodes, idx3);
-    expect(bq3).toHaveLength(0);
+    expect(labeledLinksAfter(refs.nodes, nodeIndexFor(3), src)).toHaveLength(0);
   });
 });

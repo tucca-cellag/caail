@@ -188,7 +188,7 @@ describe('buildPapersModel — reference blockquote labels', () => {
 
   it('serves notices in document order, a repeated label in its own place', () => {
     const r = ref4(withRef4([
-      '> **Correction**: https://doi.org/10.1/one', '> **Erratum:** https://doi.org/10.1/two',
+      '> **Correction**: https://doi.org/10.1/one', '> **Erratum**: https://doi.org/10.1/two',
       '> **Correction**: https://doi.org/10.1/three',
     ]));
     expect(r.notices).toEqual([
@@ -212,11 +212,11 @@ describe('buildPapersModel — reference blockquote labels', () => {
       'a second label on the line': '> **Models**: https://huggingface.co/a/one **Correction**: https://doi.org/10.1/c',
     };
     const text: Record<string, string> = {
-      'a URL wrapped onto its own line': 'https://huggingface.co/a/two',
+      'a URL wrapped onto its own line': '**Models**: https://huggingface.co/a/one,',
       'an unbolded label': 'Correction: https://doi.org/10.1/x',
       'a bare URL': 'https://doi.org/10.1/y',
-      'bold prose with a colon later': 'Important caveat: see https://example.org/a',
-      'a second label on the line': 'Models: https://huggingface.co/a/one Correction: https://doi.org/10.1/c',
+      'bold prose with a colon later': '**Important** caveat: see https://example.org/a',
+      'a second label on the line': '**Models**: https://huggingface.co/a/one **Correction**: https://doi.org/10.1/c',
     };
     for (const [name, blockquote] of Object.entries(lines)) {
       expect(() => withRef4([blockquote]), name)
@@ -225,7 +225,7 @@ describe('buildPapersModel — reference blockquote labels', () => {
   });
 
   it('fails on a notice line holding more than one URL, since a notice is one document', () => {
-    expect(() => withRef4(['> **Correction**: https://doi.org/10.1/x (see also https://pubpeer.com/p/1)']))
+    expect(() => withRef4(['> **Correction**: https://doi.org/10.1/x, https://pubpeer.com/p/1']))
       .toThrow(/ref 4: its Correction line holds 2 URLs, but a notice is one document/);
   });
 
@@ -253,6 +253,16 @@ describe('buildPapersModel — reference blockquote labels', () => {
       .toThrow(/ref 4: a line of its blockquotes is not one label and its URLs: "https:\/\/github\.com\/x\/y"/);
   });
 
+  it('tells two notice URLs apart by case, unless they are one DOI', () => {
+    const r = ref4(withRef4(['> **Correction**: https://example.org/notice/A1', '> **Erratum**: https://example.org/notice/a1']));
+    expect(r.notices).toEqual([
+      { label: 'Correction', url: 'https://example.org/notice/A1' },
+      { label: 'Erratum', url: 'https://example.org/notice/a1' },
+    ]);
+    expect(() => withRef4(['> **Correction**: https://doi.org/10.1/X', '> **Erratum**: https://doi.org/10.1/x']))
+      .toThrow(/labelled both Correction and Erratum/);
+  });
+
   it('types a notice label as one of NOTICE_LABELS, so the schema refuses any other word', () => {
     const notices = ReferenceSchema.shape.notices;
     expect(notices.parse([{ label: 'Corrigendum', url: 'https://doi.org/10.1/a' }])).toHaveLength(1);
@@ -276,7 +286,7 @@ describe('buildPapersModel — reference blockquote labels', () => {
   });
 
   it('fails on a known label with no http(s) URL', () => {
-    expect(() => withRef4(['> **Correction**: see the journal'])).toThrow(/ref 4: blockquote label "Correction" has no http\(s\) URL/);
+    expect(() => withRef4(['> **Correction**:'])).toThrow(/ref 4: blockquote label "Correction" has no http\(s\) URL/);
   });
 
   it('serves no notice and no model for a reference with neither', () => {

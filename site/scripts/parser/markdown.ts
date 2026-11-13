@@ -13,7 +13,7 @@ import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
 import { toString as mdastToString } from 'mdast-util-to-string';
-import type { Root, Table, RootContent, Heading, Paragraph, Blockquote } from 'mdast';
+import type { Root, Table, RootContent, Heading, Paragraph } from 'mdast';
 
 // ---------------------------------------------------------------------------
 // Parser
@@ -153,90 +153,59 @@ export function anchorParagraphs(
 // labeledLinksAfter
 // ---------------------------------------------------------------------------
 
-/** Only absolute http(s) URLs are accepted as deposit links. */
-const ABSOLUTE_URL_RE = /^https?:\/\//i;
+/** One URL on a label line: http(s), no whitespace, comma or backslash, and not ending in sentence punctuation. */
+const LINE_URL = String.raw`https?://[^\s,\\]*[^\s,\\.;:!?'"]`;
+/** A label and everything after its colon. */
+const LABEL_LINE = /^\*\*([^*]+)\*\*:(?: (.*))?$/;
+/** What may follow a label's colon: one URL, or several separated by a comma and a space. */
+const URL_LIST = new RegExp(String.raw`^${LINE_URL}(?:, ${LINE_URL})*$`);
 
 /**
  * Starting at `nodes[index]`, scan FORWARD over immediately-following
- * `blockquote` nodes and extract labeled deposit links of the form
- * `> **Label**: https://…`.
+ * `blockquote` nodes and read each of their lines from `src`, the Markdown the
+ * nodes were parsed from.
  *
  * The scan stops at the FIRST non-blockquote sibling — it does not skip over
- * intervening paragraphs or headings.
+ * intervening paragraphs or headings. A blank line between two labels gives two
+ * blockquote nodes, and no blank line gives one; either way each line is read.
  *
- * Handles both authoring styles that remark produces:
- *
- *   Separate-node style (blank line between entries):
- *     ```
- *     > **Code**: https://…
- *
- *     > **Data**: https://…
- *     ```
- *     remark emits two blockquote nodes, each with one paragraph child.
- *
- *   Single-node style (no blank line between entries):
- *     ```
- *     > **Code**: https://…
- *     > **Data**: https://…
- *     ```
- *     remark folds both lines into ONE blockquote node — either two paragraph
- *     children, or one paragraph whose inline children are joined by a soft
- *     `break` node. This function scans ALL paragraph children and ALL
- *     `strong`→`link` pairs within each paragraph so both labels are recovered
- *     regardless of authoring style.
- *
- * Every line of those blockquotes is returned, one entry each, in document order.
- * A line that opens with a label gives `{ label, urls }`; any other line, and a line
- * that holds a second label later on (bold followed by a colon, outside parentheses), gives
- * `{ label: null, text }`, its plain text, so a caller can refuse it rather than
- * misread it. A label is bold that starts the line and is followed by a colon,
- * inside the bold or after it with at most a parenthesis between
- * (`> **Erratum:** url`, `> **Correction** (2025): url`), or straight by a URL
- * (`> **Code** url`). Bold that runs into words (`> **Note** that …`,
- * `> **Important** caveat: …`), and bold anywhere else (`(**archived**)` after a
- * URL), is no label. A label's URLs are the absolute http(s) URLs on its own line
- * (`> **Models**: url1, url2` gives both), each once; a URL wrapped onto the next
- * line is that line's content, not the label's. A label with no such URL is
- * returned with `urls: []`. A relative link such as `[Datasets/](./Datasets/)` is
- * not a deposit URL and is skipped. A blockquote child that is not a paragraph (a
- * list, say) is returned whole as one line with no label.
+ * Every non-blank line is returned, one entry each, in document order, and is held
+ * to one strict rule: `> **Label**: url`, or `> **Label**: url, url, …` for several,
+ * exactly. Such a line gives `{ label, urls }` (the label as written with its
+ * whitespace collapsed, each URL once); a label with nothing after its colon gives
+ * `urls: []`. Any other line gives `{ label: null, text }`, the line as written less
+ * its `>`, so a caller can refuse it rather than misread it: an annotation after the
+ * URLs, a second label, a Markdown link, a wrapped URL and the line it left, another
+ * spelling of a label (`**Code** url`, `**Erratum:** url`), and a URL ending in
+ * sentence punctuation or a hard-break backslash. The rule is the shape `db:emit`
+ * writes and every line in `Papers.md` has (tucca-cellag/caail-planning#656); it
+ * replaced a set of heuristics over the parsed Markdown whose every refinement let
+ * through a new misreading.
  *
  * @param nodes Sibling nodes to scan
  * @param index Index of the reference paragraph node (scan begins at index+1)
- * @returns One entry per line, in document order; a label is the bold text as
- *   written (e.g. `"Code"`), without a trailing colon.
+ * @param src The Markdown `nodes` were parsed from, whose offsets their positions carry
+ * @returns One entry per non-blank line, in document order
  */
-export function labeledLinksAfter(nodes: RootContent[], index: number): BlockquoteLine[] {
+export function labeledLinksAfter(nodes: RootContent[], index: number, src: string): BlockquoteLine[] {
   const result: BlockquoteLine[] = [];
 
   for (let i = index + 1; i < nodes.length; i++) {
     const node = nodes[i];
     if (node.type !== 'blockquote') break;
 
-    for (const child of (node as Blockquote).children) {
-      if (child.type !== 'paragraph') {
-        result.push({ label: null, text: mdastToString(child).trim() });
+    const { start, end } = node.position!;
+    for (const raw of src.slice(start.offset, end.offset).split('\n')) {
+      const line = raw.replace(/^\s*>\s?/, '').trim();
+      if (line === '') continue;
+      const m = LABEL_LINE.exec(line);
+      const rest = m?.[2] ?? '';
+      if (m === null || (rest !== '' && !URL_LIST.test(rest))) {
+        result.push({ label: null, text: line });
         continue;
       }
-      for (const line of linesOf((child as Paragraph).children)) {
-        const label = labelOf(line);
-        // A second label later on the line makes it no single label: its URLs would
-        // otherwise be read as the first label's. Bold inside an open parenthesis is an
-        // annotation (`(**archived**: 2024)`), not a label.
-        const second = line.some(
-          (inline, k) => k > 0 && labelOf(line.slice(k), true) !== null && !inParentheses(line.slice(0, k)),
-        );
-        if (label === null || second) {
-          result.push({ label: null, text: line.map((inline) => mdastToString(inline)).join('').trim() });
-          continue;
-        }
-        const urls: string[] = [];
-        for (const inline of line.slice(1)) {
-          const found = inline.type === 'link' ? [inline.url] : inline.type === 'text' ? textUrls(inline.value) : [];
-          for (const url of found) if (ABSOLUTE_URL_RE.test(url) && !urls.includes(url)) urls.push(url);
-        }
-        result.push({ label, urls });
-      }
+      const label = m[1]!.replace(/\s+/g, ' ').trim();
+      result.push({ label, urls: rest === '' ? [] : [...new Set(rest.split(', '))] });
     }
   }
 
@@ -245,79 +214,3 @@ export function labeledLinksAfter(nodes: RootContent[], index: number): Blockquo
 
 /** One line of a reference's trailing blockquotes: a label and its URLs, or a line that is not one label and its URLs. */
 export type BlockquoteLine = { label: string; urls: string[] } | { label: null; text: string };
-
-type Inline = Paragraph['children'][number];
-
-/**
- * A paragraph's inline children split into its lines, at a hard `break` and at each
- * soft line break inside a text run. Whitespace-only text that starts a line is
- * dropped, and so is a line left with nothing on it.
- */
-function linesOf(inlines: Inline[]): Inline[][] {
-  const lines: Inline[][] = [[]];
-  for (const inline of inlines) {
-    if (inline.type === 'break') {
-      lines.push([]);
-    } else if (inline.type === 'text' && inline.value.includes('\n')) {
-      inline.value.split('\n').forEach((part, n) => {
-        if (n > 0) lines.push([]);
-        if (part !== '') lines.at(-1)!.push({ type: 'text', value: part });
-      });
-    } else {
-      lines.at(-1)!.push(inline);
-    }
-  }
-  return lines
-    .map((line) => (line[0]?.type === 'text' && line[0].value.trim() === '' ? line.slice(1) : line))
-    .filter((line) => line.length > 0);
-}
-
-/** Whether the text of `before`, the start of a line, leaves a parenthesis open. */
-function inParentheses(before: Inline[]): boolean {
-  const text = before.map((inline) => mdastToString(inline)).join('');
-  return text.split('(').length > text.split(')').length;
-}
-
-/** A URL written out in a text run that GFM did not autolink, up to whitespace or a comma. */
-const TEXT_URL = /https?:\/\/[^\s,]+/g;
-/** The punctuation a sentence leaves after such a URL, which GFM's own autolinks exclude too. */
-const TRAILING_PUNCTUATION = /[.;:!?'"\]>]+$/;
-
-/**
- * The URLs in a text run, each without the punctuation a sentence put after it. A
- * closing parenthesis goes only when it is unbalanced, as GFM decides for the URLs it
- * links, so `…/Foo_(bar).` keeps its `)` and `…/a).` loses it.
- */
-function textUrls(text: string): string[] {
-  const count = (s: string, c: string): number => s.split(c).length - 1;
-  return [...text.matchAll(TEXT_URL)].map((m) => {
-    let url = m[0];
-    for (let last = ''; url !== last;) {
-      last = url;
-      url = url.replace(TRAILING_PUNCTUATION, '');
-      if (url.endsWith(')') && count(url, '(') < count(url, ')')) url = url.slice(0, -1);
-    }
-    return url;
-  });
-}
-
-/**
- * The label a line opens, or null when it opens none: a leading `strong` whose text
- * ends with a colon, or that is followed by a colon (after at most a parenthesis),
- * straight by a link, or by a URL written out (see `labeledLinksAfter`). `colonOnly`
- * admits only the colon forms, which is how a second label is told from bold prose
- * that happens to come before a URL later on a line.
- */
-function labelOf(line: Inline[], colonOnly = false): string | null {
-  const first = line[0];
-  if (first?.type !== 'strong') return null;
-  const text = mdastToString(first).trim();
-  if (text.endsWith(':')) return text.slice(0, -1).trim();
-  // A space or tab between the bold and an autolinked URL is no content of its own.
-  const next = line[1]?.type === 'text' && /^[ \t]*$/.test(line[1].value) ? line[2] : line[1];
-  if (next?.type === 'text' && /^\s*(?:\([^)]*\)\s*)?:/.test(next.value)) return text;
-  if (colonOnly) return null;
-  if (next?.type === 'link') return text;
-  if (next?.type === 'text' && /^\s*https?:\/\//.test(next.value)) return text;
-  return null;
-}

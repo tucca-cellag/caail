@@ -145,6 +145,9 @@ type PartialReference = Omit<Reference, 'isPrimary' | 'methods' | 'areas' | 'slu
 /** The labels of a reference's own resources, served as `codeUrl`, `dataUrl` and `modelUrls`. */
 export const RESOURCE_LABELS = ['Code', 'Data', 'Models'] as const;
 
+/** A doi.org URL, in any of the host forms `doiKey` folds. */
+const DOI_URL = /^https?:\/\/(?:www\.|dx\.)?doi\.org\//i;
+
 /** Each resource word by its lowercase key, so a label is matched in any case. */
 const RESOURCE_BY_KEY = new Map<string, string>(RESOURCE_LABELS.map((l) => [l.toLowerCase(), l]));
 /** Each notice word by its lowercase key, so a notice matched in any case is served in its canonical form. */
@@ -204,8 +207,11 @@ function referenceLinks(id: number, doi: string | null, lines: BlockquoteLine[])
         `URL: keep the primary one.`);
     }
   }
-  /** A URL's identity: a DOI in any case or doi.org host form is one DOI. */
-  const identity = (url: string): string => doiKey(url) ?? url;
+  /**
+   * A URL's identity: a doi.org URL is its DOI, one DOI in any case or host form; any
+   * other URL is itself, case included, since a path's case can name a different page.
+   */
+  const identity = (url: string): string => (DOI_URL.test(url) ? doiKey(url)! : url);
   const ownDoi = doiKey(doi);
   /**
    * Each notice once, by its one URL, in document order. One document carries one label,
@@ -276,7 +282,7 @@ function parseReferences(root: Root, src: string): PartialReference[] {
 
       const fields = parseApa(raw);
 
-      const { codeUrl, dataUrl, modelUrls, notices } = referenceLinks(id, fields.doi, labeledLinksAfter(nodes, i));
+      const { codeUrl, dataUrl, modelUrls, notices } = referenceLinks(id, fields.doi, labeledLinksAfter(nodes, i, src));
 
       refs.push({
         id,
