@@ -60,6 +60,10 @@ export async function neverIdle(page: Page): Promise<() => Promise<void>> {
     channel.port2.postMessage(0);
   });
   return async () => {
-    await page.evaluate(() => (window as unknown as { caailStopNeverIdle?: () => void }).caailStopNeverIdle?.());
+    try {
+      await page.evaluate(() => (window as unknown as { caailStopNeverIdle?: () => void }).caailStopNeverIdle?.());
+    } catch {
+      // The page closed or crashed: the chain went with it, and the guard's own failure is the one to report.
+    }
   };
 }
