@@ -1,9 +1,10 @@
 /**
- * doi-relation.ts — say whether an item's DOI names the item itself or the paper that
- * describes it, and reduce a written DOI to one comparable form.
+ * doi-relation.ts — say whether an item's DOI names the item itself or a paper or other
+ * document about it, and reduce a written DOI to one comparable form.
  *
  * A dataset, database or software entry's `doi` is, by the curation rule in
- * `caail-db-authoring`, its ASSOCIATED PUBLICATION: the paper a reader would cite for it.
+ * `caail-db-authoring`, its ASSOCIATED PUBLICATION: the paper, or other document, a reader
+ * would cite for it.
  * A few are instead the deposit's own DOI, minted by a data repository (a Zenodo record, a
  * figshare item). Nothing in the API told the two apart, so a consumer matching new finds
  * against what CAAIL holds had to guess, and guessing wrong either re-queues a held deposit

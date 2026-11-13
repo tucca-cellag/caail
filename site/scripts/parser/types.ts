@@ -57,7 +57,7 @@ export type TopicRef = z.infer<typeof TopicRefSchema>;
 /** Coarse license/access tier — the unified 4-tier axis (see src/lib/licenses.ts). */
 export const LicenseTierSchema = z.enum(['permissive', 'copyleft', 'restricted', 'unknown']);
 
-/** Whether a DOI names the item itself (`own`) or the paper describing it (`publication`). */
+/** Whether a DOI names the item itself (`own`) or a paper or other document about it (`publication`). */
 export const DoiRelationSchema = z.enum(['own', 'publication']);
 export type DoiRelation = z.infer<typeof DoiRelationSchema>;
 /** The license fields folded onto every card: raw token, provenance, derived tier. */

@@ -991,10 +991,12 @@ export function buildManifest(
           'a document about the item, such as its software documentation, is "publication"). Compare DOIs as bare lowercase ' +
           'strings and accessions case-insensitively, ignoring a version suffix (SRA051669.1 is ' +
           'SRA051669). Some deposits have only a `dataUrl`. ' +
-          'A row\'s `paperDoi`, and an entry\'s `doi` where `doiRelation` is "publication", name ' +
-          'the paper that describes the item, not the item. A match there means CAAIL holds data ' +
-          'from that paper, not that it holds your find: one paper can describe several ' +
-          'deposits, and whether CAAIL holds the paper itself is for papers-index.json to say. ' +
+          'A row\'s `paperDoi` names the paper that describes the row\'s data, and an entry\'s `doi` ' +
+          'where `doiRelation` is "publication" names a paper or other document about the entry (a ' +
+          'Zenodo report, say); neither names the item. A match there means CAAIL holds data that ' +
+          'paper or document describes, not that it holds your find: one paper can describe several ' +
+          'deposits. Whether CAAIL holds a paper itself is for papers-index.json to say, and a ' +
+          'document that is not a paper is not listed there. ' +
           '`links` carries the row\'s paper link too, so a URL that resolves to its `paperDoi` is ' +
           'that same paper match. Use `id` only to re-find an item you already recorded, since an ' +
           'id can be minted from data a row merely mentions. ' +

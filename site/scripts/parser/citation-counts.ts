@@ -87,7 +87,8 @@ export function loadPaperIsOa(): Map<string, boolean> {
 export interface CitationInfo {
   doi: string | null;
   doiSource: 'auto' | 'manual' | null;
-  /** whether `doi` is the item's own or its describing paper's (doi-relation.ts, tucca-cellag/caail-planning#367) */
+  /** whether `doi` is the item's own or a paper or other document about it, as doi-relation.ts's
+   *  `itemDoiRelation` reads it (tucca-cellag/caail-planning#367, #760) */
   doiRelation: DoiRelation | null;
   citationCount: number | null;
   citationSources: number;
