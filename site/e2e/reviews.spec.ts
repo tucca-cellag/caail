@@ -45,6 +45,23 @@ test('the search box filters the shelves and restores them when cleared', async 
   await expect(page.locator('.px-ref')).toHaveCount(all);
 });
 
+test('a reviews card shows its post-publication notice apart from Code and Data (tucca-cellag/caail-planning#656)', async ({ page }) => {
+  // The Explorer's notice test reaches only matrix references; this is the shelf's own.
+  const noticed = matrixUnreachedRefs().find((r) => r.notices.length > 0);
+  expect(noticed, 'a matrix-unreached reference with a notice').toBeDefined();
+  await page.goto('./papers/reviews/');
+  await awaitHydrated(page, 'ReferenceShelf');
+  const card = page.locator('.px-ref', { has: page.locator(`a.report-link[href$="item=paper%3A${noticed!.id}"]`) });
+  await expect(card).toHaveCount(1);
+  // One badge per notice, in document order, each its own link and label.
+  const badges = card.locator('a.px-bdg.notice');
+  await expect(badges).toHaveCount(noticed!.notices.length);
+  for (const [i, n] of noticed!.notices.entries()) {
+    await expect(badges.nth(i)).toHaveAttribute('href', n.url);
+    await expect(badges.nth(i)).toContainText(n.label);
+  }
+});
+
 test('the reviews page has no axe violations', async ({ page }) => {
   await page.goto('./papers/reviews/');
   await awaitHydrated(page, 'ReferenceShelf');
