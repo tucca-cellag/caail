@@ -234,6 +234,25 @@ describe('buildPapersModel — reference blockquote labels', () => {
       .toThrow(/ref 4: notice https:\/\/doi\.org\/10\.1\/x is labelled both Correction and Erratum/);
   });
 
+  it('fails on a notice whose URL is the reference itself or one of its own links', () => {
+    // Ref 4's own DOI, in another case and host form: still the paper, not a notice on it.
+    expect(() => withRef4(['> **Correction**: https://dx.doi.org/10.1093/BIOINFORMATICS/btaa001']))
+      .toThrow(/ref 4: notice https:\/\/dx\.doi\.org\/10\.1093\/BIOINFORMATICS\/btaa001 is the reference's own DOI/);
+    for (const resource of ['Code', 'Data', 'Models']) {
+      expect(() => withRef4([`> **${resource}**: https://zenodo.org/record/9`, '> **Erratum**: https://zenodo.org/record/9']), resource)
+        .toThrow(new RegExp(`ref 4: notice https://zenodo\\.org/record/9 is also its ${resource} link`));
+    }
+    // Code and Models may share a URL: one repository can hold both.
+    const r = ref4(withRef4(['> **Code**: https://huggingface.co/org/a', '> **Models**: https://huggingface.co/org/a']));
+    expect(r.codeUrl).toBe('https://huggingface.co/org/a');
+    expect(r.modelUrls).toEqual(['https://huggingface.co/org/a']);
+  });
+
+  it('names a URL wrapped onto the line after its label as a wrap, not as a label with no URL', () => {
+    expect(() => withRef4(['> **Code**:\n> https://github.com/x/y']))
+      .toThrow(/ref 4: a line of its blockquotes is not one label and its URLs: "https:\/\/github\.com\/x\/y"/);
+  });
+
   it('types a notice label as one of NOTICE_LABELS, so the schema refuses any other word', () => {
     const notices = ReferenceSchema.shape.notices;
     expect(notices.parse([{ label: 'Corrigendum', url: 'https://doi.org/10.1/a' }])).toHaveLength(1);

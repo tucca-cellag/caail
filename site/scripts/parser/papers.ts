@@ -154,25 +154,31 @@ const NOTICE_BY_KEY = new Map<string, NoticeLabel>(NOTICE_LABELS.map((l) => [l.t
  * A reference's trailing blockquotes, sorted into its resources and its notices. A
  * line that is not one label and its URLs (prose, a URL wrapped onto its own line, or
  * a second label on the line), a label the parser does not know, a known one with no
- * http(s) URL, a notice line with more than one URL, one notice URL under two labels,
- * or a Code or Data label with more than the one URL its field holds, throws naming
- * the reference, so no blockquote content is dropped or misread silently. Models takes
+ * http(s) URL, a notice line with more than one URL, one notice URL under two labels, a
+ * notice URL that is the reference's own DOI or one of its resource links, or a Code or
+ * Data label with more than the one URL its field holds, throws naming the reference
+ * (`doi`, its bare DOI, is what the own-DOI check compares against), so no blockquote
+ * content is dropped or misread silently. Code and Models may share a URL. Models takes
  * every URL on its line. An exact repeat (the same URL under one resource, or the same
  * notice twice) is served once. A notice is served under its canonical label, whatever
  * case the blockquote wrote it in.
  */
-function referenceLinks(id: number, lines: BlockquoteLine[]): Pick<
+function referenceLinks(id: number, doi: string | null, lines: BlockquoteLine[]): Pick<
   PartialReference, 'codeUrl' | 'dataUrl' | 'modelUrls' | 'notices'
 > {
+  // Refused before any label is checked, so a URL wrapped off an empty label is reported
+  // as the wrap it is, not as a label with no URL.
+  const stray = lines.find((line) => line.label === null);
+  if (stray !== undefined && stray.label === null) {
+    throw new Error(
+      `Papers.md ref ${id}: a line of its blockquotes is not one label and its URLs: "${stray.text}". Each line there ` +
+      `is one label and its URLs (\`> **Code**: url\`): put a wrapped URL back on its label's line, give a second ` +
+      `label its own line, and keep prose out.`,
+    );
+  }
   const labeled: Array<{ key: string; urls: string[] }> = [];
   for (const line of lines) {
-    if (line.label === null) {
-      throw new Error(
-        `Papers.md ref ${id}: a line of its blockquotes is not one label and its URLs: "${line.text}". Each line there ` +
-        `is one label and its URLs (\`> **Code**: url\`): put a wrapped URL back on its label's line, give a second ` +
-        `label its own line, and keep prose out.`,
-      );
-    }
+    if (line.label === null) continue;
     const key = line.label.toLowerCase();
     const notice = NOTICE_BY_KEY.get(key);
     if (notice === undefined && !RESOURCE_BY_KEY.has(key)) {
@@ -198,18 +204,33 @@ function referenceLinks(id: number, lines: BlockquoteLine[]): Pick<
         `URL: keep the primary one.`);
     }
   }
-  /** Each notice once, by its one URL, in document order; one document carries one label. */
+  /** A URL's identity: a DOI in any case or doi.org host form is one DOI. */
+  const identity = (url: string): string => doiKey(url) ?? url;
+  const ownDoi = doiKey(doi);
+  /**
+   * Each notice once, by its one URL, in document order. One document carries one label,
+   * and a notice is the publisher's own document, so it is neither the paper itself nor
+   * one of the paper's own resources.
+   */
   const notices = new Map<string, { label: NoticeLabel; url: string }>();
   for (const { key, urls } of labeled) {
     const label = NOTICE_BY_KEY.get(key);
     const url = urls[0]!;
     if (label === undefined) continue;
-    const seen = notices.get(url);
+    if (ownDoi !== null && identity(url) === ownDoi) {
+      throw new Error(`Papers.md ref ${id}: notice ${url} is the reference's own DOI, not a notice on it.`);
+    }
+    const resource = labeled.find((e) => RESOURCE_BY_KEY.has(e.key) && e.urls.some((u) => identity(u) === identity(url)));
+    if (resource !== undefined) {
+      throw new Error(`Papers.md ref ${id}: notice ${url} is also its ${RESOURCE_BY_KEY.get(resource.key)} link; a notice ` +
+        `is the publisher's own document, so one of the two lines is wrong.`);
+    }
+    const seen = notices.get(identity(url));
     if (seen !== undefined && seen.label !== label) {
       throw new Error(`Papers.md ref ${id}: notice ${url} is labelled both ${seen.label} and ${label}; one document has ` +
         `one type, so keep the publisher's word and drop the other line.`);
     }
-    if (seen === undefined) notices.set(url, { label, url });
+    if (seen === undefined) notices.set(identity(url), { label, url });
   }
   return {
     codeUrl: urlsFor('code')[0] ?? null,
@@ -255,7 +276,7 @@ function parseReferences(root: Root, src: string): PartialReference[] {
 
       const fields = parseApa(raw);
 
-      const { codeUrl, dataUrl, modelUrls, notices } = referenceLinks(id, labeledLinksAfter(nodes, i));
+      const { codeUrl, dataUrl, modelUrls, notices } = referenceLinks(id, fields.doi, labeledLinksAfter(nodes, i));
 
       refs.push({
         id,
