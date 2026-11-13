@@ -1021,7 +1021,17 @@ describe('checkEntryRowTwins (tucca-cellag/caail-planning#752)', () => {
       .run(id, url, page, url ? `[An entry](${url})` : 'An entry', doi, doi ? 'manual' : null,
         lists.accessions ? JSON.stringify(lists.accessions) : null, lists.dataLinks ? JSON.stringify(lists.dataLinks) : null);
   };
-  const result = (db: Db) => checkEntryRowTwins(db, undefined, headerFor).find((r) => r.label === ENTRY_ROW_TWINS_LABEL)!;
+  // The fixtures' Zenodo DOIs are deposits unless a test says otherwise; none is in the committed cache.
+  const result = (db: Db, zenodoType: string = 'dataset') =>
+    checkEntryRowTwins(db, undefined, headerFor, () => zenodoType).find((r) => r.label === ENTRY_ROW_TWINS_LABEL)!;
+
+  it("reads an entry's Zenodo DOI whose record is a document as its publication, not a deposit (tucca-cellag/caail-planning#760)", () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-z', 'Cow', 'https://example.org/tool', ZENODO);
+    row(db, 'ds:row-z', 'Cow', { Paper: `[DOI](https://doi.org/${PAPER})`, Data: `[Zenodo](https://doi.org/${ZENODO})` });
+    expect(result(db, 'publication').ok).toBe(true);
+    expect(result(db, 'dataset').ok).toBe(false);
+  });
 
   it("fails an entry whose own deposit DOI is a row's Data deposit, naming both", () => {
     const db = miniDb();

@@ -17,46 +17,23 @@ import {
   isOaByDoi,
   doiKey,
 } from './citations.js';
-import { bareDoi, itemDoiRelation, ZENODO_REGISTRANT, type DoiRelation } from './doi-relation.js';
+import { bareDoi, isZenodoDoi, itemDoiRelation, type DoiRelation } from './doi-relation.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CACHE_PATH = join(HERE, 'citation-cache.json');
 const NDJSON_DIR = join(HERE, '..', '..', 'db', 'ndjson');
-/** The committed Zenodo resource types, written by the opt-in `fetch:zenodo-types`. */
-export const ZENODO_TYPES_PATH = join(HERE, 'zenodo-types.json');
-
-/**
- * Load `bare DOI -> Zenodo resource type` (`metadata.resource_type.type`) from the committed
- * cache, for `itemDoiRelation` (tucca-cellag/caail-planning#760). Empty if absent; a cache
- * that is present but malformed throws, since a silently empty one would serve every
- * Zenodo document as the item's own.
- */
-export function loadZenodoTypes(): Map<string, string> {
-  if (!existsSync(ZENODO_TYPES_PATH)) return new Map();
-  const raw = JSON.parse(readFileSync(ZENODO_TYPES_PATH, 'utf-8')) as { types?: Record<string, { type?: unknown }> };
-  if (raw.types === undefined || typeof raw.types !== 'object') throw new Error(`${ZENODO_TYPES_PATH}: no "types" object`);
-  return new Map(Object.entries(raw.types).map(([doi, v]) => {
-    if (typeof v?.type !== 'string') throw new Error(`${ZENODO_TYPES_PATH}: ${doi} has no resource type`);
-    return [doi, v.type];
-  }));
-}
-
-/** `loadZenodoTypes`, read once. */
-let zenodoTypes: Map<string, string> | undefined;
-const zenodoTypeOf = (key: string): string | undefined => (zenodoTypes ??= loadZenodoTypes()).get(key);
 
 /**
  * Every Zenodo DOI a catalog item or curated dataset entry carries, bare and sorted, read
  * from the committed NDJSON (the DB-owned `doi` column). What `fetch:zenodo-types` records
- * and what the corpus test requires recorded.
+ * and what the corpus test requires recorded (tucca-cellag/caail-planning#760).
  */
 export function zenodoItemDois(): string[] {
   const dois = new Set<string>();
-  for (const table of ['catalog.ndjson', 'dataset_entries.ndjson']) {
-    for (const line of readFileSync(join(NDJSON_DIR, table), 'utf-8').split('\n')) {
-      if (line.trim() === '') continue;
-      const doi = bareDoi((JSON.parse(line) as { doi?: string | null }).doi);
-      if (doi?.startsWith(`${ZENODO_REGISTRANT}/`)) dois.add(doi);
+  for (const table of ['catalog', 'dataset_entries']) {
+    for (const row of readNdjson<{ doi?: string | null }>(table)) {
+      const doi = bareDoi(row.doi);
+      if (doi !== null && isZenodoDoi(doi)) dois.add(doi);
     }
   }
   return [...dois].sort();
@@ -156,7 +133,7 @@ export function citationInfo(
     doi: bareDoi(doi) ?? doi ?? null,
     doiSource: source ?? null,
     // Catalog items and curated entries only: a Zenodo document is the item's publication (#760).
-    doiRelation: itemDoiRelation(doi, zenodoTypeOf),
+    doiRelation: itemDoiRelation(doi),
     citationCount: citationDois.length > 0 ? total : null,
     citationSources: citationDois.length,
     citationDois,

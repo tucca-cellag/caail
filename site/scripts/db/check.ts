@@ -45,7 +45,7 @@ import { AREAS } from '../parser/areas.js';
 import { MATRIX_SECTION } from '../parser/types.js';
 import { seriesRecency, EDITION_SORT_RULE } from '../parser/reports.js';
 import type { TaxonomyData } from '../parser/types.js';
-import { bareDoi, doiRelation, DOI_SHAPE } from '../parser/doi-relation.js';
+import { bareDoi, cachedZenodoType, doiRelation, DOI_SHAPE, itemDoiRelation } from '../parser/doi-relation.js';
 import { parseMarkdown } from '../parser/markdown.js';
 import { toString as mdastToString } from 'mdast-util-to-string';
 import { visit } from 'unist-util-visit';
@@ -1015,8 +1015,12 @@ export function checkEntryRowTwins(
   db: Db,
   repoRoot: string = REPO_ROOT,
   headerFor: (page: string) => InventoryHeader = (page) => readInventoryHeader(page, repoRoot),
+  zenodoTypeOf: (key: string) => string | undefined = cachedZenodoType,
 ): CheckResult[] {
-  /** A link's key, or null for a link that states a paper's DOI. */
+  /**
+   * A link's key, or null for a link that states a paper's DOI. A link is judged by the plain
+   * registrant rule: an entry or row lists it as a deposit, so a data host's DOI there is one.
+   */
   const linkKeyOf = (url: string): string | null => {
     const doi = statedDoi(url);
     return doi && doiRelation(doi) !== 'own' ? null : depositKey(url);
@@ -1075,7 +1079,8 @@ export function checkEntryRowTwins(
     .all() as { item_id: string; page: string; url: string | null; doi: string | null; accessions: string | null; data_links: string | null }[]) {
     const doi = bareDoi(e.doi);
     const own = deposits(
-      doi && doiRelation(doi) === 'own' ? `DOI ${doi}` : null,
+      // The entry's own DOI is an item DOI, read as the API serves it (tucca-cellag/caail-planning#760).
+      doi && itemDoiRelation(doi, zenodoTypeOf) === 'own' ? `DOI ${doi}` : null,
       [...(e.url ? [e.url] : []), ...list(e.data_links)],
       list(e.accessions),
     );

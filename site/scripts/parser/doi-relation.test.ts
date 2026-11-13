@@ -1,5 +1,36 @@
 import { describe, it, expect } from 'vitest';
-import { bareDoi, doiRelation, DATA_REPOSITORY_REGISTRANTS, DOI_SHAPE } from './doi-relation.js';
+import { bareDoi, doiRelation, itemDoiRelation, isZenodoDoi, DATA_REPOSITORY_REGISTRANTS, DOI_SHAPE } from './doi-relation.js';
+
+describe('itemDoiRelation (tucca-cellag/caail-planning#760)', () => {
+  const typed = (type: string | undefined) => () => type;
+
+  it("reads a Zenodo DOI by its record's resource type: a document is publication, a deposit own", () => {
+    for (const type of ['publication', 'poster', 'presentation', 'lesson']) {
+      expect(itemDoiRelation('10.5281/zenodo.1', typed(type)), type).toBe('publication');
+    }
+    for (const type of ['dataset', 'software', 'image', 'other']) {
+      expect(itemDoiRelation('10.5281/zenodo.1', typed(type)), type).toBe('own');
+    }
+  });
+
+  it('refuses a Zenodo DOI with no recorded type rather than guessing own', () => {
+    expect(() => itemDoiRelation('https://doi.org/10.5281/Zenodo.7', typed(undefined)))
+      .toThrow(/10\.5281\/zenodo\.7 has no recorded Zenodo resource type; run `pnpm --dir site fetch:zenodo-types`/);
+  });
+
+  it('leaves every other DOI to the registrant rule, a type lookup notwithstanding', () => {
+    expect(itemDoiRelation('10.6084/m9.figshare.29551862', typed('publication'))).toBe('own');
+    expect(itemDoiRelation('10.1038/s41586-021-03819-2', typed('dataset'))).toBe('publication');
+    expect(itemDoiRelation(null, typed('dataset'))).toBeNull();
+    expect(itemDoiRelation('not a doi', typed('dataset'))).toBeNull();
+  });
+
+  it('tells a Zenodo DOI by its exact registrant', () => {
+    expect(isZenodoDoi('10.5281/zenodo.1')).toBe(true);
+    expect(isZenodoDoi('10.52810/x')).toBe(false);
+    expect(isZenodoDoi('10.6084/m9.figshare.1')).toBe(false);
+  });
+});
 
 describe('doiRelation', () => {
   it('marks a data-repository DOI as the item\'s own', () => {
