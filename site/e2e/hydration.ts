@@ -27,3 +27,26 @@ export async function awaitHydrated(page: Page, component: string): Promise<void
     state: 'attached',
   });
 }
+
+/**
+ * Keep the page's main thread busy from before its first script runs, so the browser never
+ * has idle time: an unbroken chain of `MessageChannel` tasks, each a few milliseconds of work.
+ * A `MessageChannel` message is not clamped the way a nested `setTimeout(0)` is, so no gap
+ * between tasks is long enough for `requestIdleCallback` to fire. This is the condition a busy
+ * CI runner produced on the chat-widget specs (tucca-cellag/caail-planning#604): an idle
+ * callback with no timeout never ran, so a `client:idle` island never hydrated, and a test
+ * waiting on one idle callback hung.
+ */
+export async function neverIdle(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    const channel = new MessageChannel();
+    channel.port1.onmessage = () => {
+      const until = performance.now() + 4;
+      while (performance.now() < until) {
+        // Hold the thread, so the next task is always already queued.
+      }
+      channel.port2.postMessage(0);
+    };
+    channel.port2.postMessage(0);
+  });
+}

@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { CHAT_BUILT } from './chat-build';
+import { neverIdle } from './hydration';
 
 // The widget exists only in a build given a chat endpoint; chat-widget-hidden.spec.ts
 // covers a build without one.
@@ -52,6 +53,15 @@ for (const route of ROUTES) {
     await expect(page.getByRole('dialog', { name: 'Ask CAAIL' })).toBeVisible();
   });
 }
+
+// A busy runner can keep a page from ever going idle, and an idle-only island then never
+// hydrates: `.chat-fab` was "not found" on main's CI, a different page each time
+// (tucca-cellag/caail-planning#604). The button must appear anyway.
+test('the chat button hydrates on a page that never goes idle', async ({ page }) => {
+  await neverIdle(page);
+  await page.goto('./contributing/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.chat-fab')).toBeVisible({ timeout: 15_000 });
+});
 
 test('the widget is portalled out of the isolated stacking context', async ({ page }) => {
   await page.goto('./software/', { waitUntil: 'domcontentloaded' });
