@@ -15,7 +15,9 @@ type Ref = {
   authors: string[] | null; authorsText: string;
   year: number | null; title: string | null; journal: string | null;
   doi: string | null; codeUrl: string | null; dataUrl: string | null;
-  // Typed from the parser, so the badge component's closed notice labels reach these cards.
+  // Typed from the parser's Reference, so a type-check holds these fields to what the badge
+  // component takes. papers.json reaches the card through a cast, not a schema check: the
+  // parser's own validation, at build time, is what guarantees the served labels.
   modelUrls: RefLinks['modelUrls']; notices: RefLinks['notices'];
   isPrimary: boolean; hasCode: boolean; hasData: boolean;
   slug: string; methods: string[]; areas: string[]; topics: TopicRef[];
