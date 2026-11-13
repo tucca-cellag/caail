@@ -13,14 +13,23 @@ import RefLinkBadges, { type RefLinks } from '../components/RefLinkBadges';
 
 type Element = { type: unknown; props: Record<string, unknown> & { children?: unknown } };
 
+/** The text a screen reader reads from `node`: its strings, less anything `aria-hidden`. */
+function spoken(node: unknown): string {
+  if (Array.isArray(node)) return node.map(spoken).join('');
+  if (typeof node === 'string' || typeof node === 'number') return String(node);
+  if (node === null || typeof node !== 'object') return '';
+  const el = node as Element;
+  if (el.props?.['aria-hidden'] === true || el.props?.['aria-hidden'] === 'true') return '';
+  return spoken(el.props?.children);
+}
+
 /** Every link the badges render, in order, as its accessible name and its target. */
 function links(node: unknown): Array<{ name: string; href: string }> {
   if (Array.isArray(node)) return node.flatMap(links);
   if (node === null || typeof node !== 'object') return [];
   const el = node as Element;
   if (el.type === 'a') {
-    const text = [el.props.children].flat(Infinity).join('');
-    return [{ name: String(el.props['aria-label'] ?? text), href: String(el.props.href) }];
+    return [{ name: String(el.props['aria-label'] ?? spoken(el.props.children).trim()), href: String(el.props.href) }];
   }
   return links(el.props?.children);
 }
@@ -28,6 +37,11 @@ function links(node: unknown): Array<{ name: string; href: string }> {
 const none: RefLinks = { codeUrl: null, dataUrl: null, modelUrls: [], notices: [] };
 
 describe('RefLinkBadges', () => {
+  it('names a notice by its word alone, its glyph hidden from assistive technology', () => {
+    const r: RefLinks = { ...none, notices: [{ label: 'Expression of concern', url: 'https://doi.org/10.1/eoc' }] };
+    expect(links(RefLinkBadges({ r }))).toEqual([{ name: 'Expression of concern', href: 'https://doi.org/10.1/eoc' }]);
+  });
+
   it('numbers a notice label that repeats on one card, and leaves a single one as it is', () => {
     const r: RefLinks = {
       ...none,
@@ -38,9 +52,9 @@ describe('RefLinkBadges', () => {
       ],
     };
     expect(links(RefLinkBadges({ r }))).toEqual([
-      { name: 'ⓘ Correction 1', href: 'https://doi.org/10.1/one' },
-      { name: 'ⓘ Erratum', href: 'https://doi.org/10.1/two' },
-      { name: 'ⓘ Correction 2', href: 'https://doi.org/10.1/three' },
+      { name: 'Correction 1', href: 'https://doi.org/10.1/one' },
+      { name: 'Erratum', href: 'https://doi.org/10.1/two' },
+      { name: 'Correction 2', href: 'https://doi.org/10.1/three' },
     ]);
   });
 

@@ -53,7 +53,8 @@ export default function RefLinkBadges({ r }: { r: RefLinks }) {
       ))}
       {r.notices.map((n, i) => (
         <a key={`notice|${i}|${n.url}`} class="px-bdg notice" href={n.url} title={`Post-publication notice: ${n.label}`}>
-          ⓘ {noticeLabels[i]}
+          {/* The glyph is decoration: a screen reader names the link by the publisher's word alone. */}
+          <span aria-hidden="true">ⓘ </span>{noticeLabels[i]}
         </a>
       ))}
     </>
