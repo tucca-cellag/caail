@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { metrics, stubSpeciesCount } from './data';
+import { neverIdle } from './hydration';
 
 const seriousOnly = (results: { violations: { impact?: string | null }[] }) =>
   results.violations.filter((v) => ['serious', 'critical'].includes(v.impact ?? ''));
@@ -198,6 +199,18 @@ test('citation network hydrates and renders the graph canvas', async ({ page }) 
   await page.waitForSelector('.ng-canvas canvas', { timeout: 20000 });
   expect(await page.locator('.ng-canvas canvas').count()).toBeGreaterThan(0);
   await expect(page.getByText(/shared-author links/)).toBeVisible();
+});
+
+// A busy runner can keep a page from ever going idle, and an idle-only island then never
+// mounts: this file's canvas waits timed out in CI (tucca-cellag/caail-planning#604).
+test('the citation network mounts on a page that never goes idle', async ({ page }) => {
+  const stop = await neverIdle(page);
+  try {
+    await page.goto('./papers/network/');
+    await page.waitForSelector('.ng-canvas canvas', { timeout: 20000 });
+  } finally {
+    await stop();
+  }
 });
 
 test('citation network has no serious/critical a11y violations', async ({ page }) => {

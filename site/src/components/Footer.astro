@@ -6,6 +6,7 @@ import Analytics from './Analytics.astro';
 import TuccaLockup from './TuccaLockup.astro';
 import CaailChatWidget from './CaailChatWidget';
 import { CHAT_ENABLED } from '../lib/chat-config';
+import { IDLE_TIMEOUT_MS } from '../lib/idle-timeout';
 import { COMMUNITY_PATH } from '../lib/community';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
@@ -21,8 +22,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <NavCollapse />
 <DataTableViews />
 <Analytics />
-{/* No endpoint, no widget: without one the box cannot answer, so it is not mounted (src/lib/chat-config.ts). */}
-{CHAT_ENABLED && <CaailChatWidget client:idle />}
+{/* No endpoint, no widget: without one the box cannot answer, so it is not mounted (src/lib/chat-config.ts).
+    It hydrates when the page is idle, or after IDLE_TIMEOUT_MS if it never is (src/lib/idle-timeout.ts). */}
+{CHAT_ENABLED && <CaailChatWidget client:idle={{ timeout: IDLE_TIMEOUT_MS }} />}
 <style>
   .caail-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem; font-size: .72rem; color: var(--caail-muted); border-top: 1px solid var(--caail-border); padding-top: .8rem; margin-top: 1rem; }
   .caail-foot-brand { display: inline-flex; align-items: center; }
