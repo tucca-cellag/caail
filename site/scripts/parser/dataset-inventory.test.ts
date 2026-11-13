@@ -6,12 +6,12 @@
  *   B. Integration: the real corpus, including the query that used to return nothing.
  */
 
-import { describe, it, expect, beforeAll } from 'vitest';
-import { cpSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { describe, it, expect, beforeAll, onTestFinished } from 'vitest';
+import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { buildDatasetInventory, parseSubseries, idAccession, rowDepositAccession } from './dataset-inventory.js';
+import { buildDatasetInventory, parseSubseries, idAccession, readInventoryHeader, rowDepositAccession, rowLinks } from './dataset-inventory.js';
 import { REPO_ROOT } from '../db/lib.js';
 import type { DatasetInventoryRow } from './types.js';
 
@@ -103,6 +103,91 @@ describe('rowDepositAccession', () => {
   it('does not claim an accession the row only mentions', () => {
     expect(rowDepositAccession('ds:prjeb41939', 'unavailable')).toBe('PRJEB41939');
     expect(rowDepositAccession('ds:prjna1', 'supplementary')).toBe('PRJNA1');
+  });
+});
+
+describe('rowLinks (tucca-cellag/caail-planning#759)', () => {
+  const PAREN_DOI = 'https://doi.org/10.1016/S0092-8674(20)30001-1';
+
+  it('keeps a URL holding balanced parentheses whole, as a Markdown link target and as a bare URL', () => {
+    expect(rowLinks([`[DOI](${PAREN_DOI})`])).toEqual([PAREN_DOI]);
+    expect(rowLinks([`see ${PAREN_DOI} for the paper`])).toEqual([PAREN_DOI]);
+    expect(rowLinks(['[Wiki](https://en.wikipedia.org/wiki/Foo_(bar))'])).toEqual(['https://en.wikipedia.org/wiki/Foo_(bar)']);
+  });
+
+  it("never swallows a Markdown link's closing paren, or the paren closing a bare URL's aside", () => {
+    expect(rowLinks(['[GEO](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE1)'])).toEqual([
+      'https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE1',
+    ]);
+    expect(rowLinks([`[DOI](${PAREN_DOI}), then more`])).toEqual([PAREN_DOI]);
+    expect(rowLinks(['(deposited at https://zenodo.org/records/1)'])).toEqual(['https://zenodo.org/records/1']);
+    expect(rowLinks([`(see ${PAREN_DOI})`])).toEqual([PAREN_DOI]);
+  });
+
+  it('reads a bare URL where GFM autolinking ends it, as the rendered row shows it', () => {
+    expect(rowLinks(['https://a.org/x(b c)'])).toEqual(['https://a.org/x(b']);
+    expect(rowLinks(['see https://a.org/x(y.) here'])).toEqual(['https://a.org/x(y']);
+    expect(rowLinks(['<https://a.org/x>'])).toEqual(['https://a.org/x']);
+    expect(rowLinks([`Data at ${PAREN_DOI}.`, `[DOI](${PAREN_DOI})`, 'https://c.org/z;'])).toEqual([PAREN_DOI, 'https://c.org/z']);
+  });
+
+  it("keeps a link target whole however CommonMark reads it: nested parentheses, a SICI DOI's angle brackets", () => {
+    expect(rowLinks(['[t](https://w.org/Foo_(bar_(baz)))'])).toEqual(['https://w.org/Foo_(bar_(baz))']);
+    const sici = 'https://doi.org/10.1002/(SICI)1097-4636(199601)30:1<1::AID-JBM1>3.0.CO;2-#';
+    expect(rowLinks([`[DOI](${sici})`])).toEqual([sici]);
+  });
+
+  it('reads a cell as the inline content of its table cell, so one opening with block syntax keeps its links', () => {
+    expect(rowLinks(['<div>see [x](https://a.org/d)</div>'])).toEqual(['https://a.org/d']);
+    expect(rowLinks(['<!-- c --> [x](https://c.org/y)'])).toEqual(['https://c.org/y']);
+    expect(rowLinks(['[r]: https://def.org/x'])).toEqual(['https://def.org/x']);
+    expect(rowLinks(['    https://ind.org/x'])).toEqual(['https://ind.org/x']);
+  });
+
+  it("serves an inline HTML anchor's href, and no URL the row does not write out in full", () => {
+    expect(rowLinks(['<a href="https://h.org/x">x</a>'])).toEqual(['https://h.org/x']);
+    // GFM links `www.` text as `http://www.…`, a scheme the row never wrote.
+    expect(rowLinks(['www.example.org/x'])).toEqual([]);
+  });
+
+  it('keeps a link target written with an entity or a backslash escape, as the parser decodes it', () => {
+    expect(rowLinks(['[x](https://a.org/?a=1&amp;b=2)'])).toEqual(['https://a.org/?a=1&b=2']);
+    expect(rowLinks(['[x](https://a.org/x\\))'])).toEqual(['https://a.org/x)']);
+    expect(rowLinks(['[x](http://www.a.org/?a=1&amp;b=2)'])).toEqual(['http://www.a.org/?a=1&b=2']);
+  });
+
+  it("serves only http(s) links: a repo-relative link is CAAIL's own page, not a URL the row writes out", () => {
+    expect(rowLinks(['[Cow](./Cow.md) and [x](mailto:a@b.org) and [GEO](https://www.ncbi.nlm.nih.gov/geo/)'])).toEqual([
+      'https://www.ncbi.nlm.nih.gov/geo/',
+    ]);
+  });
+});
+
+describe('a parenthesised DOI through the inventory build (tucca-cellag/caail-planning#759)', () => {
+  it("serves a row's links whole, matching the paperDoi it reads from the same Paper cell", () => {
+    const ndjson = mkdtempSync(join(tmpdir(), 'caail-inventory-paren-'));
+    onTestFinished(() => rmSync(ndjson, { recursive: true, force: true }));
+    cpSync(join(REPO_ROOT, 'site', 'db', 'ndjson'), ndjson, { recursive: true });
+    const rowsPath = join(ndjson, 'dataset_rows.ndjson');
+    const lines = readFileSync(rowsPath, 'utf-8').split('\n').filter(Boolean);
+    // A Cow row, its Paper cell located by the page's own header; it becomes a parenthesised DOI.
+    const read = readInventoryHeader('Cow', REPO_ROOT);
+    if ('problem' in read) throw new Error(read.problem);
+    const paper = read.header.indexOf('Paper');
+    expect(paper).toBeGreaterThanOrEqual(0);
+    const at = lines.findIndex((l) => (JSON.parse(l) as { page: string }).page === 'Cow');
+    expect(at).toBeGreaterThanOrEqual(0);
+    const row = JSON.parse(lines[at]!) as { item_id: string; cells_json: string };
+    const cells = JSON.parse(row.cells_json) as string[];
+    expect(cells).toHaveLength(read.header.length);
+    cells[paper] = '[DOI](https://doi.org/10.1016/S0092-8674(20)30001-1)';
+    lines[at] = JSON.stringify({ ...JSON.parse(lines[at]!), cells_json: JSON.stringify(cells) });
+    writeFileSync(rowsPath, `${lines.join('\n')}\n`);
+
+    const served = buildDatasetInventory(REPO_ROOT, ndjson).inventory.find((r) => r.id === row.item_id)!;
+    expect(served.paperDoi).toBe('10.1016/s0092-8674(20)30001-1');
+    expect(served.links).toContain('https://doi.org/10.1016/S0092-8674(20)30001-1');
+    expect(served.links.some((u) => u.endsWith('S0092-8674(20'))).toBe(false);
   });
 });
 

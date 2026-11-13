@@ -32,6 +32,7 @@ import { bareDoi, doiRelation } from './doi-relation.js';
 import type { DoiRelation } from './types.js';
 import { extractInventory, refuseStrayInventory } from '../db/extract.js';
 import { parseMarkdown } from './markdown.js';
+import { markdownLinkTargets } from './link-targets.js';
 import { topicsByItemId } from './topics.js';
 import { INVENTORY_PAGES } from './datasets.js';
 import {
@@ -93,22 +94,36 @@ export function rowDepositAccession(itemId: string, dataCell: string): string {
 }
 
 /**
- * Every URL in a row, deduped, in document order.
+ * Every http(s) URL a row's cells write out in full, deduped, in document order.
  *
- * The cells are `inlineMd` output, so a link is `[text](target)` and a bare URL is plain
- * text; one pattern catches both. `)`, `]`, `<`, `>` and whitespace terminate a match so a
- * markdown link's closing paren is never swallowed, and trailing sentence punctuation is
- * trimmed because a cell often ends `…/dataset.`
+ * Each cell is read by `markdownLinkTargets`, the reader the API's link rewrite uses on the
+ * same cells: the site's parser (GFM), behind the prefix that reads the cell as the inline
+ * content of a table cell, so a cell opening with `<div>` or `[a]: x` keeps its links. So
+ * `links` holds what a reader of the row can follow: a link's target as CommonMark reads it,
+ * balanced parentheses included (`10.1016/S0092-8674(20)30001-1`), a bare URL where GFM's
+ * autolinking ends it, and an inline HTML tag's `href` or `src` (tucca-cellag/caail-planning#759).
+ * A link target written with an entity or a backslash escape is served as the parser decodes
+ * it. One kind of target is left out: GFM links `www.` text under an `http://` the row never
+ * wrote, which a find's own URL would not match.
  */
 export function rowLinks(cells: readonly string[]): string[] {
   const out: string[] = [];
   for (const cell of cells) {
-    for (const m of cell.matchAll(/https?:\/\/[^\s)\]<>]+/g)) {
-      const url = m[0].replace(/[.,;:]+$/, '');
-      if (!out.includes(url)) out.push(url);
+    for (const { url } of markdownLinkTargets(cell)) {
+      if (/^https?:\/\//i.test(url) && !wwwAutolink(url, cell) && !out.includes(url)) out.push(url);
     }
   }
   return out;
+}
+
+/**
+ * Whether `url` is GFM's autolink of `www.` text in `cell`: an `http://www.` URL the cell does
+ * not write, though it writes the rest of it. A link the cell writes with an entity or escape
+ * holds neither form literally, so it is not one.
+ */
+function wwwAutolink(url: string, cell: string): boolean {
+  const rest = url.slice('http://'.length);
+  return url.startsWith('http://www.') && !cell.includes(url) && cell.includes(rest);
 }
 
 /** The identity a row carries, read from its Paper and Data cells (tucca-cellag/caail-planning#367). */
