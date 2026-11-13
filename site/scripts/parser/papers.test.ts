@@ -139,7 +139,7 @@ describe('buildPapersModel — fixture', () => {
 // A2. Reference blockquote labels (tucca-cellag/caail-planning#656)
 // ---------------------------------------------------------------------------
 
-describe('buildPapersModel — reference blockquote labels', () => {
+describe('buildPapersModel: reference blockquote labels', () => {
   const REF4 = '<a id="4">4</a> Jones, M. (2020).';
   /** The fixture with `blockquotes` after ref 4, built into a model. */
   const withRef4 = (blockquotes: string[]): PapersData => {
@@ -251,6 +251,11 @@ describe('buildPapersModel — reference blockquote labels', () => {
   it('names a URL wrapped onto the line after its label as a wrap, not as a label with no URL', () => {
     expect(() => withRef4(['> **Code**:\n> https://github.com/x/y']))
       .toThrow(/ref 4: a line of its blockquotes is not one label and its URLs: "https:\/\/github\.com\/x\/y"/);
+  });
+
+  it('fails on a doi.org URL that names no DOI', () => {
+    expect(() => withRef4(['> **Correction**: https://doi.org/'])).toThrow(/ref 4: its Correction URL https:\/\/doi\.org\/ names no DOI/);
+    expect(() => withRef4(['> **Data**: https://dx.doi.org/'])).toThrow(/ref 4: its Data URL https:\/\/dx\.doi\.org\/ names no DOI/);
   });
 
   it('tells two notice URLs apart by case, unless they are one DOI', () => {

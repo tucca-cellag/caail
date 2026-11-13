@@ -143,7 +143,7 @@ function parseMatrix(root: Root): MatrixResult {
 type PartialReference = Omit<Reference, 'isPrimary' | 'methods' | 'areas' | 'slug'>;
 
 /** The labels of a reference's own resources, served as `codeUrl`, `dataUrl` and `modelUrls`. */
-export const RESOURCE_LABELS = ['Code', 'Data', 'Models'] as const;
+const RESOURCE_LABELS = ['Code', 'Data', 'Models'] as const;
 
 /** A doi.org URL, in any of the host forms `doiKey` folds. */
 const DOI_URL = /^https?:\/\/(?:www\.|dx\.)?doi\.org\//i;
@@ -157,7 +157,8 @@ const NOTICE_BY_KEY = new Map<string, NoticeLabel>(NOTICE_LABELS.map((l) => [l.t
  * A reference's trailing blockquotes, sorted into its resources and its notices. A
  * line that is not one label and its URLs (prose, a URL wrapped onto its own line, or
  * a second label on the line), a label the parser does not know, a known one with no
- * http(s) URL, a notice line with more than one URL, one notice URL under two labels, a
+ * http(s) URL, a doi.org URL naming no DOI, a notice line with more than one URL, one
+ * notice URL under two labels, a
  * notice URL that is the reference's own DOI or one of its resource links, or a Code or
  * Data label with more than the one URL its field holds, throws naming the reference
  * (`doi`, its bare DOI, is what the own-DOI check compares against), so no blockquote
@@ -171,8 +172,8 @@ function referenceLinks(id: number, doi: string | null, lines: BlockquoteLine[])
 > {
   // Refused before any label is checked, so a URL wrapped off an empty label is reported
   // as the wrap it is, not as a label with no URL.
-  const stray = lines.find((line) => line.label === null);
-  if (stray !== undefined && stray.label === null) {
+  const stray = lines.find((line): line is Extract<BlockquoteLine, { label: null }> => line.label === null);
+  if (stray !== undefined) {
     throw new Error(
       `Papers.md ref ${id}: a line of its blockquotes is not one label and its URLs: "${stray.text}". Each line there ` +
       `is one label and its URLs (\`> **Code**: url\`): put a wrapped URL back on its label's line, give a second ` +
@@ -191,6 +192,10 @@ function referenceLinks(id: number, doi: string | null, lines: BlockquoteLine[])
       );
     }
     if (line.urls.length === 0) throw new Error(`Papers.md ref ${id}: blockquote label "${line.label}" has no http(s) URL.`);
+    const noDoi = line.urls.find((url) => DOI_URL.test(url) && doiKey(url) === null);
+    if (noDoi !== undefined) {
+      throw new Error(`Papers.md ref ${id}: its ${notice ?? RESOURCE_BY_KEY.get(key)} URL ${noDoi} names no DOI.`);
+    }
     if (notice !== undefined && line.urls.length > 1) {
       throw new Error(`Papers.md ref ${id}: its ${notice} line holds ${line.urls.length} URLs, but a notice is one ` +
         `document: give each notice its own line, and keep other links off it.`);
@@ -210,6 +215,7 @@ function referenceLinks(id: number, doi: string | null, lines: BlockquoteLine[])
   /**
    * A URL's identity: a doi.org URL is its DOI, one DOI in any case or host form; any
    * other URL is itself, case included, since a path's case can name a different page.
+   * A doi.org URL naming no DOI was refused above, so `doiKey` has one to return.
    */
   const identity = (url: string): string => (DOI_URL.test(url) ? doiKey(url)! : url);
   const ownDoi = doiKey(doi);
