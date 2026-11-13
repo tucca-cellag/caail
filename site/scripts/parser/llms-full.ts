@@ -175,15 +175,21 @@ function flattenDirectives(body: string): string {
  * page as the site resolves it (`absolutizePageLinks`, tucca-cellag/caail-planning#810).
  * The concatenated file is fetched off-site, where `../Papers.md#193` resolves against the
  * file's URL and 404s. A target that cannot be made absolute fails the build, naming the page.
+ * Links resolve against this repository's own pages and tracked files, whatever root the
+ * text was read from.
  */
-export function llmsFullSection(rel: string, content: string, repoRoot: string = REPO_ROOT): string {
+export function llmsFullSection(rel: string, content: string): string {
   const { title, body } = splitFrontmatter(content, rel);
-  const { md, notAbsolute } = absolutizePageLinks(body, rel, { repoRoot, sitePage: rel.startsWith(FRONTMATTER_PREFIX) });
+  const { md, notAbsolute } = absolutizePageLinks(body, rel, { sitePage: rel.startsWith(FRONTMATTER_PREFIX) });
   if (notAbsolute.length > 0) {
     const t = notAbsolute[0]!;
-    throw new Error(t === ''
+    throw new Error(t.url === ''
       ? `llms-full: ${rel}: a link has an empty target; give it its URL, or write it as text.`
-      : `llms-full: ${rel}: link target "${t}" cannot be made absolute; point it at a page or file in the repo, or give its full URL.`);
+      : t.kind === 'html'
+        ? `llms-full: ${rel}: link target "${t.url}" is relative in an HTML tag, and an HTML href or src is checked, never ` +
+          `rewritten: write it as a Markdown link, or give its full URL.`
+        : `llms-full: ${rel}: link target "${t.url}" cannot be made absolute; point it at a page or a file git tracks ` +
+          `in the repo, or give its full URL.`);
   }
   // Every canonical source opens with its own `# H1`, which is how a reader of the
   // concatenated file knows what a section is. A frontmatter page has its title in the
@@ -200,7 +206,7 @@ export function buildLlmsFullText(repoRoot: string = REPO_ROOT): string {
   // concatenates — the exact invariant buildHeader exists to hold.
   const sources = llmsFullSources(repoRoot);
   const parts = [buildHeader(sources)];
-  for (const rel of sources) parts.push(llmsFullSection(rel, readFileSync(join(repoRoot, rel), 'utf-8'), repoRoot));
+  for (const rel of sources) parts.push(llmsFullSection(rel, readFileSync(join(repoRoot, rel), 'utf-8')));
   return parts.join('');
 }
 

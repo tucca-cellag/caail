@@ -213,8 +213,12 @@ function htmlLinkAttrs(html: string): { name: string; value: string }[] {
  */
 const INLINE_PREFIX = 'x ';
 
-/** One link target in Markdown text, and where its destination is written, where it can be rewritten in place. */
-interface LinkTarget { url: string; at: { start: number; end: number } | null }
+/**
+ * One link target in Markdown text, what wrote it (a link, an image, a reference definition,
+ * or an `href`/`src` in an HTML tag), and where its destination is written, where it can be
+ * rewritten in place.
+ */
+interface LinkTarget { url: string; kind: 'link' | 'image' | 'definition' | 'html'; at: { start: number; end: number } | null }
 
 /**
  * Where a link or image `node`'s destination is written in `md`: after the `](` that
@@ -259,11 +263,11 @@ function markdownLinkTargets(md: string, page = false): LinkTarget[] {
   visit(parseMarkdown(src), (node: any) => {
     if (node.type === 'link' || node.type === 'image' || node.type === 'definition') {
       const at = destinationAt(src, node);
-      out.push({ url: node.url, at: at && { start: at.start - prefix.length, end: at.end - prefix.length } });
+      out.push({ url: node.url, kind: node.type, at: at && { start: at.start - prefix.length, end: at.end - prefix.length } });
     } else if (node.type === 'html' || node.type === 'text') {
       // micromark reads `<a href=../x.csv>` (a bare value holding `/`) as text, but
       // CommonMark and GitHub's cmark-gfm read it as a tag, so an agent may render it as one.
-      for (const a of htmlLinkAttrs(String(node.value))) out.push({ url: a.value, at: null });
+      for (const a of htmlLinkAttrs(String(node.value))) out.push({ url: a.value, kind: 'html', at: null });
     }
   });
   return out;
@@ -293,39 +297,110 @@ function absoluteTarget(url: string, sourceFile: string): string | undefined {
  * refuses any target left in `notAbsolute`.
  */
 export function absolutizeCellLinks(md: string, sourceFile: string): { md: string; notAbsolute: string[] } {
-  return rewriteTargets(md, markdownLinkTargets(md), (url) => absoluteTarget(url, sourceFile));
+  const { md: out, refused } = rewriteTargets(md, markdownLinkTargets(md), (t) => absoluteTarget(t.url, sourceFile));
+  return { md: out, notAbsolute: refused.map((t) => t.url) };
 }
 
 /**
- * A whole page of canonical Markdown, written at `sourceFile`, with its relative link
- * targets made absolute, and the targets still not absolute, from one parse: what
- * `llms-full.txt` serves, where an agent fetching the one file off-site resolves a
- * page-relative link against the file's URL (tucca-cellag/caail-planning#810). Each
- * target goes where `absoluteTarget` sends it, which is where the site sends a reader,
- * with two cases a table cell never meets: in a site page (`sitePage`, a Starlight page
- * under `site/src/content/`) a root-relative path is a site route, not a repository path;
- * and a relative path to a repository file that is not a page (`./LICENSE`) becomes its
- * GitHub blob, where the file exists in `repoRoot`. Only destination text changes.
+ * A whole page of Markdown, written at `sourceFile`, with its relative link targets made
+ * absolute, and the targets still not absolute (each with what wrote it), from one parse:
+ * what `llms-full.txt` serves, where an agent fetching the one file off-site resolves a
+ * page-relative link against the file's URL (tucca-cellag/caail-planning#810). Only
+ * destination text changes. Where each target goes:
+ *
+ * - In a canonical page, where `absoluteTarget` sends it, which is where the site sends a
+ *   reader; and a relative path to a repository file that is not a page (`./LICENSE`)
+ *   becomes its GitHub blob, or its raw file for an image.
+ * - In a site page (`sitePage`, a Starlight page under `site/src/content/docs/`), as a
+ *   browser resolves it against that page's own route: `#6-roadmap` and `../privacy/`
+ *   from `curation.mdx` are `/curation/#6-roadmap` and `/privacy/`. A path under a
+ *   retired base or outside the site base is refused.
+ *
+ * A GitHub blob must name a file git tracks, so a missing page, a wrong case and a
+ * gitignored local file are refused, not published as 404s. Pages, anchors and tracked
+ * files are all read from this module's own repository.
  */
 export function absolutizePageLinks(
   md: string,
   sourceFile: string,
-  options: { repoRoot: string; sitePage: boolean },
-): { md: string; notAbsolute: string[] } {
-  return rewriteTargets(md, markdownLinkTargets(md, true), (url) => pageTarget(url, sourceFile, options));
+  options: { sitePage: boolean },
+): { md: string; notAbsolute: { url: string; kind: LinkTarget['kind'] }[] } {
+  const resolve = (t: LinkTarget) => (options.sitePage ? siteTarget(t.url, sourceFile) : canonicalTarget(t, sourceFile));
+  const { md: out, refused } = rewriteTargets(md, markdownLinkTargets(md, true), resolve);
+  return { md: out, notAbsolute: refused.map((t) => ({ url: t.url, kind: t.kind })) };
 }
 
-/** Where a relative target in a whole page resolves (see `absolutizePageLinks`), or undefined. */
-function pageTarget(url: string, sourceFile: string, options: { repoRoot: string; sitePage: boolean }): string | undefined {
-  if (options.sitePage && url.startsWith('/') && !url.startsWith('//')) {
-    return url === SITE_BASE || url.startsWith(`${SITE_BASE}/`) ? `${SITE_URL}${url.slice(SITE_BASE.length + 1)}` : undefined;
+/** A URL with a scheme (`https:`, `mailto:`), which is left as written for `isAbsoluteLink` to judge. */
+const HAS_SCHEME = /^[a-z][a-z0-9+.-]*:/i;
+
+/** Where a relative target in a canonical page resolves (see `absolutizePageLinks`), or undefined. */
+function canonicalTarget(t: LinkTarget, sourceFile: string): string | undefined {
+  if (t.url === '' || HAS_SCHEME.test(t.url) || t.url.startsWith('//')) return undefined;
+  const resolved = absoluteTarget(t.url, sourceFile);
+  if (resolved !== undefined) return blobNamesTrackedFile(resolved) ? resolved : undefined;
+  const m = /^([^?#]*)(\?[^#]*)?(#.*)?$/.exec(t.url)!;
+  let path: string;
+  try {
+    path = decodeURIComponent(m[1]!);
+  } catch {
+    return undefined;
   }
-  const resolved = absoluteTarget(url, sourceFile);
-  if (resolved !== undefined || url === '' || /^[a-z][a-z0-9+.-]*:/i.test(url) || /^(?:#|\/\/)/.test(url)) return resolved;
-  const [path, anchor] = url.split('#');
-  const repoRel = posix.normalize(path!.startsWith('/') ? path!.slice(1) : posix.join(posix.dirname(sourceFile), path!));
-  if (repoRel.startsWith('..') || !existsSync(join(options.repoRoot, repoRel))) return undefined;
-  return `${GITHUB_BLOB_BASE}/${repoRel}${anchor ? `#${anchor}` : ''}`;
+  const repoRel = posix.normalize(path.startsWith('/') ? path.slice(1) : posix.join(posix.dirname(sourceFile), path));
+  if (repoRel.startsWith('..') || !isTracked(repoRel)) return undefined;
+  // A blob URL serves GitHub's viewer page; an image needs the file itself.
+  const query = t.kind === 'image' ? `${m[2] ? `${m[2]}&` : '?'}raw=true` : (m[2] ?? '');
+  return `${GITHUB_BLOB_BASE}/${encodeURI(repoRel)}${query}${m[3] ?? ''}`;
+}
+
+/** Where a relative target in a site page resolves: against the page's own route, as a browser resolves it. */
+function siteTarget(url: string, sourceFile: string): string | undefined {
+  const route = sitePageRoute(sourceFile);
+  if (route === undefined || url === '' || HAS_SCHEME.test(url) || url.startsWith('//')) return undefined;
+  const resolved = new URL(url, route);
+  const path = resolved.pathname;
+  if (RETIRED_BASES.some((b) => b !== SITE_BASE && isUnderBase(path, b))) return undefined;
+  return path === SITE_BASE || path.startsWith(`${SITE_BASE}/`) ? resolved.href : undefined;
+}
+
+/** The route a Starlight docs page renders at (`site/src/content/docs/curation.mdx` is `/curation/`), or undefined. */
+function sitePageRoute(sourceFile: string): string | undefined {
+  const m = /^site\/src\/content\/docs\/(.+)\.mdx?$/.exec(sourceFile);
+  if (m === null) return undefined;
+  const slug = m[1]!.replace(/(?:^|\/)index$/, '').toLowerCase();
+  return `${SITE_URL}${slug === '' ? '' : `${slug}/`}`;
+}
+
+/** Whether `url`, if it is a GitHub blob URL into this repository, names a file git tracks. Any other URL passes. */
+function blobNamesTrackedFile(url: string): boolean {
+  if (!url.startsWith(`${GITHUB_BLOB_BASE}/`)) return true;
+  try {
+    return isTracked(decodeURIComponent(url.slice(GITHUB_BLOB_BASE.length + 1).split(/[?#]/)[0]!));
+  } catch {
+    return false;
+  }
+}
+
+/** The files git tracks in this repository, read once; null where git is unavailable. */
+let trackedCache: Set<string> | null | undefined;
+
+/**
+ * Whether git tracks `repoRel` (a repo-relative path), compared exactly: a file that
+ * exists only locally (gitignored or generated) or differs in case is not on GitHub, so a
+ * blob URL for it is a 404. Where git is unavailable (a tarball export), the working tree
+ * stands in, as `readCorpusDate` falls back too.
+ */
+function isTracked(repoRel: string): boolean {
+  if (trackedCache === undefined) {
+    try {
+      const listing = execFileSync('git', ['-C', REPO_ROOT, 'ls-files', '-z'], {
+        encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 64 * 1024 * 1024,
+      });
+      trackedCache = new Set(listing.split('\0').filter(Boolean));
+    } catch {
+      trackedCache = null;
+    }
+  }
+  return trackedCache === null ? existsSync(join(REPO_ROOT, repoRel)) : trackedCache.has(repoRel);
 }
 
 /**
@@ -337,17 +412,17 @@ function pageTarget(url: string, sourceFile: string, options: { repoRoot: string
 function rewriteTargets(
   md: string,
   targets: LinkTarget[],
-  resolve: (url: string) => string | undefined,
-): { md: string; notAbsolute: string[] } {
+  resolve: (t: LinkTarget) => string | undefined,
+): { md: string; refused: LinkTarget[] } {
   const edits: { start: number; end: number; url: string }[] = [];
-  const notAbsolute: string[] = [];
+  const refused: LinkTarget[] = [];
   for (const t of targets) {
-    const next = t.at ? resolve(t.url) : undefined;
+    const next = t.at ? resolve(t) : undefined;
     if (next !== undefined) edits.push({ ...t.at!, url: next });
-    if (!isAbsoluteLink(next ?? t.url)) notAbsolute.push(t.url);
+    if (!isAbsoluteLink(next ?? t.url)) refused.push(t);
   }
   const out = edits.sort((a, b) => b.start - a.start).reduce((s, x) => s.slice(0, x.start) + x.url + s.slice(x.end), md);
-  return { md: out, notAbsolute };
+  return { md: out, refused };
 }
 
 /**

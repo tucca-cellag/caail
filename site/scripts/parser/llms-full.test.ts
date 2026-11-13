@@ -274,7 +274,35 @@ describe('buildLlmsFullText', () => {
 });
 
 describe('llmsFullSection', () => {
-  const section = (rel: string, body: string) => llmsFullSection(rel, body, REPO_ROOT);
+  const section = (rel: string, body: string) => llmsFullSection(rel, body);
+  const CURATION = 'site/src/content/docs/curation.mdx';
+
+  it("resolves a site page's fragment and relative links against the page's own route, as a browser does", () => {
+    expect(section(CURATION, 'See [the roadmap](#6-roadmap) and [privacy](../privacy/).\n'))
+      .toContain('See [the roadmap](https://caail.tufts.edu/curation/#6-roadmap) and [privacy](https://caail.tufts.edu/privacy/).');
+  });
+
+  it("refuses a site page's link under a retired base, which would publish as a 404", () => {
+    expect(() => section(CURATION, '[old](/caail/taxonomy/)\n')).toThrow(/llms-full: site\/src\/content\/docs\/curation\.mdx: link target "\/caail\/taxonomy\/"/);
+  });
+
+  it('refuses a link to a file git does not track: a wrong case, a gitignored file, a missing page', () => {
+    for (const target of ['./license', './site/src/content/data/papers.json', './NoSuchPage.md']) {
+      expect(() => section('README.md', `[x](${target})\n`), target).toThrow(`llms-full: README.md: link target "${target}"`);
+    }
+  });
+
+  it('serves an image from a repo file raw, and keeps a query on a repo file', () => {
+    expect(section('README.md', '![card](./site/public/og.png)\n'))
+      .toContain('![card](https://github.com/tucca-cellag/caail/blob/main/site/public/og.png?raw=true)');
+    expect(section('README.md', '[cite](./CITATION.cff?plain=1)\n'))
+      .toContain('[cite](https://github.com/tucca-cellag/caail/blob/main/CITATION.cff?plain=1)');
+  });
+
+  it('says an HTML href is checked and never rewritten when it refuses one', () => {
+    expect(() => section('README.md', '<a href="./Papers.md">matrix</a>\n'))
+      .toThrow(/llms-full: README\.md: link target "\.\/Papers\.md".*an HTML href or src is checked, never rewritten/);
+  });
 
   it('resolves each link from its own page as the site resolves it, leaving the rest as written', () => {
     expect(section('README.md', 'See [the matrix](./Papers.md) and [Pig data](./Datasets/Pig.md) here.\n'))
