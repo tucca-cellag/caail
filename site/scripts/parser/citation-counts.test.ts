@@ -5,7 +5,24 @@
 
 import { describe, it, expect } from 'vitest';
 
-import { citationInfo, loadCitedByCounts, NO_CITATION, parseRelatedDois } from './citation-counts.js';
+import { citationInfo, loadCitedByCounts, loadZenodoTypes, NO_CITATION, parseRelatedDois, zenodoItemDois } from './citation-counts.js';
+
+describe('doiRelation of a Zenodo DOI on an item (tucca-cellag/caail-planning#760)', () => {
+  it("serves a Zenodo document as publication and a deposit as own, from each record's cached resource type", () => {
+    // sw:project-pisces: a PDF of software documentation about the tool, not the tool.
+    expect(citationInfo('10.5281/zenodo.23124562', 'manual', new Map()).doiRelation).toBe('publication');
+    // ds:growth-factor-thermostability-dataset: the deposit itself.
+    expect(citationInfo('10.5281/zenodo.19339684', 'manual', new Map()).doiRelation).toBe('own');
+  });
+
+  it('has a cached resource type for every Zenodo DOI a catalog item or curated entry carries', () => {
+    // Fails until `pnpm --dir site fetch:zenodo-types` has recorded a newly added one.
+    const types = loadZenodoTypes();
+    const dois = zenodoItemDois();
+    expect(dois.length).toBeGreaterThan(0);
+    expect(dois.filter((d) => !types.has(d))).toEqual([]);
+  });
+});
 
 describe('citationInfo', () => {
   it('joins a DOI to its count (host/prefix/case-insensitive key)', () => {

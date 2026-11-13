@@ -1,0 +1,11 @@
+{
+  "types": {
+    "10.5281/zenodo.19339684": {
+      "type": "dataset"
+    },
+    "10.5281/zenodo.23124562": {
+      "type": "publication",
+      "subtype": "softwaredocumentation"
+    }
+  }
+}
