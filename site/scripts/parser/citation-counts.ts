@@ -17,11 +17,27 @@ import {
   isOaByDoi,
   doiKey,
 } from './citations.js';
-import { bareDoi, doiRelation, type DoiRelation } from './doi-relation.js';
+import { bareDoi, isZenodoDoi, itemDoiRelation, type DoiRelation } from './doi-relation.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CACHE_PATH = join(HERE, 'citation-cache.json');
 const NDJSON_DIR = join(HERE, '..', '..', 'db', 'ndjson');
+
+/**
+ * Every Zenodo DOI a catalog item or curated dataset entry carries, bare and sorted, read
+ * from the committed NDJSON (the DB-owned `doi` column). What `fetch:zenodo-types` records
+ * and what the corpus test requires recorded (tucca-cellag/caail-planning#760).
+ */
+export function zenodoItemDois(): string[] {
+  const dois = new Set<string>();
+  for (const table of ['catalog', 'dataset_entries']) {
+    for (const row of readNdjson<{ doi?: string | null }>(table)) {
+      const doi = bareDoi(row.doi);
+      if (doi !== null && isZenodoDoi(doi)) dois.add(doi);
+    }
+  }
+  return [...dois].sort();
+}
 
 /** Load `doiKey -> OpenAlex cited_by_count` from the committed cache. Empty if absent/invalid. */
 export function loadCitedByCounts(): Map<string, number> {
@@ -71,7 +87,8 @@ export function loadPaperIsOa(): Map<string, boolean> {
 export interface CitationInfo {
   doi: string | null;
   doiSource: 'auto' | 'manual' | null;
-  /** whether `doi` is the item's own or its describing paper's (doi-relation.ts, tucca-cellag/caail-planning#367) */
+  /** whether `doi` is the item's own or a paper or other document about it, as doi-relation.ts's
+   *  `itemDoiRelation` reads it (tucca-cellag/caail-planning#367, #760) */
   doiRelation: DoiRelation | null;
   citationCount: number | null;
   citationSources: number;
@@ -116,7 +133,8 @@ export function citationInfo(
   return {
     doi: bareDoi(doi) ?? doi ?? null,
     doiSource: source ?? null,
-    doiRelation: doiRelation(doi),
+    // Catalog items and curated entries only: a Zenodo document is the item's publication (#760).
+    doiRelation: itemDoiRelation(doi),
     citationCount: citationDois.length > 0 ? total : null,
     citationSources: citationDois.length,
     citationDois,

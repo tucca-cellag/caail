@@ -842,7 +842,7 @@
       "tier": "restricted",
       "doi": "10.5281/zenodo.23124562",
       "doiSource": "manual",
-      "doiRelation": "own",
+      "doiRelation": "publication",
       "citationCount": 0,
       "citationSources": 1,
       "citationDois": [

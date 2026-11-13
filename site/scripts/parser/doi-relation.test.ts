@@ -1,5 +1,56 @@
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, it, expect } from 'vitest';
-import { bareDoi, doiRelation, DATA_REPOSITORY_REGISTRANTS, DOI_SHAPE } from './doi-relation.js';
+import { bareDoi, doiRelation, itemDoiRelation, isZenodoDoi, loadZenodoTypes, DATA_REPOSITORY_REGISTRANTS, DOI_SHAPE } from './doi-relation.js';
+
+describe('itemDoiRelation (tucca-cellag/caail-planning#760)', () => {
+  const typed = (type: string | undefined) => () => type;
+
+  it("reads a Zenodo DOI by its record's resource type: a document is publication, a deposit own", () => {
+    for (const type of ['publication', 'poster', 'presentation', 'lesson']) {
+      expect(itemDoiRelation('10.5281/zenodo.1', typed(type)), type).toBe('publication');
+    }
+    for (const type of ['dataset', 'software', 'image', 'other']) {
+      expect(itemDoiRelation('10.5281/zenodo.1', typed(type)), type).toBe('own');
+    }
+  });
+
+  it('refuses a Zenodo DOI with no recorded type rather than guessing own', () => {
+    expect(() => itemDoiRelation('https://doi.org/10.5281/Zenodo.7', typed(undefined)))
+      .toThrow(/10\.5281\/zenodo\.7 has no recorded Zenodo resource type; run `pnpm --dir site fetch:zenodo-types`/);
+  });
+
+  it('leaves every other DOI to the registrant rule, a type lookup notwithstanding', () => {
+    expect(itemDoiRelation('10.6084/m9.figshare.29551862', typed('publication'))).toBe('own');
+    expect(itemDoiRelation('10.1038/s41586-021-03819-2', typed('dataset'))).toBe('publication');
+    expect(itemDoiRelation(null, typed('dataset'))).toBeNull();
+    expect(itemDoiRelation('not a doi', typed('dataset'))).toBeNull();
+  });
+
+  it('says a Zenodo DOI that is no record DOI cannot be fetched, rather than telling the curator to fetch it', () => {
+    expect(() => itemDoiRelation('10.5281/zenodo.12.v2', typed(undefined)))
+      .toThrow(/10\.5281\/zenodo\.12\.v2 is not a zenodo\.<record> DOI, so fetch:zenodo-types cannot read its type/);
+  });
+
+  it('reads the committed types keyed by bare DOI, whatever form a key was written in, and refuses one that is no DOI', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'caail-zenodo-types-'));
+    const file = join(dir, 'zenodo-types.json');
+    writeFileSync(file, JSON.stringify({ types: { 'https://doi.org/10.5281/Zenodo.5': { type: 'dataset' } } }));
+    expect([...loadZenodoTypes(file)]).toEqual([['10.5281/zenodo.5', 'dataset']]);
+    writeFileSync(file, JSON.stringify({ types: { 'not a doi': { type: 'dataset' } } }));
+    expect(() => loadZenodoTypes(file)).toThrow(/"not a doi" is not a DOI/);
+    // Two forms of one DOI would leave which type wins to key order.
+    writeFileSync(file, JSON.stringify({ types: { '10.5281/zenodo.5': { type: 'dataset' }, 'https://doi.org/10.5281/ZENODO.5': { type: 'publication' } } }));
+    expect(() => loadZenodoTypes(file)).toThrow(/10\.5281\/zenodo\.5 is recorded twice/);
+  });
+
+  it('tells a Zenodo DOI by its exact registrant', () => {
+    expect(isZenodoDoi('10.5281/zenodo.1')).toBe(true);
+    expect(isZenodoDoi('10.52810/x')).toBe(false);
+    expect(isZenodoDoi('10.6084/m9.figshare.1')).toBe(false);
+  });
+});
 
 describe('doiRelation', () => {
   it('marks a data-repository DOI as the item\'s own', () => {

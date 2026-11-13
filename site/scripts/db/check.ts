@@ -45,7 +45,7 @@ import { AREAS } from '../parser/areas.js';
 import { MATRIX_SECTION } from '../parser/types.js';
 import { seriesRecency, EDITION_SORT_RULE } from '../parser/reports.js';
 import type { TaxonomyData } from '../parser/types.js';
-import { bareDoi, doiRelation, DOI_SHAPE } from '../parser/doi-relation.js';
+import { bareDoi, cachedZenodoType, doiRelation, DOI_SHAPE, isZenodoDoi, itemDoiRelation } from '../parser/doi-relation.js';
 import { parseMarkdown } from '../parser/markdown.js';
 import { toString as mdastToString } from 'mdast-util-to-string';
 import { visit } from 'unist-util-visit';
@@ -844,6 +844,9 @@ export function checkDataLinks(db: Db, path: string = DATASET_DATA_LINKS_PATH): 
 export const ENTRY_ROW_TWINS_LABEL =
   'dataset_entries x dataset_rows: no curated entry and inventory row on one page name the same deposit';
 
+export const ZENODO_TWO_WAYS_LABEL =
+  'dataset_entries x dataset_rows: no row on an entry\'s page lists as a deposit the Zenodo record the entry reads as a document';
+
 /**
  * A statement stored inside its own quotes: it opens and closes with a mark of one family,
  * matched or not. Double (`"` `“` `”` `„` `«` `»`): only when no other double mark sits inside,
@@ -982,6 +985,36 @@ export function checkOnRequest(db: Db, repoRoot: string = REPO_ROOT): CheckResul
   return [ok(ON_REQUEST_LABEL, problems.length === 0, `${problems.length} problem(s): ${problems.slice(0, 10).join('; ')}`)];
 }
 
+export const ZENODO_TYPES_LABEL =
+  'zenodo types: every Zenodo DOI on a catalog item or curated entry has a recorded resource type (zenodo-types.json)';
+
+/**
+ * Every Zenodo DOI a catalog item or curated dataset entry carries must have its Zenodo resource
+ * type recorded in `site/scripts/parser/zenodo-types.json`, since the parse reads it to say whether
+ * the DOI names the item or a document about it, and refuses a guess (tucca-cellag/caail-planning#760).
+ * Reported here as a failed check naming each one, so a curator learns at `db:check` rather than at
+ * the parse, and the other guards still run. A cache that cannot be read (malformed JSON, a key that
+ * is no DOI, one DOI recorded twice) is reported the same way rather than thrown out of `runChecks`.
+ */
+export function checkZenodoTypes(db: Db, typeOf: (key: string) => string | undefined = cachedZenodoType): CheckResult[] {
+  const missing: string[] = [];
+  const rows = db.prepare(
+    'SELECT item_id, doi FROM catalog WHERE doi IS NOT NULL UNION ALL SELECT item_id, doi FROM dataset_entries WHERE doi IS NOT NULL',
+  ).all() as { item_id: string; doi: string }[];
+  try {
+    for (const r of rows.sort((a, b) => a.item_id.localeCompare(b.item_id))) {
+      const key = bareDoi(r.doi);
+      if (key !== null && isZenodoDoi(key) && typeOf(key) === undefined) missing.push(`${r.item_id} (${key})`);
+    }
+  } catch (err) {
+    // The fetch reads the committed file before it writes, so it cannot repair one it cannot read.
+    return [ok(ZENODO_TYPES_LABEL, false,
+      `zenodo-types.json cannot be read: ${(err as Error).message}; correct it by hand, since fetch:zenodo-types reads it first`)];
+  }
+  return [ok(ZENODO_TYPES_LABEL, missing.length === 0, missing.length === 0 ? '' :
+    `${missing.length} unrecorded: ${missing.join(', ')}; run \`pnpm --dir site fetch:zenodo-types\` and commit zenodo-types.json`)];
+}
+
 /**
  * Twin guard (tucca-cellag/caail-planning#752). A curated entry and an inventory row on the same page
  * that name the same deposit list one dataset twice, and the datasets total and `api/datasets.json`
@@ -990,8 +1023,9 @@ export function checkOnRequest(db: Db, repoRoot: string = REPO_ROOT): CheckResul
  *
  * Deposits are compared, never papers, as decided on that ticket: one paper can describe several
  * deposits, which is how the datasets endpoint reads a paper DOI, so an entry and a row from one paper
- * may be two datasets. An entry's deposits are its `doi` where the DOI's registrant is a data host,
- * its heading link unless that states a paper's DOI, its `accessions` and its `dataLinks`. A row's
+ * may be two datasets. An entry's deposits are its `doi` where `itemDoiRelation` reads it as the
+ * item's own (a data host's DOI, unless its Zenodo record is a document), its heading link unless
+ * that states a paper's DOI or the entry's own document DOI, its `accessions` and its `dataLinks`. A row's
  * deposit is its Data cell, read by the same `readDataCell` that fills the API's `dataUrl`,
  * `dataDoi` and `accession`; a status word names none, and its Paper and Description cells are not
  * read. A link that states a DOI is compared as that DOI, any other link without a trailing slash
@@ -1001,6 +1035,10 @@ export function checkOnRequest(db: Db, repoRoot: string = REPO_ROOT): CheckResul
  * (`accessionNamedIn`), so an entry's link to an SRA run page meets a row badged with that run, and a
  * row's ENA link meets an entry listing the project, while a repository named `cra2` does not meet a
  * row badged `CRA2`.
+ *
+ * One more pair is reported, under its own label (`ZENODO_TWO_WAYS_LABEL`) since it is no twin: an
+ * entry whose Zenodo DOI's record is a document (tucca-cellag/caail-planning#760) beside a row whose
+ * Data cell lists that same record as a deposit. The two read one record two ways, so one is wrong.
  *
  * An entry that names its deposit only in its description is not compared, which is why its deposits
  * belong in `dataset-accessions.json` or `dataset-data-links.json`.
@@ -1015,8 +1053,24 @@ export function checkEntryRowTwins(
   db: Db,
   repoRoot: string = REPO_ROOT,
   headerFor: (page: string) => InventoryHeader = (page) => readInventoryHeader(page, repoRoot),
+  zenodoTypeOf: (key: string) => string | undefined = cachedZenodoType,
 ): CheckResult[] {
-  /** A link's key, or null for a link that states a paper's DOI. */
+  /**
+   * A Zenodo DOI's recorded type, or undefined where none can be read: unrecorded, or a cache that
+   * cannot be read, both of which `checkZenodoTypes` reports. Only the lookup is guarded, so an
+   * error anywhere else in reading a relation still surfaces.
+   */
+  const zenodoTypeOrNone = (key: string): string | undefined => {
+    try {
+      return zenodoTypeOf(key);
+    } catch {
+      return undefined;
+    }
+  };
+  /**
+   * A link's key, or null for a link that states a paper's DOI. A link is judged by the plain
+   * registrant rule: an entry or row lists it as a deposit, so a data host's DOI there is one.
+   */
   const linkKeyOf = (url: string): string | null => {
     const doi = statedDoi(url);
     return doi && doiRelation(doi) !== 'own' ? null : depositKey(url);
@@ -1071,22 +1125,44 @@ export function checkEntryRowTwins(
     });
   }
   const problems: string[] = [];
+  /** Entry-row pairs that read one Zenodo record two ways, reported apart from twins. */
+  const twoWays: string[] = [];
   for (const e of db.prepare('SELECT item_id, page, url, doi, accessions, data_links FROM dataset_entries ORDER BY page, ordinal, item_id')
     .all() as { item_id: string; page: string; url: string | null; doi: string | null; accessions: string | null; data_links: string | null }[]) {
     const doi = bareDoi(e.doi);
+    // The entry's own DOI is an item DOI, read as the API serves it (tucca-cellag/caail-planning#760).
+    // One whose Zenodo type cannot be read is `checkZenodoTypes`'s to report; here it reads as the
+    // registrant says, so the rest of the comparison still runs.
+    const zenodo = doi !== null && isZenodoDoi(doi);
+    const zenodoType = zenodo ? zenodoTypeOrNone(doi!) : undefined;
+    const relation = doi === null ? null
+      : zenodo && zenodoType === undefined ? doiRelation(doi)
+      : itemDoiRelation(doi, () => zenodoType);
     const own = deposits(
-      doi && doiRelation(doi) === 'own' ? `DOI ${doi}` : null,
+      relation === 'own' ? `DOI ${doi}` : null,
       [...(e.url ? [e.url] : []), ...list(e.data_links)],
       list(e.accessions),
     );
+    // An entry whose Zenodo record is a document: its own link to that record names the document,
+    // not a deposit, so it is no twin key. A row whose Data cell lists the same record as a deposit
+    // reads it the other way, and that is reported as what it is.
+    const documentKey = zenodo && relation === 'publication' ? `DOI ${doi}` : null;
+    if (documentKey !== null) own.keys.delete(documentKey);
     for (const row of rowsOn.get(e.page) ?? []) {
+      if (documentKey !== null && row.deposits.keys.has(documentKey)) {
+        twoWays.push(`${e.item_id} reads ${doi} as a document about it (its Zenodo record's type is ${zenodoType}), ` +
+          `while ${row.id} on ${e.page} lists that record as a deposit in its Data cell, so one of them is wrong`);
+      }
       const keys = sharedBy(own, row.deposits);
       if (keys.length > 0) {
         problems.push(`${e.item_id} and ${row.id} on ${e.page} both name ${keys.join(' and ')}, so one dataset is listed twice; keep one copy`);
       }
     }
   }
-  return [ok(ENTRY_ROW_TWINS_LABEL, problems.length === 0, `${problems.length} twin(s): ${problems.slice(0, 10).join('; ')}`)];
+  return [
+    ok(ENTRY_ROW_TWINS_LABEL, problems.length === 0, `${problems.length} twin(s): ${problems.slice(0, 10).join('; ')}`),
+    ok(ZENODO_TWO_WAYS_LABEL, twoWays.length === 0, `${twoWays.length} pair(s): ${twoWays.slice(0, 10).join('; ')}`),
+  ];
 }
 
 export const INVENTORY_PAGES_LABEL =
@@ -1459,7 +1535,7 @@ export function runChecks(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
     ...checkTopicTiers(db), ...checkAxisBijection(db, repoRoot),
     ...checkCatalogHeadings(db), ...checkLicenses(db), ...checkManualLicenseKeys(db),
     ...checkDois(db), ...checkManualDoiKeys(db), ...checkRelatedDois(db), ...checkSubseries(db),
-    ...checkInventoryCells(db, repoRoot), ...checkInventoryPages(repoRoot), ...checkOnRequest(db, repoRoot), ...checkEntryRowTwins(db, repoRoot), ...checkAccessions(db), ...checkDataLinks(db),
+    ...checkInventoryCells(db, repoRoot), ...checkInventoryPages(repoRoot), ...checkOnRequest(db, repoRoot), ...checkZenodoTypes(db), ...checkEntryRowTwins(db, repoRoot), ...checkAccessions(db), ...checkDataLinks(db),
     ...checkSeries(db), ...checkFineTagSeedDrift(db), ...checkRowTagParity(db)];
 }
 

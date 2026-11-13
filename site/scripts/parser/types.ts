@@ -57,7 +57,7 @@ export type TopicRef = z.infer<typeof TopicRefSchema>;
 /** Coarse license/access tier — the unified 4-tier axis (see src/lib/licenses.ts). */
 export const LicenseTierSchema = z.enum(['permissive', 'copyleft', 'restricted', 'unknown']);
 
-/** Whether a DOI names the item itself (`own`) or the paper describing it (`publication`). */
+/** Whether a DOI names the item itself (`own`) or a paper or other document about it (`publication`). */
 export const DoiRelationSchema = z.enum(['own', 'publication']);
 export type DoiRelation = z.infer<typeof DoiRelationSchema>;
 /** The license fields folded onto every card: raw token, provenance, derived tier. */
@@ -206,7 +206,8 @@ export const CatalogEntrySchema = z.object({
   doi: z.string().nullable().default(null),
   doiSource: z.enum(['auto', 'manual']).nullable().default(null),
   /** `own` when `doi` is a data repository's (the item itself), `publication` when it is the
-   *  describing paper's, null with no DOI. Derived by registrant in doi-relation.ts (tucca-cellag/caail-planning#367). */
+   *  describing paper's or another document about the item, null with no DOI. Derived in doi-relation.ts by registrant
+   *  (tucca-cellag/caail-planning#367), and for a Zenodo DOI by its record's resource type (tucca-cellag/caail-planning#760). */
   doiRelation: DoiRelationSchema.nullable().default(null),
   /** OpenAlex cited_by_count summed over `doi` + its sibling version DOIs; null when unknown */
   citationCount: z.number().int().nonnegative().nullable().default(null),
@@ -247,7 +248,8 @@ export const DatasetEntrySchema = z.object({
   doi: z.string().nullable().default(null),
   doiSource: z.enum(['auto', 'manual']).nullable().default(null),
   /** `own` when `doi` is a data repository's (the item itself), `publication` when it is the
-   *  describing paper's, null with no DOI. Derived by registrant in doi-relation.ts (tucca-cellag/caail-planning#367). */
+   *  describing paper's or another document about the item, null with no DOI. Derived in doi-relation.ts by registrant
+   *  (tucca-cellag/caail-planning#367), and for a Zenodo DOI by its record's resource type (tucca-cellag/caail-planning#760). */
   doiRelation: DoiRelationSchema.nullable().default(null),
   /** OpenAlex cited_by_count summed over `doi` + its sibling version DOIs; null when unknown */
   citationCount: z.number().int().nonnegative().nullable().default(null),
@@ -1152,7 +1154,8 @@ export const ApiCatalogIndexRowSchema = z.strictObject({
   group: z.string(),
   url: z.string().nullable(),
   doi: z.string().nullable(),
-  /** whether `doi` is the item's own (a data repository's) or its describing paper's (tucca-cellag/caail-planning#367) */
+  /** whether `doi` is the item's own (a data repository's) or a paper or document about it, as doi-relation.ts's
+   *  `itemDoiRelation` reads it (tucca-cellag/caail-planning#367, #760) */
   doiRelation: DoiRelationSchema.nullable(),
   tier: z.string().nullable(),
 });

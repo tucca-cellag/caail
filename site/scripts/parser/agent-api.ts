@@ -965,7 +965,7 @@ export function buildManifest(
       { path: 'matrix.json', use: 'All method×area cells, empties included. Use to ask what has and has not been indexed — then read `matrixNote` in papers-index.json before reading a silence as an absence.' },
       { path: 'papers-index.json', use: 'START HERE for papers. Every reference, one compact row: id, title, year, first author, section, methods, areas, DOI, code/data flags, and whether a post-publication notice is recorded (`hasNotice`). A sixth the size of papers.json, so it survives a fetch tool that truncates. Enumerate here, then fetch full records.' },
       { path: 'papers.json', use: 'Full records for the references you selected. Large (~554 KB): if your fetch summarises rather than returning bytes, a "not found" from this file is not evidence of absence.' },
-      { path: 'catalog-index.json', use: 'START HERE for software and databases. One compact row each: slug, name, kind, group, URL, DOI, whether that DOI is the item\'s own or its describing paper\'s (`doiRelation`), license tier. A tenth the size of catalog.json.' },
+      { path: 'catalog-index.json', use: 'START HERE for software and databases. One compact row each: slug, name, kind, group, URL, DOI, whether that DOI is the item\'s own or a paper or document about it (`doiRelation`), license tier. A tenth the size of catalog.json.' },
       { path: 'catalog.json', use: 'Full records with summaries. Large (~576 KB), two thirds of it the same summary prose as Markdown and as HTML; same truncation caveat as papers.json.' },
       {
         path: 'datasets.json',
@@ -987,13 +987,16 @@ export function buildManifest(
           'is recorded; an accession outside the `accessions` families, such as an SRA run or a CNGB project, ' +
           'appears only inside one of these URLs, as a whole path segment or query value, so match it there ' +
           'too), and their `doi` ' +
-          'where `doiRelation` is "own" (a data host\'s DOI, naming the item itself). Compare DOIs as bare lowercase ' +
+          'where `doiRelation` is "own" (a data host\'s DOI, naming the item itself; a Zenodo DOI whose record is ' +
+          'a document about the item, such as its software documentation, is "publication"). Compare DOIs as bare lowercase ' +
           'strings and accessions case-insensitively, ignoring a version suffix (SRA051669.1 is ' +
           'SRA051669). Some deposits have only a `dataUrl`. ' +
-          'A row\'s `paperDoi`, and an entry\'s `doi` where `doiRelation` is "publication", name ' +
-          'the paper that describes the item, not the item. A match there means CAAIL holds data ' +
-          'from that paper, not that it holds your find: one paper can describe several ' +
-          'deposits, and whether CAAIL holds the paper itself is for papers-index.json to say. ' +
+          'A row\'s `paperDoi` names the paper that describes the row\'s data, and an entry\'s `doi` ' +
+          'where `doiRelation` is "publication" names a paper or other document about the entry (a ' +
+          'Zenodo report, say); neither names the item. A match there means CAAIL holds data that ' +
+          'paper or document describes, not that it holds your find: one paper can describe several ' +
+          'deposits. Whether CAAIL holds a paper itself is for papers-index.json to say, and a ' +
+          'document that is not a paper is not listed there. ' +
           '`links` carries the row\'s paper link too, so a URL that resolves to its `paperDoi` is ' +
           'that same paper match. Use `id` only to re-find an item you already recorded, since an ' +
           'id can be minted from data a row merely mentions. ' +
