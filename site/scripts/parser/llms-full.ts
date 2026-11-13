@@ -8,14 +8,18 @@
  * and a `# ===== <path> =====` delimiter per file. CLAUDE.md agent files are
  * excluded — they're instructions, not library content.
  *
- * NOT QUITE VERBATIM, AND THE EXCEPTION IS NAMED HERE BECAUSE IT USED TO SAY
- * VERBATIM AND STOPPED BEING TRUE. Sources under `site/src/content/` are
- * Starlight pages rather than canonical repo-root Markdown; for those the YAML
- * frontmatter is stripped and the `title` is re-emitted as an `# H1`, so the
- * section opens the way every other section does. Every repo-root source is
- * still byte-for-byte. The served header names which pages those are, derived
- * rather than typed, so this comment cannot go stale when a second one is added.
- * See `splitFrontmatter` and `buildHeader`.
+ * NOT QUITE VERBATIM, AND THE EXCEPTIONS ARE NAMED HERE BECAUSE IT USED TO SAY
+ * VERBATIM AND STOPPED BEING TRUE. Every source's relative links are made absolute,
+ * resolved from its own page (to its site page where it has one, otherwise to the file
+ * on GitHub), since an agent fetches this one
+ * file off-site and would resolve `../Papers.md#193` against its URL
+ * (tucca-cellag/caail-planning#810; see `llmsFullSection`). Sources under
+ * `site/src/content/` are Starlight pages rather than canonical repo-root Markdown;
+ * for those the YAML frontmatter is stripped and the `title` is re-emitted as an
+ * `# H1`, so the section opens the way every other section does. Beyond its link
+ * destinations, every repo-root source is byte-for-byte. The served header names both
+ * exceptions, the site pages derived rather than typed, so this comment cannot go
+ * stale when a second one is added. See `splitFrontmatter` and `buildHeader`.
  *
  * The build core (`buildLlmsFullText`) is pure and reads only; the file write
  * is invoked from generate-data.ts's CLI block (like the other parser output).
@@ -26,6 +30,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { isPublishedMarkdown } from '../../src/lib/canonical-files.js';
+import { absolutizePageLinks } from './agent-api.js';
 
 /** Repo root: parser → scripts → site → repo (three levels up). */
 const REPO_ROOT: string = fileURLToPath(new URL('../../../', import.meta.url));
@@ -36,7 +41,8 @@ const PUBLIC_DIR: string = fileURLToPath(new URL('../../public/', import.meta.ur
  * Sorted published `.md` files in a canonical dir, README first.
  *
  * `isPublishedMarkdown` excludes CLAUDE.md and `*.local.md` private
- * companions; each match is inlined verbatim below, so a companion admitted
+ * companions; each match is inlined below (its text as written, bar its link
+ * destinations), so a companion admitted
  * here would be concatenated into the served llms-full.txt.
  */
 function dirMarkdown(repoRoot: string, dir: string): string[] {
@@ -82,9 +88,13 @@ export function llmsFullSources(repoRoot: string = REPO_ROOT): string[] {
  */
 function buildHeader(sources: string[]): string {
   const withFrontmatter = sources.filter((s) => s.startsWith(FRONTMATTER_PREFIX));
+  // Links are named first: every source's are rewritten, so "as written" holds only for the rest.
+  const links =
+    'every relative link is made absolute, resolved from its own page: to its page on the site where it has one, ' +
+    'otherwise to the file on GitHub';
   const caveat = withFrontmatter.length
-    ? `Sources are reproduced as written, except ${withFrontmatter.length === 1 ? 'one site page' : `${withFrontmatter.length} site pages`} (${withFrontmatter.join(', ')}), whose metadata block is replaced by the page title as a heading. `
-    : 'Sources are reproduced as written. ';
+    ? `Sources are reproduced as written, except that ${links}, and ${withFrontmatter.length === 1 ? 'one site page' : `${withFrontmatter.length} site pages`} (${withFrontmatter.join(', ')}) ${withFrontmatter.length === 1 ? 'has its' : 'have their'} metadata block replaced by the page title as a heading. `
+    : `Sources are reproduced as written, except that ${links}. `;
   return (
     '# CAAIL — Cellular Agriculture AI Library (full canonical text)\n\n' +
     "> Single-file concatenation of CAAIL's canonical Markdown, for AI agents. " +
@@ -136,6 +146,13 @@ export function splitFrontmatter(
   return { title, body: flattenDirectives(rest) };
 }
 
+/** A Starlight page's frontmatter `slug`, which sets the route it renders at, or null where it sets none. */
+function frontmatterSlug(content: string): string | null {
+  const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(content);
+  const slug = m ? /^slug\s*:\s*(.+?)\s*$/m.exec(m[1]!) : null;
+  return slug ? slug[1]!.replace(/^["']|["']$/g, '') : null;
+}
+
 /**
  * Turn Starlight container directives into plain Markdown.
  *
@@ -163,6 +180,49 @@ function flattenDirectives(body: string): string {
     .replace(/\n{3,}/g, '\n\n');
 }
 
+/**
+ * One source's section of llms-full.txt: its delimiter, its title where it carries one in
+ * frontmatter, and its body with every relative link made absolute, resolved from its own
+ * page: to its page on the site where it has one, otherwise to the file on GitHub
+ * (`absolutizePageLinks`, tucca-cellag/caail-planning#810).
+ * The concatenated file is fetched off-site, where `../Papers.md#193` resolves against the
+ * file's URL and 404s. A target that cannot be made absolute fails the build, naming the page.
+ * Links resolve against this repository's own pages and tracked files, whatever root the
+ * text was read from.
+ */
+export function llmsFullSection(rel: string, content: string): string {
+  const { title, body } = splitFrontmatter(content, rel);
+  const sitePage = rel.startsWith(FRONTMATTER_PREFIX);
+  const { md, notAbsolute, definitions } = absolutizePageLinks(body, rel, { sitePage, slug: sitePage ? frontmatterSlug(content) : null });
+  // The concatenated file is one Markdown document, so a reference or footnote definition
+  // would bind every page's `[x][label]` or `[^label]`, not only its own: a label two pages
+  // define resolves to the first, and one a page leaves undefined to another page's.
+  if (definitions.length > 0) {
+    const d = definitions[0]!;
+    throw new Error(d.footnote
+      ? `llms-full: ${rel}: a footnote definition ([^${d.label}]) would be shared by every page in the concatenated ` +
+        `file; write the note inline instead.`
+      : `llms-full: ${rel}: a reference definition ([${d.label}]: ${d.url}) would be shared by every page in the ` +
+        `concatenated file; write the link inline instead.`);
+  }
+  if (notAbsolute.length > 0) {
+    const t = notAbsolute[0]!;
+    throw new Error(t.url === ''
+      ? `llms-full: ${rel}: a link has an empty target; give it its URL, or write it as text.`
+      : t.kind === 'html'
+        ? `llms-full: ${rel}: link target "${t.url}" is relative in an HTML tag, and an HTML href or src is checked, never ` +
+          `rewritten: write it as a Markdown link, or give its full URL.`
+        : `llms-full: ${rel}: link target "${t.url}" cannot be made absolute; point it at a page or a file git tracks ` +
+          `in the repo, or give its full URL.`);
+  }
+  // Every canonical source opens with its own `# H1`, which is how a reader of the
+  // concatenated file knows what a section is. A frontmatter page has its title in the
+  // metadata instead, so re-emit it rather than letting the section be identified only by
+  // a path: `site/src/content/docs/curation.mdx` does not say "Curation Methodology".
+  const heading = title ? `# ${title}\n\n` : '';
+  return `\n\n# ===== ${rel} =====\n\n${heading}${md.trimEnd()}\n`;
+}
+
 /** Build the full llms-full.txt content from the canonical Markdown. */
 export function buildLlmsFullText(repoRoot: string = REPO_ROOT): string {
   // One list, computed once and handed to both. Recomputing it inside buildHeader re-ran four
@@ -170,15 +230,7 @@ export function buildLlmsFullText(repoRoot: string = REPO_ROOT): string {
   // concatenates — the exact invariant buildHeader exists to hold.
   const sources = llmsFullSources(repoRoot);
   const parts = [buildHeader(sources)];
-  for (const rel of sources) {
-    const { title, body } = splitFrontmatter(readFileSync(join(repoRoot, rel), 'utf-8'), rel);
-    // Every canonical source opens with its own `# H1`, which is how a reader of the
-    // concatenated file knows what a section is. A frontmatter page has its title in the
-    // metadata instead, so re-emit it rather than letting the section be identified only by
-    // a path: `site/src/content/docs/curation.mdx` does not say "Curation Methodology".
-    const heading = title ? `# ${title}\n\n` : '';
-    parts.push(`\n\n# ===== ${rel} =====\n\n${heading}${body.trimEnd()}\n`);
-  }
+  for (const rel of sources) parts.push(llmsFullSection(rel, readFileSync(join(repoRoot, rel), 'utf-8')));
   return parts.join('');
 }
 

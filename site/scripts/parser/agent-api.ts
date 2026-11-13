@@ -26,7 +26,7 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -36,7 +36,7 @@ import type { Catalog, CatalogEntry, DatasetInventory, DatasetInventoryRow, DoiR
 import { isUnderBase, RETIRED_BASES, SITE_BASE, SITE_URL } from '../../src/content/site-config.ts';
 import { CATALOG_SOURCES } from './catalog.js';
 import { dedicatedLink, GITHUB_BLOB_BASE } from '../dedicated-links.ts';
-import { resolveCaailHref } from '../remark/rewrite-caail-links.ts';
+import { HAS_SCHEME, repoRelativePath, resolveCaailHref } from '../remark/rewrite-caail-links.ts';
 import { parseMarkdown } from './markdown.js';
 import { visit } from 'unist-util-visit';
 
@@ -105,15 +105,22 @@ export const PLACEMENT_NOTE =
  */
 export function absolutizeSiteHrefs(html: string, base: string = SITE_BASE, url: string = SITE_URL): string {
   return html.replace(/(?<=\s)(href|src)="(\/(?!\/)[^"]*)"/g, (_, attr: string, path: string) => {
-    const retired = RETIRED_BASES.find((b) => b !== base && isUnderBase(path, b));
-    if (retired !== undefined) {
-      throw new Error(`agent-api: ${attr}="${path}" is under the retired base ${retired}; the site now lives at ${url}.`);
-    }
-    if (path !== base && !path.startsWith(`${base}/`)) {
-      throw new Error(`agent-api: ${attr}="${path}" is root-relative but outside the site base ${base}.`);
-    }
+    const refusal = siteBaseRefusal(path, base, url);
+    if (refusal !== null) throw new Error(`agent-api: ${attr}="${path}" ${refusal}`);
     return `${attr}="${url}${path.slice(base.length + 1)}"`;
   });
+}
+
+/**
+ * Why a root-relative site `path` cannot be served as a site URL, or null when it can: a
+ * path under a base the site has left publishes as a real-looking 404, and so does one
+ * outside the current base. One rule for the catalog HTML and the site pages' links.
+ */
+function siteBaseRefusal(path: string, base: string = SITE_BASE, url: string = SITE_URL): string | null {
+  const retired = RETIRED_BASES.find((b) => b !== base && isUnderBase(path, b));
+  if (retired !== undefined) return `is under the retired base ${retired}; the site now lives at ${url}.`;
+  if (path !== base && !path.startsWith(`${base}/`)) return `is root-relative but outside the site base ${base}.`;
+  return null;
 }
 
 /**
@@ -146,9 +153,12 @@ const isAbsoluteLink = (url: string): boolean => {
   if (/^mailto:/i.test(url)) return true;
   const m = url.match(/^(?:https?|ftps?):\/\/[^/?#\s]+([^?#]*)/i);
   if (m === null) return false;
-  const ours = url.startsWith(`${GITHUB_BLOB_BASE}/`) || url.startsWith(SITE_URL);
+  const ours = url.startsWith(`${GITHUB_BLOB_BASE}/`) || url.startsWith(`${GITHUB_TREE_BASE}/`) || url.startsWith(SITE_URL);
   return !ours || (!/(?:^|\/)\.{1,2}(?:\/|$)/.test(m[1]!) && !url.endsWith('#'));
 };
+
+/** The GitHub tree base beside `GITHUB_BLOB_BASE`, where a directory is shown. */
+const GITHUB_TREE_BASE = GITHUB_BLOB_BASE.replace(/\/blob\//, '/tree/');
 
 /**
  * Text that can hold no link: no `]` (inline links), no `<` (HTML, angle autolinks), and
@@ -213,8 +223,12 @@ function htmlLinkAttrs(html: string): { name: string; value: string }[] {
  */
 const INLINE_PREFIX = 'x ';
 
-/** One link target in Markdown text, and where its destination is written, where it can be rewritten in place. */
-interface LinkTarget { url: string; at: { start: number; end: number } | null }
+/**
+ * One link target in Markdown text, what wrote it (a link, an image, a reference definition,
+ * or an `href`/`src` in an HTML tag), and where its destination is written, where it can be
+ * rewritten in place.
+ */
+interface LinkTarget { url: string; kind: 'link' | 'image' | 'definition' | 'footnote' | 'html'; at: { start: number; end: number } | null; label?: string }
 
 /**
  * Where a link or image `node`'s destination is written in `md`: after the `](` that
@@ -245,19 +259,32 @@ function destinationAt(md: string, node: any): { start: number; end: number } | 
  * one walk serves the rewrite and the check. A reference link (`[x][ref]`) is a link
  * only where its page defines `[ref]:`, which no dataset page may
  * (`buildDatasetInventory` refuses one), so in a cell it is text, here and on the site.
+ *
+ * With `page`, `md` is a whole page of block Markdown, read as it stands (no inline
+ * prefix), and its reference definitions (`[ref]: url`) are targets too
+ * (tucca-cellag/caail-planning#810).
  */
-function markdownLinkTargets(md: string): LinkTarget[] {
+function markdownLinkTargets(md: string, page = false): LinkTarget[] {
   if (NO_LINK_SYNTAX.test(md)) return [];
-  const src = INLINE_PREFIX + md;
+  const prefix = page ? '' : INLINE_PREFIX;
+  const src = prefix + md;
   const out: LinkTarget[] = [];
   visit(parseMarkdown(src), (node: any) => {
-    if (node.type === 'link' || node.type === 'image') {
+    if (node.type === 'link' || node.type === 'image' || node.type === 'definition') {
+      if (node.type === 'definition') {
+        // Reported for a caller that refuses it (see `absolutizePageLinks`), never rewritten.
+        out.push({ url: node.url, kind: 'definition', at: null, label: node.label ?? node.identifier });
+        return;
+      }
       const at = destinationAt(src, node);
-      out.push({ url: node.url, at: at && { start: at.start - INLINE_PREFIX.length, end: at.end - INLINE_PREFIX.length } });
+      out.push({ url: node.url, kind: node.type, at: at && { start: at.start - prefix.length, end: at.end - prefix.length } });
+    } else if (page && node.type === 'footnoteDefinition') {
+      // A footnote is no link, but its definition is shared like a reference's in a concatenated file.
+      out.push({ url: '', kind: 'footnote', at: null, label: node.label ?? node.identifier });
     } else if (node.type === 'html' || node.type === 'text') {
       // micromark reads `<a href=../x.csv>` (a bare value holding `/`) as text, but
       // CommonMark and GitHub's cmark-gfm read it as a tag, so an agent may render it as one.
-      for (const a of htmlLinkAttrs(String(node.value))) out.push({ url: a.value, at: null });
+      for (const a of htmlLinkAttrs(String(node.value))) out.push({ url: a.value, kind: 'html', at: null });
     }
   });
   return out;
@@ -287,24 +314,193 @@ function absoluteTarget(url: string, sourceFile: string): string | undefined {
  * refuses any target left in `notAbsolute`.
  */
 export function absolutizeCellLinks(md: string, sourceFile: string): { md: string; notAbsolute: string[] } {
-  const edits: { start: number; end: number; url: string }[] = [];
-  const served: string[] = [];
-  for (const t of markdownLinkTargets(md)) {
-    const next = t.at ? absoluteTarget(t.url, sourceFile) : undefined;
-    if (next !== undefined) edits.push({ ...t.at!, url: next });
-    served.push(next ?? t.url);
-  }
-  const out = edits.sort((a, b) => b.start - a.start).reduce((s, x) => s.slice(0, x.start) + x.url + s.slice(x.end), md);
-  return { md: out, notAbsolute: served.filter((u) => !isAbsoluteLink(u)) };
+  const { md: out, refused } = rewriteTargets(md, markdownLinkTargets(md), (t) => absoluteTarget(t.url, sourceFile));
+  return { md: out, notAbsolute: refused.map((t) => t.url) };
 }
 
 /**
- * The link targets in a line of Markdown that are not `isAbsoluteLink`: every link and
- * image destination, and every `href`/`src` in an inline HTML tag. What the endpoint tests check
- * every served string with.
+ * A whole page of Markdown, written at `sourceFile`, with its relative link targets made
+ * absolute, and the targets still not absolute (each with what wrote it), from one parse:
+ * what `llms-full.txt` serves, where an agent fetching the one file off-site resolves a
+ * page-relative link against the file's URL (tucca-cellag/caail-planning#810). Only
+ * destination text changes. Where each target goes:
+ *
+ * - In a canonical page, where `absoluteTarget` sends it, which is where the site sends a
+ *   reader; and a relative path to a repository file that is not a page (`./LICENSE`)
+ *   becomes its GitHub blob, or its raw file for an image, and one to a directory written
+ *   without its trailing slash (`./Datasets`) its GitHub tree.
+ * - In a site page (`sitePage`, a Starlight page under `site/src/content/docs/`), as a
+ *   browser resolves it against that page's own route: `#6-roadmap` and `../privacy/`
+ *   from `curation.mdx` are `/curation/#6-roadmap` and `/privacy/`. A path under a
+ *   retired base or outside the site base is refused.
+ *
+ * A GitHub blob must name a file git tracks (or an untracked one it does not ignore), so a
+ * missing page, a wrong case and a gitignored local file are refused, not published as
+ * 404s. Pages, anchors and tracked files are all read from this module's own repository.
+ * The page's reference definitions are returned too, for a caller that cannot serve them
+ * (`llms-full.txt` concatenates pages into one document, where a definition is shared).
  */
-export function nonAbsoluteMarkdownTargets(md: string): string[] {
-  return markdownLinkTargets(md).map((t) => t.url).filter((u) => !isAbsoluteLink(u));
+export function absolutizePageLinks(
+  md: string,
+  sourceFile: string,
+  options: { sitePage: boolean; slug?: string | null },
+): { md: string; notAbsolute: { url: string; kind: LinkTarget['kind'] }[]; definitions: { label: string; url: string; footnote: boolean }[] } {
+  const targets = markdownLinkTargets(md, true);
+  const route = options.sitePage ? sitePageRoute(sourceFile, options.slug ?? null) : undefined;
+  const resolve = (t: LinkTarget) => (options.sitePage ? siteTarget(t.url, route) : canonicalTarget(t, sourceFile));
+  const { md: out, refused } = rewriteTargets(md, targets, resolve);
+  return {
+    md: out,
+    notAbsolute: refused.map((t) => ({ url: t.url, kind: t.kind })),
+    definitions: targets.filter((t) => t.kind === 'definition' || t.kind === 'footnote')
+      .map((t) => ({ label: t.label ?? '', url: t.url, footnote: t.kind === 'footnote' })),
+  };
+}
+
+/** Where a relative target in a canonical page resolves (see `absolutizePageLinks`), or undefined. */
+function canonicalTarget(t: LinkTarget, sourceFile: string): string | undefined {
+  if (t.url === '' || HAS_SCHEME.test(t.url) || t.url.startsWith('//')) return undefined;
+  const m = /^([^?#]*)(\?[^#]*)?(#.*)?$/.exec(t.url)!;
+  // A bare `#` or `?x` names no page; its directory is no stand-in for one.
+  if (m[1] === '' && t.url !== '' && !t.url.startsWith('#')) return undefined;
+  const resolved = absoluteTarget(t.url, sourceFile);
+  if (resolved !== undefined && blobNamesTrackedFile(resolved)) return resolved;
+  if (m[1] === '') return undefined;
+  let path: string;
+  try {
+    path = decodeURIComponent(m[1]!);
+  } catch {
+    return undefined;
+  }
+  const repoRel = repoRelativePath(path, sourceFile).replace(/\/$/, '');
+  if (repoRel === '' || repoRel.startsWith('..')) return undefined;
+  // A directory GitHub would show as a tree: `./Datasets`, or `./dir/` where the site's
+  // README route (`absoluteTarget`) found no README to point at.
+  if (resolved !== undefined || !isTracked(repoRel)) {
+    return isTrackedDirectory(repoRel) ? `${GITHUB_TREE_BASE}/${encodeURI(repoRel)}${m[3] ?? ''}` : undefined;
+  }
+  // A blob URL serves GitHub's viewer page; an image needs the file itself.
+  const query = t.kind === 'image' ? `${m[2] ? `${m[2]}&` : '?'}raw=true` : (m[2] ?? '');
+  return `${GITHUB_BLOB_BASE}/${encodeURI(repoRel)}${query}${m[3] ?? ''}`;
+}
+
+/**
+ * Where a relative target in a site page resolves: against the page's own route, as a
+ * browser resolves it, kept on the site's own origin (a backslash, which URL parsing reads
+ * as a slash, can otherwise send `/\host/p` to another host) and inside its base.
+ */
+function siteTarget(url: string, route: string | undefined): string | undefined {
+  if (route === undefined || url === '' || HAS_SCHEME.test(url) || url.startsWith('//')) return undefined;
+  const resolved = new URL(url, route);
+  if (resolved.origin !== new URL(SITE_URL).origin) return undefined;
+  return siteBaseRefusal(resolved.pathname) === null ? resolved.href : undefined;
+}
+
+/**
+ * The route a Starlight docs page renders at: its frontmatter `slug` where it sets one,
+ * otherwise its path (`site/src/content/docs/curation.mdx` is `/curation/`). A path that is
+ * not already a slug Starlight would keep (lowercase letters, digits, `-`, `_`, `/`) gives
+ * undefined, so its links are refused rather than resolved against a guessed route.
+ */
+function sitePageRoute(sourceFile: string, slug: string | null): string | undefined {
+  if (slug !== null) return `${SITE_URL}${slug.replace(/^\/+|\/+$/g, '')}/`.replace(/\/\/$/, '/');
+  const m = /^site\/src\/content\/docs\/(.+)\.mdx?$/.exec(sourceFile);
+  if (m === null || !/^[a-z0-9][a-z0-9/_-]*$/.test(m[1]!)) return undefined;
+  const path = m[1]!.replace(/(?:^|\/)index$/, '');
+  return `${SITE_URL}${path === '' ? '' : `${path}/`}`;
+}
+
+/** Whether `url`, if it is a GitHub blob URL into this repository, names a file git tracks. Any other URL passes. */
+function blobNamesTrackedFile(url: string): boolean {
+  if (!url.startsWith(`${GITHUB_BLOB_BASE}/`)) return true;
+  try {
+    return isTracked(decodeURIComponent(url.slice(GITHUB_BLOB_BASE.length + 1).split(/[?#]/)[0]!));
+  } catch {
+    return false;
+  }
+}
+
+/** The repository's files as git lists them (see `isTracked`) and the directories holding them, read once; null where git is unavailable. */
+let trackedCache: { files: Set<string>; dirs: Set<string> } | null | undefined;
+
+/**
+ * `trackedCache`, read on first use. Where git is missing or the tree is no repository (a
+ * tarball export), it is null and says so once, since the working tree then stands in
+ * and cannot tell case or ignores; any other git failure throws rather than degrade quietly.
+ */
+function trackedFiles(): { files: Set<string>; dirs: Set<string> } | null {
+  if (trackedCache === undefined) {
+    try {
+      // Tracked files, and untracked ones git does not ignore: a page written but not yet
+      // committed is one the build already reads, so its links must resolve locally too.
+      const listing = execFileSync('git', ['-C', REPO_ROOT, 'ls-files', '-z', '--cached', '--others', '--exclude-standard'], {
+        encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 64 * 1024 * 1024,
+      });
+      const files = new Set(listing.split('\0').filter(Boolean));
+      const dirs = new Set<string>();
+      for (const f of files) for (let i = f.indexOf('/'); i !== -1; i = f.indexOf('/', i + 1)) dirs.add(f.slice(0, i));
+      trackedCache = { files, dirs };
+    } catch (err) {
+      const e = err as { code?: string; stderr?: string | Buffer };
+      if (e.code !== 'ENOENT' && !/not a git repository/i.test(String(e.stderr ?? ''))) throw err;
+      console.warn('agent-api: git is unavailable, so repository links are checked against the working tree, which ' +
+        'cannot tell case or ignored files.');
+      trackedCache = null;
+    }
+  }
+  return trackedCache;
+}
+
+/**
+ * Whether `repoRel` (a repo-relative path) is a file git tracks, or would once it is
+ * committed (untracked and not ignored), compared exactly: a file that exists only locally
+ * because it is gitignored or generated, or that differs in case, is not on GitHub, so a
+ * blob URL for it is a 404. Where git is unavailable (a tarball export), the working tree
+ * stands in, as `readCorpusDate` falls back too.
+ */
+function isTracked(repoRel: string): boolean {
+  const listed = trackedFiles();
+  return listed === null ? existsSync(join(REPO_ROOT, repoRel)) : listed.files.has(repoRel);
+}
+
+/** Whether `repoRel` is a directory holding a file `isTracked` accepts. */
+function isTrackedDirectory(repoRel: string): boolean {
+  const listed = trackedFiles();
+  return listed === null ? existsSync(join(REPO_ROOT, repoRel)) : listed.dirs.has(repoRel);
+}
+
+/**
+ * `md` with each target's destination replaced where `resolve` gives one, in place, so
+ * the rest of the text is served as written; and, as written in `md` so an author can
+ * find it, every target whose served form is not `isAbsoluteLink` (`../../x.md` resolves
+ * to a GitHub URL climbing out of the repo, which is refused under its written form).
+ */
+function rewriteTargets(
+  md: string,
+  targets: LinkTarget[],
+  resolve: (t: LinkTarget) => string | undefined,
+): { md: string; refused: LinkTarget[] } {
+  const edits: { start: number; end: number; url: string }[] = [];
+  const refused: LinkTarget[] = [];
+  for (const t of targets) {
+    if (t.kind === 'footnote') continue;
+    const next = t.at ? resolve(t) : undefined;
+    if (next !== undefined) edits.push({ ...t.at!, url: next });
+    if (!isAbsoluteLink(next ?? t.url)) refused.push(t);
+  }
+  const out = edits.sort((a, b) => b.start - a.start).reduce((s, x) => s.slice(0, x.start) + x.url + s.slice(x.end), md);
+  return { md: out, refused };
+}
+
+/**
+ * The link targets in Markdown that are not `isAbsoluteLink`: every link and image
+ * destination, and every `href`/`src` in an inline HTML tag. What the endpoint tests check
+ * every served string with. `page` reads `md` as a whole page (see `markdownLinkTargets`),
+ * which is how the `llms-full.txt` test checks the served file.
+ */
+export function nonAbsoluteMarkdownTargets(md: string, options: { page?: boolean } = {}): string[] {
+  return markdownLinkTargets(md, options.page ?? false).filter((t) => t.kind !== 'footnote').map((t) => t.url)
+    .filter((u) => !isAbsoluteLink(u));
 }
 
 /** The inventory rows, with each cell's Markdown links made absolute against the row's own page. */

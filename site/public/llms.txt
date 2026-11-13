@@ -27,7 +27,7 @@ This website is a navigation layer over canonical, human-readable Markdown in th
 
 ## Full text
 
-- [Full canonical text](https://caail.tufts.edu/llms-full.txt): the library's canonical Markdown, concatenated into one file. It is the authoritative full text behind these compressed summaries.
+- [Full canonical text](https://caail.tufts.edu/llms-full.txt): the library's canonical Markdown, concatenated into one file. It is the authoritative full text behind these compressed summaries. Its links are absolute, each resolved from its own page: to its page on the site where it has one, otherwise to the file on GitHub, so they work from wherever the file is fetched.
 
 ## Agent API
 
