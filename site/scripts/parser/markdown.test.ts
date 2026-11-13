@@ -418,6 +418,17 @@ describe('labeledLinksAfter', () => {
     ]);
   });
 
+  it('reads a bold annotation with a colon inside parentheses as no second label', () => {
+    const src = [
+      '<a id="22">22</a> Author (2021). Title. https://doi.org/10.22/m',
+      '',
+      '> **Code**: https://github.com/x/y (**archived**: 2024)',
+    ].join('\n');
+    expect(labeledLinksAfter(parseMarkdown(src).children, 0)).toEqual([
+      { label: 'Code', urls: ['https://github.com/x/y'] },
+    ]);
+  });
+
   it('reads bold prose later on a label line, before a URL, as no second label', () => {
     const src = [
       '<a id="20">20</a> Author (2021). Title. https://doi.org/10.20/o',

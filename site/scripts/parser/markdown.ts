@@ -187,7 +187,7 @@ const ABSOLUTE_URL_RE = /^https?:\/\//i;
  *
  * Every line of those blockquotes is returned, one entry each, in document order.
  * A line that opens with a label gives `{ label, urls }`; any other line, and a line
- * that holds a second label later on (bold followed by a colon), gives
+ * that holds a second label later on (bold followed by a colon, outside parentheses), gives
  * `{ label: null, text }`, its plain text, so a caller can refuse it rather than
  * misread it. A label is bold that starts the line and is followed by a colon,
  * inside the bold or after it with at most a parenthesis between
@@ -221,8 +221,11 @@ export function labeledLinksAfter(nodes: RootContent[], index: number): Blockquo
       for (const line of linesOf((child as Paragraph).children)) {
         const label = labelOf(line);
         // A second label later on the line makes it no single label: its URLs would
-        // otherwise be read as the first label's.
-        const second = line.some((inline, k) => k > 0 && labelOf(line.slice(k), true) !== null);
+        // otherwise be read as the first label's. Bold inside an open parenthesis is an
+        // annotation (`(**archived**: 2024)`), not a label.
+        const second = line.some(
+          (inline, k) => k > 0 && labelOf(line.slice(k), true) !== null && !inParentheses(line.slice(0, k)),
+        );
         if (label === null || second) {
           result.push({ label: null, text: line.map((inline) => mdastToString(inline)).join('').trim() });
           continue;
@@ -267,6 +270,12 @@ function linesOf(inlines: Inline[]): Inline[][] {
   return lines
     .map((line) => (line[0]?.type === 'text' && line[0].value.trim() === '' ? line.slice(1) : line))
     .filter((line) => line.length > 0);
+}
+
+/** Whether the text of `before`, the start of a line, leaves a parenthesis open. */
+function inParentheses(before: Inline[]): boolean {
+  const text = before.map((inline) => mdastToString(inline)).join('');
+  return text.split('(').length > text.split(')').length;
 }
 
 /** A URL written out in a text run that GFM did not autolink, up to whitespace or a comma. */
