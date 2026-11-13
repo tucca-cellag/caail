@@ -93,20 +93,21 @@ export function rowDepositAccession(itemId: string, dataCell: string): string {
 }
 
 /**
- * Every URL in a row, deduped, in document order.
+ * Every http(s) URL a row's cells render as a link, deduped, in document order.
  *
- * The cells are `inlineMd` output, so a link is `[text](target)` and a bare URL is plain
- * text; one pattern catches both. `)`, `]`, `<`, `>` and whitespace terminate a match so a
- * markdown link's closing paren is never swallowed, and trailing sentence punctuation is
- * trimmed because a cell often ends `…/dataset.`
+ * Each cell is read by the parser the site renders it with (`parseMarkdown`, GFM), so `links`
+ * holds what a reader of the row can follow: a link's target exactly as CommonMark reads it,
+ * balanced parentheses included (`10.1016/S0092-8674(20)30001-1`), and a bare URL where GFM's
+ * autolinking ends it, after any trailing sentence punctuation or an aside's closing paren
+ * (tucca-cellag/caail-planning#759). A pattern of our own would re-implement that grammar and
+ * drift from it at the edges, which is how a parenthesised DOI used to reach `links` cut short.
  */
 export function rowLinks(cells: readonly string[]): string[] {
   const out: string[] = [];
   for (const cell of cells) {
-    for (const m of cell.matchAll(/https?:\/\/[^\s)\]<>]+/g)) {
-      const url = m[0].replace(/[.,;:]+$/, '');
-      if (!out.includes(url)) out.push(url);
-    }
+    visit(parseMarkdown(cell), (n: any) => {
+      if ((n.type === 'link' || n.type === 'image') && /^https?:\/\//i.test(n.url) && !out.includes(n.url)) out.push(n.url);
+    });
   }
   return out;
 }
