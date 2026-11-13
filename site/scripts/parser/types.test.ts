@@ -18,6 +18,8 @@ const validReference = {
   doi: '10.1234/abc',
   codeUrl: null,
   dataUrl: null,
+  modelUrls: [],
+  notices: [],
   isPrimary: true,
   methods: ['Bayesian Optimization'],
   areas: ['media'],
