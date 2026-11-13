@@ -990,16 +990,23 @@ export const ZENODO_TYPES_LABEL =
  * type recorded in `site/scripts/parser/zenodo-types.json`, since the parse reads it to say whether
  * the DOI names the item or a document about it, and refuses a guess (tucca-cellag/caail-planning#760).
  * Reported here as a failed check naming each one, so a curator learns at `db:check` rather than at
- * the parse, and the other guards still run.
+ * the parse, and the other guards still run. A cache that cannot be read (malformed JSON, a key that
+ * is no DOI, one DOI recorded twice) is reported the same way rather than thrown out of `runChecks`.
  */
 export function checkZenodoTypes(db: Db, typeOf: (key: string) => string | undefined = cachedZenodoType): CheckResult[] {
   const missing: string[] = [];
   const rows = db.prepare(
     'SELECT item_id, doi FROM catalog WHERE doi IS NOT NULL UNION ALL SELECT item_id, doi FROM dataset_entries WHERE doi IS NOT NULL',
   ).all() as { item_id: string; doi: string }[];
-  for (const r of rows.sort((a, b) => a.item_id.localeCompare(b.item_id))) {
-    const key = bareDoi(r.doi);
-    if (key !== null && isZenodoDoi(key) && typeOf(key) === undefined) missing.push(`${r.item_id} (${key})`);
+  try {
+    for (const r of rows.sort((a, b) => a.item_id.localeCompare(b.item_id))) {
+      const key = bareDoi(r.doi);
+      if (key !== null && isZenodoDoi(key) && typeOf(key) === undefined) missing.push(`${r.item_id} (${key})`);
+    }
+  } catch (err) {
+    // The fetch reads the committed file before it writes, so it cannot repair one it cannot read.
+    return [ok(ZENODO_TYPES_LABEL, false,
+      `zenodo-types.json cannot be read: ${(err as Error).message}; correct it by hand, since fetch:zenodo-types reads it first`)];
   }
   return [ok(ZENODO_TYPES_LABEL, missing.length === 0, missing.length === 0 ? '' :
     `${missing.length} unrecorded: ${missing.join(', ')}; run \`pnpm --dir site fetch:zenodo-types\` and commit zenodo-types.json`)];
@@ -1041,12 +1048,16 @@ export function checkEntryRowTwins(
   headerFor: (page: string) => InventoryHeader = (page) => readInventoryHeader(page, repoRoot),
   zenodoTypeOf: (key: string) => string | undefined = cachedZenodoType,
 ): CheckResult[] {
-  /** An entry DOI's relation by `itemDoiRelation`, or by the registrant where its Zenodo type is unrecorded. */
-  const relationOf = (doi: string) => {
+  /**
+   * A Zenodo DOI's recorded type, or undefined where none can be read: unrecorded, or a cache that
+   * cannot be read, both of which `checkZenodoTypes` reports. Only the lookup is guarded, so an
+   * error anywhere else in reading a relation still surfaces.
+   */
+  const zenodoTypeOrNone = (key: string): string | undefined => {
     try {
-      return itemDoiRelation(doi, zenodoTypeOf);
+      return zenodoTypeOf(key);
     } catch {
-      return doiRelation(doi);
+      return undefined;
     }
   };
   /**
@@ -1111,9 +1122,13 @@ export function checkEntryRowTwins(
     .all() as { item_id: string; page: string; url: string | null; doi: string | null; accessions: string | null; data_links: string | null }[]) {
     const doi = bareDoi(e.doi);
     // The entry's own DOI is an item DOI, read as the API serves it (tucca-cellag/caail-planning#760).
-    // One with no recorded Zenodo type is `checkZenodoTypes`'s to report; here it reads as the
+    // One whose Zenodo type cannot be read is `checkZenodoTypes`'s to report; here it reads as the
     // registrant says, so the rest of the comparison still runs.
-    const relation = doi === null ? null : relationOf(doi);
+    const zenodo = doi !== null && isZenodoDoi(doi);
+    const zenodoType = zenodo ? zenodoTypeOrNone(doi!) : undefined;
+    const relation = doi === null ? null
+      : zenodo && zenodoType === undefined ? doiRelation(doi)
+      : itemDoiRelation(doi, () => zenodoType);
     const own = deposits(
       relation === 'own' ? `DOI ${doi}` : null,
       [...(e.url ? [e.url] : []), ...list(e.data_links)],

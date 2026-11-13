@@ -15,6 +15,7 @@ import { openDb, importNdjson, REPO_ROOT, ACCESSION_SOURCE, type Db } from './li
 import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkAxisBijection, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, checkRowTagParity, checkFineTagSeedDrift, checkInventoryCells, INVENTORY_CELLS_LABEL, INVENTORY_CELLS_SHOWN, checkInventoryPages, INVENTORY_PAGES_LABEL, checkEntryRowTwins, ENTRY_ROW_TWINS_LABEL, checkZenodoTypes, ZENODO_TYPES_LABEL, checkAccessions, ACCESSIONS_LABEL, ACCESSION_FAMILIES, checkDataLinks, DATA_LINKS_LABEL, runChecks } from './check.js';
 import { NON_DEPOSIT_LABELS, parseRowCells, readInventoryHeader, STATUS_WORDS, SUPPLEMENT_PREFIX } from '../parser/dataset-inventory.js';
 import { THEME_SLUGS, FINE_TAGS } from './seed.js';
+import { loadZenodoTypes } from '../parser/doi-relation.js';
 
 const failing = (results: { label: string; ok: boolean }[], match: RegExp) =>
   results.some((r) => match.test(r.label) && !r.ok);
@@ -1022,6 +1023,18 @@ describe('checkZenodoTypes (tucca-cellag/caail-planning#760)', () => {
     expect(missing.detail).toContain('ds:zen (10.5281/zenodo.43)');
     expect(result(db, 'dataset').ok).toBe(true);
   });
+
+  it('reports a malformed zenodo-types.json as a failed check rather than throwing out of runChecks', () => {
+    const db = miniDb();
+    zen(db, 'catalog');
+    const file = join(mkdtempSync(join(tmpdir(), 'caail-zenodo-malformed-')), 'zenodo-types.json');
+    writeFileSync(file, JSON.stringify({ kinds: {} }));
+    let r: ReturnType<typeof checkZenodoTypes> = [];
+    expect(() => { r = checkZenodoTypes(db, (k) => loadZenodoTypes(file).get(k)); }).not.toThrow();
+    const bad = r.find((x) => x.label === ZENODO_TYPES_LABEL)!;
+    expect(bad.ok).toBe(false);
+    expect(bad.detail).toMatch(/cannot be read: .*no "types" object/);
+  });
 });
 
 describe('checkEntryRowTwins (tucca-cellag/caail-planning#752)', () => {
@@ -1063,6 +1076,16 @@ describe('checkEntryRowTwins (tucca-cellag/caail-planning#752)', () => {
     const db = miniDb();
     entry(db, 'ds:entry-x', 'Cow', 'https://example.org/x', ZENODO);
     expect(() => result(db, null)).not.toThrow();
+  });
+
+  it('compares by the registrant rule when the type lookup itself throws (a malformed cache, which checkZenodoTypes reports)', () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-u', 'Cow', 'https://example.org/u', ZENODO);
+    row(db, 'ds:row-u', 'Cow', { Data: `[Zenodo](https://doi.org/${ZENODO})` });
+    const r = checkEntryRowTwins(db, undefined, headerFor, () => { throw new Error('zenodo-types.json: no "types" object'); })
+      .find((x) => x.label === ENTRY_ROW_TWINS_LABEL)!;
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('listed twice');
   });
 
   it("reads an entry's Zenodo DOI whose record is a document as its publication, not a deposit (tucca-cellag/caail-planning#760)", () => {
