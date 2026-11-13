@@ -331,6 +331,28 @@ describe('llmsFullSection', () => {
       .toThrow(/llms-full: README\.md: a reference definition \(\[m\]: \.\/Papers\.md\) would be shared/);
   });
 
+  it('refuses a link with no path, rather than serving its directory, in a page under a subdirectory', () => {
+    for (const target of ['#', '?plain=1']) {
+      expect(() => section('Datasets/Pig.md', `[x](${target})\n`), target).toThrow(`llms-full: Datasets/Pig.md: link target "${target}"`);
+    }
+  });
+
+  it('gives a directory written with its slash and no README its tree too', () => {
+    expect(section('README.md', '[f](./site/scripts/parser/fixtures/)\n'))
+      .toContain('[f](https://github.com/tucca-cellag/caail/tree/main/site/scripts/parser/fixtures)');
+  });
+
+  it('refuses a footnote definition, which the concatenated file would share as it would a reference', () => {
+    expect(() => section('README.md', 'A claim.[^1]\n\n[^1]: Its source.\n'))
+      .toThrow(/llms-full: README\.md: a footnote definition \(\[\^1\]\) would be shared/);
+  });
+
+  it("resolves a site page's links against its frontmatter slug, and refuses a path that is no slug", () => {
+    expect(section(CURATION, '---\ntitle: Curation\nslug: methods/curation\n---\n\n[r](#a)\n'))
+      .toContain('[r](https://caail.tufts.edu/methods/curation/#a)');
+    expect(() => section('site/src/content/docs/Odd Name.mdx', '[r](#a)\n')).toThrow(/llms-full: site\/src\/content\/docs\/Odd Name\.mdx: link target "#a"/);
+  });
+
   it("refuses a site page's link that a backslash sends to another host", () => {
     expect(() => section(CURATION, '[x](/\\example.org/p)\n')).toThrow(/llms-full: site\/src\/content\/docs\/curation\.mdx: link target/);
   });

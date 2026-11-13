@@ -146,6 +146,13 @@ export function splitFrontmatter(
   return { title, body: flattenDirectives(rest) };
 }
 
+/** A Starlight page's frontmatter `slug`, which sets the route it renders at, or null where it sets none. */
+function frontmatterSlug(content: string): string | null {
+  const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(content);
+  const slug = m ? /^slug\s*:\s*(.+?)\s*$/m.exec(m[1]!) : null;
+  return slug ? slug[1]!.replace(/^["']|["']$/g, '') : null;
+}
+
 /**
  * Turn Starlight container directives into plain Markdown.
  *
@@ -185,14 +192,18 @@ function flattenDirectives(body: string): string {
  */
 export function llmsFullSection(rel: string, content: string): string {
   const { title, body } = splitFrontmatter(content, rel);
-  const { md, notAbsolute, definitions } = absolutizePageLinks(body, rel, { sitePage: rel.startsWith(FRONTMATTER_PREFIX) });
-  // The concatenated file is one Markdown document, so a reference definition would bind
-  // every page's `[x][label]`, not only its own: a label two pages define resolves to the
-  // first, and one a page leaves undefined to another page's link.
+  const sitePage = rel.startsWith(FRONTMATTER_PREFIX);
+  const { md, notAbsolute, definitions } = absolutizePageLinks(body, rel, { sitePage, slug: sitePage ? frontmatterSlug(content) : null });
+  // The concatenated file is one Markdown document, so a reference or footnote definition
+  // would bind every page's `[x][label]` or `[^label]`, not only its own: a label two pages
+  // define resolves to the first, and one a page leaves undefined to another page's.
   if (definitions.length > 0) {
     const d = definitions[0]!;
-    throw new Error(`llms-full: ${rel}: a reference definition ([${d.label}]: ${d.url}) would be shared by every page ` +
-      `in the concatenated file; write the link inline instead.`);
+    throw new Error(d.footnote
+      ? `llms-full: ${rel}: a footnote definition ([^${d.label}]) would be shared by every page in the concatenated ` +
+        `file; write the note inline instead.`
+      : `llms-full: ${rel}: a reference definition ([${d.label}]: ${d.url}) would be shared by every page in the ` +
+        `concatenated file; write the link inline instead.`);
   }
   if (notAbsolute.length > 0) {
     const t = notAbsolute[0]!;

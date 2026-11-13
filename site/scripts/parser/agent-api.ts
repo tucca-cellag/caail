@@ -27,7 +27,7 @@
 
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join, dirname, posix } from 'node:path';
+import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { assertValid, buildOpenApiDocument, OPENAPI_FILE } from './openapi.js';
@@ -153,9 +153,12 @@ const isAbsoluteLink = (url: string): boolean => {
   if (/^mailto:/i.test(url)) return true;
   const m = url.match(/^(?:https?|ftps?):\/\/[^/?#\s]+([^?#]*)/i);
   if (m === null) return false;
-  const ours = url.startsWith(`${GITHUB_BLOB_BASE}/`) || url.startsWith(SITE_URL);
+  const ours = url.startsWith(`${GITHUB_BLOB_BASE}/`) || url.startsWith(`${GITHUB_TREE_BASE}/`) || url.startsWith(SITE_URL);
   return !ours || (!/(?:^|\/)\.{1,2}(?:\/|$)/.test(m[1]!) && !url.endsWith('#'));
 };
+
+/** The GitHub tree base beside `GITHUB_BLOB_BASE`, where a directory is shown. */
+const GITHUB_TREE_BASE = GITHUB_BLOB_BASE.replace(/\/blob\//, '/tree/');
 
 /**
  * Text that can hold no link: no `]` (inline links), no `<` (HTML, angle autolinks), and
@@ -225,7 +228,7 @@ const INLINE_PREFIX = 'x ';
  * or an `href`/`src` in an HTML tag), and where its destination is written, where it can be
  * rewritten in place.
  */
-interface LinkTarget { url: string; kind: 'link' | 'image' | 'definition' | 'html'; at: { start: number; end: number } | null; label?: string }
+interface LinkTarget { url: string; kind: 'link' | 'image' | 'definition' | 'footnote' | 'html'; at: { start: number; end: number } | null; label?: string }
 
 /**
  * Where a link or image `node`'s destination is written in `md`: after the `](` that
@@ -239,8 +242,7 @@ function destinationAt(md: string, node: any): { start: number; end: number } | 
   const e: number | undefined = node.position?.end.offset;
   if (s === undefined || e === undefined || !node.url) return null;
   const label = node.type === 'link' ? node.children?.at(-1)?.position?.end.offset : undefined;
-  // A reference definition (`[label]: url`) writes its destination after `]:`.
-  const i = md.indexOf(node.type === 'definition' ? ']:' : '](', label ?? s);
+  const i = md.indexOf('](', label ?? s);
   if (i === -1 || i >= e) return null;
   let j = i + 2;
   while (j < e && /\s/.test(md[j]!)) j++;
@@ -269,9 +271,16 @@ function markdownLinkTargets(md: string, page = false): LinkTarget[] {
   const out: LinkTarget[] = [];
   visit(parseMarkdown(src), (node: any) => {
     if (node.type === 'link' || node.type === 'image' || node.type === 'definition') {
+      if (node.type === 'definition') {
+        // Reported for a caller that refuses it (see `absolutizePageLinks`), never rewritten.
+        out.push({ url: node.url, kind: 'definition', at: null, label: node.label ?? node.identifier });
+        return;
+      }
       const at = destinationAt(src, node);
-      out.push({ url: node.url, kind: node.type, at: at && { start: at.start - prefix.length, end: at.end - prefix.length },
-        ...(node.type === 'definition' ? { label: node.label ?? node.identifier } : {}) });
+      out.push({ url: node.url, kind: node.type, at: at && { start: at.start - prefix.length, end: at.end - prefix.length } });
+    } else if (page && node.type === 'footnoteDefinition') {
+      // A footnote is no link, but its definition is shared like a reference's in a concatenated file.
+      out.push({ url: '', kind: 'footnote', at: null, label: node.label ?? node.identifier });
     } else if (node.type === 'html' || node.type === 'text') {
       // micromark reads `<a href=../x.csv>` (a bare value holding `/`) as text, but
       // CommonMark and GitHub's cmark-gfm read it as a tag, so an agent may render it as one.
@@ -334,24 +343,29 @@ export function absolutizeCellLinks(md: string, sourceFile: string): { md: strin
 export function absolutizePageLinks(
   md: string,
   sourceFile: string,
-  options: { sitePage: boolean },
-): { md: string; notAbsolute: { url: string; kind: LinkTarget['kind'] }[]; definitions: { label: string; url: string }[] } {
+  options: { sitePage: boolean; slug?: string | null },
+): { md: string; notAbsolute: { url: string; kind: LinkTarget['kind'] }[]; definitions: { label: string; url: string; footnote: boolean }[] } {
   const targets = markdownLinkTargets(md, true);
-  const resolve = (t: LinkTarget) => (options.sitePage ? siteTarget(t.url, sourceFile) : canonicalTarget(t, sourceFile));
+  const route = options.sitePage ? sitePageRoute(sourceFile, options.slug ?? null) : undefined;
+  const resolve = (t: LinkTarget) => (options.sitePage ? siteTarget(t.url, route) : canonicalTarget(t, sourceFile));
   const { md: out, refused } = rewriteTargets(md, targets, resolve);
   return {
     md: out,
     notAbsolute: refused.map((t) => ({ url: t.url, kind: t.kind })),
-    definitions: targets.filter((t) => t.kind === 'definition').map((t) => ({ label: t.label ?? '', url: t.url })),
+    definitions: targets.filter((t) => t.kind === 'definition' || t.kind === 'footnote')
+      .map((t) => ({ label: t.label ?? '', url: t.url, footnote: t.kind === 'footnote' })),
   };
 }
 
 /** Where a relative target in a canonical page resolves (see `absolutizePageLinks`), or undefined. */
 function canonicalTarget(t: LinkTarget, sourceFile: string): string | undefined {
   if (t.url === '' || HAS_SCHEME.test(t.url) || t.url.startsWith('//')) return undefined;
-  const resolved = absoluteTarget(t.url, sourceFile);
-  if (resolved !== undefined) return blobNamesTrackedFile(resolved) ? resolved : undefined;
   const m = /^([^?#]*)(\?[^#]*)?(#.*)?$/.exec(t.url)!;
+  // A bare `#` or `?x` names no page; its directory is no stand-in for one.
+  if (m[1] === '' && t.url !== '' && !t.url.startsWith('#')) return undefined;
+  const resolved = absoluteTarget(t.url, sourceFile);
+  if (resolved !== undefined && blobNamesTrackedFile(resolved)) return resolved;
+  if (m[1] === '') return undefined;
   let path: string;
   try {
     path = decodeURIComponent(m[1]!);
@@ -360,35 +374,40 @@ function canonicalTarget(t: LinkTarget, sourceFile: string): string | undefined 
   }
   const repoRel = repoRelativePath(path, sourceFile).replace(/\/$/, '');
   if (repoRel === '' || repoRel.startsWith('..')) return undefined;
-  // A directory GitHub would show as a tree (`./Datasets`, no trailing slash).
-  if (!isTracked(repoRel)) return isTrackedDirectory(repoRel) ? `${GITHUB_TREE_BASE}/${encodeURI(repoRel)}${m[3] ?? ''}` : undefined;
+  // A directory GitHub would show as a tree: `./Datasets`, or `./dir/` where the site's
+  // README route (`absoluteTarget`) found no README to point at.
+  if (resolved !== undefined || !isTracked(repoRel)) {
+    return isTrackedDirectory(repoRel) ? `${GITHUB_TREE_BASE}/${encodeURI(repoRel)}${m[3] ?? ''}` : undefined;
+  }
   // A blob URL serves GitHub's viewer page; an image needs the file itself.
   const query = t.kind === 'image' ? `${m[2] ? `${m[2]}&` : '?'}raw=true` : (m[2] ?? '');
   return `${GITHUB_BLOB_BASE}/${encodeURI(repoRel)}${query}${m[3] ?? ''}`;
 }
-
-/** The GitHub tree base beside `GITHUB_BLOB_BASE`, where a directory is shown. */
-const GITHUB_TREE_BASE = GITHUB_BLOB_BASE.replace(/\/blob\//, '/tree/');
 
 /**
  * Where a relative target in a site page resolves: against the page's own route, as a
  * browser resolves it, kept on the site's own origin (a backslash, which URL parsing reads
  * as a slash, can otherwise send `/\host/p` to another host) and inside its base.
  */
-function siteTarget(url: string, sourceFile: string): string | undefined {
-  const route = sitePageRoute(sourceFile);
+function siteTarget(url: string, route: string | undefined): string | undefined {
   if (route === undefined || url === '' || HAS_SCHEME.test(url) || url.startsWith('//')) return undefined;
   const resolved = new URL(url, route);
   if (resolved.origin !== new URL(SITE_URL).origin) return undefined;
   return siteBaseRefusal(resolved.pathname) === null ? resolved.href : undefined;
 }
 
-/** The route a Starlight docs page renders at (`site/src/content/docs/curation.mdx` is `/curation/`), or undefined. */
-function sitePageRoute(sourceFile: string): string | undefined {
+/**
+ * The route a Starlight docs page renders at: its frontmatter `slug` where it sets one,
+ * otherwise its path (`site/src/content/docs/curation.mdx` is `/curation/`). A path that is
+ * not already a slug Starlight would keep (lowercase letters, digits, `-`, `_`, `/`) gives
+ * undefined, so its links are refused rather than resolved against a guessed route.
+ */
+function sitePageRoute(sourceFile: string, slug: string | null): string | undefined {
+  if (slug !== null) return `${SITE_URL}${slug.replace(/^\/+|\/+$/g, '')}/`.replace(/\/\/$/, '/');
   const m = /^site\/src\/content\/docs\/(.+)\.mdx?$/.exec(sourceFile);
-  if (m === null) return undefined;
-  const slug = m[1]!.replace(/(?:^|\/)index$/, '').toLowerCase();
-  return `${SITE_URL}${slug === '' ? '' : `${slug}/`}`;
+  if (m === null || !/^[a-z0-9][a-z0-9/_-]*$/.test(m[1]!)) return undefined;
+  const path = m[1]!.replace(/(?:^|\/)index$/, '');
+  return `${SITE_URL}${path === '' ? '' : `${path}/`}`;
 }
 
 /** Whether `url`, if it is a GitHub blob URL into this repository, names a file git tracks. Any other URL passes. */
@@ -401,20 +420,31 @@ function blobNamesTrackedFile(url: string): boolean {
   }
 }
 
-/** The repository's files as git lists them (see `isTracked`), read once; null where git is unavailable. */
-let trackedCache: Set<string> | null | undefined;
+/** The repository's files as git lists them (see `isTracked`) and the directories holding them, read once; null where git is unavailable. */
+let trackedCache: { files: Set<string>; dirs: Set<string> } | null | undefined;
 
-/** `trackedCache`, read on first use. */
-function trackedFiles(): Set<string> | null {
+/**
+ * `trackedCache`, read on first use. Where git is missing or the tree is no repository (a
+ * tarball export), it is null and says so once, since the working tree then stands in
+ * and cannot tell case or ignores; any other git failure throws rather than degrade quietly.
+ */
+function trackedFiles(): { files: Set<string>; dirs: Set<string> } | null {
   if (trackedCache === undefined) {
     try {
       // Tracked files, and untracked ones git does not ignore: a page written but not yet
       // committed is one the build already reads, so its links must resolve locally too.
       const listing = execFileSync('git', ['-C', REPO_ROOT, 'ls-files', '-z', '--cached', '--others', '--exclude-standard'], {
-        encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 64 * 1024 * 1024,
+        encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 64 * 1024 * 1024,
       });
-      trackedCache = new Set(listing.split('\0').filter(Boolean));
-    } catch {
+      const files = new Set(listing.split('\0').filter(Boolean));
+      const dirs = new Set<string>();
+      for (const f of files) for (let i = f.indexOf('/'); i !== -1; i = f.indexOf('/', i + 1)) dirs.add(f.slice(0, i));
+      trackedCache = { files, dirs };
+    } catch (err) {
+      const e = err as { code?: string; stderr?: string | Buffer };
+      if (e.code !== 'ENOENT' && !/not a git repository/i.test(String(e.stderr ?? ''))) throw err;
+      console.warn('agent-api: git is unavailable, so repository links are checked against the working tree, which ' +
+        'cannot tell case or ignored files.');
       trackedCache = null;
     }
   }
@@ -429,17 +459,14 @@ function trackedFiles(): Set<string> | null {
  * stands in, as `readCorpusDate` falls back too.
  */
 function isTracked(repoRel: string): boolean {
-  const files = trackedFiles();
-  return files === null ? existsSync(join(REPO_ROOT, repoRel)) : files.has(repoRel);
+  const listed = trackedFiles();
+  return listed === null ? existsSync(join(REPO_ROOT, repoRel)) : listed.files.has(repoRel);
 }
 
 /** Whether `repoRel` is a directory holding a file `isTracked` accepts. */
 function isTrackedDirectory(repoRel: string): boolean {
-  const files = trackedFiles();
-  if (files === null) return existsSync(join(REPO_ROOT, repoRel));
-  const prefix = `${repoRel}/`;
-  for (const f of files) if (f.startsWith(prefix)) return true;
-  return false;
+  const listed = trackedFiles();
+  return listed === null ? existsSync(join(REPO_ROOT, repoRel)) : listed.dirs.has(repoRel);
 }
 
 /**
@@ -456,6 +483,7 @@ function rewriteTargets(
   const edits: { start: number; end: number; url: string }[] = [];
   const refused: LinkTarget[] = [];
   for (const t of targets) {
+    if (t.kind === 'footnote') continue;
     const next = t.at ? resolve(t) : undefined;
     if (next !== undefined) edits.push({ ...t.at!, url: next });
     if (!isAbsoluteLink(next ?? t.url)) refused.push(t);
@@ -471,7 +499,8 @@ function rewriteTargets(
  * which is how the `llms-full.txt` test checks the served file.
  */
 export function nonAbsoluteMarkdownTargets(md: string, options: { page?: boolean } = {}): string[] {
-  return markdownLinkTargets(md, options.page ?? false).map((t) => t.url).filter((u) => !isAbsoluteLink(u));
+  return markdownLinkTargets(md, options.page ?? false).filter((t) => t.kind !== 'footnote').map((t) => t.url)
+    .filter((u) => !isAbsoluteLink(u));
 }
 
 /** The inventory rows, with each cell's Markdown links made absolute against the row's own page. */
