@@ -277,7 +277,7 @@
     {
       "id": "ds:aqua-faang",
       "name": "AQUA-FAANG",
-      "url": "https://www.aqua-faang.eu/",
+      "url": "https://data.faang.org/projects/AQUA-FAANG",
       "page": "Fish",
       "section": "Featured atlases",
       "kind": "atlas",
@@ -1094,9 +1094,9 @@
           "theme": "cell-lines-engineering"
         }
       ],
-      "license": null,
-      "licenseSource": null,
-      "tier": "unknown",
+      "license": "CC-BY-4.0",
+      "licenseSource": "manual",
+      "tier": "permissive",
       "doi": null,
       "doiSource": null,
       "doiRelation": null,
@@ -3575,10 +3575,10 @@
         "Study": "Chromatin accessibility and regulatory vocabulary across indicine cattle tissues",
         "Paper": "[DOI](https://doi.org/10.1186/s13059-021-02489-7)",
         "Data": "[`GSE182909`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE182909)",
-        "Type": "ATAC-seq + RNA-seq",
+        "Type": "ATAC-seq",
         "Tissue": "Liver, Muscle, Hypothalamus",
-        "Description": "ATAC-seq in liver, muscle, hypothalamus of indicine cattle (also GEO `GSB-113`, `GSB-8708`)",
-        "Size": "60.74 Gb",
+        "Description": "ATAC-seq in liver, muscle, hypothalamus of indicine cattle (co-expression RNA-seq reused from EMBL-EBI BioSamples `GSB-113`, `GSB-8708`)",
+        "Size": "60.75 Gb",
         "Area of research": "Epigenetics, developmental biology"
       },
       "links": [
@@ -4474,8 +4474,8 @@
         "Data": "unavailable",
         "Type": "ATAC-seq + ChIP-seq + WGBS + Hi-C + RNA-seq",
         "Tissue": "53 adult + 5 fetal tissues + 7 primary cell types",
-        "Description": "Bovine FAANG epigenome atlas of 1,147 genome-wide profiles (158 RNA-seq, 204 ATAC-seq, 91 WGBS, 682 histone/CTCF ChIP-seq, 12 Hi-C) annotating ~45% of the genome as putative regulatory elements; newly generated deposits embargoed until journal acceptance (reused public data PRJEB41939, PRJNA672996, PRJNA531208, E-MTAB-11825/11826; pipelines at github.com/guandailu/BovineFAANG) (Guan et al. 2025, *bioRxiv*)",
-        "Size": "1,147 profiles",
+        "Description": "Bovine FAANG epigenome atlas of 1,138 genome-wide profiles (158 RNA-seq, 202 ATAC-seq, 91 WGBS, 682 histone/CTCF ChIP-seq, 5 Hi-C) annotating ~45% of the genome as putative regulatory elements; newly generated deposits embargoed until journal acceptance (reused public data PRJEB41939, PRJNA672996, PRJNA531208, E-MTAB-11825/11826; pipelines at github.com/guandailu/BovineFAANG) (Guan et al. 2025, *bioRxiv*)",
+        "Size": "1,138 profiles",
         "Area of research": "Regulatory-element annotation"
       },
       "links": [
@@ -5110,8 +5110,8 @@
         "Data": "[`SRR5134062`](https://www.ncbi.nlm.nih.gov/sra/?term=SRR5134062)",
         "Type": "RNA-seq",
         "Species": "*Litopenaeus vannamei*",
-        "Tissue": "Muscle",
-        "Description": "Third-abdominal-segment muscle, 33 families of 12 individuals (also [`SRR5135715`](https://www.ncbi.nlm.nih.gov/sra/?term=SRR5135715))",
+        "Tissue": "Muscle, Hepatopancreas",
+        "Description": "Third-abdominal-segment muscle from 12 individuals, 6 from each of 2 families selected from 33; plus 1 hepatopancreas sample ([`SRR5135715`](https://www.ncbi.nlm.nih.gov/sra/?term=SRR5135715))",
         "Size": "85.1 Gb",
         "Area of research": "Feed efficiency"
       },
@@ -5145,8 +5145,8 @@
         "Data": "[`SRP128934`](https://www.ncbi.nlm.nih.gov/sra/?term=SRP128934)",
         "Type": "RNA-seq",
         "Species": "*Litopenaeus vannamei*",
-        "Tissue": "Muscle",
-        "Description": "Muscle tissue from pleopods",
+        "Tissue": "Muscle, Hepatopancreas",
+        "Description": "Muscle from 6 shrimp in each of 4 high- and 4 low-growth families (48 runs); the accession also holds 16 WSSV-challenge runs (8 muscle, 8 hepatopancreas)",
         "Size": "~320 Gb",
         "Area of research": "Weight growth"
       },
@@ -5176,23 +5176,27 @@
       "columns": {
         "Study": "Comparative transcriptomic characterization of early development in Pacific white shrimp",
         "Paper": "[DOI](https://doi.org/10.1371/journal.pone.0106201)",
-        "Data": "[`SRR1460493`](https://www.ncbi.nlm.nih.gov/sra/?term=SRR1460493)",
+        "Data": "[`PRJNA253518`](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA253518)",
         "Type": "RNA-seq",
         "Species": "*Litopenaeus vannamei*",
-        "Tissue": "Muscle, Exoskeleton",
-        "Description": "15 samples per developmental stage from zygote to postlarvae (runs [`SRR1460493`](https://www.ncbi.nlm.nih.gov/sra/?term=SRR1460493)–[`SRR1460505`](https://www.ncbi.nlm.nih.gov/sra/?term=SRR1460505))",
+        "Tissue": "Whole embryo / larva",
+        "Description": "15 developmental stages from zygote to postlarvae 1, RNA pooled into 5 libraries (embryo, nauplius, zoea, mysis, postlarvae; runs [`SRR1460493`](https://www.ncbi.nlm.nih.gov/sra/?term=SRR1460493), [`SRR1460494`](https://www.ncbi.nlm.nih.gov/sra/?term=SRR1460494), [`SRR1460495`](https://www.ncbi.nlm.nih.gov/sra/?term=SRR1460495), [`SRR1460504`](https://www.ncbi.nlm.nih.gov/sra/?term=SRR1460504), [`SRR1460505`](https://www.ncbi.nlm.nih.gov/sra/?term=SRR1460505))",
         "Size": "12 Gb",
         "Area of research": "Metamorphosis"
       },
       "links": [
         "https://doi.org/10.1371/journal.pone.0106201",
+        "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA253518",
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRR1460493",
+        "https://www.ncbi.nlm.nih.gov/sra/?term=SRR1460494",
+        "https://www.ncbi.nlm.nih.gov/sra/?term=SRR1460495",
+        "https://www.ncbi.nlm.nih.gov/sra/?term=SRR1460504",
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRR1460505"
       ],
       "paperDoi": "10.1371/journal.pone.0106201",
       "dataStatus": "deposit",
-      "accession": "SRR1460493",
-      "dataUrl": "https://www.ncbi.nlm.nih.gov/sra/?term=SRR1460493",
+      "accession": "PRJNA253518",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA253518",
       "dataDoi": null,
       "topics": [
         {
@@ -5214,9 +5218,9 @@
         "Data": "[`SRX1098368`](https://www.ncbi.nlm.nih.gov/sra/?term=SRX1098368)",
         "Type": "RNA-seq",
         "Species": "*Litopenaeus vannamei*",
-        "Tissue": "Muscle, Exoskeleton",
-        "Description": "Inter-molt, pre-molt, and post-molt stages (runs [`SRX1098368`](https://www.ncbi.nlm.nih.gov/sra/?term=SRX1098368)–[`SRX1098375`](https://www.ncbi.nlm.nih.gov/sra/?term=SRX1098375))",
-        "Size": "13 Gb",
+        "Tissue": "Whole organism",
+        "Description": "Inter-molt, pre-molt, and post-molt stages (experiments [`SRX1098368`](https://www.ncbi.nlm.nih.gov/sra/?term=SRX1098368)–[`SRX1098375`](https://www.ncbi.nlm.nih.gov/sra/?term=SRX1098375))",
+        "Size": "7.4 Gb",
         "Area of research": "Molting"
       },
       "links": [
@@ -5343,11 +5347,11 @@
         "Study": "Identification of Eriocheir sinensis microRNA transcriptome from claw muscles related to molting",
         "Paper": "[DOI](https://doi.org/10.1007/s12562-019-01310-6)",
         "Data": "[`SRR7990528`](https://www.ncbi.nlm.nih.gov/sra/?term=SRR7990528)",
-        "Type": "RNA-seq",
+        "Type": "miRNA-seq",
         "Species": "*Eriocheir sinensis*",
         "Tissue": "Muscle",
         "Description": "Post-molt, pre-molt, and inter-molt stages (runs [`SRR7990528`](https://www.ncbi.nlm.nih.gov/sra/?term=SRR7990528)–[`SRR7990530`](https://www.ncbi.nlm.nih.gov/sra/?term=SRR7990530))",
-        "Size": "29 Gb",
+        "Size": "5.8 Gb",
         "Area of research": "Molting"
       },
       "links": [
@@ -6068,13 +6072,14 @@
         "Type": "RNA-seq",
         "Species": "*Paralichthys adspersus*",
         "Tissue": "Muscle",
-        "Description": "Feeding-regime and fasting groups, weeks 0/3/4",
+        "Description": "Control, fasting, and refeeding groups (per the paper); the linked SRA record holds only the baseline T0 muscle library ([`SRX612429`](https://www.ncbi.nlm.nih.gov/sra/?term=SRX612429)), with no public reads for the fasting or refeeding groups",
         "Size": "3 Gb",
         "Area of research": "Muscle growth"
       },
       "links": [
         "https://doi.org/10.1016/j.aquaculture.2018.02.048",
-        "https://www.ncbi.nlm.nih.gov/sra/?term=SRS643409"
+        "https://www.ncbi.nlm.nih.gov/sra/?term=SRS643409",
+        "https://www.ncbi.nlm.nih.gov/sra/?term=SRX612429"
       ],
       "paperDoi": "10.1016/j.aquaculture.2018.02.048",
       "dataStatus": "deposit",
@@ -6167,7 +6172,7 @@
         "Study": "Characterization of the muscle transcriptome in Schizothorax prenanti",
         "Paper": "[DOI](https://doi.org/10.1016/j.gene.2018.10.070)",
         "Data": "[`SRP074282`](https://www.ncbi.nlm.nih.gov/sra/?term=SRP074282)",
-        "Type": "RNA-seq",
+        "Type": "RNA-seq, miRNA-seq",
         "Species": "*Schizothorax prenanti*",
         "Tissue": "Muscle",
         "Description": "Skeletal muscle at 3 time points: 30-day larva, 1 year, 3 years",
@@ -6357,23 +6362,24 @@
       "id": "ds:pxd026377",
       "kind": "inventory",
       "page": "Fish",
-      "name": "The PeptideAtlas of the widely cultivated fish Labeo rohita",
+      "name": "The PeptideAtlas of a widely cultivated fish Labeo rohita: A resource for the Aquaculture Community",
       "columns": {
-        "Study": "The PeptideAtlas of the widely cultivated fish Labeo rohita",
-        "Paper": "[DOI](https://doi.org/10.1021/acs.jproteome.1c00759)",
+        "Study": "The PeptideAtlas of a widely cultivated fish Labeo rohita: A resource for the Aquaculture Community",
+        "Paper": "[DOI](https://doi.org/10.1038/s41597-022-01259-9)",
         "Data": "[`PXD026377`](https://www.ebi.ac.uk/pride/archive/projects/PXD026377)",
         "Type": "Mass spectrometry (DDA-MS/MS)",
         "Species": "*Labeo rohita*",
         "Tissue": "Multiple",
-        "Description": "Multi-tissue peptide atlas",
+        "Description": "Multi-tissue peptide atlas; the raw data were first published with Nissa et al. 2021, *J Proteome Res* ([DOI](https://doi.org/10.1021/acs.jproteome.1c00759)), the paper PRIDE registers for PXD026377",
         "Size": "295 raw files",
         "Area of research": "Protein atlas"
       },
       "links": [
-        "https://doi.org/10.1021/acs.jproteome.1c00759",
-        "https://www.ebi.ac.uk/pride/archive/projects/PXD026377"
+        "https://doi.org/10.1038/s41597-022-01259-9",
+        "https://www.ebi.ac.uk/pride/archive/projects/PXD026377",
+        "https://doi.org/10.1021/acs.jproteome.1c00759"
       ],
-      "paperDoi": "10.1021/acs.jproteome.1c00759",
+      "paperDoi": "10.1038/s41597-022-01259-9",
       "dataStatus": "deposit",
       "accession": "PXD026377",
       "dataUrl": "https://www.ebi.ac.uk/pride/archive/projects/PXD026377",
@@ -8382,9 +8388,9 @@
         "Study": "Profiling of open chromatin in developing pig (Sus scrofa) muscle to identify regulatory regions",
         "Paper": "[DOI](https://doi.org/10.1093/g3journal/jkab424)",
         "Data": "[`PRJEB41485`](https://www.ebi.ac.uk/ena/browser/view/PRJEB41485)",
-        "Type": "ATAC-seq + RNA-seq",
-        "Tissue": "Muscle (fetal skeletal, day-90 gestation)",
-        "Description": "Open-chromatin (ATAC-seq, n=24) and matched RNA-seq (n=26) of developing pig muscle in large- vs small-sized day-90 fetal piglets to identify muscle regulatory regions; ATAC-seq at ENA PRJEB41485, RNA-seq at ENA [`PRJEB41488`](https://www.ebi.ac.uk/ena/browser/view/PRJEB41488)",
+        "Type": "ATAC-seq",
+        "Tissue": "Muscle (skeletal; gestation days 45, 60, 90 and postnatal 1 and 6 weeks)",
+        "Description": "Open-chromatin (ATAC-seq, n=24) and matched RNA-seq (n=26) of developing pig muscle from smallest-, average- and largest-sized male piglets at five developmental stages (gestation days 45, 60 and 90; 1 and 6 weeks postnatal) to identify muscle regulatory regions; ATAC-seq at ENA PRJEB41485, RNA-seq at ENA [`PRJEB41488`](https://www.ebi.ac.uk/ena/browser/view/PRJEB41488)",
         "Size": "—",
         "Area of research": "Developmental regulatory genomics"
       },
@@ -8547,15 +8553,17 @@
         "Study": "ATAC-Seq and scRNA-Seq for sheep hypoxia acclimatization",
         "Paper": "[DOI](https://doi.org/10.1038/s41467-024-48261-w)",
         "Data": "[`PRJNA1001505`](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1001505)",
-        "Type": "Bulk RNA-seq, ATAC-seq, scRNA-seq",
-        "Tissue": "Multiple tissues",
-        "Description": "Sheep high-altitude hypoxia-acclimatization multi-omics resource; time-resolved bulk RNA-seq, ATAC-seq, and single-cell RNA-seq from multiple tissues in a plain-to-plateau transplant model — an ovine chromatin-accessibility and single-cell deposit",
+        "Type": "ATAC-seq, scRNA-seq",
+        "Tissue": "8 tissues (ATAC-seq); lung (scRNA-seq)",
+        "Description": "Sheep high-altitude hypoxia-acclimatization multi-omics resource in a plain-to-plateau transplant model; this deposit holds ATAC-seq (66 samples, 8 tissues) and lung scRNA-seq (6 datasets), an ovine chromatin-accessibility and single-cell deposit; the study's time-resolved bulk RNA-seq (19 tissues) is at [`PRJNA1000743`](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1000743) and [`PRJNA1001016`](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1001016)",
         "Size": "—",
         "Area of research": "Chromatin accessibility & regulatory genomics"
       },
       "links": [
         "https://doi.org/10.1038/s41467-024-48261-w",
-        "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1001505"
+        "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1001505",
+        "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1000743",
+        "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1001016"
       ],
       "paperDoi": "10.1038/s41467-024-48261-w",
       "dataStatus": "deposit",
@@ -8784,9 +8792,9 @@
         "Study": "Comprehensive multi-tissue epigenome atlas in sheep: a resource for complex traits, domestication, and breeding",
         "Paper": "[DOI](https://doi.org/10.1002/imt2.254)",
         "Data": "[`CRA019589`](https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA019589)",
-        "Type": "ChIP-seq + ATAC-seq + RNA-seq",
+        "Type": "RNA-seq + ATAC-seq + CUT&Tag + Hi-C",
         "Tissue": "Nine major tissues (incl. longissimus dorsi, tail fat)",
-        "Description": "First multi-tissue epigenome atlas of sheep: 92 transcriptomic and epigenomic datasets across nine major tissues, cataloguing 753,723 nonredundant functional elements and their chromatin states; a regulatory-genomics reference for cultivated-lamb cell-line characterisation. Raw data at NGDC/GSA CRA019589 and [`CRA019576`](https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA019576)",
+        "Description": "First multi-tissue epigenome atlas of sheep: 92 transcriptomic and epigenomic datasets across nine major tissues, cataloguing 753,723 nonredundant functional elements and their chromatin states; relevant to cultivated lamb as a regulatory-genomics reference for cell-line characterisation. Raw data at NGDC/GSA CRA019589 and [`CRA019576`](https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA019576)",
         "Size": "—",
         "Area of research": "Multi-tissue regulatory genomics & epigenomics"
       },
