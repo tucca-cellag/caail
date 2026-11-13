@@ -133,7 +133,8 @@ export const API_ENDPOINTS: readonly ApiEndpointSpec[] = [
     description:
       'DOI, code URL, data URL, model URLs, topics, license and citation count per reference, and ' +
       'its post-publication notices (`notices`: a correction, an erratum, an expression of concern…, ' +
-      'each its label as the publisher words it and its URL); a notice leaves the paper standing, and ' +
+      'each its label, one of a closed list of the words publishers use, spelled as that list ' +
+      'spells it whatever case the source used, and its URL); a notice leaves the paper standing, and ' +
       'none is a retraction. Spans ' +
       'six sections; only References is matrix-eligible, so say which population you counted. ' +
       'This file is large: if your fetch summarises rather than returning bytes, it may be ' +
