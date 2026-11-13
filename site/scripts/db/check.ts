@@ -844,6 +844,9 @@ export function checkDataLinks(db: Db, path: string = DATASET_DATA_LINKS_PATH): 
 export const ENTRY_ROW_TWINS_LABEL =
   'dataset_entries x dataset_rows: no curated entry and inventory row on one page name the same deposit';
 
+export const ZENODO_TWO_WAYS_LABEL =
+  'dataset_entries x dataset_rows: no row on an entry\'s page lists as a deposit the Zenodo record the entry reads as a document';
+
 /**
  * A statement stored inside its own quotes: it opens and closes with a mark of one family,
  * matched or not. Double (`"` `“` `”` `„` `«` `»`): only when no other double mark sits inside,
@@ -1033,6 +1036,10 @@ export function checkZenodoTypes(db: Db, typeOf: (key: string) => string | undef
  * row's ENA link meets an entry listing the project, while a repository named `cra2` does not meet a
  * row badged `CRA2`.
  *
+ * One more pair is reported, under its own label (`ZENODO_TWO_WAYS_LABEL`) since it is no twin: an
+ * entry whose Zenodo DOI's record is a document (tucca-cellag/caail-planning#760) beside a row whose
+ * Data cell lists that same record as a deposit. The two read one record two ways, so one is wrong.
+ *
  * An entry that names its deposit only in its description is not compared, which is why its deposits
  * belong in `dataset-accessions.json` or `dataset-data-links.json`.
  *
@@ -1118,6 +1125,8 @@ export function checkEntryRowTwins(
     });
   }
   const problems: string[] = [];
+  /** Entry-row pairs that read one Zenodo record two ways, reported apart from twins. */
+  const twoWays: string[] = [];
   for (const e of db.prepare('SELECT item_id, page, url, doi, accessions, data_links FROM dataset_entries ORDER BY page, ordinal, item_id')
     .all() as { item_id: string; page: string; url: string | null; doi: string | null; accessions: string | null; data_links: string | null }[]) {
     const doi = bareDoi(e.doi);
@@ -1134,16 +1143,26 @@ export function checkEntryRowTwins(
       [...(e.url ? [e.url] : []), ...list(e.data_links)],
       list(e.accessions),
     );
-    // A link to the entry's own document record names the document, not a deposit.
-    if (relation === 'publication' && doi !== null) own.keys.delete(`DOI ${doi}`);
+    // An entry whose Zenodo record is a document: its own link to that record names the document,
+    // not a deposit, so it is no twin key. A row whose Data cell lists the same record as a deposit
+    // reads it the other way, and that is reported as what it is.
+    const documentKey = zenodo && relation === 'publication' ? `DOI ${doi}` : null;
+    if (documentKey !== null) own.keys.delete(documentKey);
     for (const row of rowsOn.get(e.page) ?? []) {
+      if (documentKey !== null && row.deposits.keys.has(documentKey)) {
+        twoWays.push(`${e.item_id} reads ${doi} as a document about it (its Zenodo record's type is ${zenodoType}), ` +
+          `while ${row.id} on ${e.page} lists that record as a deposit in its Data cell, so one of them is wrong`);
+      }
       const keys = sharedBy(own, row.deposits);
       if (keys.length > 0) {
         problems.push(`${e.item_id} and ${row.id} on ${e.page} both name ${keys.join(' and ')}, so one dataset is listed twice; keep one copy`);
       }
     }
   }
-  return [ok(ENTRY_ROW_TWINS_LABEL, problems.length === 0, `${problems.length} twin(s): ${problems.slice(0, 10).join('; ')}`)];
+  return [
+    ok(ENTRY_ROW_TWINS_LABEL, problems.length === 0, `${problems.length} twin(s): ${problems.slice(0, 10).join('; ')}`),
+    ok(ZENODO_TWO_WAYS_LABEL, twoWays.length === 0, `${twoWays.length} pair(s): ${twoWays.slice(0, 10).join('; ')}`),
+  ];
 }
 
 export const INVENTORY_PAGES_LABEL =

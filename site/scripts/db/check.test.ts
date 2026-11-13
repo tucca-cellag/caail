@@ -12,7 +12,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { openDb, importNdjson, REPO_ROOT, ACCESSION_SOURCE, type Db } from './lib.js';
-import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkAxisBijection, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, checkRowTagParity, checkFineTagSeedDrift, checkInventoryCells, INVENTORY_CELLS_LABEL, INVENTORY_CELLS_SHOWN, checkInventoryPages, INVENTORY_PAGES_LABEL, checkEntryRowTwins, ENTRY_ROW_TWINS_LABEL, checkZenodoTypes, ZENODO_TYPES_LABEL, checkAccessions, ACCESSIONS_LABEL, ACCESSION_FAMILIES, checkDataLinks, DATA_LINKS_LABEL, runChecks } from './check.js';
+import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkAxisBijection, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, checkRowTagParity, checkFineTagSeedDrift, checkInventoryCells, INVENTORY_CELLS_LABEL, INVENTORY_CELLS_SHOWN, checkInventoryPages, INVENTORY_PAGES_LABEL, checkEntryRowTwins, ENTRY_ROW_TWINS_LABEL, ZENODO_TWO_WAYS_LABEL, checkZenodoTypes, ZENODO_TYPES_LABEL, checkAccessions, ACCESSIONS_LABEL, ACCESSION_FAMILIES, checkDataLinks, DATA_LINKS_LABEL, runChecks } from './check.js';
 import { NON_DEPOSIT_LABELS, parseRowCells, readInventoryHeader, STATUS_WORDS, SUPPLEMENT_PREFIX } from '../parser/dataset-inventory.js';
 import { THEME_SLUGS, FINE_TAGS } from './seed.js';
 import { loadZenodoTypes } from '../parser/doi-relation.js';
@@ -1064,12 +1064,29 @@ describe('checkEntryRowTwins (tucca-cellag/caail-planning#752)', () => {
   // none is in the committed cache.
   const result = (db: Db, zenodoType: string | null = 'dataset') =>
     checkEntryRowTwins(db, undefined, headerFor, () => zenodoType ?? undefined).find((r) => r.label === ENTRY_ROW_TWINS_LABEL)!;
+  const twoWays = (db: Db, zenodoType: string) =>
+    checkEntryRowTwins(db, undefined, headerFor, () => zenodoType).find((r) => r.label === ZENODO_TWO_WAYS_LABEL)!;
 
-  it("reads a link to an entry's own Zenodo document as no deposit, as it reads the entry's doi (tucca-cellag/caail-planning#760)", () => {
+  const CONTRADICTION = /reads 10\.5281\/zenodo\.11357327 as a document about it .* while ds:row-\w on Cow lists that record as a deposit in its Data cell, so one of them is wrong/;
+
+  it("reads a link to an entry's own Zenodo document as that document, and reports a row that lists the record as a deposit (tucca-cellag/caail-planning#760)", () => {
     const db = miniDb();
     entry(db, 'ds:entry-y', 'Cow', `https://zenodo.org/records/11357327`, ZENODO);
     row(db, 'ds:row-y', 'Cow', { Data: `[Zenodo](https://doi.org/${ZENODO})` });
+    const r = twoWays(db, 'publication');
+    expect(r.ok).toBe(false);
+    expect(r.detail).toMatch(CONTRADICTION);
+    // Not a twin: the entry names a document, so no dataset is listed twice.
     expect(result(db, 'publication').ok).toBe(true);
+  });
+
+  it("passes an entry whose link is its own Zenodo document while no row on the page lists that record", () => {
+    const db = miniDb();
+    entry(db, 'ds:entry-v', 'Cow', `https://zenodo.org/records/11357327`, ZENODO);
+    row(db, 'ds:row-v', 'Cow', { Data: '[Zenodo](https://doi.org/10.5281/zenodo.99)' });
+    row(db, 'ds:row-w', 'Pig', { Data: `[Zenodo](https://doi.org/${ZENODO})` });
+    expect(result(db, 'publication').ok).toBe(true);
+    expect(twoWays(db, 'publication').ok).toBe(true);
   });
 
   it('compares an entry whose Zenodo DOI has no recorded type, leaving that to checkZenodoTypes, rather than throwing', () => {
@@ -1088,12 +1105,16 @@ describe('checkEntryRowTwins (tucca-cellag/caail-planning#752)', () => {
     expect(r.detail).toContain('listed twice');
   });
 
-  it("reads an entry's Zenodo DOI whose record is a document as its publication, not a deposit (tucca-cellag/caail-planning#760)", () => {
+  it("reads an entry's Zenodo DOI by its record's type: a document's record on a row's Data cell is a contradiction, a deposit's is a twin (tucca-cellag/caail-planning#760)", () => {
     const db = miniDb();
     entry(db, 'ds:entry-z', 'Cow', 'https://example.org/tool', ZENODO);
     row(db, 'ds:row-z', 'Cow', { Paper: `[DOI](https://doi.org/${PAPER})`, Data: `[Zenodo](https://doi.org/${ZENODO})` });
+    expect(twoWays(db, 'publication').ok).toBe(false);
+    expect(twoWays(db, 'publication').detail).toMatch(CONTRADICTION);
     expect(result(db, 'publication').ok).toBe(true);
     expect(result(db, 'dataset').ok).toBe(false);
+    expect(result(db, 'dataset').detail).toContain('listed twice');
+    expect(twoWays(db, 'dataset').ok).toBe(true);
   });
 
   it("fails an entry whose own deposit DOI is a row's Data deposit, naming both", () => {
