@@ -321,9 +321,18 @@ describe('llmsFullSection', () => {
       .toContain('See [the taxonomy](https://caail.tufts.edu/taxonomy/).');
   });
 
-  it('makes a link to a repository file that is no page its GitHub blob, and a reference definition too', () => {
+  it('makes a link to a repository file that is no page its GitHub blob, and a directory its tree', () => {
     expect(section('README.md', '[MIT](./LICENSE)\n')).toContain('[MIT](https://github.com/tucca-cellag/caail/blob/main/LICENSE)');
-    expect(section('README.md', '[matrix][m]\n\n[m]: ./Papers.md\n')).toContain('[m]: https://caail.tufts.edu/papers/explorer/');
+    expect(section('README.md', '[the data](./Datasets)\n')).toContain('[the data](https://github.com/tucca-cellag/caail/tree/main/Datasets)');
+  });
+
+  it('refuses a reference definition, which the concatenated file would share across every page', () => {
+    expect(() => section('README.md', '[matrix][m]\n\n[m]: ./Papers.md\n'))
+      .toThrow(/llms-full: README\.md: a reference definition \(\[m\]: \.\/Papers\.md\) would be shared/);
+  });
+
+  it("refuses a site page's link that a backslash sends to another host", () => {
+    expect(() => section(CURATION, '[x](/\\example.org/p)\n')).toThrow(/llms-full: site\/src\/content\/docs\/curation\.mdx: link target/);
   });
 
   it('fails, naming the page, on a target it cannot make absolute', () => {

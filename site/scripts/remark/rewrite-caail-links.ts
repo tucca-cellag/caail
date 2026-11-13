@@ -34,6 +34,19 @@ export function rewriteCaailLinks(options: { base: string; sourcePath: string })
   };
 }
 
+/** A URL with a scheme (`https:`, `mailto:`, `git+ssh:`): an external link, left as written. */
+export const HAS_SCHEME = /^[a-z][a-z0-9+.-]*:/i;
+
+/**
+ * The repo-relative path a link's `path` (no query or fragment) names, written in the file
+ * at `sourcePath`: a root-relative path (`/Papers.md`) from the repo root, as GitHub reads
+ * it, any other from the file's own directory. It may begin `..` when it climbs out.
+ */
+export function repoRelativePath(path: string, sourcePath: string): string {
+  return (path.startsWith('/') ? posix.normalize(path.slice(1)) : posix.normalize(posix.join(posix.dirname(sourcePath), path)))
+    .replace(/^\.\//, '');
+}
+
 /**
  * Where a link written in the canonical file at `sourcePath` resolves, by the rules
  * above, with site routes under `base` (no trailing slash). Undefined for a link
@@ -43,15 +56,13 @@ export function rewriteCaailLinks(options: { base: string; sourcePath: string })
  */
 export function resolveCaailHref(url: string, sourcePath: string, base: string): string | undefined {
   // External (scheme:), intra-page (#…), or protocol-relative (//…) → leave.
-  if (/^[a-z]+:/i.test(url) || url.startsWith('#') || url.startsWith('//')) return undefined;
+  if (HAS_SCHEME.test(url) || url.startsWith('#') || url.startsWith('//')) return undefined;
   const [rawPath, anchor] = url.split('#');
   // A link to a directory (trailing slash, e.g. `./Datasets/`) resolves to
   // that directory's README index, mirroring how GitHub serves the folder.
   const path = rawPath.endsWith('/') ? rawPath + 'README.md' : rawPath;
   if (!/\.md$/i.test(path)) return undefined;
-  // A root-relative path (`/Papers.md`) is read from the repo root, as GitHub reads it.
-  const repoRel = (path.startsWith('/') ? posix.normalize(path.slice(1)) : posix.normalize(posix.join(posix.dirname(sourcePath), path)))
-    .replace(/^\.\//, '');
+  const repoRel = repoRelativePath(path, sourcePath);
   const id = CAAIL_PAGES.idForSourcePath(repoRel.replace(/\.md$/i, ''));
   if (CAAIL_PAGES.byId(id)) return `${base}/${id}/`;
   let dedicated: string | undefined;

@@ -11,8 +11,8 @@
  * `readdirSync` over a canonical directory instead. What is worth recording is
  * that not every enumerator needs this predicate, and why:
  *
- * - `dirMarkdown` (scripts/parser/llms-full.ts) inlines each match VERBATIM
- *   into public/llms-full.txt, so it needs it.
+ * - `dirMarkdown` (scripts/parser/llms-full.ts) inlines each match into
+ *   public/llms-full.txt, as written but for its link destinations, so it needs it.
  * - `countMdFiles` (scripts/parser/counts.ts) derives the homepage species and
  *   research-area counts, so it needs it.
  * - `caail-pages.test.ts` compares the directories against `CAAIL_PAGES` and

@@ -10,7 +10,8 @@
  *
  * NOT QUITE VERBATIM, AND THE EXCEPTIONS ARE NAMED HERE BECAUSE IT USED TO SAY
  * VERBATIM AND STOPPED BEING TRUE. Every source's relative links are made absolute,
- * resolved from its own page as the site resolves it, since an agent fetches this one
+ * resolved from its own page (to its site page where it has one, otherwise to the file
+ * on GitHub), since an agent fetches this one
  * file off-site and would resolve `../Papers.md#193` against its URL
  * (tucca-cellag/caail-planning#810; see `llmsFullSection`). Sources under
  * `site/src/content/` are Starlight pages rather than canonical repo-root Markdown;
@@ -40,7 +41,8 @@ const PUBLIC_DIR: string = fileURLToPath(new URL('../../public/', import.meta.ur
  * Sorted published `.md` files in a canonical dir, README first.
  *
  * `isPublishedMarkdown` excludes CLAUDE.md and `*.local.md` private
- * companions; each match is inlined verbatim below, so a companion admitted
+ * companions; each match is inlined below (its text as written, bar its link
+ * destinations), so a companion admitted
  * here would be concatenated into the served llms-full.txt.
  */
 function dirMarkdown(repoRoot: string, dir: string): string[] {
@@ -87,7 +89,9 @@ export function llmsFullSources(repoRoot: string = REPO_ROOT): string[] {
 function buildHeader(sources: string[]): string {
   const withFrontmatter = sources.filter((s) => s.startsWith(FRONTMATTER_PREFIX));
   // Links are named first: every source's are rewritten, so "as written" holds only for the rest.
-  const links = 'every relative link is made absolute, resolved from its own page as the site resolves it';
+  const links =
+    'every relative link is made absolute, resolved from its own page: to its page on the site where it has one, ' +
+    'otherwise to the file on GitHub';
   const caveat = withFrontmatter.length
     ? `Sources are reproduced as written, except that ${links}, and ${withFrontmatter.length === 1 ? 'one site page' : `${withFrontmatter.length} site pages`} (${withFrontmatter.join(', ')}) ${withFrontmatter.length === 1 ? 'has its' : 'have their'} metadata block replaced by the page title as a heading. `
     : `Sources are reproduced as written, except that ${links}. `;
@@ -172,7 +176,8 @@ function flattenDirectives(body: string): string {
 /**
  * One source's section of llms-full.txt: its delimiter, its title where it carries one in
  * frontmatter, and its body with every relative link made absolute, resolved from its own
- * page as the site resolves it (`absolutizePageLinks`, tucca-cellag/caail-planning#810).
+ * page: to its page on the site where it has one, otherwise to the file on GitHub
+ * (`absolutizePageLinks`, tucca-cellag/caail-planning#810).
  * The concatenated file is fetched off-site, where `../Papers.md#193` resolves against the
  * file's URL and 404s. A target that cannot be made absolute fails the build, naming the page.
  * Links resolve against this repository's own pages and tracked files, whatever root the
@@ -180,7 +185,15 @@ function flattenDirectives(body: string): string {
  */
 export function llmsFullSection(rel: string, content: string): string {
   const { title, body } = splitFrontmatter(content, rel);
-  const { md, notAbsolute } = absolutizePageLinks(body, rel, { sitePage: rel.startsWith(FRONTMATTER_PREFIX) });
+  const { md, notAbsolute, definitions } = absolutizePageLinks(body, rel, { sitePage: rel.startsWith(FRONTMATTER_PREFIX) });
+  // The concatenated file is one Markdown document, so a reference definition would bind
+  // every page's `[x][label]`, not only its own: a label two pages define resolves to the
+  // first, and one a page leaves undefined to another page's link.
+  if (definitions.length > 0) {
+    const d = definitions[0]!;
+    throw new Error(`llms-full: ${rel}: a reference definition ([${d.label}]: ${d.url}) would be shared by every page ` +
+      `in the concatenated file; write the link inline instead.`);
+  }
   if (notAbsolute.length > 0) {
     const t = notAbsolute[0]!;
     throw new Error(t.url === ''
