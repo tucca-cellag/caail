@@ -206,7 +206,8 @@ export const CatalogEntrySchema = z.object({
   doi: z.string().nullable().default(null),
   doiSource: z.enum(['auto', 'manual']).nullable().default(null),
   /** `own` when `doi` is a data repository's (the item itself), `publication` when it is the
-   *  describing paper's, null with no DOI. Derived by registrant in doi-relation.ts (tucca-cellag/caail-planning#367). */
+   *  describing paper's or another document about the item, null with no DOI. Derived in doi-relation.ts by registrant
+   *  (tucca-cellag/caail-planning#367), and for a Zenodo DOI by its record's resource type (tucca-cellag/caail-planning#760). */
   doiRelation: DoiRelationSchema.nullable().default(null),
   /** OpenAlex cited_by_count summed over `doi` + its sibling version DOIs; null when unknown */
   citationCount: z.number().int().nonnegative().nullable().default(null),
@@ -247,7 +248,8 @@ export const DatasetEntrySchema = z.object({
   doi: z.string().nullable().default(null),
   doiSource: z.enum(['auto', 'manual']).nullable().default(null),
   /** `own` when `doi` is a data repository's (the item itself), `publication` when it is the
-   *  describing paper's, null with no DOI. Derived by registrant in doi-relation.ts (tucca-cellag/caail-planning#367). */
+   *  describing paper's or another document about the item, null with no DOI. Derived in doi-relation.ts by registrant
+   *  (tucca-cellag/caail-planning#367), and for a Zenodo DOI by its record's resource type (tucca-cellag/caail-planning#760). */
   doiRelation: DoiRelationSchema.nullable().default(null),
   /** OpenAlex cited_by_count summed over `doi` + its sibling version DOIs; null when unknown */
   citationCount: z.number().int().nonnegative().nullable().default(null),

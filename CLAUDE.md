@@ -477,6 +477,14 @@ non-catalog canonical files (`OtherResources.md`, `ReferenceWorks.md`, `AwesomeL
   on the Software/Databases pages. A coarse popularity signal, not a quality measure — confirm at the
   source. Full DOI backfill of the catalog/dataset entries is an ongoing curation task
   (`dois-manual.json`); the plumbing renders nothing where no DOI is recorded.
+  - **Whether a DOI names the item (`doiRelation`).** `own` when it names the item itself (a data
+    host's deposit), `publication` when it names a paper or document about it, by the rule in
+    `site/scripts/parser/doi-relation.ts`: the DOI's registrant, except that a Zenodo DOI on a catalog
+    item or curated entry is read by its record's Zenodo resource type, a document type
+    (`ZENODO_DOCUMENT_TYPES` there) being `publication` (tucca-cellag/caail-planning#760). The types
+    are cached in the committed `site/scripts/parser/zenodo-types.json`, refreshed by the opt-in
+    `pnpm --dir site fetch:zenodo-types` after adding or changing such a DOI; `pnpm --dir site test`
+    fails until every one is recorded.
   - **Citation aggregation for versioned resources (#102).** A database that publishes a new paper each
     release (STRING, UniProt, KEGG, Ensembl, …) would badly undercount if the badge showed only one
     paper. A third DB-only input, `site/scripts/db/dois-related.json` (catalog by url, datasets by `ds:`

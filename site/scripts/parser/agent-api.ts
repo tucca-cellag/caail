@@ -987,7 +987,8 @@ export function buildManifest(
           'is recorded; an accession outside the `accessions` families, such as an SRA run or a CNGB project, ' +
           'appears only inside one of these URLs, as a whole path segment or query value, so match it there ' +
           'too), and their `doi` ' +
-          'where `doiRelation` is "own" (a data host\'s DOI, naming the item itself). Compare DOIs as bare lowercase ' +
+          'where `doiRelation` is "own" (a data host\'s DOI, naming the item itself; a Zenodo DOI whose record is ' +
+          'a document about the item, such as its software documentation, is "publication"). Compare DOIs as bare lowercase ' +
           'strings and accessions case-insensitively, ignoring a version suffix (SRA051669.1 is ' +
           'SRA051669). Some deposits have only a `dataUrl`. ' +
           'A row\'s `paperDoi`, and an entry\'s `doi` where `doiRelation` is "publication", name ' +
