@@ -32,6 +32,7 @@ import { bareDoi, doiRelation } from './doi-relation.js';
 import type { DoiRelation } from './types.js';
 import { extractInventory, refuseStrayInventory } from '../db/extract.js';
 import { parseMarkdown } from './markdown.js';
+import { markdownLinkTargets } from './link-targets.js';
 import { topicsByItemId } from './topics.js';
 import { INVENTORY_PAGES } from './datasets.js';
 import {
@@ -93,21 +94,23 @@ export function rowDepositAccession(itemId: string, dataCell: string): string {
 }
 
 /**
- * Every http(s) URL a row's cells render as a link, deduped, in document order.
+ * Every http(s) URL a row's cells write out in full, deduped, in document order.
  *
- * Each cell is read by the parser the site renders it with (`parseMarkdown`, GFM), so `links`
- * holds what a reader of the row can follow: a link's target exactly as CommonMark reads it,
- * balanced parentheses included (`10.1016/S0092-8674(20)30001-1`), and a bare URL where GFM's
- * autolinking ends it, after any trailing sentence punctuation or an aside's closing paren
- * (tucca-cellag/caail-planning#759). A pattern of our own would re-implement that grammar and
- * drift from it at the edges, which is how a parenthesised DOI used to reach `links` cut short.
+ * Each cell is read by `markdownLinkTargets`, the reader the API's link rewrite uses on the
+ * same cells: the site's parser (GFM), behind the prefix that reads the cell as the inline
+ * content of a table cell, so a cell opening with `<div>` or `[a]: x` keeps its links. So
+ * `links` holds what a reader of the row can follow: a link's target as CommonMark reads it,
+ * balanced parentheses included (`10.1016/S0092-8674(20)30001-1`), a bare URL where GFM's
+ * autolinking ends it, and an inline HTML tag's `href` or `src` (tucca-cellag/caail-planning#759).
+ * A target the cell does not write literally is left out: GFM links `www.` text under an
+ * `http://` the row never wrote, which a find's own URL would not match.
  */
 export function rowLinks(cells: readonly string[]): string[] {
   const out: string[] = [];
   for (const cell of cells) {
-    visit(parseMarkdown(cell), (n: any) => {
-      if ((n.type === 'link' || n.type === 'image') && /^https?:\/\//i.test(n.url) && !out.includes(n.url)) out.push(n.url);
-    });
+    for (const { url } of markdownLinkTargets(cell)) {
+      if (/^https?:\/\//i.test(url) && cell.includes(url) && !out.includes(url)) out.push(url);
+    }
   }
   return out;
 }

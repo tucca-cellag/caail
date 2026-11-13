@@ -11,7 +11,7 @@ import { cpSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { buildDatasetInventory, parseSubseries, idAccession, rowDepositAccession, rowLinks } from './dataset-inventory.js';
+import { buildDatasetInventory, parseSubseries, idAccession, readInventoryHeader, rowDepositAccession, rowLinks } from './dataset-inventory.js';
 import { REPO_ROOT } from '../db/lib.js';
 import type { DatasetInventoryRow } from './types.js';
 
@@ -137,6 +137,19 @@ describe('rowLinks (tucca-cellag/caail-planning#759)', () => {
     expect(rowLinks([`[DOI](${sici})`])).toEqual([sici]);
   });
 
+  it('reads a cell as the inline content of its table cell, so one opening with block syntax keeps its links', () => {
+    expect(rowLinks(['<div>see [x](https://a.org/d)</div>'])).toEqual(['https://a.org/d']);
+    expect(rowLinks(['<!-- c --> [x](https://c.org/y)'])).toEqual(['https://c.org/y']);
+    expect(rowLinks(['[r]: https://def.org/x'])).toEqual(['https://def.org/x']);
+    expect(rowLinks(['    https://ind.org/x'])).toEqual(['https://ind.org/x']);
+  });
+
+  it("serves an inline HTML anchor's href, and no URL the row does not write out in full", () => {
+    expect(rowLinks(['<a href="https://h.org/x">x</a>'])).toEqual(['https://h.org/x']);
+    // GFM links `www.` text as `http://www.…`, a scheme the row never wrote.
+    expect(rowLinks(['www.example.org/x'])).toEqual([]);
+  });
+
   it("serves only http(s) links: a repo-relative link is CAAIL's own page, not a URL the row writes out", () => {
     expect(rowLinks(['[Cow](./Cow.md) and [x](mailto:a@b.org) and [GEO](https://www.ncbi.nlm.nih.gov/geo/)'])).toEqual([
       'https://www.ncbi.nlm.nih.gov/geo/',
@@ -150,14 +163,17 @@ describe('a parenthesised DOI through the inventory build (tucca-cellag/caail-pl
     cpSync(join(REPO_ROOT, 'site', 'db', 'ndjson'), ndjson, { recursive: true });
     const rowsPath = join(ndjson, 'dataset_rows.ndjson');
     const lines = readFileSync(rowsPath, 'utf-8').split('\n').filter(Boolean);
-    const header = ['Study', 'Paper', 'Data', 'Type', 'Tissue', 'Description', 'Size', 'Area of research'];
-    // A Cow row, whose page carries the species header above; its Paper cell becomes a parenthesised DOI.
+    // A Cow row, its Paper cell located by the page's own header; it becomes a parenthesised DOI.
+    const read = readInventoryHeader('Cow', REPO_ROOT);
+    if ('problem' in read) throw new Error(read.problem);
+    const paper = read.header.indexOf('Paper');
+    expect(paper).toBeGreaterThanOrEqual(0);
     const at = lines.findIndex((l) => (JSON.parse(l) as { page: string }).page === 'Cow');
     expect(at).toBeGreaterThanOrEqual(0);
     const row = JSON.parse(lines[at]!) as { item_id: string; cells_json: string };
     const cells = JSON.parse(row.cells_json) as string[];
-    expect(cells).toHaveLength(header.length);
-    cells[header.indexOf('Paper')] = '[DOI](https://doi.org/10.1016/S0092-8674(20)30001-1)';
+    expect(cells).toHaveLength(read.header.length);
+    cells[paper] = '[DOI](https://doi.org/10.1016/S0092-8674(20)30001-1)';
     lines[at] = JSON.stringify({ ...JSON.parse(lines[at]!), cells_json: JSON.stringify(cells) });
     writeFileSync(rowsPath, `${lines.join('\n')}\n`);
 
