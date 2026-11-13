@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { BUILD_MISMATCH, CHAT_BUILT, CHAT_ISLAND } from './chat-build';
 import { neverIdle } from './hydration';
-import { CHAT_HYDRATE_TIMEOUT_MS } from '../src/lib/chat-hydration';
+import { IDLE_TIMEOUT_MS } from '../src/lib/idle-timeout';
 
 /**
  * Ask CAAIL, built without a chat endpoint: the box is not offered
@@ -25,13 +25,14 @@ async function expectNoWidget(page: Page, route: string): Promise<void> {
     if (r.url().includes('CaailChatWidget')) widgetRequests.push(r.url());
   });
   await page.goto(route, { waitUntil: 'load' });
-  // A `client:idle` island fetches its script in an idle callback it queues before `load`, with
-  // the footer's timeout. One more queued now, with the same timeout, runs after it: earlier
-  // when the page goes idle, and on a later deadline when it never does. So by then any widget
-  // script has been requested, and a page that never goes idle cannot hang this wait.
+  // A `client:idle` island starts fetching its script in an idle callback it queues before
+  // `load`, with the footer's timeout. One more queued now, with the same timeout, runs after it:
+  // earlier when the page goes idle, and on a later deadline when it never does, so a page that
+  // never goes idle cannot hang this wait. By then such a fetch has been asked for, though its
+  // request event may still be in flight; the island count below is what proves there is none.
   await page.evaluate(
     (timeout) => new Promise<void>((resolve) => requestIdleCallback(() => resolve(), { timeout })),
-    CHAT_HYDRATE_TIMEOUT_MS,
+    IDLE_TIMEOUT_MS,
   );
   // The island is the load-bearing check (see CHAT_ISLAND); the button and wrapper checks
   // only confirm nothing else drew one.
@@ -50,8 +51,9 @@ for (const route of ['./', './software/', './papers/explorer/', './privacy/']) {
 // A busy runner can keep a page from ever going idle, and the idle wait above then never
 // returned: the privacy case timed out at 30 s in CI (tucca-cellag/caail-planning#604).
 test('the no-widget checks finish on a page that never goes idle', async ({ page }) => {
-  await neverIdle(page);
+  const stop = await neverIdle(page);
   await expectNoWidget(page, './privacy/');
+  await stop();
 });
 
 test('the privacy statement says the feature is not offered at present', async ({ page }) => {

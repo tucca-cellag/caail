@@ -58,9 +58,10 @@ for (const route of ROUTES) {
 // hydrates: `.chat-fab` was "not found" on main's CI, a different page each time
 // (tucca-cellag/caail-planning#604). The button must appear anyway.
 test('the chat button hydrates on a page that never goes idle', async ({ page }) => {
-  await neverIdle(page);
+  const stop = await neverIdle(page);
   await page.goto('./contributing/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.chat-fab')).toBeVisible({ timeout: 15_000 });
+  await stop();
 });
 
 test('the widget is portalled out of the isolated stacking context', async ({ page }) => {

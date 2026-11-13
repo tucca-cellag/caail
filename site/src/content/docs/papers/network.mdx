@@ -5,6 +5,7 @@ tableOfContents: false
 ---
 
 import NetworkGraph from '../../../components/NetworkGraph.tsx';
+import { IDLE_TIMEOUT_MS } from '../../../lib/idle-timeout';
 
 Each node is a paper from the [Papers Explorer](/papers/explorer/). Use the toggle to switch
 how edges are drawn:
@@ -21,4 +22,4 @@ how edges are drawn:
 Node size reflects how connected a paper is in the active mode; color marks its primary research
 area. Filter by area, toggle unconnected papers, and click a node for its details.
 
-<NetworkGraph client:idle />
+<NetworkGraph client:idle={{ timeout: IDLE_TIMEOUT_MS }} />

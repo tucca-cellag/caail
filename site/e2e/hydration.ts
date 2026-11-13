@@ -36,11 +36,21 @@ export async function awaitHydrated(page: Page, component: string): Promise<void
  * CI runner produced on the chat-widget specs (tucca-cellag/caail-planning#604): an idle
  * callback with no timeout never ran, so a `client:idle` island never hydrated, and a test
  * waiting on one idle callback hung.
+ *
+ * It holds one CPU core while it runs, which is load on the runner every other test shares, so
+ * it runs in the top frame only, and the returned `stop` ends it: call it once the assertion
+ * it exists for has been made.
  */
-export async function neverIdle(page: Page): Promise<void> {
+export async function neverIdle(page: Page): Promise<() => Promise<void>> {
   await page.addInitScript(() => {
+    if (window !== window.top) return;
+    let stopped = false;
+    (window as unknown as { caailStopNeverIdle: () => void }).caailStopNeverIdle = () => {
+      stopped = true;
+    };
     const channel = new MessageChannel();
     channel.port1.onmessage = () => {
+      if (stopped) return;
       const until = performance.now() + 4;
       while (performance.now() < until) {
         // Hold the thread, so the next task is always already queued.
@@ -49,4 +59,7 @@ export async function neverIdle(page: Page): Promise<void> {
     };
     channel.port2.postMessage(0);
   });
+  return async () => {
+    await page.evaluate(() => (window as unknown as { caailStopNeverIdle?: () => void }).caailStopNeverIdle?.());
+  };
 }
