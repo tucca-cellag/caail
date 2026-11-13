@@ -26,8 +26,8 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { join, dirname, posix } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { assertValid, buildOpenApiDocument, OPENAPI_FILE } from './openapi.js';
@@ -228,7 +228,8 @@ function destinationAt(md: string, node: any): { start: number; end: number } | 
   const e: number | undefined = node.position?.end.offset;
   if (s === undefined || e === undefined || !node.url) return null;
   const label = node.type === 'link' ? node.children?.at(-1)?.position?.end.offset : undefined;
-  const i = md.indexOf('](', label ?? s);
+  // A reference definition (`[label]: url`) writes its destination after `]:`.
+  const i = md.indexOf(node.type === 'definition' ? ']:' : '](', label ?? s);
   if (i === -1 || i >= e) return null;
   let j = i + 2;
   while (j < e && /\s/.test(md[j]!)) j++;
@@ -245,15 +246,20 @@ function destinationAt(md: string, node: any): { start: number; end: number } | 
  * one walk serves the rewrite and the check. A reference link (`[x][ref]`) is a link
  * only where its page defines `[ref]:`, which no dataset page may
  * (`buildDatasetInventory` refuses one), so in a cell it is text, here and on the site.
+ *
+ * With `page`, `md` is a whole page of block Markdown, read as it stands (no inline
+ * prefix), and its reference definitions (`[ref]: url`) are targets too
+ * (tucca-cellag/caail-planning#810).
  */
-function markdownLinkTargets(md: string): LinkTarget[] {
+function markdownLinkTargets(md: string, page = false): LinkTarget[] {
   if (NO_LINK_SYNTAX.test(md)) return [];
-  const src = INLINE_PREFIX + md;
+  const prefix = page ? '' : INLINE_PREFIX;
+  const src = prefix + md;
   const out: LinkTarget[] = [];
   visit(parseMarkdown(src), (node: any) => {
-    if (node.type === 'link' || node.type === 'image') {
+    if (node.type === 'link' || node.type === 'image' || node.type === 'definition') {
       const at = destinationAt(src, node);
-      out.push({ url: node.url, at: at && { start: at.start - INLINE_PREFIX.length, end: at.end - INLINE_PREFIX.length } });
+      out.push({ url: node.url, at: at && { start: at.start - prefix.length, end: at.end - prefix.length } });
     } else if (node.type === 'html' || node.type === 'text') {
       // micromark reads `<a href=../x.csv>` (a bare value holding `/`) as text, but
       // CommonMark and GitHub's cmark-gfm read it as a tag, so an agent may render it as one.
@@ -287,24 +293,71 @@ function absoluteTarget(url: string, sourceFile: string): string | undefined {
  * refuses any target left in `notAbsolute`.
  */
 export function absolutizeCellLinks(md: string, sourceFile: string): { md: string; notAbsolute: string[] } {
-  const edits: { start: number; end: number; url: string }[] = [];
-  const served: string[] = [];
-  for (const t of markdownLinkTargets(md)) {
-    const next = t.at ? absoluteTarget(t.url, sourceFile) : undefined;
-    if (next !== undefined) edits.push({ ...t.at!, url: next });
-    served.push(next ?? t.url);
-  }
-  const out = edits.sort((a, b) => b.start - a.start).reduce((s, x) => s.slice(0, x.start) + x.url + s.slice(x.end), md);
-  return { md: out, notAbsolute: served.filter((u) => !isAbsoluteLink(u)) };
+  return rewriteTargets(md, markdownLinkTargets(md), (url) => absoluteTarget(url, sourceFile));
 }
 
 /**
- * The link targets in a line of Markdown that are not `isAbsoluteLink`: every link and
- * image destination, and every `href`/`src` in an inline HTML tag. What the endpoint tests check
- * every served string with.
+ * A whole page of canonical Markdown, written at `sourceFile`, with its relative link
+ * targets made absolute, and the targets still not absolute, from one parse: what
+ * `llms-full.txt` serves, where an agent fetching the one file off-site resolves a
+ * page-relative link against the file's URL (tucca-cellag/caail-planning#810). Each
+ * target goes where `absoluteTarget` sends it, which is where the site sends a reader,
+ * with two cases a table cell never meets: in a site page (`sitePage`, a Starlight page
+ * under `site/src/content/`) a root-relative path is a site route, not a repository path;
+ * and a relative path to a repository file that is not a page (`./LICENSE`) becomes its
+ * GitHub blob, where the file exists in `repoRoot`. Only destination text changes.
  */
-export function nonAbsoluteMarkdownTargets(md: string): string[] {
-  return markdownLinkTargets(md).map((t) => t.url).filter((u) => !isAbsoluteLink(u));
+export function absolutizePageLinks(
+  md: string,
+  sourceFile: string,
+  options: { repoRoot: string; sitePage: boolean },
+): { md: string; notAbsolute: string[] } {
+  return rewriteTargets(md, markdownLinkTargets(md, true), (url) => pageTarget(url, sourceFile, options));
+}
+
+/** Where a relative target in a whole page resolves (see `absolutizePageLinks`), or undefined. */
+function pageTarget(url: string, sourceFile: string, options: { repoRoot: string; sitePage: boolean }): string | undefined {
+  if (options.sitePage && url.startsWith('/') && !url.startsWith('//')) {
+    return url === SITE_BASE || url.startsWith(`${SITE_BASE}/`) ? `${SITE_URL}${url.slice(SITE_BASE.length + 1)}` : undefined;
+  }
+  const resolved = absoluteTarget(url, sourceFile);
+  if (resolved !== undefined || url === '' || /^[a-z][a-z0-9+.-]*:/i.test(url) || /^(?:#|\/\/)/.test(url)) return resolved;
+  const [path, anchor] = url.split('#');
+  const repoRel = posix.normalize(path!.startsWith('/') ? path!.slice(1) : posix.join(posix.dirname(sourceFile), path!));
+  if (repoRel.startsWith('..') || !existsSync(join(options.repoRoot, repoRel))) return undefined;
+  return `${GITHUB_BLOB_BASE}/${repoRel}${anchor ? `#${anchor}` : ''}`;
+}
+
+/**
+ * `md` with each target's destination replaced where `resolve` gives one, in place, so
+ * the rest of the text is served as written; and, as written in `md` so an author can
+ * find it, every target whose served form is not `isAbsoluteLink` (`../../x.md` resolves
+ * to a GitHub URL climbing out of the repo, which is refused under its written form).
+ */
+function rewriteTargets(
+  md: string,
+  targets: LinkTarget[],
+  resolve: (url: string) => string | undefined,
+): { md: string; notAbsolute: string[] } {
+  const edits: { start: number; end: number; url: string }[] = [];
+  const notAbsolute: string[] = [];
+  for (const t of targets) {
+    const next = t.at ? resolve(t.url) : undefined;
+    if (next !== undefined) edits.push({ ...t.at!, url: next });
+    if (!isAbsoluteLink(next ?? t.url)) notAbsolute.push(t.url);
+  }
+  const out = edits.sort((a, b) => b.start - a.start).reduce((s, x) => s.slice(0, x.start) + x.url + s.slice(x.end), md);
+  return { md: out, notAbsolute };
+}
+
+/**
+ * The link targets in Markdown that are not `isAbsoluteLink`: every link and image
+ * destination, and every `href`/`src` in an inline HTML tag. What the endpoint tests check
+ * every served string with. `page` reads `md` as a whole page (see `markdownLinkTargets`),
+ * which is how the `llms-full.txt` test checks the served file.
+ */
+export function nonAbsoluteMarkdownTargets(md: string, options: { page?: boolean } = {}): string[] {
+  return markdownLinkTargets(md, options.page ?? false).map((t) => t.url).filter((u) => !isAbsoluteLink(u));
 }
 
 /** The inventory rows, with each cell's Markdown links made absolute against the row's own page. */

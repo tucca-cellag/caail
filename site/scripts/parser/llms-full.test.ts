@@ -16,12 +16,13 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { describe, it, expect } from 'vitest';
+import { beforeAll, describe, it, expect } from 'vitest';
 
 import { CAAIL_PAGES } from '../../src/content/caail-pages.js';
 import { CANONICAL_SOURCES } from '../../src/content/canonical-sources.js';
 import { isExcludedFromCorpus, isPublishedMarkdown } from '../../src/lib/canonical-files.js';
-import { buildLlmsFullText, llmsFullSources } from './llms-full.js';
+import { nonAbsoluteMarkdownTargets } from './agent-api.js';
+import { buildLlmsFullText, llmsFullSection, llmsFullSources } from './llms-full.js';
 
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 const SITE_DOCS = 'site/src/content/docs';
@@ -236,6 +237,15 @@ describe('llmsFullSources', () => {
 });
 
 describe('buildLlmsFullText', () => {
+  // The build resolves every page's links (tucca-cellag/caail-planning#810), about as much
+  // work as the fixtures `budgets.ts` lists, and the link check parses the whole text once
+  // more. Both are done once here, under the hook budget, rather than charged to whichever
+  // test happens to run first, which is where they timed out under a loaded full suite.
+  let relative: string[] = [];
+  beforeAll(() => {
+    relative = nonAbsoluteMarkdownTargets(fullText(), { page: true });
+  });
+
   it('is substantial (full library, not a stub)', () => {
     expect(fullText().length).toBeGreaterThan(50_000);
   });
@@ -254,5 +264,43 @@ describe('buildLlmsFullText', () => {
 
   it('contains real canonical content (Papers references section)', () => {
     expect(fullText()).toContain('## References');
+  });
+
+  it('serves every Markdown link target as an absolute URL (tucca-cellag/caail-planning#810)', () => {
+    // An agent fetching this one file off-site resolves a page-relative link against the
+    // file's own URL, where `../Papers.md#193` is a 404.
+    expect(relative).toEqual([]);
+  });
+});
+
+describe('llmsFullSection', () => {
+  const section = (rel: string, body: string) => llmsFullSection(rel, body, REPO_ROOT);
+
+  it('resolves each link from its own page as the site resolves it, leaving the rest as written', () => {
+    expect(section('README.md', 'See [the matrix](./Papers.md) and [Pig data](./Datasets/Pig.md) here.\n'))
+      .toContain('See [the matrix](https://caail.tufts.edu/papers/explorer/) and [Pig data](https://caail.tufts.edu/datasets/pig/) here.');
+    expect(section('Datasets/Pig.md', '[Papers.md #193](../Papers.md#193)\n'))
+      .toContain('[Papers.md #193](https://github.com/tucca-cellag/caail/blob/main/Papers.md#193)');
+  });
+
+  it("resolves a fragment against its own page, which the file's URL is not", () => {
+    expect(section('Papers.md', '[Cosenza et al. 2022](#3)\n'))
+      .toContain('[Cosenza et al. 2022](https://github.com/tucca-cellag/caail/blob/main/Papers.md#3)');
+  });
+
+  it("makes a site page's root-relative link its site route, not a repository path", () => {
+    expect(section('site/src/content/docs/curation.mdx', 'See [the taxonomy](/taxonomy/).\n'))
+      .toContain('See [the taxonomy](https://caail.tufts.edu/taxonomy/).');
+  });
+
+  it('makes a link to a repository file that is no page its GitHub blob, and a reference definition too', () => {
+    expect(section('README.md', '[MIT](./LICENSE)\n')).toContain('[MIT](https://github.com/tucca-cellag/caail/blob/main/LICENSE)');
+    expect(section('README.md', '[matrix][m]\n\n[m]: ./Papers.md\n')).toContain('[m]: https://caail.tufts.edu/papers/explorer/');
+  });
+
+  it('fails, naming the page, on a target it cannot make absolute', () => {
+    expect(() => section('README.md', '[gone](./no-such-file.txt)\n'))
+      .toThrow('llms-full: README.md: link target "./no-such-file.txt" cannot be made absolute');
+    expect(() => section('README.md', '[out](../../outside.md)\n')).toThrow(/llms-full: README\.md: link target "\.\.\/\.\.\/outside\.md"/);
   });
 });
