@@ -102,17 +102,28 @@ export function rowDepositAccession(itemId: string, dataCell: string): string {
  * `links` holds what a reader of the row can follow: a link's target as CommonMark reads it,
  * balanced parentheses included (`10.1016/S0092-8674(20)30001-1`), a bare URL where GFM's
  * autolinking ends it, and an inline HTML tag's `href` or `src` (tucca-cellag/caail-planning#759).
- * A target the cell does not write literally is left out: GFM links `www.` text under an
- * `http://` the row never wrote, which a find's own URL would not match.
+ * A link target written with an entity or a backslash escape is served as the parser decodes
+ * it. One kind of target is left out: GFM links `www.` text under an `http://` the row never
+ * wrote, which a find's own URL would not match.
  */
 export function rowLinks(cells: readonly string[]): string[] {
   const out: string[] = [];
   for (const cell of cells) {
     for (const { url } of markdownLinkTargets(cell)) {
-      if (/^https?:\/\//i.test(url) && cell.includes(url) && !out.includes(url)) out.push(url);
+      if (/^https?:\/\//i.test(url) && !wwwAutolink(url, cell) && !out.includes(url)) out.push(url);
     }
   }
   return out;
+}
+
+/**
+ * Whether `url` is GFM's autolink of `www.` text in `cell`: an `http://www.` URL the cell does
+ * not write, though it writes the rest of it. A link the cell writes with an entity or escape
+ * holds neither form literally, so it is not one.
+ */
+function wwwAutolink(url: string, cell: string): boolean {
+  const rest = url.slice('http://'.length);
+  return url.startsWith('http://www.') && !cell.includes(url) && cell.includes(rest);
 }
 
 /** The identity a row carries, read from its Paper and Data cells (tucca-cellag/caail-planning#367). */

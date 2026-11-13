@@ -6,8 +6,8 @@
  *   B. Integration: the real corpus, including the query that used to return nothing.
  */
 
-import { describe, it, expect, beforeAll } from 'vitest';
-import { cpSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { describe, it, expect, beforeAll, onTestFinished } from 'vitest';
+import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -150,6 +150,12 @@ describe('rowLinks (tucca-cellag/caail-planning#759)', () => {
     expect(rowLinks(['www.example.org/x'])).toEqual([]);
   });
 
+  it('keeps a link target written with an entity or a backslash escape, as the parser decodes it', () => {
+    expect(rowLinks(['[x](https://a.org/?a=1&amp;b=2)'])).toEqual(['https://a.org/?a=1&b=2']);
+    expect(rowLinks(['[x](https://a.org/x\\))'])).toEqual(['https://a.org/x)']);
+    expect(rowLinks(['[x](http://www.a.org/?a=1&amp;b=2)'])).toEqual(['http://www.a.org/?a=1&b=2']);
+  });
+
   it("serves only http(s) links: a repo-relative link is CAAIL's own page, not a URL the row writes out", () => {
     expect(rowLinks(['[Cow](./Cow.md) and [x](mailto:a@b.org) and [GEO](https://www.ncbi.nlm.nih.gov/geo/)'])).toEqual([
       'https://www.ncbi.nlm.nih.gov/geo/',
@@ -160,6 +166,7 @@ describe('rowLinks (tucca-cellag/caail-planning#759)', () => {
 describe('a parenthesised DOI through the inventory build (tucca-cellag/caail-planning#759)', () => {
   it("serves a row's links whole, matching the paperDoi it reads from the same Paper cell", () => {
     const ndjson = mkdtempSync(join(tmpdir(), 'caail-inventory-paren-'));
+    onTestFinished(() => rmSync(ndjson, { recursive: true, force: true }));
     cpSync(join(REPO_ROOT, 'site', 'db', 'ndjson'), ndjson, { recursive: true });
     const rowsPath = join(ndjson, 'dataset_rows.ndjson');
     const lines = readFileSync(rowsPath, 'utf-8').split('\n').filter(Boolean);

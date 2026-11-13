@@ -1,9 +1,10 @@
 /**
  * link-targets.ts — every link target in a line or a page of Markdown, as the site's parser
  * reads it: link and image destinations with where each is written, and each `href`/`src` in
- * an inline HTML tag. One reader for every consumer, so the agent API's link rewrite and an
- * inventory row's `links` cannot read one cell two ways (tucca-cellag/caail-planning#759).
- * Moved here from agent-api.ts unchanged.
+ * an inline HTML tag. One reader for every consumer, so they cannot read one cell two ways
+ * (tucca-cellag/caail-planning#759): the agent API's link rewrite and its absoluteness check
+ * (`absolutizeCellLinks`, `absolutizePageLinks` and `nonAbsoluteMarkdownTargets` in
+ * agent-api.ts), and an inventory row's `links` (`rowLinks` in dataset-inventory.ts).
  */
 
 import { visit } from 'unist-util-visit';
@@ -106,7 +107,8 @@ function destinationAt(md: string, node: any): { start: number; end: number } | 
  * destination with where it is written, and each `href`/`src` in an inline HTML tag,
  * which is checked but never rewritten. Parsing, not a pattern, keeps a code span's
  * `[x](y)` from counting as a link and reads every destination form remark does. Its
- * one walk serves the rewrite and the check. A reference link (`[x][ref]`) is a link
+ * one walk serves every consumer the module header names, so a change here changes the
+ * API's rewritten cells and `api/datasets.json`'s `links` alike. A reference link (`[x][ref]`) is a link
  * only where its page defines `[ref]:`, which no dataset page may
  * (`buildDatasetInventory` refuses one), so in a cell it is text, here and on the site.
  *
@@ -122,7 +124,7 @@ export function markdownLinkTargets(md: string, page = false): LinkTarget[] {
   visit(parseMarkdown(src), (node: any) => {
     if (node.type === 'link' || node.type === 'image' || node.type === 'definition') {
       if (node.type === 'definition') {
-        // Reported for a caller that refuses it (see `absolutizePageLinks`), never rewritten.
+        // Reported for a caller that refuses it (see `absolutizePageLinks` in agent-api.ts), never rewritten.
         out.push({ url: node.url, kind: 'definition', at: null, label: node.label ?? node.identifier });
         return;
       }
