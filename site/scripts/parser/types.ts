@@ -1154,7 +1154,8 @@ export const ApiCatalogIndexRowSchema = z.strictObject({
   group: z.string(),
   url: z.string().nullable(),
   doi: z.string().nullable(),
-  /** whether `doi` is the item's own (a data repository's) or its describing paper's (tucca-cellag/caail-planning#367) */
+  /** whether `doi` is the item's own (a data repository's) or a paper or document about it, as doi-relation.ts's
+   *  `itemDoiRelation` reads it (tucca-cellag/caail-planning#367, #760) */
   doiRelation: DoiRelationSchema.nullable(),
   tier: z.string().nullable(),
 });

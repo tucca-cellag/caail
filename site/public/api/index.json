@@ -51,7 +51,7 @@
     },
     {
       "path": "catalog-index.json",
-      "use": "START HERE for software and databases. One compact row each: slug, name, kind, group, URL, DOI, whether that DOI is the item's own or its describing paper's (`doiRelation`), license tier. A tenth the size of catalog.json."
+      "use": "START HERE for software and databases. One compact row each: slug, name, kind, group, URL, DOI, whether that DOI is the item's own or a paper or document about it (`doiRelation`), license tier. A tenth the size of catalog.json."
     },
     {
       "path": "catalog.json",

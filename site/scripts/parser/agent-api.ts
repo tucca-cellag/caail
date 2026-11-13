@@ -965,7 +965,7 @@ export function buildManifest(
       { path: 'matrix.json', use: 'All method×area cells, empties included. Use to ask what has and has not been indexed — then read `matrixNote` in papers-index.json before reading a silence as an absence.' },
       { path: 'papers-index.json', use: 'START HERE for papers. Every reference, one compact row: id, title, year, first author, section, methods, areas, DOI, code/data flags, and whether a post-publication notice is recorded (`hasNotice`). A sixth the size of papers.json, so it survives a fetch tool that truncates. Enumerate here, then fetch full records.' },
       { path: 'papers.json', use: 'Full records for the references you selected. Large (~554 KB): if your fetch summarises rather than returning bytes, a "not found" from this file is not evidence of absence.' },
-      { path: 'catalog-index.json', use: 'START HERE for software and databases. One compact row each: slug, name, kind, group, URL, DOI, whether that DOI is the item\'s own or its describing paper\'s (`doiRelation`), license tier. A tenth the size of catalog.json.' },
+      { path: 'catalog-index.json', use: 'START HERE for software and databases. One compact row each: slug, name, kind, group, URL, DOI, whether that DOI is the item\'s own or a paper or document about it (`doiRelation`), license tier. A tenth the size of catalog.json.' },
       { path: 'catalog.json', use: 'Full records with summaries. Large (~576 KB), two thirds of it the same summary prose as Markdown and as HTML; same truncation caveat as papers.json.' },
       {
         path: 'datasets.json',
