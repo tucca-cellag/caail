@@ -70,11 +70,14 @@ export function findCorpusDateLine(lines: readonly string[], file: string): numb
 
 /**
  * `text` with its one corpus-date line (`findCorpusDateLine`) replaced by the current note.
- * Throws as `findCorpusDateLine` does.
+ * Throws as `findCorpusDateLine` does. On a CRLF checkout each line split on `\n` keeps its `\r`,
+ * so the stamped line keeps the one it had: dropping it would leave mixed line endings and make
+ * an already-current file read as rewritten.
  */
 export function stampCorpusDate(text: string, date: string, file: LlmsFile): string {
   const lines = text.split('\n');
-  lines[findCorpusDateLine(lines, file)] = corpusDateNote(date, file);
+  const at = findCorpusDateLine(lines, file);
+  lines[at] = corpusDateNote(date, file) + (lines[at]!.endsWith('\r') ? '\r' : '');
   return lines.join('\n');
 }
 

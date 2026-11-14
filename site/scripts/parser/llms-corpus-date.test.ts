@@ -72,6 +72,22 @@ describe('stampCorpusDate', () => {
     expect(() => stampCorpusDate(`${page}\nCorpus date: again`, '2026-11-14', 'llms.txt')).toThrow(/found 2/);
   });
 
+  describe('on a CRLF checkout', () => {
+    const crlf = (text: string) => text.split('\n').join('\r\n');
+
+    it('returns a file already carrying the date byte for byte, so parse reports it unchanged', () => {
+      const current = crlf(`${stampCorpusDate(page, '2026-11-14', 'llms.txt')}\n`);
+      expect(stampCorpusDate(current, '2026-11-14', 'llms.txt')).toBe(current);
+    });
+
+    it('keeps CRLF on every line when it rewrites an old date', () => {
+      const old = crlf(`${stampCorpusDate(page, '2026-01-02', 'llms.txt')}\n`);
+      const out = stampCorpusDate(old, '2026-11-14', 'llms.txt');
+      expect(out.replaceAll('\r\n', '')).not.toContain('\n');
+      expect(out).toBe(crlf(`${stampCorpusDate(page, '2026-11-14', 'llms.txt')}\n`));
+    });
+  });
+
   it('does not count the phrase in running prose', () => {
     const prose = `${page}\nThe line reading Corpus date: is written by parse.`;
     expect(() => stampCorpusDate(prose, '2026-11-14', 'llms.txt')).not.toThrow();
@@ -85,7 +101,8 @@ describe('llms.txt on disk', () => {
   // it re-runs parse and fails on any diff to site/public/llms.txt.
   it("has one corpus-date line, in parse's own words, agreeing with api/index.json's corpusDate", () => {
     const lines = readFileSync(join(PUBLIC_DIR, 'llms.txt'), 'utf-8').split('\n');
-    const dated = lines[findCorpusDateLine(lines, 'llms.txt')];
+    // A CRLF checkout leaves `\r` on the line (stampCorpusDate keeps it), so compare without it.
+    const dated = lines[findCorpusDateLine(lines, 'llms.txt')]!.replace(/\r$/, '');
     const { corpusDate } = JSON.parse(readFileSync(join(PUBLIC_DIR, 'api', 'index.json'), 'utf-8')) as { corpusDate: string };
     expect(
       dated,
