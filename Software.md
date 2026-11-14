@@ -98,7 +98,7 @@ Project page: <https://morpheus.gitlab.io/>.
 
 ### [pyFOOMB](https://github.com/MicroPhen/pyFOOMB)
 
-Summary: A Python framework for object-oriented modeling of bioprocesses aimed at users with limited programming experience, wrapping ODE model definition, event handling, and parameter estimation with uncertainty quantification for fed-batch and other bioreactor models ([Hemmerich et al. 2021](https://doi.org/10.1002/elsc.202000088), *Engineering in Life Sciences*). For cellular agriculture, its user-defined ODE models could be used to build and calibrate growth/substrate/product kinetic models of cultivated-cell bioprocesses; the paper's own examples are microbial (*Corynebacterium glutamicum* batch and repetitive-batch cultures).
+Summary: A Python framework for object-oriented modeling of bioprocesses aimed at users with limited programming experience, wrapping ODE model definition, event handling, and parameter estimation with uncertainty quantification for fed-batch and other bioreactor models ([Hemmerich et al. 2021](https://doi.org/10.1002/elsc.202000088), *Engineering in Life Sciences*). For cellular agriculture, its user-defined ODE models could be used to build and calibrate growth/substrate/product kinetic models of cultivated-cell bioprocesses; the paper's application examples are microbial (*Corynebacterium glutamicum* batch and repetitive-batch cultures).
 
 Docs: <https://github.com/MicroPhen/pyFOOMB/tree/main/examples>.
 

@@ -4471,10 +4471,10 @@
       "columns": {
         "Study": "An integrated multi-tissue atlas of epigenomic landscapes and regulatory elements in the bovine genome",
         "Paper": "[preprint](https://doi.org/10.1101/2025.08.21.671512)",
-        "Data": "unavailable",
+        "Data": "[Zenodo](https://doi.org/10.5281/zenodo.12216791)",
         "Type": "ATAC-seq + ChIP-seq + WGBS + Hi-C + RNA-seq",
         "Tissue": "53 adult + 5 fetal tissues + 7 primary cell types",
-        "Description": "Bovine FAANG epigenome atlas of 1,138 genome-wide profiles (158 RNA-seq, 202 ATAC-seq, 91 WGBS, 682 histone/CTCF ChIP-seq, 5 Hi-C) annotating ~45% of the genome as putative regulatory elements; newly generated deposits embargoed until journal acceptance (reused public data PRJEB41939, PRJNA672996, PRJNA531208, E-MTAB-11825/11826; analysis code at github.com/guandailu/CattleEpiMap, formerly BovineFAANG; processed data (peaks, chromatin states, enhancer annotations) open on Zenodo, [`10.5281/zenodo.12216791`](https://doi.org/10.5281/zenodo.12216791)) (Guan et al. 2025, *bioRxiv*)",
+        "Description": "Bovine FAANG epigenome atlas of 1,138 genome-wide profiles (RNA-seq, ATAC-seq, WGBS, histone/CTCF ChIP-seq and Hi-C) annotating ~45% of the genome as putative regulatory elements; processed data, including peaks, chromatin states and enhancer annotations, are open on Zenodo, while the newly generated raw deposits are embargoed until journal acceptance (reused public data PRJEB41939, PRJNA672996, PRJNA531208, E-MTAB-11825/11826; analysis code at github.com/guandailu/CattleEpiMap, formerly BovineFAANG) (Guan et al. 2025, *bioRxiv*)",
         "Size": "1,138 profiles",
         "Area of research": "Regulatory-element annotation"
       },
@@ -4483,10 +4483,10 @@
         "https://doi.org/10.5281/zenodo.12216791"
       ],
       "paperDoi": "10.1101/2025.08.21.671512",
-      "dataStatus": "unavailable",
+      "dataStatus": "deposit",
       "accession": null,
-      "dataUrl": null,
-      "dataDoi": null,
+      "dataUrl": "https://doi.org/10.5281/zenodo.12216791",
+      "dataDoi": "10.5281/zenodo.12216791",
       "topics": [
         {
           "slug": "cell-lines-engineering",
