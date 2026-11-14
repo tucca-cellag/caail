@@ -4474,7 +4474,7 @@
         "Data": "[Zenodo](https://doi.org/10.5281/zenodo.12216791)",
         "Type": "ATAC-seq + ChIP-seq + WGBS + Hi-C + RNA-seq",
         "Tissue": "53 adult + 5 fetal tissues + 7 primary cell types",
-        "Description": "Bovine FAANG epigenome atlas of 1,138 genome-wide profiles (RNA-seq, ATAC-seq, WGBS, histone/CTCF ChIP-seq and Hi-C) annotating ~45% of the genome as putative regulatory elements; processed data, including peaks, chromatin states and enhancer annotations, are open on Zenodo, while the newly generated raw deposits are embargoed until journal acceptance (reused public data PRJEB41939, PRJNA672996, PRJNA531208, E-MTAB-11825/11826; analysis code at github.com/guandailu/CattleEpiMap, formerly BovineFAANG) (Guan et al. 2025, *bioRxiv*)",
+        "Description": "Bovine FAANG epigenome atlas of 1,138 genome-wide profiles (RNA-seq, ATAC-seq, WGBS, histone/CTCF ChIP-seq and Hi-C) annotating ~45% of the genome as putative regulatory elements; processed data, including peaks, chromatin states and super-enhancer annotations, are open on Zenodo, while the authors' data statement withholds accession IDs for the newly generated RNA-seq, ChIP-seq, ATAC-seq and WGBS deposits (FAANG, SRA, ENA) until manuscript acceptance (reused public data PRJEB41939, PRJNA672996, PRJNA531208, E-MTAB-11825/11826; analysis code at github.com/guandailu/CattleEpiMap, formerly BovineFAANG) (Guan et al. 2025, *bioRxiv*)",
         "Size": "1,138 profiles",
         "Area of research": "Regulatory-element annotation"
       },
@@ -5178,7 +5178,7 @@
       "columns": {
         "Study": "Comparative transcriptomic characterization of early development in Pacific white shrimp",
         "Paper": "[DOI](https://doi.org/10.1371/journal.pone.0106201)",
-        "Data": "[`PRJNA253518`](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA253518)",
+        "Data": "[`SRR1460493`](https://www.ncbi.nlm.nih.gov/sra/?term=SRR1460493)",
         "Type": "RNA-seq",
         "Species": "*Litopenaeus vannamei*",
         "Tissue": "Whole embryo / larva",
@@ -5188,7 +5188,6 @@
       },
       "links": [
         "https://doi.org/10.1371/journal.pone.0106201",
-        "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA253518",
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRR1460493",
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRR1460494",
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRR1460495",
@@ -5197,8 +5196,8 @@
       ],
       "paperDoi": "10.1371/journal.pone.0106201",
       "dataStatus": "deposit",
-      "accession": "PRJNA253518",
-      "dataUrl": "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA253518",
+      "accession": "SRR1460493",
+      "dataUrl": "https://www.ncbi.nlm.nih.gov/sra/?term=SRR1460493",
       "dataDoi": null,
       "topics": [
         {
