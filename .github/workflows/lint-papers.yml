@@ -183,4 +183,4 @@ jobs:
         run: |
           pnpm --dir site parse
           git diff --exit-code -- site/public/api site/public/setup.md site/public/llms.txt \
-            || { echo "::error::Committed agent API is out of sync with the corpus. Run 'pnpm --dir site parse' and commit the result."; exit 1; }
+            || { echo "::error::Committed site/public/api, site/public/setup.md or site/public/llms.txt is out of sync with the corpus. Run 'pnpm --dir site parse' and commit the result."; exit 1; }
