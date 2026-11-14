@@ -1,10 +1,12 @@
 /**
  * llms-corpus-date.ts: the corpus date both llmstxt.org files carry, the day CAAIL's catalog data
- * last changed (tucca-cellag/caail-planning#289).
+ * last changed, or the build date in a checkout with no git history
+ * (tucca-cellag/caail-planning#289).
  *
  * The date is `readCorpusDate`'s, the one every file under `public/api/` already carries, and it
  * is never typed. It dates the catalog data, not the file: it moves only when `site/db/ndjson`
- * changes, while both files hold prose that changes without it. So two copies with the same date
+ * changes (with no git history to read, `readCorpusDate` falls back to the build date, and the
+ * note says so), while both files hold prose that changes without it. So two copies with the same date
  * can still differ, and a matching date does not show that a copy is current. The note says so,
  * and tells a reader of any copy to fetch the canonical one instead of comparing dates.
  *
@@ -43,7 +45,8 @@ export function corpusDateNote(date: string, file: LlmsFile): string {
     throw new Error(`llms corpus date: "${date}" is not a YYYY-MM-DD date`);
   }
   return (
-    `${CORPUS_DATE_PREFIX}${date}, the day CAAIL's catalog data last changed (the agent API's corpusDate). ` +
+    `${CORPUS_DATE_PREFIX}${date}, the day CAAIL's catalog data last changed ` +
+    "(the agent API's corpusDate; a checkout with no git history uses the build date instead). " +
     `The canonical copy of this file is ${SITE_URL}${file}. ` +
     'Its prose can change without moving that date, so a copy read anywhere else may be out of date ' +
     'even when the dates match: fetch the canonical copy before relying on it.'
