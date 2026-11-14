@@ -1,6 +1,6 @@
 # CI: what runs when
 
-**The workflows are the source of truth; the table below is a snapshot** (taken 2026-08-26) kept only
+**The workflows are the source of truth; the table below is a snapshot** (taken 2026-11-14) kept only
 so step 4/6 expectations are legible without opening four YAML files. `preflight` computes its answer from the
 `LINT_PAPERS_PATHS` / `TEST_PATHS` / `DOCS_PATHS` / `GUARDS_PATHS` lists in `ship-pr.sh`, which mirror the
 YAML rather than being read from it. **Each is named for its workflow file** (`<stem uppercased, - to _>_PATHS`), and so is
@@ -16,7 +16,7 @@ wins and the table is the bug.
 
 | Workflow | Trigger | Paths (snapshot) |
 | --- | --- | --- |
-| `lint-papers.yml` (matrix ↔ ref lint + `db:check`/`db:verify` + sync guards) | **pull_request** + push to main | `Papers.md`, `Software.md`, `Databases.md`, `OtherResources.md`, `Taxonomy.md`, `Datasets/**`, `CONTRIBUTING.md`, `CLAUDE.md`, `site/scripts/parser/**`, `site/scripts/db/**`, `site/db/**`, `site/src/content/site-config.ts`, `site/public/api/**`, `site/public/setup.md`, `site/public/llms.txt`, `plugin/skills/**`, `skills/**`, `.claude/skills/matrix-classification-audit/**`, `plugin-contribute/**`, `.github/ISSUE_TEMPLATE/**` |
+| `lint-papers.yml` (matrix ↔ ref lint + `db:check`/`db:verify` + sync guards) | **pull_request** + push to main | `Papers.md`, `Software.md`, `Databases.md`, `FieldReports.md`, `OtherResources.md`, `Datasets/**`, `CONTRIBUTING.md`, `CLAUDE.md`, `Taxonomy.md`, `site/scripts/parser/**`, `site/scripts/db/**`, `site/db/**`, `site/src/content/site-config.ts`, `site/public/api/**`, `site/public/setup.md`, `site/public/llms.txt`, `plugin/skills/**`, `skills/**`, `.claude/skills/matrix-classification-audit/**`, `.claude/skills/zotero-collection-scope/**`, `.claude/skills/papers-dataset-audit/**`, `plugin-contribute/**`, `.github/ISSUE_TEMPLATE/**` |
 | `test.yml` (Worker config + vitest + Playwright/axe) | **pull_request** + push to main | `site/**`, `workers/**`, root `*.md`, `ResearchAreas/**`, `Methods/**`, `Datasets/**`, `Primers/**`, `.claude/hooks/**`, `.claude/settings.json`, the four `.claude/skills/matrix-classification-audit/` files in `TEST_PATHS` (`README.md`, `docling_sections.py`, `docling_sections.test.py`, `extract_matrix_corpus.py`), `.github/ISSUE_TEMPLATE/**`, `.github/workflows/test.yml`, `CITATION.cff`, `plugin-contribute/**`, `plugin/**`, `.claude-plugin/**`, `.gitignore`, `.worktreeinclude`, `.env.example` |
 | `guards.yml` (publish-provenance hook + CI-paths consistency) | **pull_request** + push to main | `.claude/hooks/**`, `.claude/scripts/lib/**`, `.claude/settings.json`, `.claude/skills/caail-pr-wrapup/**`, `.github/workflows/**` |
 | `docs.yml` (build + Lighthouse + deploy) | **push to `main` only** | `site/**`, root `*.md`, `ResearchAreas/**`, `Methods/**`, `Datasets/**`, `Primers/**`, `.github/ISSUE_TEMPLATE/**` |
