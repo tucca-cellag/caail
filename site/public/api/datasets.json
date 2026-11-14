@@ -5146,13 +5146,14 @@
         "Type": "RNA-seq",
         "Species": "*Litopenaeus vannamei*",
         "Tissue": "Muscle, Hepatopancreas",
-        "Description": "Muscle from 6 shrimp in each of 4 high- and 4 low-growth families (48 runs); the accession also holds 16 WSSV-challenge runs (8 muscle, 8 hepatopancreas)",
+        "Description": "Muscle from 6 shrimp in each of 4 high- and 4 low-growth families (48 runs); the accession also holds 16 WSSV-exposure runs (8 muscle, 8 hepatopancreas) from a separate study (Santos et al. 2020, *Genes*, [DOI](https://doi.org/10.3390/genes11070805))",
         "Size": "~320 Gb",
         "Area of research": "Weight growth"
       },
       "links": [
         "https://doi.org/10.1016/j.aquaculture.2020.735871",
-        "https://www.ncbi.nlm.nih.gov/sra/?term=SRP128934"
+        "https://www.ncbi.nlm.nih.gov/sra/?term=SRP128934",
+        "https://doi.org/10.3390/genes11070805"
       ],
       "paperDoi": "10.1016/j.aquaculture.2020.735871",
       "dataStatus": "deposit",
@@ -6072,7 +6073,7 @@
         "Type": "RNA-seq",
         "Species": "*Paralichthys adspersus*",
         "Tissue": "Muscle",
-        "Description": "Control, fasting, and refeeding groups (per the paper); the linked SRA record holds only the baseline T0 muscle library ([`SRX612429`](https://www.ncbi.nlm.nih.gov/sra/?term=SRX612429)), with no public reads for the fasting or refeeding groups",
+        "Description": "Control (T0, week 0), fasting (T3, week 3) and refeeding (T4, week 4) conditions, all sampled from one group fasted for 3 weeks and then refed (per the paper); the linked SRA record holds only the baseline T0 muscle library ([`SRX612429`](https://www.ncbi.nlm.nih.gov/sra/?term=SRX612429)), with no public reads for the fasting or refeeding conditions",
         "Size": "3 Gb",
         "Area of research": "Muscle growth"
       },
@@ -8962,5 +8963,5 @@
       "dataStatus": "on-request"
     }
   ],
-  "corpusDate": "2026-11-10"
+  "corpusDate": "2026-11-13"
 }
