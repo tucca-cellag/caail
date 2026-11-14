@@ -24,10 +24,11 @@ wins and the table is the bug.
 Consequences: `test.yml` runs on almost any `site/**` or root-`*.md` PR, so most PRs have at least the
 `test` check. A change confined to `.claude/` **rules or agents** still has no PR checks, and that is
 correct because there is nothing to run. **Skills split both ways**, so do not generalise
-either direction: `skills/**`, `plugin/skills/**` and `.claude/skills/matrix-classification-audit/**` are
-in `lint-papers.yml` and `.claude/skills/caail-pr-wrapup/**` is in `guards.yml`, while the other four
-`.claude/skills/*` directories (`caail-db-authoring`, `papers-dataset-audit`, `zotero-collection-scope`,
-`zotero-to-caail-sync`) are in no filter and genuinely run nothing. `plugin-contribute/**` is in **both**
+either direction: `skills/**`, `plugin/skills/**`, `.claude/skills/matrix-classification-audit/**`,
+`.claude/skills/zotero-collection-scope/**` and `.claude/skills/papers-dataset-audit/**` are in
+`lint-papers.yml` and `.claude/skills/caail-pr-wrapup/**` is in `guards.yml`, while the other two
+`.claude/skills/*` directories (`caail-db-authoring`, `zotero-to-caail-sync`) are in no filter and
+genuinely run nothing. `plugin-contribute/**` is in **both**
 `lint-papers.yml` and `test.yml`, because `contribute-form.test.ts` reads its `SKILL.md` as input and
 `pnpm parse` aborts when that skill and the issue templates disagree. `plugin/**` and `.claude-plugin/**`
 are in `test.yml` too, because `plugin-counts.test.ts` and `site-config.test.ts` read the plugin
@@ -35,7 +36,7 @@ manifests and `plugin/skills/caail/SKILL.md`.
 
 **The check-free list, which lives here and nowhere else** (`SKILL.md` step 4 points at it rather
 than restating it, because the enumeration has already been wrong in both directions once each):
-`.claude/` rules and agents, the four unfiltered `.claude/skills/*` directories named above,
+`.claude/` rules and agents, the two unfiltered `.claude/skills/*` directories named above,
 `LICENSE` and `.zenodo.json`. None of the three plugin manifests is check-free: `plugin/**`,
 `plugin-contribute/**` and `.claude-plugin/**` are filtered whole in `test.yml`, so everything under
 them runs checks (`site-config.test.ts` reads all three manifests, and `plugin-counts.test.ts` reads
