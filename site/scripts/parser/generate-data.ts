@@ -39,7 +39,7 @@ import { buildOnRequestStudies, onRequestDrift, readOnRequestRows } from './data
 import { readPagesOnRequest } from '../db/extract.js';
 import { REPO_ROOT } from '../db/lib.js';
 import { PUBLIC_DIR, writeLlmsFull } from './llms-full.js';
-import { writeLlmsTxtDate } from './llms-corpus-date.js';
+import { stampLlmsTxt, writeStampedLlmsTxt } from './llms-corpus-date.js';
 import { buildAgentApi, writeAgentApi, publishSkillDoc, readCorpusDate } from './agent-api.js';
 import {
   PapersDataSchema,
@@ -567,6 +567,36 @@ export function generateData(
   };
 }
 
+/** Where `writeParseOutputs` writes. The CLI passes the real directories; a test passes temp ones. */
+export interface ParseOutputDirs {
+  /** The site data dir (`DEFAULT_OUT_DIR`). */
+  outDir: string;
+  /** The agent API dir (`DEFAULT_API_DIR`); `setup.md` goes to its parent. */
+  apiDir: string;
+  /** Where `llms.txt` and `llms-full.txt` are served from (`PUBLIC_DIR`). */
+  publicDir: string;
+}
+
+/**
+ * Everything `pnpm parse` writes, dated `corpusDate`: the site data, the agent API and
+ * `setup.md` (`generateData`), `llms-full.txt`, and the committed `llms.txt`'s corpus-date line
+ * (tucca-cellag/caail-planning#289), which `lint-papers.yml`'s sync guard diffs.
+ *
+ * `llms.txt` is stamped in memory first. A file with no corpus-date line, or two, throws there,
+ * before anything is written, rather than after every other output has been regenerated around
+ * it. The stamped text is written last.
+ */
+export function writeParseOutputs(corpusDate: string, dirs: ParseOutputDirs) {
+  const llmsTxt = stampLlmsTxt(dirs.publicDir, corpusDate);
+  const data = generateData(dirs.outDir, dirs.apiDir, corpusDate);
+  // Full-text agent index, generated alongside the JSON but written to public/ rather than the
+  // data dir, so it is written here rather than in generateData().
+  const llmsBytes = writeLlmsFull(corpusDate, dirs.publicDir);
+  if (llmsBytes <= 0) throw new Error('parse: llms-full.txt is empty');
+  const llmsTxtRewritten = writeStampedLlmsTxt(llmsTxt);
+  return { ...data, llmsBytes, llmsTxtRewritten };
+}
+
 /** Throw a descriptive error when a catalog/talks tally disagrees with counts.json. */
 function assertCountsMatch(label: string, derived: number, expected: number): void {
   if (derived !== expected) {
@@ -607,16 +637,13 @@ if (isMain) {
       correctionReasons,
       contributeTemplates,
       contributeParams,
-    } = generateData(DEFAULT_OUT_DIR, DEFAULT_API_DIR, corpusDate);
-    // Full-text agent index (public/llms-full.txt) — generated alongside the
-    // JSON, but written to public/ rather than the data dir, so it lives in the
-    // CLI block rather than the side-effect-free generateData() core.
-    const llmsBytes = writeLlmsFull(corpusDate);
-    if (llmsBytes <= 0) throw new Error('parse: llms-full.txt is empty');
-    // The committed llms.txt carries the same derived corpus date as llms-full.txt and the agent
-    // API; lint-papers.yml's sync guard fails a commit whose date this would rewrite
-    // (tucca-cellag/caail-planning#289).
-    const llmsTxtRewritten = writeLlmsTxtDate(PUBLIC_DIR, corpusDate);
+      llmsBytes,
+      llmsTxtRewritten,
+    } = writeParseOutputs(corpusDate, {
+      outDir: DEFAULT_OUT_DIR,
+      apiDir: DEFAULT_API_DIR,
+      publicDir: PUBLIC_DIR,
+    });
     // eslint-disable-next-line no-console
     console.log(
       `parse: wrote papers.json (${papersRefs} references), counts.json, ` +

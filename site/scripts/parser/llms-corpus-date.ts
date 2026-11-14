@@ -84,12 +84,28 @@ export function stampCorpusDate(text: string, date: string, file: LlmsFile): str
   return lines.join('\n');
 }
 
-/** Stamp `<publicDir>/llms.txt` in place with `date`; returns whether the file changed. */
-export function writeLlmsTxtDate(publicDir: string, date: string): boolean {
+/** `llms.txt` stamped in memory by `stampLlmsTxt`, for `writeStampedLlmsTxt` to write. */
+export interface StampedLlmsTxt {
+  path: string;
+  text: string;
+  /** Whether `text` differs from the file on disk. */
+  changed: boolean;
+}
+
+/**
+ * Read `<publicDir>/llms.txt` and stamp it with `date`, writing nothing. It throws as
+ * `stampCorpusDate` does, so parse calls it before its first write: a bad llms.txt then fails
+ * the parse with nothing written.
+ */
+export function stampLlmsTxt(publicDir: string, date: string): StampedLlmsTxt {
   const path = join(publicDir, 'llms.txt');
   const before = readFileSync(path, 'utf-8');
-  const after = stampCorpusDate(before, date, 'llms.txt');
-  if (after === before) return false;
-  writeFileSync(path, after, 'utf-8');
-  return true;
+  const text = stampCorpusDate(before, date, 'llms.txt');
+  return { path, text, changed: text !== before };
+}
+
+/** Write a stamped llms.txt if it changed; returns whether it did. */
+export function writeStampedLlmsTxt(stamped: StampedLlmsTxt): boolean {
+  if (stamped.changed) writeFileSync(stamped.path, stamped.text, 'utf-8');
+  return stamped.changed;
 }

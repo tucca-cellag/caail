@@ -9,11 +9,11 @@
  */
 
 import { describe, it, expect, afterAll } from 'vitest';
-import { mkdtempSync, rmSync, existsSync, readFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readdirSync, rmSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import os from 'node:os';
 
-import { generateData } from './generate-data.js';
+import { generateData, writeParseOutputs } from './generate-data.js';
 import { PapersDataSchema, CountsSchema, CatalogSchema, TalksSchema } from './types.js';
 
 // ---------------------------------------------------------------------------
@@ -136,5 +136,26 @@ describe('generateData()', () => {
     const parsed = JSON.parse(readFileSync(path, 'utf-8'));
     expect(parsed.themes).toHaveLength(8);
     expect(parsed.tags.length).toBeGreaterThan(0);
+  });
+});
+
+describe('writeParseOutputs()', () => {
+  it('throws on a llms.txt with no corpus-date line before writing anything', () => {
+    // A bad llms.txt is found first, so parse fails with the tree as it was, rather than after
+    // the data, the agent API, setup.md and llms-full.txt have been regenerated around it.
+    const root = mkdtempSync(join(os.tmpdir(), 'caail-parse-outputs-'));
+    try {
+      const publicDir = join(root, 'public');
+      mkdirSync(publicDir);
+      const undated = '# CAAIL\n\nNo corpus-date line here.\n';
+      writeFileSync(join(publicDir, 'llms.txt'), undated, 'utf-8');
+      const dirs = { outDir: join(root, 'data'), apiDir: join(publicDir, 'api'), publicDir };
+      expect(() => writeParseOutputs('2026-01-02', dirs)).toThrow(/^llms\.txt: .*found 0/);
+      expect(readdirSync(root)).toEqual(['public']);
+      expect(readdirSync(publicDir)).toEqual(['llms.txt']);
+      expect(readFileSync(join(publicDir, 'llms.txt'), 'utf-8')).toBe(undated);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 });
