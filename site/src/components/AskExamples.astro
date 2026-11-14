@@ -176,16 +176,23 @@ if (cowParents.length !== 1) {
   );
 }
 const cowParentAcc = acc(cowParents[0]!);
-/* The card's checkable catch: the obvious regulatory reference cannot actually be used yet.
-   If the deposit opens up this throws rather than shipping a stale warning. */
+/* The card's checkable catch: the obvious regulatory reference is only half usable yet. Its
+   processed annotations are open on Zenodo (its Data link), while the accession IDs for its newly
+   generated reads are withheld. If either half changes this throws rather than shipping a stale
+   warning. */
 const cowFaangRows = cowInventory.filter(
   (r) => notSuperSeries(r) && /FAANG epigenome atlas/i.test(col(r, 'Description')),
 );
 const cowFaang = cowFaangRows.length === 1 ? cowFaangRows[0] : undefined;
-if (!cowFaang || !/embargoed/i.test(col(cowFaang, 'Description'))) {
+if (
+  !cowFaang
+  || !/zenodo/i.test(col(cowFaang, 'Data'))
+  || !/withholds accession IDs/i.test(col(cowFaang, 'Description'))
+) {
   throw new Error(
     'AskExamples card 1: the "Regulatory-element annotation" row says the bovine FAANG ' +
-      'epigenome atlas\'s new deposits are embargoed, but ' +
+      'epigenome atlas\'s processed data are open on Zenodo and its new reads\' accession IDs ' +
+      'are withheld, but ' +
       (cowFaangRows.length === 0 ? 'its row is gone from the Cow inventory.'
         : cowFaangRows.length > 1 ? `${cowFaangRows.length} rows now match it, so the card cannot tell which.`
         : 'its row no longer says so.'),
@@ -457,7 +464,7 @@ const examples = [
     rows: [
       { k: 'Public at the full grid', v: `${acc(cowBulkTimecourse)} is bulk RNA-seq at 0/24/48/72/96 h in biological quadruplicates, with differentiation induced by serum starvation` },
       { k: 'Serum-free differentiation', v: `${acc(cowSerumFreeArm)} is bulk, sampled only at 0 h and 72 h in biological triplicates, and compares serum-free differentiation media with 2% FBS. ${acc(cowSingleNucleus)} is single-nucleus RNA-seq covering all five timepoints in serum-free differentiation medium` },
-      { k: 'Regulatory-element annotation', v: `The bovine FAANG epigenome atlas's newly generated deposits are embargoed until journal acceptance` },
+      { k: 'Regulatory-element annotation', v: `The bovine FAANG epigenome atlas's processed annotations are open on Zenodo, but the accession IDs for its newly generated reads are withheld until journal acceptance` },
     ],
     tail:
       `${acc(cowBulkTimecourse)} and ${acc(cowSerumFreeArm)} are subseries of one GEO SuperSeries, ${cowParentAcc}. ` +

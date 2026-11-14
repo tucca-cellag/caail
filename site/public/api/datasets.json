@@ -8793,10 +8793,10 @@
       "columns": {
         "Study": "Comprehensive multi-tissue epigenome atlas in sheep: a resource for complex traits, domestication, and breeding",
         "Paper": "[DOI](https://doi.org/10.1002/imt2.254)",
-        "Data": "[`CRA019589`](https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA019589)",
+        "Data": "unavailable",
         "Type": "RNA-seq + ATAC-seq + CUT&Tag + Hi-C",
         "Tissue": "Nine major tissues (incl. longissimus dorsi, tail fat)",
-        "Description": "Described by its authors as the first multi-tissue epigenome atlas of sheep: 92 transcriptomic and epigenomic datasets across nine major tissues, cataloguing 753,723 nonredundant functional elements and six chromatin states defined across the nine tissues; relevant to cultivated lamb as a regulatory-genomics reference for cell-line characterisation. Raw data deposited at NGDC/GSA CRA019589 and [`CRA019576`](https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA019576), both embargoed until 2027-02-13 (checked 2026-11-13); both records are titled \"Whole genome resequencing data\", and the paper does not say which assays each holds",
+        "Description": "Described by its authors as the first multi-tissue epigenome atlas of sheep: 92 transcriptomic and epigenomic datasets across nine major tissues, cataloguing 753,723 nonredundant functional elements and six chromatin states defined across the nine tissues; relevant to cultivated lamb as a regulatory-genomics reference for cell-line characterisation. Raw data deposited at NGDC/GSA [`CRA019589`](https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA019589) and [`CRA019576`](https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA019576), both embargoed until 2027-02-13; both records are titled \"Whole genome resequencing data\", and the paper does not say which assays each holds",
         "Size": "—",
         "Area of research": "Multi-tissue regulatory genomics & epigenomics"
       },
@@ -8806,9 +8806,9 @@
         "https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA019576"
       ],
       "paperDoi": "10.1002/imt2.254",
-      "dataStatus": "deposit",
-      "accession": "CRA019589",
-      "dataUrl": "https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA019589",
+      "dataStatus": "unavailable",
+      "accession": null,
+      "dataUrl": null,
       "dataDoi": null,
       "topics": [
         {
