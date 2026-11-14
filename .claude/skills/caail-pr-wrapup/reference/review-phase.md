@@ -407,13 +407,13 @@ checkpoint that used to sit between editing and shipping:
   | `block-generated-edits.py` | `pnpm --dir site test`. Its only coverage is `site/scripts/db/hook.test.ts`, so the publish-hook suite above does **not** exercise it. The two hooks are tested in different places; `ci-paths.md` says so too |
   | the plugin manifests (`plugin/.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json`) | `pnpm --dir site test`. `plugin-counts.test.ts` and `site-config.test.ts` read them; the parser does not, so `parse` has nothing to add |
   | `ship-pr.sh`, `check-ci-paths.py`, `.github/workflows/**` | `python3 .claude/skills/caail-pr-wrapup/check-ci-paths.py` |
-  | canonical Markdown (`Datasets/**`, `Primers/**`, root `*.md`, `Taxonomy.md`), `skills/**`, `plugin/skills/**`, `.claude/settings.json` | `pnpm --dir site test`, **and** `pnpm --dir site parse` followed by `git diff --exit-code -- site/public/api site/public/setup.md site/public/llms.txt`. The second is not optional and `test` does not cover it: `test` never regenerates those artifacts, so the committed API JSON and `setup.md` can disagree with the model and only `lint-papers.yml`'s sync guard notices, at step 4, after the push |
+  | canonical Markdown (`Datasets/**`, `Primers/**`, root `*.md`, `Taxonomy.md`), `skills/**`, `plugin/skills/**`, `.claude/settings.json` | `pnpm --dir site test`, **and** `pnpm --dir site parse` followed by `git diff --exit-code -- site/public/api site/public/setup.md site/public/llms.txt`. The second is not optional and `test` does not cover it: `test` never regenerates those artifacts, so the committed API JSON, `setup.md` and `llms.txt` can disagree with the model and only `lint-papers.yml`'s sync guard notices, at step 4, after the push |
   | anything not listed above | run `pnpm --dir site test` and think about which guard in `lint-papers.yml` and `test.yml` covers the path. A shape nobody listed is not a shape nothing checks |
 
   Note `pnpm --dir site build` rewrites tracked files under `site/public/api/` and `site/public/llms.txt`
   (its corpus-date line), so running it can dirty the tree. **Do not reflexively discard that.** Those
-  files are real output: if your fix changed anything the parser reads, the new API JSON *is* part of the
-  fix and must be committed with it. Discarding it ships a stale endpoint, and nothing catches that,
+  files are real output: if your fix changed anything the parser reads, the new API JSON and `llms.txt` line *are* part
+  of the fix and must be committed with it. Discarding them ships a stale endpoint, and nothing catches that,
   because `lint-papers.yml`'s API sync guard does not fire on `site/src/**` (bar
   `site/src/content/site-config.ts`), yet `site/src/lib/**` is imported by the parser, so a fix there can
   change the served output while leaving the guard silent. The test: re-run `build` from a clean tree at the commit before
