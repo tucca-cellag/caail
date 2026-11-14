@@ -1,5 +1,5 @@
 {
-  "corpusDate": "2026-11-10",
+  "corpusDate": "2026-11-14",
   "count": 292,
   "truncationNote": "Compare the number of rows you parsed against `count`. If you have fewer, your fetch truncated this file and you are looking at part of the corpus: say so, and do not report an absence from it. Fetching with a tool that returns bytes rather than a summary avoids this entirely.",
   "entries": [
@@ -163,7 +163,7 @@
     {"slug":"farmgtex-twas-server","name":"FarmGTEx TWAS-Server","kind":"database","group":"Livestock Multi-Tissue Atlases & Functional Genomics","url":"https://twas.farmgtex.org/","doi":null,"doiRelation":null,"tier":"unknown"},
     {"slug":"pigbiobank","name":"PigBiobank","kind":"database","group":"Livestock Multi-Tissue Atlases & Functional Genomics","url":"https://pigbiobank.farmgtex.org/","doi":"10.1093/nar/gkad1080","doiRelation":"publication","tier":"unknown"},
     {"slug":"faang-functional-annotation-of-animal-genomes","name":"FAANG (Functional Annotation of Animal Genomes)","kind":"database","group":"Livestock Multi-Tissue Atlases & Functional Genomics","url":"https://www.faang.org/","doi":"10.1186/s13059-020-02197-8","doiRelation":"publication","tier":"unknown"},
-    {"slug":"aqua-faang","name":"AQUA-FAANG","kind":"database","group":"Livestock Multi-Tissue Atlases & Functional Genomics","url":"https://www.aqua-faang.eu/","doi":null,"doiRelation":null,"tier":"unknown"},
+    {"slug":"aqua-faang","name":"AQUA-FAANG","kind":"database","group":"Livestock Multi-Tissue Atlases & Functional Genomics","url":"https://data.faang.org/projects/AQUA-FAANG","doi":null,"doiRelation":null,"tier":"unknown"},
     {"slug":"bovreg","name":"BovReg","kind":"database","group":"Livestock Multi-Tissue Atlases & Functional Genomics","url":"https://bovreg.eu/","doi":null,"doiRelation":null,"tier":"unknown"},
     {"slug":"gene-switch","name":"GENE-SWitCH","kind":"database","group":"Livestock Multi-Tissue Atlases & Functional Genomics","url":"https://www.gene-switch.eu/","doi":null,"doiRelation":null,"tier":"unknown"},
     {"slug":"animal-qtldb","name":"Animal QTLdb","kind":"database","group":"Livestock Multi-Tissue Atlases & Functional Genomics","url":"https://www.animalgenome.org/cgi-bin/QTLdb/index","doi":"10.1093/nar/gkab1116","doiRelation":"publication","tier":"unknown"},

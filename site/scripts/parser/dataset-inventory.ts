@@ -78,8 +78,8 @@ export { idAccession };
  * id from the first accession found anywhere in the joined cells, so a row whose Data column
  * carries no accession — `unavailable`, `supplementary`, or a non-NCBI badge — is
  * named after an accession merely MENTIONED in its Description. Several rows in the corpus
- * are like that; `ds:prjeb41939` is the clearest, a bovine FAANG atlas row whose Data reads
- * `unavailable` and whose id comes from public data the study REUSED.
+ * are like that; `ds:prjeb41939` is the clearest, a bovine FAANG atlas row whose Data links the
+ * study's Zenodo record (no accession) and whose id comes from public data the study REUSED.
  *
  * Resolving members by id would therefore have pointed an agent at a row that is not the
  * deposit it asked for: the same class of silent wrongness the subseries axis exists to fix,

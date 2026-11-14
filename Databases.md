@@ -80,9 +80,9 @@ Trait-data biobank coordinated with PigGTEx, integrating phenotypic, genotypic, 
 
 A global research consortium and resource network for functional annotation of farmed-animal genomes, paralleling ENCODE for human/mouse but focused on livestock species. Predates FarmGTEx and provides the broader functional-annotation substrate (chromatin state, regulatory elements, etc.) that FarmGTEx expression-genetics work builds on. Companion to [Papers.md ref #144](./Papers.md#144) (Clark et al. 2020, *Genome Biology*).
 
-### [AQUA-FAANG](https://www.aqua-faang.eu/)
+### [AQUA-FAANG](https://data.faang.org/projects/AQUA-FAANG)
 
-The FAANG consortium's aquaculture programme (*Advancing European Aquaculture by Genome Functional Annotation*) generating genome-wide functional annotation maps for six aquaculture species important to European aquaculture (Atlantic salmon, rainbow trout, European sea bass, gilthead sea bream, common carp, turbot). The [data hub](https://data.faang.org/projects/AQUA-FAANG) hosts the project's open releases (55 datasets at time of curation, spanning RNA-seq, ATAC-seq, and ChIP-seq). A FAANG functional-annotation substrate for aquaculture-cell-line work, paralleling FarmGTEx for terrestrial livestock. Cross-referenced from [Datasets/Fish.md](./Datasets/Fish.md).
+A FAANG initiative (*Advancing European Aquaculture by Genome Functional Annotation*) that generated genome-wide functional annotation maps for six aquaculture species important to European aquaculture (Atlantic salmon, rainbow trout, European sea bass, gilthead sea bream, common carp, turbot). The project's page on the FAANG data portal lists its open releases, with the files archived at ENA (55 datasets at time of curation, spanning RNA-seq, ATAC-seq, ChIP-seq, and microRNA profiling). A FAANG functional-annotation substrate for cell-ag work on these six species, drawn from tissues, embryos and cultured leukocytes rather than cell lines. Cross-referenced from [Datasets/Fish.md](./Datasets/Fish.md).
 
 ### [BovReg](https://bovreg.eu/)
 
