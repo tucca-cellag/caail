@@ -17,6 +17,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { CORPUS_DATE_PREFIX } from '../../scripts/parser/llms-corpus-date.js';
 import { isUnderBase, RETIRED_BASES, RETIRED_ORIGINS, SEARCH_CONSOLE_TOKENS, SITE_BASE, SITE_ORIGIN, SITE_URL } from './site-config';
 
 const SITE_DIR = fileURLToPath(new URL('../../', import.meta.url));
@@ -73,6 +74,23 @@ const PINNED: Array<[file: string, mustContain: string]> = [
   ['.github/ISSUE_TEMPLATE/entry-correction.yml', SITE_URL],
   ['.claude/skills/caail-pr-wrapup/ship-pr.sh', `PAGES_BASE="${SITE_ORIGIN}${SITE_BASE}"`],
 ];
+
+/**
+ * Lines a pinned file carries that a script writes from SITE_URL, keyed by file, each by the
+ * prefix that starts it. The pin checks only the hand-typed lines: `pnpm parse` writes
+ * llms.txt's corpus-date line from SITE_URL, so that line always contains it and would let the
+ * pin pass with every hand-typed link stale.
+ */
+const GENERATED_LINE_PREFIX: Record<string, string> = {
+  'site/public/llms.txt': CORPUS_DATE_PREFIX,
+};
+
+/** A pinned file's hand-typed text: the file without the lines a script writes into it. */
+function handTyped(file: string): string {
+  const text = readFileSync(join(REPO_DIR, file), 'utf-8');
+  const prefix = GENERATED_LINE_PREFIX[file];
+  return prefix === undefined ? text : text.split('\n').filter((l) => !l.startsWith(prefix)).join('\n');
+}
 
 describe('site-config', () => {
   it('sweeps with patterns that can both match and miss', () => {
@@ -177,7 +195,13 @@ describe('site-config', () => {
   });
 
   it('matches every static copy that cannot import it', () => {
-    const stale = PINNED.filter(([file, want]) => !readFileSync(join(REPO_DIR, file), 'utf-8').includes(want));
+    // Each set-aside prefix must match a line, or the exclusion has drifted from the file and
+    // is setting aside nothing.
+    for (const [file, prefix] of Object.entries(GENERATED_LINE_PREFIX)) {
+      const generated = readFileSync(join(REPO_DIR, file), 'utf-8').split('\n').filter((l) => l.startsWith(prefix));
+      expect(generated, `${file} has no line starting "${prefix}" to set aside`).toHaveLength(1);
+    }
+    const stale = PINNED.filter(([file, want]) => !handTyped(file).includes(want));
     expect(stale.map(([f, want]) => `${f} should contain ${want}`)).toEqual([]);
   });
 
