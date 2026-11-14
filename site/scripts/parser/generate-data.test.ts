@@ -32,9 +32,10 @@ afterAll(() => {
 
 describe('generateData()', () => {
   // Run generateData once; subsequent assertions reuse the result.
-  // Second arg is the agent-API dir. Omitting it would default to the real
-  // site/public/api/ and rewrite it (plus setup.md) on every test run.
-  const result = generateData(tmpDir, join(tmpDir, 'api'));
+  // A fixed corpus date keeps git and the clock out of it. The last arg is the agent-API
+  // dir. Omitting it would default to the real site/public/api/ and rewrite it (plus
+  // setup.md) on every test run.
+  const result = generateData('2026-01-02', tmpDir, join(tmpDir, 'api'));
 
   it('returns an object with papersRefs and counts', () => {
     expect(result).toHaveProperty('papersRefs');

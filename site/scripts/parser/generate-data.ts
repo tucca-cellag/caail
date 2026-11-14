@@ -140,15 +140,15 @@ export function loadCitationCache(
  *   src/content/data/ unless outDir defaults to DEFAULT_OUT_DIR.
  * - Throws on any error (schema violation, FS error); never calls process.exit.
  *
+ * @param corpusDate  The date stamped onto the agent API. Required, so every caller names it:
+ *   the CLI reads it once and hands the same value to llms-full.txt and llms.txt, so one parse
+ *   cannot write two dates, and no caller falls through to a second read in `buildAgentApi`.
  * @param outDir  Directory to write into. Defaults to DEFAULT_OUT_DIR.
- * @param corpusDate  The date stamped onto the agent API. The CLI reads it once and hands the
- *   same value to llms-full.txt and llms.txt, so one parse cannot write two dates. Left out, the
- *   agent API reads it itself (`buildAgentApi`'s default).
  */
 export function generateData(
+  corpusDate: string,
   outDir: string = DEFAULT_OUT_DIR,
   apiDir: string = DEFAULT_API_DIR,
-  corpusDate?: string,
 ): {
   counts: Counts;
   papersRefs: number;
@@ -588,7 +588,7 @@ export interface ParseOutputDirs {
  */
 export function writeParseOutputs(corpusDate: string, dirs: ParseOutputDirs) {
   const llmsTxt = stampLlmsTxt(dirs.publicDir, corpusDate);
-  const data = generateData(dirs.outDir, dirs.apiDir, corpusDate);
+  const data = generateData(corpusDate, dirs.outDir, dirs.apiDir);
   // Full-text agent index, generated alongside the JSON but written to public/ rather than the
   // data dir, so it is written here rather than in generateData().
   const llmsBytes = writeLlmsFull(corpusDate, dirs.publicDir);
