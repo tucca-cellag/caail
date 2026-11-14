@@ -262,7 +262,6 @@
 {"item_id":"ds:bovreg","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:cattle-cell-atlas-cattleca","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:cattle-cell-atlas-cattleca","topic_id":"topic:single-cell-atlases"}
-{"item_id":"ds:cattlegtex","topic_id":"topic:cell-line-engineering"}
 {"item_id":"ds:cattlegtex","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:cell-type-diversity","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:cell-type-diversity","topic_id":"topic:single-cell-atlases"}
