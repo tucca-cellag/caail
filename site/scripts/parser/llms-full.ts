@@ -30,7 +30,8 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { isPublishedMarkdown } from '../../src/lib/canonical-files.js';
-import { absolutizePageLinks } from './agent-api.js';
+import { absolutizePageLinks, readCorpusDate } from './agent-api.js';
+import { corpusDateNote } from './llms-corpus-date.js';
 
 /** Repo root: parser → scripts → site → repo (three levels up). */
 const REPO_ROOT: string = fileURLToPath(new URL('../../../', import.meta.url));
@@ -79,14 +80,15 @@ export function llmsFullSources(repoRoot: string = REPO_ROOT): string[] {
 }
 
 /**
- * The served header, with the frontmatter caveat DERIVED from the source list.
+ * The served header, with the frontmatter caveat DERIVED from the source list, and the corpus
+ * date note (`llms-corpus-date.ts`), so a copy of this file can say how old it is.
  *
  * `FRONTMATTER_PREFIX` is a prefix test precisely so a second Starlight page can join the
  * list. The moment one does, a hardcoded "that page, and only that one" is false and nothing
  * fails, since `llms-full.test.ts` asserts only the first line. This docstring's own history
  * is the argument: the sentence above it said VERBATIM until this branch made it untrue.
  */
-function buildHeader(sources: string[]): string {
+function buildHeader(sources: string[], corpusDate: string): string {
   const withFrontmatter = sources.filter((s) => s.startsWith(FRONTMATTER_PREFIX));
   // Links are named first: every source's are rewritten, so "as written" holds only for the rest.
   const links =
@@ -100,7 +102,8 @@ function buildHeader(sources: string[]): string {
     "> Single-file concatenation of CAAIL's canonical Markdown, for AI agents. " +
     caveat +
     'The website pages are compressed navigation summaries; this file is the ' +
-    'authoritative full text. Source repository: https://github.com/tucca-cellag/caail\n'
+    'authoritative full text. Source repository: https://github.com/tucca-cellag/caail\n\n' +
+    `${corpusDateNote(corpusDate, 'llms-full.txt')}\n`
   );
 }
 
@@ -229,7 +232,7 @@ export function buildLlmsFullText(repoRoot: string = REPO_ROOT): string {
   // readdirSync passes and, worse, let the header describe a different set than the body
   // concatenates — the exact invariant buildHeader exists to hold.
   const sources = llmsFullSources(repoRoot);
-  const parts = [buildHeader(sources)];
+  const parts = [buildHeader(sources, readCorpusDate(repoRoot))];
   for (const rel of sources) parts.push(llmsFullSection(rel, readFileSync(join(repoRoot, rel), 'utf-8')));
   return parts.join('');
 }

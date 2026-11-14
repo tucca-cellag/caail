@@ -24,6 +24,7 @@ on:
       # generated outputs, so a hand-edit trips the sync guard that catches it
       - site/public/api/**
       - site/public/setup.md
+      - site/public/llms.txt
       - plugin/skills/**
       # the installer, which setup.md is generated from. It lives outside plugin/ so that
       # installing the plugin does not also install its own installer, which means it is
@@ -70,6 +71,7 @@ on:
       # generated outputs, so a hand-edit trips the sync guard that catches it
       - site/public/api/**
       - site/public/setup.md
+      - site/public/llms.txt
       - plugin/skills/**
       # the installer, which setup.md is generated from. It lives outside plugin/ so that
       # installing the plugin does not also install its own installer, which means it is
@@ -174,5 +176,5 @@ jobs:
       - name: Agent API ↔ corpus sync guard
         run: |
           pnpm --dir site parse
-          git diff --exit-code -- site/public/api site/public/setup.md \
+          git diff --exit-code -- site/public/api site/public/setup.md site/public/llms.txt \
             || { echo "::error::Committed agent API is out of sync with the corpus. Run 'pnpm --dir site parse' and commit the result."; exit 1; }

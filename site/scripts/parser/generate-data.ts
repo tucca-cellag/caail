@@ -39,7 +39,8 @@ import { buildOnRequestStudies, onRequestDrift, readOnRequestRows } from './data
 import { readPagesOnRequest } from '../db/extract.js';
 import { REPO_ROOT } from '../db/lib.js';
 import { writeLlmsFull } from './llms-full.js';
-import { buildAgentApi, writeAgentApi, publishSkillDoc } from './agent-api.js';
+import { writeLlmsTxtDate } from './llms-corpus-date.js';
+import { buildAgentApi, writeAgentApi, publishSkillDoc, readCorpusDate } from './agent-api.js';
 import {
   PapersDataSchema,
   CountsSchema,
@@ -602,6 +603,10 @@ if (isMain) {
     // CLI block rather than the side-effect-free generateData() core.
     const llmsBytes = writeLlmsFull();
     if (llmsBytes <= 0) throw new Error('parse: llms-full.txt is empty');
+    // The committed llms.txt carries the same derived corpus date as llms-full.txt and the agent
+    // API; lint-papers.yml's sync guard fails a commit whose date this would rewrite
+    // (tucca-cellag/caail-planning#289).
+    writeLlmsTxtDate(join(DEFAULT_API_DIR, '..'), readCorpusDate(REPO_ROOT));
     // eslint-disable-next-line no-console
     console.log(
       `parse: wrote papers.json (${papersRefs} references), counts.json, ` +
