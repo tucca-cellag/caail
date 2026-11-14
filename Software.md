@@ -98,7 +98,7 @@ Project page: <https://morpheus.gitlab.io/>.
 
 ### [pyFOOMB](https://github.com/MicroPhen/pyFOOMB)
 
-Summary: A Python framework for object-oriented modeling of bioprocesses aimed at users with limited programming experience, wrapping ODE model definition, event handling, and parameter estimation with uncertainty quantification for fed-batch and other bioreactor models ([Hemmerich et al. 2021](https://doi.org/10.1002/elsc.202000088), *Engineering in Life Sciences*). For cellular agriculture, useful for building and calibrating growth/substrate/product kinetic models of cultivated-cell bioprocesses.
+Summary: A Python framework for object-oriented modeling of bioprocesses aimed at users with limited programming experience, wrapping ODE model definition, event handling, and parameter estimation with uncertainty quantification for fed-batch and other bioreactor models ([Hemmerich et al. 2021](https://doi.org/10.1002/elsc.202000088), *Engineering in Life Sciences*). For cellular agriculture, its user-defined ODE models could be used to build and calibrate growth/substrate/product kinetic models of cultivated-cell bioprocesses; the paper's own examples are microbial (*Corynebacterium glutamicum* batch and repetitive-batch cultures).
 
 Docs: <https://github.com/MicroPhen/pyFOOMB/tree/main/examples>.
 
@@ -228,7 +228,7 @@ Docs: <https://masspy.readthedocs.io/>.
 
 ### [RIPTiDe](https://github.com/mjenior/riptide)
 
-Summary: A Python tool that tailors a genome-scale metabolic model to transcriptomic data by parsimonious flux analysis, yielding a context-specific model that predicts metabolism better in complex environments (Jenior et al. 2020, *PLOS Computational Biology*). It is the transcriptome-to-context-specific-model step that the classic extraction methods GIMME, iMAT, and tINIT pioneered: those live in the already-listed COBRA Toolbox (GIMME, iMAT) and RAVEN Toolbox (tINIT). For cell-ag it conditions a species GEM on the actual expression state of a proliferating or differentiating muscle or fat cell for media and process design. MIT.
+Summary: A Python tool that tailors a genome-scale metabolic model to transcriptomic data by parsimonious flux analysis, yielding a context-specific model that predicts metabolism better in complex environments (Jenior et al. 2020, *PLOS Computational Biology*). It performs the transcriptome-to-context-specific-model step that the extraction methods GIMME and iMAT (in the already-listed COBRA Toolbox) and tINIT (in the RAVEN Toolbox, where ftINIT now replaces it) also perform. It was developed and validated on bacteria (*E. coli*), and its authors suggest it may also prove effective for tissue-specific models of larger eukaryotes; for cell-ag it is a candidate for conditioning a species GEM on the expression state of a proliferating or differentiating muscle or fat cell, and it can approximate the medium a transcriptome was collected in, which bears on media design. MIT.
 
 ## Quantitative Genetics & Multi-Omics Analysis
 

@@ -82,7 +82,7 @@ A global research consortium and resource network for functional annotation of f
 
 ### [AQUA-FAANG](https://data.faang.org/projects/AQUA-FAANG)
 
-A FAANG initiative (*Advancing European Aquaculture by Genome Functional Annotation*) that generated genome-wide functional annotation maps for six aquaculture species important to European aquaculture (Atlantic salmon, rainbow trout, European sea bass, gilthead sea bream, common carp, turbot). The project's page on the FAANG data portal hosts its open releases (55 datasets at time of curation, spanning RNA-seq, ATAC-seq, and ChIP-seq). A FAANG functional-annotation substrate for aquaculture-cell-line work, paralleling FarmGTEx for terrestrial livestock. Cross-referenced from [Datasets/Fish.md](./Datasets/Fish.md).
+A FAANG initiative (*Advancing European Aquaculture by Genome Functional Annotation*) that generated genome-wide functional annotation maps for six aquaculture species important to European aquaculture (Atlantic salmon, rainbow trout, European sea bass, gilthead sea bream, common carp, turbot). The project's page on the FAANG data portal lists its open releases, with the files archived at ENA (55 datasets at time of curation, spanning RNA-seq, ATAC-seq, ChIP-seq, and microRNA profiling). A FAANG functional-annotation substrate for cell-ag work on these six species, drawn from tissues, embryos and cultured leukocytes rather than cell lines. Cross-referenced from [Datasets/Fish.md](./Datasets/Fish.md).
 
 ### [BovReg](https://bovreg.eu/)
 
