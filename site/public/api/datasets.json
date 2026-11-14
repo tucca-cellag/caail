@@ -4474,13 +4474,14 @@
         "Data": "[Zenodo](https://doi.org/10.5281/zenodo.12216791)",
         "Type": "ATAC-seq + ChIP-seq + WGBS + Hi-C + RNA-seq",
         "Tissue": "53 adult + 5 fetal tissues + 7 primary cell types",
-        "Description": "Bovine FAANG epigenome atlas of 1,138 genome-wide profiles (RNA-seq, ATAC-seq, WGBS, histone/CTCF ChIP-seq and Hi-C) annotating ~45% of the genome as putative regulatory elements; processed data, including peaks, chromatin states and super-enhancer annotations, are open on Zenodo, while the authors' data statement withholds accession IDs for the newly generated RNA-seq, ChIP-seq, ATAC-seq and WGBS deposits (FAANG, SRA, ENA) until manuscript acceptance (reused public data PRJEB41939, PRJNA672996, PRJNA531208, E-MTAB-11825/11826; analysis code at github.com/guandailu/CattleEpiMap, formerly BovineFAANG) (Guan et al. 2025, *bioRxiv*)",
+        "Description": "Bovine FAANG epigenome atlas of 1,138 genome-wide profiles (RNA-seq, ATAC-seq, WGBS, histone/CTCF ChIP-seq and Hi-C) annotating ~45% of the genome as putative regulatory elements; processed data, including peaks, chromatin states and super-enhancer annotations, are open on Zenodo, while the data statement in the manuscript's Research Square copy ([10.21203/rs.3.rs-7810677/v1](https://doi.org/10.21203/rs.3.rs-7810677/v1)) withholds accession IDs for the newly generated RNA-seq, ChIP-seq, ATAC-seq and WGBS deposits (FAANG, SRA, ENA) until manuscript acceptance (reused public data PRJEB41939, PRJNA672996, PRJNA531208, E-MTAB-11825/11826; analysis code at github.com/guandailu/CattleEpiMap, formerly BovineFAANG) (Guan et al. 2025, *bioRxiv*)",
         "Size": "1,138 profiles",
         "Area of research": "Regulatory-element annotation"
       },
       "links": [
         "https://doi.org/10.1101/2025.08.21.671512",
-        "https://doi.org/10.5281/zenodo.12216791"
+        "https://doi.org/10.5281/zenodo.12216791",
+        "https://doi.org/10.21203/rs.3.rs-7810677/v1"
       ],
       "paperDoi": "10.1101/2025.08.21.671512",
       "dataStatus": "deposit",
@@ -8792,10 +8793,10 @@
       "columns": {
         "Study": "Comprehensive multi-tissue epigenome atlas in sheep: a resource for complex traits, domestication, and breeding",
         "Paper": "[DOI](https://doi.org/10.1002/imt2.254)",
-        "Data": "unavailable",
+        "Data": "[`CRA019589`](https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA019589)",
         "Type": "RNA-seq + ATAC-seq + CUT&Tag + Hi-C",
         "Tissue": "Nine major tissues (incl. longissimus dorsi, tail fat)",
-        "Description": "Described by its authors as the first multi-tissue epigenome atlas of sheep: 92 transcriptomic and epigenomic datasets across nine major tissues, cataloguing 753,723 nonredundant functional elements and six chromatin states defined across the nine tissues; relevant to cultivated lamb as a regulatory-genomics reference for cell-line characterisation. Raw data deposited at NGDC/GSA [`CRA019589`](https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA019589) and [`CRA019576`](https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA019576), both embargoed until 2027-02-13; both records are titled \"Whole genome resequencing data\", and the paper does not say which assays each holds",
+        "Description": "Described by its authors as the first multi-tissue epigenome atlas of sheep: 92 transcriptomic and epigenomic datasets across nine major tissues, cataloguing 753,723 nonredundant functional elements and six chromatin states defined across the nine tissues; relevant to cultivated lamb as a regulatory-genomics reference for cell-line characterisation. Raw data deposited at NGDC/GSA CRA019589 and [`CRA019576`](https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA019576), both embargoed until 2027-02-13 (checked 2026-11-13); both records are titled \"Whole genome resequencing data\", and the paper does not say which assays each holds",
         "Size": "—",
         "Area of research": "Multi-tissue regulatory genomics & epigenomics"
       },
@@ -8805,9 +8806,9 @@
         "https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA019576"
       ],
       "paperDoi": "10.1002/imt2.254",
-      "dataStatus": "unavailable",
-      "accession": null,
-      "dataUrl": null,
+      "dataStatus": "deposit",
+      "accession": "CRA019589",
+      "dataUrl": "https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA019589",
       "dataDoi": null,
       "topics": [
         {
