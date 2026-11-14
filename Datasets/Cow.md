@@ -6,11 +6,11 @@ Cattle are a leading cultivated-meat target, and bovine satellite cells are amon
 
 ### [CattleGTEx](https://cattlegtex.farmgtex.org/)
 
-The Cattle Genotype-Tissue Expression project of FarmGTEx, a public resource of RNA-seq molecular phenotypes and genetic regulatory variation across cattle tissues. Its pilot phase ([Papers.md ref #192](../Papers.md#192), Liu et al. 2022, *Nature Genetics*) mapped expression and splicing QTLs for 23 tissues from 7,180 public RNA-seq samples; its processed data and full QTL summary statistics are on the [pilot portal](https://cgtex.roslin.ed.ac.uk/). Full entry in [Databases.md / Livestock Multi-Tissue Atlases](../Databases.md#livestock-multi-tissue-atlases--functional-genomics).
+The Cattle Genotype-Tissue Expression project of FarmGTEx, in its portal's words "a public resource for studying context-specific molecular phenotypes and genetic regulatory variation in cattle". Its pilot phase ([Papers.md ref #192](../Papers.md#192), Liu et al. 2022, *Nature Genetics*) uniformly integrated 7,180 public RNA-seq samples and mapped expression and splicing QTLs for 23 tissues from 4,889 of them; its processed data and full QTL summary statistics are on the [pilot portal](https://cgtex.roslin.ed.ac.uk/). Full entry in [Databases.md / Livestock Multi-Tissue Atlases](../Databases.md#livestock-multi-tissue-atlases--functional-genomics).
 
 ### [Cattle Cell Atlas (CattleCA)](https://ngdc.cncb.ac.cn/cattleca/)
 
-A single-cell and single-nucleus transcriptomic atlas of 1,793,854 cells from 59 cattle tissue types in 15 animals, annotated into 131 cell types, built as part of FarmGTEx. Companion to [Papers.md ref #137](../Papers.md#137) (Han et al. 2025, *Nature Genetics*); the newly generated sc/snRNA-seq data are at NCBI BioProject [`PRJNA1119173`](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA1119173). Full entry in [Databases.md / Livestock Multi-Tissue Atlases](../Databases.md#livestock-multi-tissue-atlases--functional-genomics).
+A single-cell and single-nucleus transcriptomic atlas of 1,793,854 cells from 59 cattle tissue types in 15 animals, built as part of FarmGTEx. Its companion paper, [Papers.md ref #137](../Papers.md#137) (Han et al. 2025, *Nature Genetics*), annotates them into 131 cell types; the newly generated sc/snRNA-seq data are at NCBI BioProject [`PRJNA1119173`](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA1119173). Full entry in [Databases.md / Livestock Multi-Tissue Atlases](../Databases.md#livestock-multi-tissue-atlases--functional-genomics).
 
 ### [BovReg](https://bovreg.eu/)
 
@@ -98,7 +98,7 @@ Studies whose own data availability statement says their data are shared only on
 ## Further reading
 
 - Adjacent research areas: [Cellular Engineering](../ResearchAreas/CellEngineering.md), [Media Optimization](../ResearchAreas/MediaOptimization.md) (the FBS-replacement problem that motivates much cultivated-beef media work), [Bioprocess Control](../ResearchAreas/Bioprocess.md), [Metabolic Modeling](../ResearchAreas/MetabolicModeling.md).
-- Atlases & functional genomics: [Livestock Multi-Tissue Atlases & Functional Genomics](../Databases.md#livestock-multi-tissue-atlases--functional-genomics) in `Databases.md`. Foundational reference for the CattleGTEx lineage: [Papers.md #192](../Papers.md#192) (Liu et al. 2022, *Nature Genetics*).
+- Atlases & functional genomics: [Livestock Multi-Tissue Atlases & Functional Genomics](../Databases.md#livestock-multi-tissue-atlases--functional-genomics) in `Databases.md`. Pilot-phase paper of CattleGTEx: [Papers.md #192](../Papers.md#192) (Liu et al. 2022, *Nature Genetics*).
 - Adjacent single-cell atlases: Wang et al. 2023, *Journal of Cachexia, Sarcopenia and Muscle*, [A single‐cell atlas of bovine skeletal muscle reveals mechanisms regulating intramuscular adipogenesis and fibrogenesis](https://doi.org/10.1002/jcsm.13292) — complementary intramuscular-fat-focused atlas to the cultivated-meat-focused deposits inventoried above.
 - Sequence & expression repositories: [GEO](../Databases.md#nih-gene-expression-omnibus-geo), [SRA](../Databases.md#nih-sequence-read-archive-sra), [Ensembl](../Databases.md#ensembl), [GenBank](../Databases.md#nih-genbank) — the canonical living indexes for the deposits curated here.
 - Metabolome reference: [Bovine Metabolome Database (BMDB)](../Databases.md#bovine-metabolome-database-bmdb).

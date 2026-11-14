@@ -17,6 +17,7 @@
     "https://biocyc.org/": "10.1093/nar/gkz862",
     "https://bioinfo-minzhao.org/csgene/": "10.1038/cddis.2015.414",
     "https://bitterdb.agri.huji.ac.il/": "10.1093/nar/gkr755",
+    "https://cattlegtex.farmgtex.org/": "10.1038/s41588-022-01153-5",
     "https://cellxgene.cziscience.com/": "10.1093/nar/gkae1142",
     "https://chicken.farmgtex.org/": "10.1038/s41588-025-02155-9",
     "https://coconut.naturalproducts.net/": "10.1186/s13321-020-00478-9",
@@ -144,7 +145,7 @@
     "https://mzmine.github.io/": "10.1038/s41587-023-01690-2",
     "https://nf-co.re/ampliseq": "10.3389/fmicb.2020.550420",
     "https://nf-co.re/mag": "10.1093/nargab/lqac007",
-    "https://cattlegtex.farmgtex.org/": "10.1038/s41588-022-01153-5",
+    "https://ngdc.cncb.ac.cn/cattleca/": "10.1038/s41588-025-02329-5",
     "https://ngdc.cncb.ac.cn/gsa/": "10.1016/j.gpb.2021.08.001",
     "https://obophenotype.github.io/cell-ontology/": "10.1186/s13326-016-0088-7",
     "https://olfactionbase.com/": "10.1093/nar/gkab763",
@@ -222,8 +223,7 @@
     "https://www.t3db.ca/": "10.1093/nar/gku1004",
     "https://www.uniprot.org/": "10.1093/nar/gkae1010",
     "https://www.vmh.life/": "10.1093/nar/gky992",
-    "https://www.wikipathways.org/": "10.1093/nar/gkad960",
-    "https://ngdc.cncb.ac.cn/cattleca/": "10.1038/s41588-025-02329-5"
+    "https://www.wikipathways.org/": "10.1093/nar/gkad960"
   },
   "datasets": {
     "ds:algpred-20-allergen-dataset": "10.1093/bib/bbaa294",
