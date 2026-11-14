@@ -13,7 +13,8 @@ import { mkdtempSync, mkdirSync, readdirSync, rmSync, existsSync, readFileSync, 
 import { join } from 'node:path';
 import os from 'node:os';
 
-import { generateData, writeParseOutputs } from './generate-data.js';
+import { generateData, writeParseOutputs, type ParseOutputDirs } from './generate-data.js';
+import { CORPUS_DATE_PREFIX, corpusDateNote, findCorpusDateLine } from './llms-corpus-date.js';
 import { PapersDataSchema, CountsSchema, CatalogSchema, TalksSchema } from './types.js';
 
 // ---------------------------------------------------------------------------
@@ -141,22 +142,79 @@ describe('generateData()', () => {
 });
 
 describe('writeParseOutputs()', () => {
+  const CORPUS_DATE = '2026-01-02';
+
+  /** A minimal llms.txt: hand-typed lines around one corpus-date line, `dateLine`. */
+  const llmsTxtWith = (dateLine: string) => `# CAAIL\n\n> Summary.\n\n${dateLine}\n\nBody.\n`;
+  const STALE = llmsTxtWith('Corpus date: 2020-01-01, an older note.');
+  const CURRENT = llmsTxtWith(corpusDateNote(CORPUS_DATE, 'llms.txt'));
+
+  const roots: string[] = [];
+  afterAll(() => {
+    for (const root of roots) rmSync(root, { recursive: true, force: true });
+  });
+
+  /** Fresh temp output dirs whose public dir holds `llmsTxt` as llms.txt. */
+  function outputDirs(llmsTxt: string): { root: string; dirs: ParseOutputDirs } {
+    const root = mkdtempSync(join(os.tmpdir(), 'caail-parse-outputs-'));
+    roots.push(root);
+    const publicDir = join(root, 'public');
+    mkdirSync(publicDir);
+    writeFileSync(join(publicDir, 'llms.txt'), llmsTxt, 'utf-8');
+    return { root, dirs: { outDir: join(root, 'data'), apiDir: join(publicDir, 'api'), publicDir } };
+  }
+
+  /** One parse into fresh dirs seeded with `llmsTxt`, and what it left in the files that carry a date. */
+  function parseInto(llmsTxt: string) {
+    const { dirs } = outputDirs(llmsTxt);
+    const { llmsTxtRewritten } = writeParseOutputs(CORPUS_DATE, dirs);
+    const read = (rel: string) => readFileSync(join(dirs.publicDir, rel), 'utf-8');
+    return {
+      llmsTxtRewritten,
+      llmsTxt: read('llms.txt'),
+      // Only the header: the concatenated corpus below it is not llms-full.txt's own text.
+      llmsFullHeader: read('llms-full.txt').split('\n# ===== ')[0]!,
+      indexCorpusDate: (JSON.parse(read('api/index.json')) as { corpusDate: string }).corpusDate,
+    };
+  }
+
+  /** The date on the one corpus-date line of `text`. */
+  function dateOn(text: string, file: string): string {
+    const lines = text.split('\n');
+    return lines[findCorpusDateLine(lines, file)]!.slice(CORPUS_DATE_PREFIX.length, CORPUS_DATE_PREFIX.length + 10);
+  }
+
+  // Each run is a whole parse, about as long as generateData's run above, so like that run they
+  // happen once, here, rather than inside a test: the per-test budget in
+  // scripts/test-reliability/budgets.ts is sized for tests several times cheaper.
+  const fromStale = parseInto(STALE);
+  const fromCurrent = parseInto(CURRENT);
+
   it('throws on a llms.txt with no corpus-date line before writing anything', () => {
     // A bad llms.txt is found first, so parse fails with the tree as it was, rather than after
     // the data, the agent API, setup.md and llms-full.txt have been regenerated around it.
-    const root = mkdtempSync(join(os.tmpdir(), 'caail-parse-outputs-'));
-    try {
-      const publicDir = join(root, 'public');
-      mkdirSync(publicDir);
-      const undated = '# CAAIL\n\nNo corpus-date line here.\n';
-      writeFileSync(join(publicDir, 'llms.txt'), undated, 'utf-8');
-      const dirs = { outDir: join(root, 'data'), apiDir: join(publicDir, 'api'), publicDir };
-      expect(() => writeParseOutputs('2026-01-02', dirs)).toThrow(/^llms\.txt: .*found 0/);
-      expect(readdirSync(root)).toEqual(['public']);
-      expect(readdirSync(publicDir)).toEqual(['llms.txt']);
-      expect(readFileSync(join(publicDir, 'llms.txt'), 'utf-8')).toBe(undated);
-    } finally {
-      rmSync(root, { recursive: true, force: true });
-    }
+    const undated = '# CAAIL\n\nNo corpus-date line here.\n';
+    const { root, dirs } = outputDirs(undated);
+    expect(() => writeParseOutputs(CORPUS_DATE, dirs)).toThrow(/^llms\.txt: .*found 0/);
+    expect(readdirSync(root)).toEqual(['public']);
+    expect(readdirSync(dirs.publicDir)).toEqual(['llms.txt']);
+    expect(readFileSync(join(dirs.publicDir, 'llms.txt'), 'utf-8')).toBe(undated);
+  });
+
+  it('dates llms.txt, llms-full.txt and the agent API with the one date it is given', () => {
+    expect({
+      'llms.txt': dateOn(fromStale.llmsTxt, 'llms.txt'),
+      'llms-full.txt': dateOn(fromStale.llmsFullHeader, 'llms-full.txt'),
+      'api/index.json': fromStale.indexCorpusDate,
+    }).toEqual({ 'llms.txt': CORPUS_DATE, 'llms-full.txt': CORPUS_DATE, 'api/index.json': CORPUS_DATE });
+  });
+
+  it("rewrites llms.txt's date line in parse's own words and keeps every hand-typed line", () => {
+    expect({ rewritten: fromStale.llmsTxtRewritten, text: fromStale.llmsTxt }).toEqual({ rewritten: true, text: CURRENT });
+  });
+
+  it('leaves a llms.txt already carrying the current note byte for byte', () => {
+    // What lets a second parse report llms.txt unchanged, and the sync guard's diff stay empty.
+    expect({ rewritten: fromCurrent.llmsTxtRewritten, text: fromCurrent.llmsTxt }).toEqual({ rewritten: false, text: CURRENT });
   });
 });
