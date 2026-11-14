@@ -34,8 +34,9 @@
 {"item_id":"db:brenda","topic_id":"topic:metabolism-modeling"}
 {"item_id":"db:casp-prediction-center","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"db:casp-prediction-center","topic_id":"topic:benchmarks-evaluation"}
+{"item_id":"db:cattle-cell-atlas-cattleca","topic_id":"topic:cell-lines-engineering"}
+{"item_id":"db:cattle-cell-atlas-cattleca","topic_id":"topic:single-cell-atlases"}
 {"item_id":"db:cattlegtex","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"db:cattlegtex","topic_id":"topic:single-cell-atlases"}
 {"item_id":"db:cell-ontology-cl","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"db:cellage","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"db:cellosaurus","topic_id":"topic:cell-line-engineering"}
@@ -259,10 +260,11 @@
 {"item_id":"ds:bovreg","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"ds:bovreg","topic_id":"topic:cell-line-engineering"}
 {"item_id":"ds:bovreg","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"ds:cattlegtex","topic_id":"topic:ai-methods-tooling"}
+{"item_id":"ds:cattle-cell-atlas-cattleca","topic_id":"topic:cell-line-engineering"}
+{"item_id":"ds:cattle-cell-atlas-cattleca","topic_id":"topic:cell-lines-engineering"}
+{"item_id":"ds:cattle-cell-atlas-cattleca","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:cattlegtex","topic_id":"topic:cell-line-engineering"}
 {"item_id":"ds:cattlegtex","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"ds:cattlegtex","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:cell-type-diversity","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:cell-type-diversity","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:changes-in-glycolytic","topic_id":"topic:ai-methods-tooling"}

@@ -4,9 +4,13 @@ Cattle are a leading cultivated-meat target, and bovine satellite cells are amon
 
 ## Featured atlases
 
-### [CattleGTEx](https://ngdc.cncb.ac.cn/cattleca/home)
+### [CattleGTEx](https://cattlegtex.farmgtex.org/)
 
-Cattle sub-portal of the FarmGTEx consortium, providing bulk and single-cell multi-tissue expression atlases for cattle (*Bos taurus*), directly relevant to cultivated-beef cell-line characterization and engineering. Companion to [Papers.md ref #137](../Papers.md#137) (Han et al. 2025, the single-cell atlas paper). Full entry in [Databases.md / Livestock Multi-Tissue Atlases](../Databases.md#livestock-multi-tissue-atlases--functional-genomics).
+The Cattle Genotype-Tissue Expression project of FarmGTEx, a public resource of RNA-seq molecular phenotypes and genetic regulatory variation across cattle tissues. Its pilot phase ([Papers.md ref #192](../Papers.md#192), Liu et al. 2022, *Nature Genetics*) mapped expression and splicing QTLs for 23 tissues from 7,180 public RNA-seq samples; its processed data and full QTL summary statistics are on the [pilot portal](https://cgtex.roslin.ed.ac.uk/). Full entry in [Databases.md / Livestock Multi-Tissue Atlases](../Databases.md#livestock-multi-tissue-atlases--functional-genomics).
+
+### [Cattle Cell Atlas (CattleCA)](https://ngdc.cncb.ac.cn/cattleca/)
+
+A single-cell and single-nucleus transcriptomic atlas of 1,793,854 cells from 59 cattle tissue types in 15 animals, annotated into 131 cell types, built as part of FarmGTEx. Companion to [Papers.md ref #137](../Papers.md#137) (Han et al. 2025, *Nature Genetics*); the newly generated sc/snRNA-seq data are at NCBI BioProject [`PRJNA1119173`](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA1119173). Full entry in [Databases.md / Livestock Multi-Tissue Atlases](../Databases.md#livestock-multi-tissue-atlases--functional-genomics).
 
 ### [BovReg](https://bovreg.eu/)
 

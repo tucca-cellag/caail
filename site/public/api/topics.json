@@ -11,8 +11,8 @@
           "paper": 97,
           "software": 55,
           "database": 58,
-          "dataset": 61,
-          "total": 271
+          "dataset": 60,
+          "total": 270
         },
         "tags": [
           "ai-agents",
@@ -47,9 +47,9 @@
         "counts": {
           "paper": 51,
           "software": 14,
-          "database": 37,
-          "dataset": 188,
-          "total": 290
+          "database": 38,
+          "dataset": 189,
+          "total": 292
         },
         "tags": [
           "cell-line-engineering",
@@ -217,8 +217,8 @@
           "paper": 7,
           "software": 14,
           "database": 5,
-          "dataset": 28,
-          "total": 54
+          "dataset": 29,
+          "total": 55
         },
         "tags": []
       },
@@ -693,7 +693,6 @@
       "datasets": [
         "ds:chickengtex-portal",
         "ds:gene-switch",
-        "ds:cattlegtex",
         "ds:bovreg",
         "ds:aqua-faang",
         "ds:salarecon-salmo-salar-atlantic-salmon",
@@ -776,6 +775,7 @@
         "piggtex-portal",
         "chickengtex-portal",
         "cattlegtex",
+        "cattle-cell-atlas-cattleca",
         "sheepgtex-portal",
         "farmgtex-twas-server",
         "pigbiobank",
@@ -813,6 +813,7 @@
         "ds:gene-switch",
         "ds:ies1300-gallus-gallus-chicken",
         "ds:cattlegtex",
+        "ds:cattle-cell-atlas-cattleca",
         "ds:bovreg",
         "ds:aqua-faang",
         "ds:piggtex-portal",
@@ -878,7 +879,7 @@
       "databases": [
         "embl-ebi-expression-atlas",
         "chickengtex-portal",
-        "cattlegtex",
+        "cattle-cell-atlas-cattleca",
         "bgee",
         "human-protein-atlas",
         "human-cell-atlas-hca",
@@ -888,7 +889,7 @@
       ],
       "datasets": [
         "ds:chickengtex-portal",
-        "ds:cattlegtex",
+        "ds:cattle-cell-atlas-cattleca",
         "ds:genecorpus-30m",
         "ds:genecorpus-104m",
         "ds:mouse-genecorpus-20m",
@@ -1650,6 +1651,7 @@
         "ds:chickengtex-portal",
         "ds:ies1300-gallus-gallus-chicken",
         "ds:cattlegtex",
+        "ds:cattle-cell-atlas-cattleca",
         "ds:bovreg",
         "ds:aqua-faang",
         "ds:sheepgtex-portal",

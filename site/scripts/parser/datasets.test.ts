@@ -171,7 +171,7 @@ describe('computeDatasetBreakdown — real corpus', () => {
   it('returns the verified ground-truth dataset total', () => {
     // GROUND TRUTH — pinned after the first green run of `pnpm parse`.
     // Bump in lockstep when Datasets/ inventory tables / reference / benchmark
-    // entries change. 217 = 159 inventory rows + 13 curated species-page entries
+    // entries change. 218 = 159 inventory rows + 14 curated species-page entries
     // + 28 reference entries + 17 benchmarks. It was 205 until #156, which folded
     // in the two populations the total had silently omitted, then 226 until
     // tucca-cellag/caail-planning#226 promoted 7 GEO subseries that a SuperSeries parent row had hidden
@@ -183,16 +183,17 @@ describe('computeDatasetBreakdown — real corpus', () => {
     // rule (tucca-cellag/caail-planning#739) took it to 224. Removing CrossSpecies' seven
     // inventory rows, each a second listing of one of its curated entries
     // (tucca-cellag/caail-planning#752), took it to 217, and moved CrossSpecies' seven entries
-    // from the species-page count to the reference count.
-    expect(b.total).toBe(217);
+    // from the species-page count to the reference count. Splitting the Cattle Cell Atlas out of
+    // the CattleGTEx entry on Cow.md (tucca-cellag/caail-planning#788) took it to 218.
+    expect(b.total).toBe(218);
   });
 
   it('counts the same population the datasets endpoint serves', () => {
     // The reason the total moved. Before #156 these were different populations in both
     // directions, so a consumer comparing them got a number about nothing.
     expect(b.speciesRows).toBe(159);
-    expect(b.curatedEntries).toBe(13);
+    expect(b.curatedEntries).toBe(14);
     expect(b.referenceEntries).toBe(28);
-    expect(b.curatedEntries + b.referenceEntries + b.benchmarkEntries).toBe(58);
+    expect(b.curatedEntries + b.referenceEntries + b.benchmarkEntries).toBe(59);
   });
 });

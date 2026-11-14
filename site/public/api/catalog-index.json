@@ -1,6 +1,6 @@
 {
   "corpusDate": "2026-11-14",
-  "count": 292,
+  "count": 293,
   "truncationNote": "Compare the number of rows you parsed against `count`. If you have fewer, your fetch truncated this file and you are looking at part of the corpus: say so, and do not report an absence from it. Fetching with a tool that returns bytes rather than a summary avoids this entirely.",
   "entries": [
     {"slug":"alphafold","name":"AlphaFold","kind":"software","group":"Media Optimization & Cell Line Engineering","url":"https://github.com/google-deepmind/alphafold","doi":"10.1038/s41586-021-03819-2","doiRelation":"publication","tier":"permissive"},
@@ -158,7 +158,8 @@
     {"slug":"farmgtex","name":"FarmGTEx","kind":"database","group":"Livestock Multi-Tissue Atlases & Functional Genomics","url":"https://www.farmgtex.org/","doi":"10.1038/s41588-025-02121-5","doiRelation":"publication","tier":"unknown"},
     {"slug":"piggtex-portal","name":"PigGTEx-Portal","kind":"database","group":"Livestock Multi-Tissue Atlases & Functional Genomics","url":"https://piggtex.farmgtex.org/","doi":"10.1038/s41588-023-01585-7","doiRelation":"publication","tier":"unknown"},
     {"slug":"chickengtex-portal","name":"ChickenGTEx-Portal","kind":"database","group":"Livestock Multi-Tissue Atlases & Functional Genomics","url":"https://chicken.farmgtex.org/","doi":"10.1038/s41588-025-02155-9","doiRelation":"publication","tier":"unknown"},
-    {"slug":"cattlegtex","name":"CattleGTEx","kind":"database","group":"Livestock Multi-Tissue Atlases & Functional Genomics","url":"https://ngdc.cncb.ac.cn/cattleca/home","doi":"10.1038/s41588-022-01153-5","doiRelation":"publication","tier":"unknown"},
+    {"slug":"cattlegtex","name":"CattleGTEx","kind":"database","group":"Livestock Multi-Tissue Atlases & Functional Genomics","url":"https://cattlegtex.farmgtex.org/","doi":"10.1038/s41588-022-01153-5","doiRelation":"publication","tier":"unknown"},
+    {"slug":"cattle-cell-atlas-cattleca","name":"Cattle Cell Atlas (CattleCA)","kind":"database","group":"Livestock Multi-Tissue Atlases & Functional Genomics","url":"https://ngdc.cncb.ac.cn/cattleca/","doi":"10.1038/s41588-025-02329-5","doiRelation":"publication","tier":"unknown"},
     {"slug":"sheepgtex-portal","name":"SheepGTEx-Portal","kind":"database","group":"Livestock Multi-Tissue Atlases & Functional Genomics","url":"https://sheepgtex.farmgtex.org/","doi":"10.1101/2025.11.03.686346","doiRelation":"publication","tier":"unknown"},
     {"slug":"farmgtex-twas-server","name":"FarmGTEx TWAS-Server","kind":"database","group":"Livestock Multi-Tissue Atlases & Functional Genomics","url":"https://twas.farmgtex.org/","doi":null,"doiRelation":null,"tier":"unknown"},
     {"slug":"pigbiobank","name":"PigBiobank","kind":"database","group":"Livestock Multi-Tissue Atlases & Functional Genomics","url":"https://pigbiobank.farmgtex.org/","doi":"10.1093/nar/gkad1080","doiRelation":"publication","tier":"unknown"},
@@ -166,8 +167,8 @@
     {"slug":"aqua-faang","name":"AQUA-FAANG","kind":"database","group":"Livestock Multi-Tissue Atlases & Functional Genomics","url":"https://data.faang.org/projects/AQUA-FAANG","doi":null,"doiRelation":null,"tier":"unknown"},
     {"slug":"bovreg","name":"BovReg","kind":"database","group":"Livestock Multi-Tissue Atlases & Functional Genomics","url":"https://bovreg.eu/","doi":null,"doiRelation":null,"tier":"unknown"},
     {"slug":"gene-switch","name":"GENE-SWitCH","kind":"database","group":"Livestock Multi-Tissue Atlases & Functional Genomics","url":"https://www.gene-switch.eu/","doi":null,"doiRelation":null,"tier":"unknown"},
-    {"slug":"animal-qtldb","name":"Animal QTLdb","kind":"database","group":"Livestock Multi-Tissue Atlases & Functional Genomics","url":"https://www.animalgenome.org/cgi-bin/QTLdb/index","doi":"10.1093/nar/gkab1116","doiRelation":"publication","tier":"unknown"},
-    {"slug":"bgee","name":"Bgee","kind":"database","group":"Livestock Multi-Tissue Atlases & Functional Genomics","url":"https://www.bgee.org/","doi":"10.1093/nar/gkaa793","doiRelation":"publication","tier":"unknown"},
+    {"slug":"animal-qtldb","name":"Animal QTLdb","kind":"database","group":"Livestock Multi-Tissue Atlases & Functional Genomics","url":"https://www.animalgenome.org/QTLdb/","doi":"10.1093/nar/gkab1116","doiRelation":"publication","tier":"permissive"},
+    {"slug":"bgee","name":"Bgee","kind":"database","group":"Livestock Multi-Tissue Atlases & Functional Genomics","url":"https://www.bgee.org/","doi":"10.1093/nar/gkae1118","doiRelation":"publication","tier":"permissive"},
     {"slug":"mediaassist","name":"MediaAssist","kind":"database","group":"Cell-Culture Media & Growth-Factor Databases","url":"https://mediaassist.ncl.res.in/","doi":"10.1093/nar/gkaf982","doiRelation":"publication","tier":"restricted"},
     {"slug":"fcs-free-database","name":"FCS-Free Database","kind":"database","group":"Cell-Culture Media & Growth-Factor Databases","url":"https://fcs-free.sites.uu.nl/","doi":null,"doiRelation":null,"tier":"unknown"},
     {"slug":"mediadive","name":"MediaDive","kind":"database","group":"Cell-Culture Media & Growth-Factor Databases","url":"https://mediadive.dsmz.de/","doi":"10.1093/nar/gkac803","doiRelation":"publication","tier":"unknown"},
