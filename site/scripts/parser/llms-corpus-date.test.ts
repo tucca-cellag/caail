@@ -1,6 +1,7 @@
 /**
  * llms-corpus-date.test.ts: both llmstxt.org files carry the corpus date the agent API carries,
- * written by parse and never typed (tucca-cellag/caail-planning#289).
+ * written by parse and never typed (tucca-cellag/caail-planning#289). llms-full.txt's header is
+ * checked in llms-full.test.ts, against the text that suite already builds.
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -8,11 +9,8 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 import { SITE_URL } from '../../src/content/site-config.ts';
-import { readCorpusDate } from './agent-api.js';
 import { CORPUS_DATE_PREFIX, corpusDateNote, stampCorpusDate } from './llms-corpus-date.js';
-import { buildLlmsFullText } from './llms-full.js';
 
-const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 const PUBLIC_DIR = fileURLToPath(new URL('../../public/', import.meta.url));
 
 describe('corpusDateNote', () => {
@@ -66,10 +64,5 @@ describe('the served files', () => {
     // Two outputs of the same parse: if they disagree, one of them is stale or was edited by hand.
     const { corpusDate } = JSON.parse(readFileSync(join(PUBLIC_DIR, 'api', 'index.json'), 'utf-8')) as { corpusDate: string };
     expect(dated[0], 'run pnpm --dir site parse and commit site/public/llms.txt').toBe(corpusDateNote(corpusDate, 'llms.txt'));
-  });
-
-  it("llms-full.txt's header carries the note for the corpus it concatenates", () => {
-    const header = buildLlmsFullText(REPO_ROOT).split('\n# ===== ')[0]!;
-    expect(header).toContain(corpusDateNote(readCorpusDate(REPO_ROOT), 'llms-full.txt'));
   });
 });

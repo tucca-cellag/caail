@@ -38,7 +38,7 @@ import { buildDatasetInventory } from './dataset-inventory.js';
 import { buildOnRequestStudies, onRequestDrift, readOnRequestRows } from './datasets-on-request.js';
 import { readPagesOnRequest } from '../db/extract.js';
 import { REPO_ROOT } from '../db/lib.js';
-import { writeLlmsFull } from './llms-full.js';
+import { PUBLIC_DIR, writeLlmsFull } from './llms-full.js';
 import { writeLlmsTxtDate } from './llms-corpus-date.js';
 import { buildAgentApi, writeAgentApi, publishSkillDoc, readCorpusDate } from './agent-api.js';
 import {
@@ -141,10 +141,14 @@ export function loadCitationCache(
  * - Throws on any error (schema violation, FS error); never calls process.exit.
  *
  * @param outDir  Directory to write into. Defaults to DEFAULT_OUT_DIR.
+ * @param corpusDate  The date stamped onto the agent API. The CLI reads it once and hands the
+ *   same value to llms-full.txt and llms.txt, so one parse cannot write two dates. Left out, the
+ *   agent API reads it itself (`buildAgentApi`'s default).
  */
 export function generateData(
   outDir: string = DEFAULT_OUT_DIR,
   apiDir: string = DEFAULT_API_DIR,
+  corpusDate?: string,
 ): {
   counts: Counts;
   papersRefs: number;
@@ -532,6 +536,7 @@ export function generateData(
     topics,
     taxonomy: apiTaxonomy,
     reports,
+    corpusDate,
   });
   writeAgentApi(apiFiles, apiDir);
   publishSkillDoc(SKILL_DOC_PATH, join(apiDir, '..'));
@@ -581,6 +586,11 @@ const isMain =
 
 if (isMain) {
   try {
+    // Read once and passed to every file that carries it, so the agent API, llms-full.txt and
+    // llms.txt cannot disagree within one parse (a commit landing mid-parse would otherwise give
+    // them different dates, as would a run spanning midnight UTC where the date falls back to the
+    // clock).
+    const corpusDate = readCorpusDate(REPO_ROOT);
     const {
       counts,
       papersRefs,
@@ -597,16 +607,16 @@ if (isMain) {
       correctionReasons,
       contributeTemplates,
       contributeParams,
-    } = generateData();
+    } = generateData(DEFAULT_OUT_DIR, DEFAULT_API_DIR, corpusDate);
     // Full-text agent index (public/llms-full.txt) — generated alongside the
     // JSON, but written to public/ rather than the data dir, so it lives in the
     // CLI block rather than the side-effect-free generateData() core.
-    const llmsBytes = writeLlmsFull();
+    const llmsBytes = writeLlmsFull(corpusDate);
     if (llmsBytes <= 0) throw new Error('parse: llms-full.txt is empty');
     // The committed llms.txt carries the same derived corpus date as llms-full.txt and the agent
     // API; lint-papers.yml's sync guard fails a commit whose date this would rewrite
     // (tucca-cellag/caail-planning#289).
-    writeLlmsTxtDate(join(DEFAULT_API_DIR, '..'), readCorpusDate(REPO_ROOT));
+    const llmsTxtRewritten = writeLlmsTxtDate(PUBLIC_DIR, corpusDate);
     // eslint-disable-next-line no-console
     console.log(
       `parse: wrote papers.json (${papersRefs} references), counts.json, ` +
@@ -617,7 +627,8 @@ if (isMain) {
         `recent.json (${recentEntries} entries), ` +
         `taxonomy.json (${taxonomyDefs} definitions across 3 axes), ` +
         `correction-form.json (${correctionReasons} reasons), ` +
-        `and llms-full.txt (${llmsBytes} bytes); verified caail-contribute prefills ` +
+        `llms-full.txt (${llmsBytes} bytes), and llms.txt (corpus date ${corpusDate}, ` +
+        `${llmsTxtRewritten ? 'rewritten' : 'unchanged'}); verified caail-contribute prefills ` +
         `${contributeParams} parameters across ${contributeTemplates} issue templates`,
     );
     // eslint-disable-next-line no-console

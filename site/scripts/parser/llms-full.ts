@@ -30,13 +30,13 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { isPublishedMarkdown } from '../../src/lib/canonical-files.js';
-import { absolutizePageLinks, readCorpusDate } from './agent-api.js';
+import { absolutizePageLinks } from './agent-api.js';
 import { corpusDateNote } from './llms-corpus-date.js';
 
 /** Repo root: parser → scripts → site → repo (three levels up). */
 const REPO_ROOT: string = fileURLToPath(new URL('../../../', import.meta.url));
-/** site/public/ (two levels up from parser/, then into public/). */
-const PUBLIC_DIR: string = fileURLToPath(new URL('../../public/', import.meta.url));
+/** site/public/ (two levels up from parser/, then into public/), where both llmstxt.org files are served from. */
+export const PUBLIC_DIR: string = fileURLToPath(new URL('../../public/', import.meta.url));
 
 /**
  * Sorted published `.md` files in a canonical dir, README first.
@@ -81,7 +81,8 @@ export function llmsFullSources(repoRoot: string = REPO_ROOT): string[] {
 
 /**
  * The served header, with the frontmatter caveat DERIVED from the source list, and the corpus
- * date note (`llms-corpus-date.ts`), so a copy of this file can say how old it is.
+ * date note (`llms-corpus-date.ts`), which dates the catalog data and sends a reader of any copy
+ * to the canonical one.
  *
  * `FRONTMATTER_PREFIX` is a prefix test precisely so a second Starlight page can join the
  * list. The moment one does, a hardcoded "that page, and only that one" is false and nothing
@@ -226,23 +227,30 @@ export function llmsFullSection(rel: string, content: string): string {
   return `\n\n# ===== ${rel} =====\n\n${heading}${md.trimEnd()}\n`;
 }
 
-/** Build the full llms-full.txt content from the canonical Markdown. */
-export function buildLlmsFullText(repoRoot: string = REPO_ROOT): string {
+/**
+ * Build the full llms-full.txt content from the canonical Markdown.
+ *
+ * `corpusDate` is a parameter, not read here, so this stays pure: one parse reads the date once
+ * and hands the same value to the agent API, this file and llms.txt, and a test can pass a fixed
+ * date without asking git.
+ */
+export function buildLlmsFullText(repoRoot: string, corpusDate: string): string {
   // One list, computed once and handed to both. Recomputing it inside buildHeader re-ran four
   // readdirSync passes and, worse, let the header describe a different set than the body
   // concatenates — the exact invariant buildHeader exists to hold.
   const sources = llmsFullSources(repoRoot);
-  const parts = [buildHeader(sources, readCorpusDate(repoRoot))];
+  const parts = [buildHeader(sources, corpusDate)];
   for (const rel of sources) parts.push(llmsFullSection(rel, readFileSync(join(repoRoot, rel), 'utf-8')));
   return parts.join('');
 }
 
-/** Write public/llms-full.txt; returns the byte length written. */
+/** Write public/llms-full.txt, dated `corpusDate`; returns the byte length written. */
 export function writeLlmsFull(
+  corpusDate: string,
   outDir: string = PUBLIC_DIR,
   repoRoot: string = REPO_ROOT,
 ): number {
-  const text = buildLlmsFullText(repoRoot);
+  const text = buildLlmsFullText(repoRoot, corpusDate);
   writeFileSync(join(outDir, 'llms-full.txt'), text, 'utf-8');
   return text.length;
 }
