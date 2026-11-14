@@ -239,11 +239,6 @@
       "anchor": "ds-cattle-cell-atlas-cattleca",
       "topics": [
         {
-          "slug": "cell-line-engineering",
-          "label": "Cell-line engineering",
-          "theme": "cell-lines-engineering"
-        },
-        {
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"

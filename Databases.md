@@ -90,7 +90,7 @@ A FAANG initiative (*Advancing European Aquaculture by Genome Functional Annotat
 
 ### [BovReg](https://bovreg.eu/)
 
-The FAANG consortium's cattle functional-annotation project, generating maps of functionally active genomic features in cattle (*Bos taurus*). The [data hub](https://data.faang.org/projects/BovReg) hosts the open releases (4 datasets at time of curation). Complementary to [CattleGTEx](#cattlegtex) for cell-ag-relevant cattle-cell engineering and atlas work, particularly useful as a regulatory-element substrate for cultivated-beef cell-line characterisation. Cross-referenced from [Datasets/Cow.md](./Datasets/Cow.md).
+The FAANG consortium's cattle functional-annotation project, generating maps of functionally active genomic features in cattle (*Bos taurus*). The [data hub](https://data.faang.org/projects/BovReg) hosts the open releases (4 datasets at time of curation). Alongside the expression and splicing QTLs of [CattleGTEx](#cattlegtex), it gives a regulatory-element substrate for cultivated-beef cell-line characterisation. Cross-referenced from [Datasets/Cow.md](./Datasets/Cow.md).
 
 ### [GENE-SWitCH](https://www.gene-switch.eu/)
 

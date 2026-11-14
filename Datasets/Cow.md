@@ -14,7 +14,7 @@ A single-cell and single-nucleus transcriptomic atlas of 1,793,854 cells from 59
 
 ### [BovReg](https://bovreg.eu/)
 
-The FAANG consortium's cattle functional-annotation project, mapping functionally active genomic features in cattle (*Bos taurus*); the [data hub](https://data.faang.org/projects/BovReg) hosts its open releases. A regulatory-element substrate complementary to CattleGTEx for cultivated-beef cell-line characterisation. Full entry in [Databases.md / Livestock Multi-Tissue Atlases](../Databases.md#livestock-multi-tissue-atlases--functional-genomics).
+The FAANG consortium's cattle functional-annotation project, mapping functionally active genomic features in cattle (*Bos taurus*); the [data hub](https://data.faang.org/projects/BovReg) hosts its open releases. A regulatory-element substrate for cultivated-beef cell-line characterisation, alongside the expression and splicing QTLs of CattleGTEx. Full entry in [Databases.md / Livestock Multi-Tissue Atlases](../Databases.md#livestock-multi-tissue-atlases--functional-genomics).
 
 ## Bovine satellite cells & cultured-meat differentiation
 

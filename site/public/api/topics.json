@@ -217,8 +217,8 @@
           "paper": 7,
           "software": 14,
           "database": 5,
-          "dataset": 29,
-          "total": 55
+          "dataset": 28,
+          "total": 54
         },
         "tags": []
       },
@@ -1651,7 +1651,6 @@
         "ds:chickengtex-portal",
         "ds:ies1300-gallus-gallus-chicken",
         "ds:cattlegtex",
-        "ds:cattle-cell-atlas-cattleca",
         "ds:bovreg",
         "ds:aqua-faang",
         "ds:sheepgtex-portal",
