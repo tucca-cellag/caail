@@ -1,10 +1,14 @@
 /**
- * llms-corpus-date.ts: the corpus date both llmstxt.org files carry, so that a copy of either,
- * wherever it was taken from and whoever took it, can say how old it is
- * (tucca-cellag/caail-planning#289).
+ * llms-corpus-date.ts: the corpus date both llmstxt.org files carry, the day CAAIL's catalog data
+ * last changed (tucca-cellag/caail-planning#289).
  *
  * The date is `readCorpusDate`'s, the one every file under `public/api/` already carries, and it
- * is never typed. The two files reach it differently because they are made differently:
+ * is never typed. It dates the catalog data, not the file: it moves only when `site/db/ndjson`
+ * changes, while both files hold prose that changes without it. So two copies with the same date
+ * can still differ, and a matching date does not show that a copy is current. The note says so,
+ * and tells a reader of any copy to fetch the canonical one instead of comparing dates.
+ *
+ * The two files reach the date differently because they are made differently:
  *
  * - `llms-full.txt` is generated, so `buildHeader` writes the note into its header.
  * - `llms.txt` is hand-authored and committed, so `pnpm parse` rewrites its one `Corpus date:` line
@@ -28,18 +32,20 @@ export type LlmsFile = 'llms.txt' | 'llms-full.txt';
 export const CORPUS_DATE_PREFIX = 'Corpus date: ';
 
 /**
- * The note: the date, where the canonical copy is served, and what a reader of any other copy
- * should do. The last clause is the one that does the work, for an agent with no idea that the
- * file in front of it is a copy.
+ * The note: the date and what it dates, where the canonical copy is served, and what a reader of
+ * any other copy should do. The last sentence is the one that does the work, for an agent with no
+ * idea that the file in front of it is a copy: it says a matching date proves nothing, since the
+ * prose can change without moving the date, and to fetch the canonical copy.
  */
 export function corpusDateNote(date: string, file: LlmsFile): string {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     throw new Error(`llms corpus date: "${date}" is not a YYYY-MM-DD date`);
   }
   return (
-    `${CORPUS_DATE_PREFIX}${date}. The canonical copy of this file is ${SITE_URL}${file}; ` +
-    'a copy read anywhere else may be out of date, so compare its corpus date with the canonical ' +
-    'copy before relying on it.'
+    `${CORPUS_DATE_PREFIX}${date}, the day CAAIL's catalog data last changed (the agent API's corpusDate). ` +
+    `The canonical copy of this file is ${SITE_URL}${file}. ` +
+    'Its prose can change without moving that date, so a copy read anywhere else may be out of date ' +
+    'even when the dates match: fetch the canonical copy before relying on it.'
   );
 }
 

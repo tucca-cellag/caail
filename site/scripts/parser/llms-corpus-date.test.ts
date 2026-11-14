@@ -14,11 +14,24 @@ import { CORPUS_DATE_PREFIX, corpusDateNote, stampCorpusDate } from './llms-corp
 const PUBLIC_DIR = fileURLToPath(new URL('../../public/', import.meta.url));
 
 describe('corpusDateNote', () => {
-  it('names the date and the canonical copy of the file it is written into', () => {
-    const note = corpusDateNote('2026-11-14', 'llms.txt');
-    expect(note.startsWith(`${CORPUS_DATE_PREFIX}2026-11-14. `)).toBe(true);
-    expect(note).toContain(`${SITE_URL}llms.txt;`);
-    expect(corpusDateNote('2026-11-14', 'llms-full.txt')).toContain(`${SITE_URL}llms-full.txt;`);
+  it('says what the date dates, where the canonical copy is, and that matching dates prove nothing', () => {
+    expect(corpusDateNote('2026-11-14', 'llms.txt')).toBe(
+      "Corpus date: 2026-11-14, the day CAAIL's catalog data last changed (the agent API's corpusDate). " +
+        `The canonical copy of this file is ${SITE_URL}llms.txt. ` +
+        'Its prose can change without moving that date, so a copy read anywhere else may be out of date ' +
+        'even when the dates match: fetch the canonical copy before relying on it.',
+    );
+  });
+
+  it('names the canonical copy of the file it is written into', () => {
+    expect(corpusDateNote('2026-11-14', 'llms-full.txt')).toContain(`is ${SITE_URL}llms-full.txt. `);
+    expect(corpusDateNote('2026-11-14', 'llms-full.txt')).not.toContain(`${SITE_URL}llms.txt`);
+  });
+
+  it('never tells a reader that comparing dates shows a copy is current', () => {
+    // The date moves only with site/db/ndjson, and the prose moves without it, so a stale
+    // copy can carry the canonical copy's date.
+    expect(corpusDateNote('2026-11-14', 'llms.txt')).not.toMatch(/compar/i);
   });
 
   it('refuses anything that is not a YYYY-MM-DD date', () => {
@@ -56,13 +69,19 @@ describe('stampCorpusDate', () => {
   });
 });
 
-describe('the served files', () => {
-  it("the committed llms.txt carries one corpus-date line, in parse's own words, dated as the agent API is", () => {
+describe('llms.txt on disk', () => {
+  // This reads the files on disk, not the committed ones: in CI, test.yml runs `pnpm build`
+  // (which parses, rewriting llms.txt and api/index.json) before `pnpm test`. So it checks that
+  // the two outputs of one parse agree. lint-papers.yml's sync guard is the committed-file check:
+  // it re-runs parse and fails on any diff to site/public/llms.txt.
+  it("has one corpus-date line, in parse's own words, agreeing with api/index.json's corpusDate", () => {
     const lines = readFileSync(join(PUBLIC_DIR, 'llms.txt'), 'utf-8').split('\n');
     const dated = lines.filter((l) => l.startsWith(CORPUS_DATE_PREFIX));
     expect(dated).toHaveLength(1);
-    // Two outputs of the same parse: if they disagree, one of them is stale or was edited by hand.
     const { corpusDate } = JSON.parse(readFileSync(join(PUBLIC_DIR, 'api', 'index.json'), 'utf-8')) as { corpusDate: string };
-    expect(dated[0], 'run pnpm --dir site parse and commit site/public/llms.txt').toBe(corpusDateNote(corpusDate, 'llms.txt'));
+    expect(
+      dated[0],
+      "llms.txt's corpus-date line disagrees with api/index.json's corpusDate: run pnpm --dir site parse",
+    ).toBe(corpusDateNote(corpusDate, 'llms.txt'));
   });
 });
