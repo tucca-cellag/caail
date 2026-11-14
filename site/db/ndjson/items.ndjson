@@ -21,6 +21,7 @@
 {"id":"db:bovreg","type":"database","slug":"bovreg"}
 {"id":"db:brenda","type":"database","slug":"brenda"}
 {"id":"db:casp-prediction-center","type":"database","slug":"casp-prediction-center"}
+{"id":"db:cattle-cell-atlas-cattleca","type":"database","slug":"cattle-cell-atlas-cattleca"}
 {"id":"db:cattlegtex","type":"database","slug":"cattlegtex"}
 {"id":"db:cell-ontology-cl","type":"database","slug":"cell-ontology-cl"}
 {"id":"db:cellage","type":"database","slug":"cellage"}
@@ -159,6 +160,7 @@
 {"id":"ds:bixbench","type":"dataset","slug":"bixbench"}
 {"id":"ds:blade","type":"dataset","slug":"blade"}
 {"id":"ds:bovreg","type":"dataset","slug":"bovreg"}
+{"id":"ds:cattle-cell-atlas-cattleca","type":"dataset","slug":"cattle-cell-atlas-cattleca"}
 {"id":"ds:cattlegtex","type":"dataset","slug":"cattlegtex"}
 {"id":"ds:cell-type-diversity","type":"dataset","slug":"cell-type-diversity"}
 {"id":"ds:changes-in-glycolytic","type":"dataset","slug":"changes-in-glycolytic"}

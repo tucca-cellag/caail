@@ -99,9 +99,9 @@ describe('computeCounts — real corpus (ground-truth contract)', () => {
     expect(result).toEqual({
       papers: 348,
       software: 143,
-      databases: 149,
+      databases: 150,
       species: 17,
-      datasets: 217,
+      datasets: 218,
       // 8: derived from the `ResearchAreas/` file count and labelled "Research
       // Areas" on the homepage. It went 8 -> 7 when `AIEvaluation.md` moved to
       // `Methods/` (it described the *Benchmarks & Evaluation Frameworks* method

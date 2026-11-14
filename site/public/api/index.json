@@ -23,13 +23,13 @@
     "matrixTotalCells": 216,
     "matrixPopulatedCells": 78,
     "matrixEmptyCells": 138,
-    "datasetsCurated": 58,
+    "datasetsCurated": 59,
     "datasetsInventoryRows": 159,
-    "datasetsTotal": 217,
+    "datasetsTotal": 218,
     "datasetsOnRequest": 4,
     "software": 143,
-    "databases": 149,
-    "catalogTotal": 292,
+    "databases": 150,
+    "catalogTotal": 293,
     "fieldReportEditions": 9
   },
   "endpoints": [

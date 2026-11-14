@@ -1,5 +1,6 @@
 {
   "datasets": {
+    "ds:cattlegtex": ["https://cgtex.roslin.ed.ac.uk/"],
     "ds:lions-mane-mushroom-steak-characterization": ["https://github.com/LivingMatterLab/CANN/tree/main/ARTMEAT/LionsManeMushroomSteak"],
     "ds:mycelium-mechanics-taste-of-fungi-steak": ["https://github.com/LivingMatterLab/CANN/tree/main/ARTMEAT/FungiSteak"],
     "ds:nmr-metabolomics-of-plant-and-yeast-based-hydrolysates": ["https://doi.org/10.5281/zenodo.11357327"],

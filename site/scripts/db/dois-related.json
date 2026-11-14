@@ -139,16 +139,17 @@
     "https://webs.iiitd.edu.in/raghava/algpred2/": [
       "10.1093/nar/gkl343"
     ],
-    "https://www.animalgenome.org/cgi-bin/QTLdb/index": [
+    "https://www.animalgenome.org/QTLdb/": [
       "10.1007/s00335-006-0105-8",
       "10.1093/nar/gkl946",
       "10.1093/nar/gks1150",
       "10.1093/nar/gkv1233",
-      "10.1093/nar/gky1084"
+      "10.1093/nar/gky1084",
+      "10.1093/database/baad024"
     ],
     "https://www.bgee.org/": [
       "10.1007/978-3-540-69828-9_12",
-      "10.1093/nar/gkae1118"
+      "10.1093/nar/gkaa793"
     ],
     "https://www.brenda-enzymes.org/": [
       "10.1016/j.jbiotec.2017.04.020",

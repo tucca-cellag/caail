@@ -196,22 +196,43 @@
     {
       "id": "ds:cattlegtex",
       "name": "CattleGTEx",
-      "url": "https://ngdc.cncb.ac.cn/cattleca/home",
+      "url": "https://cattlegtex.farmgtex.org/",
       "page": "Cow",
       "section": "Featured atlases",
       "kind": "atlas",
       "anchor": "ds-cattlegtex",
       "topics": [
         {
-          "slug": "ai-methods-tooling",
-          "label": "AI Methods & Tooling",
-          "theme": "ai-methods-tooling"
-        },
-        {
-          "slug": "cell-line-engineering",
-          "label": "Cell-line engineering",
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
-        },
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1038/s41588-022-01153-5",
+      "doiSource": "manual",
+      "doiRelation": "publication",
+      "citationCount": 347,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1038/s41588-022-01153-5"
+      ],
+      "accessions": [],
+      "dataLinks": [
+        "https://cgtex.roslin.ed.ac.uk/"
+      ]
+    },
+    {
+      "id": "ds:cattle-cell-atlas-cattleca",
+      "name": "Cattle Cell Atlas (CattleCA)",
+      "url": "https://ngdc.cncb.ac.cn/cattleca/",
+      "page": "Cow",
+      "section": "Featured atlases",
+      "kind": "atlas",
+      "anchor": "ds-cattle-cell-atlas-cattleca",
+      "topics": [
         {
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
@@ -234,7 +255,9 @@
       "citationDois": [
         "10.1038/s41588-025-02329-5"
       ],
-      "accessions": [],
+      "accessions": [
+        "PRJNA1119173"
+      ],
       "dataLinks": []
     },
     {
