@@ -191,6 +191,14 @@ describe('inventory identity — real corpus', () => {
     expect(row?.dataDoi).toBe('10.5281/zenodo.12216791');
   });
 
+  it('serves no accession for an embargoed row whose Data reads unavailable', () => {
+    // ds:cra019589's deposits are embargoed, so its Data cell reads `unavailable` (CONTRIBUTING.md); its id
+    // comes from the accession its Description links, which the row must not be served as a deposit of.
+    const row = rows.find((r) => r.id === 'ds:cra019589');
+    expect(row?.dataStatus).toBe('unavailable');
+    expect(row?.accession).toBeNull();
+  });
+
   it('serves a known accession and paper DOI on the row that holds them', () => {
     const row = rows.find((r) => r.id === 'ds:gse169291');
     expect(row).toMatchObject({ accession: 'GSE169291', paperDoi: '10.1038/s43016-022-00658-w' });

@@ -97,7 +97,7 @@ if (!mediaBo) throw new Error('AskExamples: Bayesian Optimization × media cell 
    Every figure below is read from datasets.json rather than named, because the whole point of
    the card is that the inventory is deeper than a browsing reader would guess. `columns` exists
    only on inventory rows (curated entries have no table), hence the optional access. */
-type InventoryRow = { page: string; columns?: Record<string, string> };
+type InventoryRow = { page: string; columns?: Record<string, string>; dataDoi?: string | null };
 const cowInventory = (datasetsApi.inventory as InventoryRow[]).filter((r) => r.page === 'Cow');
 const cowCurated = datasetsApi.entries.filter((e) => e.page === 'Cow');
 const cowTotal = cowInventory.length + cowCurated.length;
@@ -177,16 +177,17 @@ if (cowParents.length !== 1) {
 }
 const cowParentAcc = acc(cowParents[0]!);
 /* The card's checkable catch: the obvious regulatory reference is only half usable yet. Its
-   processed annotations are open on Zenodo (its Data link), while the accession IDs for its newly
-   generated reads are withheld. If either half changes this throws rather than shipping a stale
-   warning. */
+   processed annotations are open on Zenodo (its Data link, served as a Zenodo `dataDoi`), while the
+   accession IDs for its newly generated reads are withheld. If either half changes this throws
+   rather than shipping a stale warning. The withheld half has no structured field, so it is read
+   from the row's Description. */
 const cowFaangRows = cowInventory.filter(
   (r) => notSuperSeries(r) && /FAANG epigenome atlas/i.test(col(r, 'Description')),
 );
 const cowFaang = cowFaangRows.length === 1 ? cowFaangRows[0] : undefined;
 if (
   !cowFaang
-  || !/zenodo/i.test(col(cowFaang, 'Data'))
+  || !cowFaang.dataDoi?.startsWith('10.5281/zenodo.')
   || !/withholds accession IDs/i.test(col(cowFaang, 'Description'))
 ) {
   throw new Error(
@@ -464,7 +465,7 @@ const examples = [
     rows: [
       { k: 'Public at the full grid', v: `${acc(cowBulkTimecourse)} is bulk RNA-seq at 0/24/48/72/96 h in biological quadruplicates, with differentiation induced by serum starvation` },
       { k: 'Serum-free differentiation', v: `${acc(cowSerumFreeArm)} is bulk, sampled only at 0 h and 72 h in biological triplicates, and compares serum-free differentiation media with 2% FBS. ${acc(cowSingleNucleus)} is single-nucleus RNA-seq covering all five timepoints in serum-free differentiation medium` },
-      { k: 'Regulatory-element annotation', v: `The bovine FAANG epigenome atlas's processed annotations are open on Zenodo, but the accession IDs for its newly generated reads are withheld until journal acceptance` },
+      { k: 'Regulatory-element annotation', v: `The bovine FAANG epigenome atlas's processed annotations are open on Zenodo, but the accession IDs for its newly generated reads are withheld until manuscript acceptance` },
     ],
     tail:
       `${acc(cowBulkTimecourse)} and ${acc(cowSerumFreeArm)} are subseries of one GEO SuperSeries, ${cowParentAcc}. ` +
