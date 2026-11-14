@@ -5,13 +5,11 @@
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 import { SITE_URL } from '../../src/content/site-config.ts';
-import { CORPUS_DATE_PREFIX, corpusDateNote, stampCorpusDate } from './llms-corpus-date.js';
-
-const PUBLIC_DIR = fileURLToPath(new URL('../../public/', import.meta.url));
+import { corpusDateNote, findCorpusDateLine, stampCorpusDate } from './llms-corpus-date.js';
+import { PUBLIC_DIR } from './llms-full.js';
 
 describe('corpusDateNote', () => {
   it('says what the date dates, where the canonical copy is, and that matching dates prove nothing', () => {
@@ -38,6 +36,17 @@ describe('corpusDateNote', () => {
     for (const bad of ['', '2026-11-1', 'Nov 14 2026', '2026-11-14T00:00:00Z']) {
       expect(() => corpusDateNote(bad, 'llms.txt'), bad).toThrow(/not a YYYY-MM-DD date/);
     }
+  });
+});
+
+describe('findCorpusDateLine', () => {
+  it('returns the index of the one line that starts with the prefix', () => {
+    expect(findCorpusDateLine(['# Title', 'The phrase Corpus date: mid-line', 'Corpus date: x', ''], 'llms.txt')).toBe(2);
+  });
+
+  it('refuses none and two, naming the file', () => {
+    expect(() => findCorpusDateLine(['# Title'], 'site/public/llms.txt')).toThrow(/^site\/public\/llms\.txt: .*found 0/);
+    expect(() => findCorpusDateLine(['Corpus date: a', 'Corpus date: b'], 'llms.txt')).toThrow(/found 2/);
   });
 });
 
@@ -76,11 +85,10 @@ describe('llms.txt on disk', () => {
   // it re-runs parse and fails on any diff to site/public/llms.txt.
   it("has one corpus-date line, in parse's own words, agreeing with api/index.json's corpusDate", () => {
     const lines = readFileSync(join(PUBLIC_DIR, 'llms.txt'), 'utf-8').split('\n');
-    const dated = lines.filter((l) => l.startsWith(CORPUS_DATE_PREFIX));
-    expect(dated).toHaveLength(1);
+    const dated = lines[findCorpusDateLine(lines, 'llms.txt')];
     const { corpusDate } = JSON.parse(readFileSync(join(PUBLIC_DIR, 'api', 'index.json'), 'utf-8')) as { corpusDate: string };
     expect(
-      dated[0],
+      dated,
       "llms.txt's corpus-date line disagrees with api/index.json's corpusDate: run pnpm --dir site parse",
     ).toBe(corpusDateNote(corpusDate, 'llms.txt'));
   });

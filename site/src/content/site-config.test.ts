@@ -17,7 +17,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { CORPUS_DATE_PREFIX } from '../../scripts/parser/llms-corpus-date.js';
+import { findCorpusDateLine } from '../../scripts/parser/llms-corpus-date.js';
 import { isUnderBase, RETIRED_BASES, RETIRED_ORIGINS, SEARCH_CONSOLE_TOKENS, SITE_BASE, SITE_ORIGIN, SITE_URL } from './site-config';
 
 const SITE_DIR = fileURLToPath(new URL('../../', import.meta.url));
@@ -76,20 +76,32 @@ const PINNED: Array<[file: string, mustContain: string]> = [
 ];
 
 /**
- * Lines a pinned file carries that a script writes from SITE_URL, keyed by file, each by the
- * prefix that starts it. The pin checks only the hand-typed lines: `pnpm parse` writes
- * llms.txt's corpus-date line from SITE_URL, so that line always contains it and would let the
- * pin pass with every hand-typed link stale.
+ * Pinned files that carry a corpus-date line, which `pnpm parse` writes from SITE_URL. The pin
+ * checks only the hand-typed lines: that line always contains SITE_URL, so it would let the pin
+ * pass with every hand-typed link stale.
  */
-const GENERATED_LINE_PREFIX: Record<string, string> = {
-  'site/public/llms.txt': CORPUS_DATE_PREFIX,
-};
+const CORPUS_DATED = new Set(['site/public/llms.txt']);
 
-/** A pinned file's hand-typed text: the file without the lines a script writes into it. */
+const pinnedTexts = new Map<string, string>();
+
+/** A pinned file's text, read on first use and shared by every test that checks it. */
+function pinnedText(file: string): string {
+  let text = pinnedTexts.get(file);
+  if (text === undefined) pinnedTexts.set(file, (text = readFileSync(join(REPO_DIR, file), 'utf-8')));
+  return text;
+}
+
+/**
+ * A pinned file's hand-typed text: the file without its corpus-date line, if it carries one.
+ * `findCorpusDateLine` throws when a corpus-dated file has no such line or two, so the
+ * exclusion cannot drift into setting aside nothing.
+ */
 function handTyped(file: string): string {
-  const text = readFileSync(join(REPO_DIR, file), 'utf-8');
-  const prefix = GENERATED_LINE_PREFIX[file];
-  return prefix === undefined ? text : text.split('\n').filter((l) => !l.startsWith(prefix)).join('\n');
+  const text = pinnedText(file);
+  if (!CORPUS_DATED.has(file)) return text;
+  const lines = text.split('\n');
+  const dated = findCorpusDateLine(lines, file);
+  return lines.filter((_, i) => i !== dated).join('\n');
 }
 
 describe('site-config', () => {
@@ -195,12 +207,7 @@ describe('site-config', () => {
   });
 
   it('matches every static copy that cannot import it', () => {
-    // Each set-aside prefix must match a line, or the exclusion has drifted from the file and
-    // is setting aside nothing.
-    for (const [file, prefix] of Object.entries(GENERATED_LINE_PREFIX)) {
-      const generated = readFileSync(join(REPO_DIR, file), 'utf-8').split('\n').filter((l) => l.startsWith(prefix));
-      expect(generated, `${file} has no line starting "${prefix}" to set aside`).toHaveLength(1);
-    }
+    // A corpus-dated file with no corpus-date line throws in handTyped, failing this test.
     const stale = PINNED.filter(([file, want]) => !handTyped(file).includes(want));
     expect(stale.map(([f, want]) => `${f} should contain ${want}`)).toEqual([]);
   });
@@ -250,7 +257,7 @@ describe('site-config', () => {
     const retiredOriginRe = anyOf(RETIRED_ORIGINS);
     const retiredBaseRe = firstSegmentRe(RETIRED_BASES);
     const left = PINNED.flatMap(([file]) =>
-      readFileSync(join(REPO_DIR, file), 'utf-8')
+      pinnedText(file)
         .split('\n')
         .flatMap((line, i) =>
           retiredOriginRe.test(line) || retiredBaseRe.test(line) ? [`${file}:${i + 1}: ${line.trim()}`] : [],

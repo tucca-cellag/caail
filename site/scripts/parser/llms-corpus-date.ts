@@ -24,6 +24,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { SITE_URL } from '../../src/content/site-config.ts';
+import { CORPUS_DATE_FORMAT } from './agent-api.js';
 
 /** The files that carry the note, named as they are served from the site root. */
 export type LlmsFile = 'llms.txt' | 'llms-full.txt';
@@ -38,7 +39,7 @@ export const CORPUS_DATE_PREFIX = 'Corpus date: ';
  * prose can change without moving the date, and to fetch the canonical copy.
  */
 export function corpusDateNote(date: string, file: LlmsFile): string {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+  if (!CORPUS_DATE_FORMAT.test(date)) {
     throw new Error(`llms corpus date: "${date}" is not a YYYY-MM-DD date`);
   }
   return (
@@ -50,13 +51,13 @@ export function corpusDateNote(date: string, file: LlmsFile): string {
 }
 
 /**
- * `text` with its one corpus-date line replaced by the current note. A line counts only when it
- * starts with `Corpus date: `, so the phrase in running prose is left alone. Throws when there is
- * no such line or more than one: a missing line would leave the file undated in silence, and two
- * would leave a reader to choose between them.
+ * The index of the one corpus-date line in `lines` (a file's text split on `\n`). A line counts
+ * only when it starts with `Corpus date: `, so the phrase in running prose is left alone. Throws
+ * when there is no such line or more than one: a missing line would leave the file undated in
+ * silence, and two would leave a reader to choose between them. `file` names the file in the
+ * error.
  */
-export function stampCorpusDate(text: string, date: string, file: LlmsFile): string {
-  const lines = text.split('\n');
+export function findCorpusDateLine(lines: readonly string[], file: string): number {
   const at = lines.flatMap((line, i) => (line.startsWith(CORPUS_DATE_PREFIX) ? [i] : []));
   if (at.length !== 1) {
     throw new Error(
@@ -64,7 +65,16 @@ export function stampCorpusDate(text: string, date: string, file: LlmsFile): str
         'Keep one such line where the date should appear; pnpm parse writes the rest of it.',
     );
   }
-  lines[at[0]!] = corpusDateNote(date, file);
+  return at[0]!;
+}
+
+/**
+ * `text` with its one corpus-date line (`findCorpusDateLine`) replaced by the current note.
+ * Throws as `findCorpusDateLine` does.
+ */
+export function stampCorpusDate(text: string, date: string, file: LlmsFile): string {
+  const lines = text.split('\n');
+  lines[findCorpusDateLine(lines, file)] = corpusDateNote(date, file);
   return lines.join('\n');
 }
 

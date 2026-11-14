@@ -469,6 +469,9 @@ export interface AgentApiInputs {
   corpusDate?: string;
 }
 
+/** The form a corpus date takes, `YYYY-MM-DD`, as `readCorpusDate` returns it. */
+export const CORPUS_DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/;
+
 /**
  * The date the CORPUS last changed, read from git, not the date this build ran.
  *
@@ -504,7 +507,7 @@ export function readCorpusDate(repoRoot: string): string {
     // --date=format-local with TZ=UTC normalises across contributors' timezones; %cs
     // alone is the committer's local date and can read a day ahead of UTC.
     const out = git(['log', '-1', '--date=format-local:%Y-%m-%d', '--format=%cd', '--', 'site/db/ndjson']);
-    if (/^\d{4}-\d{2}-\d{2}$/.test(out)) return out;
+    if (CORPUS_DATE_FORMAT.test(out)) return out;
   } catch (err) {
     if (err instanceof Error && err.message.startsWith('agent-api:')) throw err;
     /* git unavailable (tarball export): fall through to the clock */
