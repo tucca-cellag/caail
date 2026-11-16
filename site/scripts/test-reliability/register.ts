@@ -664,13 +664,36 @@ export function entriesForVitestModule(
  * (`at ${width}px`), and matches every title the loop generates. Written that way it
  * appears verbatim in its file, which the integrity checks in `register.test.ts`
  * require; a title as it runs (`at 1600px`) is in no source to find. Everything outside
- * a placeholder matches literally, and the whole title has to match.
+ * a placeholder matches literally, and the whole title has to match. A placeholder ends at
+ * its first `}`, so one that can hold a `}` would split wrongly; `unsupportedPlaceholders`
+ * names those, and the integrity checks refuse an entry that uses one.
  */
 export function titleMatches(named: string, title: string): boolean {
   const literals = named.split(/\$\{[^}]*\}/);
   if (literals.length === 1) return named === title;
   const pattern = literals.map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('.+');
   return new RegExp(`^${pattern}$`).test(title);
+}
+
+/**
+ * The placeholders in `named` that `titleMatches` cannot split, as written, so the integrity
+ * checks in `register.test.ts` can refuse them.
+ *
+ * `titleMatches` ends a placeholder at its first `}`. That is right for a variable, a property
+ * or an index (`${width}`, `${viewport.width}`, `${sizes[0]}`), and wrong wherever a `}` can sit
+ * inside the placeholder, which takes a brace, a string, template or regex literal, or a
+ * comment: so a `{`, a quote, a backtick or a `/` in one. Such a placeholder splits in the
+ * wrong place and the entry silently matches nothing, so it is refused rather than parsed. So
+ * is a `${` with no closing `}`.
+ */
+export function unsupportedPlaceholders(named: string): string[] {
+  const refused: string[] = [];
+  const rest = named.replace(/\$\{([^}]*)\}/g, (placeholder: string, body: string) => {
+    if (/[{'"`/]/.test(body)) refused.push(placeholder);
+    return '';
+  });
+  if (rest.includes('${')) refused.push(rest.slice(rest.indexOf('${')));
+  return refused;
 }
 
 /**

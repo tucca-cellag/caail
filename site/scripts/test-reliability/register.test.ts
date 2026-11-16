@@ -28,6 +28,7 @@ import {
   formatEntry,
   formatReport,
   titleMatches,
+  unsupportedPlaceholders,
   type UnreliableEntry,
 } from './register.js';
 
@@ -85,6 +86,25 @@ describe('register integrity', () => {
       }
     }
     expect(drifted).toEqual([]);
+  });
+
+  it('every title or name an entry matches on has only placeholders titleMatches can split', () => {
+    // A placeholder that splits in the wrong place still appears verbatim in its file, so
+    // the drift checks pass while the entry matches nothing at run time.
+    const refused: string[] = [];
+    for (const entry of REGISTER) {
+      const names = [
+        ...(entry.suite === 'playwright' && entry.file.endsWith('.spec.ts') ? [entry.unit] : []),
+        ...(entry.tests ?? []),
+        ...(entry.suites ?? []),
+      ];
+      for (const name of names) {
+        for (const placeholder of unsupportedPlaceholders(name)) {
+          refused.push(`${entry.id}: ${JSON.stringify(name)} holds ${JSON.stringify(placeholder)}`);
+        }
+      }
+    }
+    expect(refused).toEqual([]);
   });
 
   it('every named vitest test still exists in its file', () => {
@@ -303,6 +323,23 @@ describe('titleMatches', () => {
     expect(titleMatches('at ${n} (of ${total}) items', 'at 3 (of 9) items')).toBe(true);
     expect(titleMatches('at ${n} (of ${total}) items', 'at 3 of 9 items')).toBe(false);
     expect(titleMatches('a.b ${x}', 'axb 1')).toBe(false);
+  });
+});
+
+describe('unsupportedPlaceholders', () => {
+  it('accepts a name with no placeholder, or with a variable, a property or an index', () => {
+    expect(unsupportedPlaceholders('a plain title')).toEqual([]);
+    expect(unsupportedPlaceholders('at ${width}px')).toEqual([]);
+    expect(unsupportedPlaceholders('at ${viewport.width}px, ${sizes[0]} first')).toEqual([]);
+  });
+
+  it('refuses a placeholder that can hold a }, and an unclosed one', () => {
+    expect(unsupportedPlaceholders('at ${fn({ a })}px')).toEqual(['${fn({ a }']);
+    expect(unsupportedPlaceholders("at ${'}'}px")).toEqual(["${'}"]);
+    expect(unsupportedPlaceholders('at ${"x"}px')).toEqual(['${"x"}']);
+    expect(unsupportedPlaceholders('at ${`x`}px')).toEqual(['${`x`}']);
+    expect(unsupportedPlaceholders('at ${/}/.source}px')).toEqual(['${/}']);
+    expect(unsupportedPlaceholders('at ${width px')).toEqual(['${width px']);
   });
 });
 
