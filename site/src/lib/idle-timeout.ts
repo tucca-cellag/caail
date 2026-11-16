@@ -1,7 +1,8 @@
 /**
- * The longest the site waits for an idle moment before doing deferred work: every `client:idle`
- * island and every `requestIdleCallback` under site/src takes it as its timeout.
- * `idle-timeout.test.ts` fails on one that does not, so this does not list them.
+ * The longest the site waits for an idle moment before doing deferred work. Every `client:idle`
+ * island under site/src is written `client:idle={{ timeout: IDLE_TIMEOUT_MS }}`, and script defers
+ * work through `onIdle` below rather than asking the browser for an idle callback itself.
+ * `idle-timeout.test.ts` fails on any other use, so this does not list them.
  *
  * Idle-only work never runs on a page that never goes idle, as on a busy CI runner: the chat
  * button was "not found" within 15 s and the network canvas within 20 s, a different page each
