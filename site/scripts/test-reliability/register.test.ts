@@ -319,6 +319,12 @@ describe('titleMatches', () => {
     expect(titleMatches(TEMPLATE, 'expanded labels stay clear of the content column at 1600')).toBe(false);
   });
 
+  it('does not let a placeholder stand for words, so a different test sharing the ends is not matched', () => {
+    expect(titleMatches(TEMPLATE, 'expanded labels stay clear of the content column at 1600 and 1920px')).toBe(false);
+    expect(titleMatches('fits at ${width}px', 'fits at 1600px when the rail is open and every label at 1920px')).toBe(false);
+    expect(titleMatches('fits at ${width}px', 'fits at 1600px')).toBe(true);
+  });
+
   it('reads the text outside a placeholder literally', () => {
     expect(titleMatches('at ${n} (of ${total}) items', 'at 3 (of 9) items')).toBe(true);
     expect(titleMatches('at ${n} (of ${total}) items', 'at 3 of 9 items')).toBe(false);

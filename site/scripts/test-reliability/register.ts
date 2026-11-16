@@ -659,19 +659,24 @@ export function entriesForVitestModule(
 /**
  * Whether `title`, as a test or suite reports it, is the one `named` names.
  *
- * Equal strings match. A `${…}` in `named` is a placeholder for one or more characters,
- * so a title generated in a loop is named once, as its source writes it
+ * Equal strings match. A `${…}` in `named` is a placeholder for one or more characters
+ * other than whitespace, so a title generated in a loop is named once, as its source writes it
  * (`at ${width}px`), and matches every title the loop generates. Written that way it
  * appears verbatim in its file, which the integrity checks in `register.test.ts`
  * require; a title as it runs (`at 1600px`) is in no source to find. Everything outside
  * a placeholder matches literally, and the whole title has to match. A placeholder ends at
  * its first `}`, so one that can hold a `}` would split wrongly; `unsupportedPlaceholders`
  * names those, and the integrity checks refuse an entry that uses one.
+ *
+ * No whitespace, so that a different test in the same file sharing the template's prefix
+ * and suffix, with words between them, is not labelled with this entry. The cost is a loop
+ * whose value holds a space: its titles go unmatched, and a failure there prints as
+ * unregistered, which a reader notices, where a mislabel would be believed.
  */
 export function titleMatches(named: string, title: string): boolean {
   const literals = named.split(/\$\{[^}]*\}/);
   if (literals.length === 1) return named === title;
-  const pattern = literals.map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('.+');
+  const pattern = literals.map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('\\S+');
   return new RegExp(`^${pattern}$`).test(title);
 }
 
