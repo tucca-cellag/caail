@@ -10,11 +10,13 @@
  * runs the installed vitest on `fixtures/suite-failures.fixture.ts` with the real reporter
  * and reads what it prints.
  */
-import { spawn } from 'node:child_process';
+import { spawn, type ChildProcess } from 'node:child_process';
+import { mkdtempSync, rmSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { FIXTURE_ENTRIES } from './fixtures/reporter.js';
 
@@ -22,33 +24,77 @@ const require = createRequire(import.meta.url);
 const VITEST_CLI = join(dirname(require.resolve('vitest/package.json')), 'vitest.mjs');
 const FIXTURES = join(dirname(fileURLToPath(import.meta.url)), 'fixtures');
 
+/**
+ * How long the fixture run may take before it is killed. A second vitest starts a server and a
+ * worker of its own, which a loaded machine slows far more than it slows a fixture, so this is
+ * a budget for that rather than the suite's hook budget. The hook gets a little more, so the
+ * kill below, which names the cause, fires before vitest's own timeout does.
+ */
+const FIXTURE_BUDGET_MS = 110_000;
+
+/** The running fixture vitest, until it exits. */
+let child: ChildProcess | undefined;
+
+/**
+ * Kill the fixture vitest and the workers it started. It is spawned as the leader of its own
+ * process group (`detached`) so the group can be killed whole; where there are no groups, the
+ * process alone.
+ */
+function killFixture(): void {
+  if (!child || child.exitCode !== null || child.signalCode !== null) return;
+  try {
+    if (process.platform !== 'win32' && child.pid !== undefined) process.kill(-child.pid, 'SIGKILL');
+    else child.kill('SIGKILL');
+  } catch {
+    // Already gone between the check and the kill.
+  }
+}
+
 /** Run the fixture in a vitest of its own, and collect its exit code and stderr. */
-function runFixture(): Promise<{ code: number | null; stderr: string }> {
+function runFixture(cacheDir: string): Promise<{ code: number | null; stderr: string }> {
   // The parent run's VITEST_* variables describe its own worker; a second vitest must not
   // inherit them.
-  const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('VITEST')));
+  const env = {
+    ...Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('VITEST'))),
+    CAAIL_REPORTER_FIXTURE_CACHE: cacheDir,
+  };
   return new Promise((resolve, reject) => {
-    const child = spawn(
+    child = spawn(
       process.execPath,
       [VITEST_CLI, 'run', '--root', FIXTURES, '--config', join(FIXTURES, 'vitest.config.ts')],
-      { env, stdio: ['ignore', 'ignore', 'pipe'] },
+      { env, stdio: ['ignore', 'ignore', 'pipe'], detached: process.platform !== 'win32' },
     );
+    const timer = setTimeout(() => {
+      killFixture();
+      reject(new Error(`the fixture vitest ran past ${FIXTURE_BUDGET_MS} ms and was killed`));
+    }, FIXTURE_BUDGET_MS);
     let stderr = '';
-    child.stderr.setEncoding('utf-8');
-    child.stderr.on('data', (chunk: string) => (stderr += chunk));
-    child.on('error', reject);
-    child.on('close', (code) => resolve({ code, stderr }));
+    child.stderr!.setEncoding('utf-8');
+    child.stderr!.on('data', (chunk: string) => (stderr += chunk));
+    child.on('error', (error) => {
+      clearTimeout(timer);
+      reject(error);
+    });
+    child.on('close', (code) => {
+      clearTimeout(timer);
+      resolve({ code, stderr });
+    });
   });
 }
 
 describe('the vitest reporter, run by the installed vitest', () => {
   let run: { code: number | null; stderr: string };
-  // A second vitest starts a server and a worker of its own, which a loaded machine slows
-  // far more than it slows a fixture, so this hook gets a budget for that rather than the
-  // suite's.
+  // Its cache goes here rather than beside the fixture, where vitest would create a
+  // node_modules of its own inside the source tree.
+  const cacheDir = mkdtempSync(join(tmpdir(), 'caail-reporter-fixture-'));
   beforeAll(async () => {
-    run = await runFixture();
-  }, 120_000);
+    run = await runFixture(cacheDir);
+  }, FIXTURE_BUDGET_MS + 10_000);
+  // Whether the run finished, was killed above, or was abandoned by vitest's own timeout.
+  afterAll(() => {
+    killFixture();
+    rmSync(cacheDir, { recursive: true, force: true });
+  });
 
   /** The fixture entries whose unit the report printed, in register order. */
   const printed = () =>
