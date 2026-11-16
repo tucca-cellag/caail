@@ -40,13 +40,14 @@ import { errorText } from './playwright-reporter.js';
 const SITE_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 /**
- * How many `describe` calls in `source` are named exactly `name`, in any quote style and
- * with any modifier (`describe.skip(`, `describe.sequential(`).
+ * How many `describe` or `suite` calls in `source` are named exactly `name`, in any quote
+ * style and with any modifier (`describe.skip(`, `describe.sequential(`).
  */
 function describeCalls(source: string, name: string): number {
   const literal = escapeRegExp(name);
   return ["'", '"', '`'].reduce(
-    (total, quote) => total + [...source.matchAll(new RegExp(`\\bdescribe(?:\\.\\w+)*\\(\\s*${quote}${literal}${quote}`, 'g'))].length,
+    (total, quote) =>
+      total + [...source.matchAll(new RegExp(`\\b(?:describe|suite)(?:\\.\\w+)*\\(\\s*${quote}${literal}${quote}`, 'g'))].length,
     0,
   );
 }
@@ -129,21 +130,21 @@ describe('register integrity', () => {
     expect(drifted).toEqual([]);
   });
 
-  it('every named vitest suite is the name of exactly one describe call in its file', () => {
+  it('every level of every named vitest suite is a describe call in its file', () => {
     // A suite name can appear elsewhere in its module, as `buildLlmsFullText` does in
     // the import of the function it tests, so finding the text proves nothing: renaming
     // the describe would leave the entry matching nothing with this check green. The
-    // reporter matches a suite by its bare name, so a second describe of that name, under
-    // another parent, would be labelled too; requiring exactly one makes the bare name
-    // unambiguous, and a second one fails here instead of being mislabelled.
+    // reporter matches a suite by its full name, so a same-named suite under another
+    // parent is not this one, and the check asks only that each level still exists.
     const wrong: string[] = [];
     for (const entry of REGISTER) {
       if (entry.suite !== 'vitest' || !entry.suites) continue;
       const source = readFileSync(join(SITE_ROOT, entry.file), 'utf-8');
-      for (const name of entry.suites) {
-        const calls = describeCalls(source, name);
-        if (calls !== 1) {
-          wrong.push(`${entry.id}: ${calls} describe calls named ${JSON.stringify(name)} in ${entry.file}, not 1`);
+      for (const fullName of entry.suites) {
+        for (const level of fullName.split(' > ')) {
+          if (describeCalls(source, level) === 0) {
+            wrong.push(`${entry.id}: no describe call named ${JSON.stringify(level)} in ${entry.file}`);
+          }
         }
       }
     }
@@ -235,6 +236,11 @@ describe('register integrity', () => {
 });
 
 describe('describeCalls', () => {
+  it('counts a suite() call too', () => {
+    expect(describeCalls("suite('a suite', () => {", 'a suite')).toBe(1);
+    expect(describeCalls("testsuite('a suite', () => {", 'a suite')).toBe(0);
+  });
+
   it('counts a describe of that name in each quote style, with or without a modifier', () => {
     expect(describeCalls("describe('a suite', () => {", 'a suite')).toBe(1);
     expect(describeCalls('describe("a suite", () => {', 'a suite')).toBe(1);

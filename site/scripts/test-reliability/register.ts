@@ -146,8 +146,9 @@ export interface UnreliableEntry {
    */
   tests?: readonly string[];
   /**
-   * vitest only: match these `describe` blocks by name when one's own hook times out,
-   * which is how a suite-level `beforeAll` fails under load.
+   * vitest only: match these `describe` blocks by full name when one's own hook times out,
+   * which is how a suite-level `beforeAll` fails under load. A full name is vitest's
+   * `TestSuite.fullName`: the suite's name after each enclosing suite's, joined by ` > `.
    *
    * `tests` cannot register that hook. When it fails, vitest marks the suite failed with
    * the hook's error and skips every test inside it, so no test fails and there is no
@@ -164,9 +165,11 @@ export interface UnreliableEntry {
    * `vitest-reporter.test.ts` runs the installed vitest on a fixture and fails if any of
    * these stops being how vitest reports it.
    *
-   * Each name here must be the name of exactly one `describe` call in `file`;
-   * `register.test.ts` enforces it. The reporter matches a suite by its bare name, so a
-   * second `describe` of that name, under another parent, would be labelled too.
+   * Matching the full name rather than the bare one means a suite of the same name under
+   * another parent is not labelled, however it was made: a second `describe`, a
+   * `describe.each` row, a loop or `suite()`. Each level of each full name here must be the
+   * name of a `describe` or `suite` call in `file`; `register.test.ts` enforces it, so a
+   * renamed suite fails there rather than leaving the entry matching nothing.
    */
   suites?: readonly string[];
   /**
@@ -706,8 +709,8 @@ export interface VitestFailures {
   /** Its failed tests, by name. */
   tests?: readonly (ObservedFailure & { name: string })[];
   /**
-   * Its suites that failed with an error of their own, a hook's, by name. Not those that
-   * failed only because a test or a suite inside them did. See `UnreliableEntry.suites`.
+   * Its suites that failed with an error of their own, a hook's, by full name. Not those
+   * that failed only because a test or a suite inside them did. See `UnreliableEntry.suites`.
    */
   suites?: readonly (ObservedFailure & { name: string })[];
   /** The module's own errors, from a top-level hook, when it has any. */

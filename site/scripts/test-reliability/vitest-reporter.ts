@@ -78,9 +78,11 @@ export function failuresIn(module: TestModule): VitestFailures {
       const result = test.result();
       return { name: test.name, ...observed(result.state === 'failed' ? result.errors : []) };
     }),
+    // By full name, `parent > child`, so a suite is told apart from another of the same
+    // name under a different parent, however that one was made.
     suites: [...module.children.allSuites()]
       .filter((suite) => suite.errors().length > 0)
-      .map((suite) => ({ name: suite.name, ...observed(suite.errors()) })),
+      .map((suite) => ({ name: suite.fullName, ...observed(suite.errors()) })),
     ...(moduleErrors.length > 0 ? { module: observed(moduleErrors) } : {}),
   };
 }

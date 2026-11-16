@@ -39,3 +39,12 @@ describe('a parent suite', () => {
     it('is skipped too', () => {});
   });
 });
+
+describe('another parent', () => {
+  // A nested suite made by a row rather than a literal call, whose bare name an entry
+  // could mistake for a top-level suite's.
+  describe.each([['a lone name']])('%s', () => {
+    beforeAll(overrun, 10);
+    it('is skipped once more', () => {});
+  });
+});
