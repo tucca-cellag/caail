@@ -28,10 +28,13 @@ import {
   entriesForPlaywrightTest,
   formatEntry,
   formatReport,
+  shapeMatches,
   titleMatches,
   unsupportedPlaceholders,
+  type ObservedFailure,
   type UnreliableEntry,
 } from './register.js';
+import { errorText } from './playwright-reporter.js';
 
 /** `site/`, two levels up from `site/scripts/test-reliability/`. */
 const SITE_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -147,6 +150,28 @@ describe('register integrity', () => {
     expect(wrong).toEqual([]);
   });
 
+  it('every entry a reporter can match states the shape of failure it covers', () => {
+    // Without one an entry matches nothing, so a missing shape would quietly switch it off.
+    const shapeless = REGISTER.filter(
+      (entry) => (entry.suite === 'vitest' || entry.file.endsWith('.spec.ts')) && entry.failure === undefined,
+    );
+    expect(shapeless.map((entry) => entry.id)).toEqual([]);
+  });
+
+  it("every text a failure shape matches on is in the entry's file, or a residue entry's control", () => {
+    // A text that no longer appears where the failure comes from is an assertion that was
+    // reworded, and the entry has stopped matching it.
+    const stale: string[] = [];
+    for (const entry of REGISTER) {
+      if (entry.failure === undefined || entry.failure === 'timeout') continue;
+      const where = entry.shape === 'residue' ? entry.reproduce : readFileSync(join(SITE_ROOT, entry.file), 'utf-8');
+      for (const text of entry.failure.text) {
+        if (!where.includes(text)) stale.push(`${entry.id}: ${JSON.stringify(text)} not in its ${entry.shape === 'residue' ? 'reproduce' : 'file'}`);
+      }
+    }
+    expect(stale).toEqual([]);
+  });
+
   it('every vitest entry narrows to named tests or suites, or says it covers its whole module', () => {
     // Without this, an entry that lost its `tests` or `suites` would stop matching at all
     // (the matcher fails closed) and nothing would say so; and one given both would be
@@ -226,40 +251,88 @@ describe('describeCalls', () => {
   });
 });
 
+/** A failure a reporter could report: a timeout, or an assertion with this text. */
+const TIMED_OUT: ObservedFailure = { timedOut: true, texts: ['Test timed out in 20000ms.'] };
+const asserted = (text: string): ObservedFailure => ({ timedOut: false, texts: [text] });
+
+describe('shapeMatches', () => {
+  it('matches a timeout only to a failure that timed out', () => {
+    expect(shapeMatches('timeout', TIMED_OUT)).toBe(true);
+    expect(shapeMatches('timeout', asserted('expected 1 to be 2'))).toBe(false);
+  });
+
+  it('matches a text shape only to a failure whose text holds one of its strings', () => {
+    expect(shapeMatches({ text: ['total layout shift'] }, asserted('the total layout shift, summed'))).toBe(true);
+    expect(shapeMatches({ text: ['a', 'total layout shift'] }, asserted('the total layout shift'))).toBe(true);
+    expect(shapeMatches({ text: ['total layout shift'] }, asserted('layout shifts whose source is the band'))).toBe(false);
+    expect(shapeMatches({ text: ['total layout shift'] }, TIMED_OUT)).toBe(false);
+  });
+
+  it('matches nothing without a shape', () => {
+    expect(shapeMatches(undefined, TIMED_OUT)).toBe(false);
+    expect(shapeMatches(undefined, asserted('anything'))).toBe(false);
+  });
+});
+
 describe('entriesForVitestModule', () => {
+  const metricsHook = { suites: [{ name: 'buildMetricsModel — real corpus', ...TIMED_OUT }] };
+
   it('matches a project-relative module id', () => {
-    const hits = entriesForVitestModule('scripts/parser/metrics.test.ts');
+    const hits = entriesForVitestModule('scripts/parser/metrics.test.ts', metricsHook);
     expect(hits.map((entry) => entry.id)).toEqual(['vitest-metrics-corpus-hook']);
   });
 
-  it('matches a module-level entry even when no failed test name is known', () => {
+  it('matches a whole-module entry when no failed test name is known', () => {
     // A hook timeout produces no failed TestCase, which is exactly how the five
-    // slow-fixture entries fail. They must still match.
-    expect(entriesForVitestModule('scripts/parser/metrics.test.ts', {}).map((e) => e.id)).toEqual([
+    // slow-fixture entries fail. They must still match, on the hook's own error.
+    expect(entriesForVitestModule('scripts/parser/metrics.test.ts', { module: TIMED_OUT }).map((e) => e.id)).toEqual([
       'vitest-metrics-corpus-hook',
     ]);
   });
 
-  it('a narrowed entry matches only when one of its named tests failed', () => {
+  it('matches a whole-module entry only when every failure in the module has its shape', () => {
+    // emit.test.ts exists to catch a round-trip that no longer matches, which fails as an
+    // assertion. That failing beside a timeout is a failure the entry does not explain.
+    const file = 'scripts/db/emit.test.ts';
+    expect(entriesForVitestModule(file, { tests: [{ name: 'a', ...TIMED_OUT }, { name: 'b', ...TIMED_OUT }] }).map((e) => e.id)).toEqual([
+      'vitest-db-emit',
+    ]);
+    expect(entriesForVitestModule(file, { tests: [{ name: 'a', ...TIMED_OUT }, { name: 'b', ...asserted('not equal') }] })).toEqual([]);
+    expect(entriesForVitestModule(file, { tests: [{ name: 'b', ...asserted('not equal') }] })).toEqual([]);
+    expect(entriesForVitestModule(file, {})).toEqual([]);
+  });
+
+  it('a narrowed entry matches only when one of its named tests failed in its shape', () => {
     const file = 'src/lib/community.test.ts';
     const registered = 'appears nowhere under site/ except this module and its test';
-    expect(entriesForVitestModule(file, { tests: [registered] }).map((e) => e.id)).toEqual([
+    const leftover = asserted('+   "test-results/homepage-agent-x/error-context.md",');
+    expect(entriesForVitestModule(file, { tests: [{ name: registered, ...leftover }] }).map((e) => e.id)).toEqual([
       'vitest-community-invite-walk',
     ]);
-    // A real Slack-invite paste fails the SAME test, so that case is still registered;
-    // what must not match is the module's other tests failing on their own.
+    // A real Slack-invite paste fails the SAME test, and names a file no run left behind.
+    expect(entriesForVitestModule(file, { tests: [{ name: registered, ...asserted('+   "src/components/Hero.astro",') }] })).toEqual([]);
+    // Nor do the module's other tests failing on their own match.
     expect(
-      entriesForVitestModule(file, { tests: ['exposes a base-relative community path, not a baked-in /caail prefix'] }),
+      entriesForVitestModule(file, {
+        tests: [{ name: 'exposes a base-relative community path, not a baked-in /caail prefix', ...leftover }],
+      }),
     ).toEqual([]);
     expect(entriesForVitestModule(file, {})).toEqual([]);
     // A suite of the same name failing its own hook is not one of the named tests.
-    expect(entriesForVitestModule(file, { suites: [registered] })).toEqual([]);
+    expect(entriesForVitestModule(file, { suites: [{ name: registered, ...leftover }] })).toEqual([]);
   });
 
-  it('a suite-narrowed entry matches only that suite, as failuresIn reports it', () => {
-    // `failures.suites` holds only suites whose own hook timed out (`failuresIn` in the
-    // reporter, checked against vitest by vitest-reporter.test.ts). So a test failing
-    // inside the suite arrives as a failed test name and must not match the suite.
+  it('a timeout entry does not match its test failing an assertion', () => {
+    const file = 'scripts/parser/agent-api.test.ts';
+    const registered = 'ships no relative Markdown link target in any emitted endpoint';
+    expect(entriesForVitestModule(file, { tests: [{ name: registered, ...TIMED_OUT }] }).map((e) => e.id)).toEqual([
+      'vitest-agent-api-link-scan',
+    ]);
+    // An endpoint really shipping a relative link fails the same test as an assertion.
+    expect(entriesForVitestModule(file, { tests: [{ name: registered, ...asserted('datasets.json: expected [ "../Papers.md" ]') }] })).toEqual([]);
+  });
+
+  it('a suite-narrowed entry matches only that suite, in its shape', () => {
     const hooked: UnreliableEntry = {
       ...REGISTER[0],
       id: 'suite-narrowed',
@@ -267,12 +340,15 @@ describe('entriesForVitestModule', () => {
       wholeModule: undefined,
       tests: undefined,
       suites: ['the suite with a hook'],
+      failure: 'timeout',
     };
     const match = (failures: Parameters<typeof entriesForVitestModule>[1]) =>
       entriesForVitestModule(hooked.file, failures, [hooked]).map((e) => e.id);
-    expect(match({ suites: ['the suite with a hook'] })).toEqual(['suite-narrowed']);
-    expect(match({ tests: ['a test inside the suite with a hook'] })).toEqual([]);
-    expect(match({ suites: ['another suite'] })).toEqual([]);
+    expect(match({ suites: [{ name: 'the suite with a hook', ...TIMED_OUT }] })).toEqual(['suite-narrowed']);
+    // Its hook threw: a defect the hook found, not load.
+    expect(match({ suites: [{ name: 'the suite with a hook', ...asserted('Error: a link it cannot make absolute') }] })).toEqual([]);
+    expect(match({ tests: [{ name: 'a test inside the suite with a hook', ...TIMED_OUT }] })).toEqual([]);
+    expect(match({ suites: [{ name: 'another suite', ...TIMED_OUT }] })).toEqual([]);
     expect(match({})).toEqual([]);
   });
 
@@ -283,20 +359,21 @@ describe('entriesForVitestModule', () => {
       file: 'scripts/parser/fixture.test.ts',
       wholeModule: undefined,
       tests: ['parses ${name}'],
+      failure: 'timeout',
     };
-    const match = (tests: string[]) =>
-      entriesForVitestModule(looped.file, { tests }, [looped]).map((e) => e.id);
+    const match = (names: string[]) =>
+      entriesForVitestModule(looped.file, { tests: names.map((name) => ({ name, ...TIMED_OUT })) }, [looped]).map((e) => e.id);
     expect(match(['parses Papers.md'])).toEqual(['looped']);
     expect(match(['emits Papers.md'])).toEqual([]);
   });
 
   it('matches an absolute path ending in the registered file', () => {
-    const hits = entriesForVitestModule('/checkout/site/scripts/db/emit.test.ts');
+    const hits = entriesForVitestModule('/checkout/site/scripts/db/emit.test.ts', { module: TIMED_OUT });
     expect(hits.map((entry) => entry.id)).toEqual(['vitest-db-emit']);
   });
 
   it('normalises Windows separators', () => {
-    const hits = entriesForVitestModule('C:\\checkout\\site\\scripts\\db\\emit.test.ts');
+    const hits = entriesForVitestModule('C:\\checkout\\site\\scripts\\db\\emit.test.ts', { module: TIMED_OUT });
     expect(hits.map((entry) => entry.id)).toEqual(['vitest-db-emit']);
   });
 
@@ -304,21 +381,23 @@ describe('entriesForVitestModule', () => {
     // `endsWith('scripts/db/emit.test.ts')` without the leading separator would match
     // `other/scripts/db/emit.test.ts`; requiring the separator keeps a same-named file
     // in a different tree from inheriting an entry that was never about it.
-    expect(entriesForVitestModule('somewhere/notscripts/db/emit.test.ts')).toEqual([]);
+    expect(entriesForVitestModule('somewhere/notscripts/db/emit.test.ts', { module: TIMED_OUT })).toEqual([]);
   });
 
-  it('matches nothing for an entry that neither narrows nor says wholeModule', () => {
+  it('matches nothing for an entry that neither narrows nor says wholeModule, or states no shape', () => {
     const unscoped: UnreliableEntry = { ...REGISTER[0], id: 'unscoped', wholeModule: undefined, tests: undefined };
-    expect(entriesForVitestModule(unscoped.file, { tests: ['any test'], suites: ['any suite'] }, [unscoped])).toEqual([]);
-    expect(entriesForVitestModule(unscoped.file, {}, [unscoped])).toEqual([]);
+    const failures = { tests: [{ name: 'any test', ...TIMED_OUT }], suites: [{ name: 'any suite', ...TIMED_OUT }], module: TIMED_OUT };
+    expect(entriesForVitestModule(unscoped.file, failures, [unscoped])).toEqual([]);
+    const shapeless: UnreliableEntry = { ...REGISTER[0], id: 'shapeless', failure: undefined };
+    expect(entriesForVitestModule(shapeless.file, failures, [shapeless])).toEqual([]);
   });
 
   it('returns nothing for an unregistered module', () => {
-    expect(entriesForVitestModule('scripts/parser/apa.test.ts')).toEqual([]);
+    expect(entriesForVitestModule('scripts/parser/apa.test.ts', { module: TIMED_OUT })).toEqual([]);
   });
 
   it('does not match a Playwright entry', () => {
-    expect(entriesForVitestModule('e2e/licenses.spec.ts')).toEqual([]);
+    expect(entriesForVitestModule('e2e/licenses.spec.ts', { tests: [{ name: 'the catalog license facet narrows the grid to a tier', ...TIMED_OUT }] })).toEqual([]);
   });
 });
 
@@ -376,37 +455,53 @@ describe('unsupportedPlaceholders', () => {
 
 describe('entriesForPlaywrightTest', () => {
   const LICENSES = '/checkout/site/e2e/licenses.spec.ts';
+  const FACET = 'the catalog license facet narrows the grid to a tier';
+  const FACET_FAILED = [asserted('expect(received).toBeLessThan(expected)')];
 
   it('matches on file plus test title', () => {
-    const hits = entriesForPlaywrightTest(
-      LICENSES,
-      'the catalog license facet narrows the grid to a tier',
-    );
-    expect(hits.map((entry) => entry.id)).toEqual(['pw-license-facet']);
+    expect(entriesForPlaywrightTest(LICENSES, FACET, FACET_FAILED).map((entry) => entry.id)).toEqual(['pw-license-facet']);
   });
 
   it('does not match an unregistered test in the same registered file', () => {
-    expect(entriesForPlaywrightTest(LICENSES, 'the /licenses/ hub lists the 4 tiers')).toEqual([]);
+    expect(entriesForPlaywrightTest(LICENSES, 'the /licenses/ hub lists the 4 tiers', [TIMED_OUT])).toEqual([]);
   });
 
   it('does not match the registered title in a DIFFERENT spec file', () => {
     // Copying licenses.spec.ts to cover /databases/ is the obvious next change here.
     // A title-only match would greet a genuine failure in the copy with this entry's
     // "already mitigated" verdict, which is the mislabelling the register prevents.
-    expect(
-      entriesForPlaywrightTest(
-        '/checkout/site/e2e/databases-licenses.spec.ts',
-        'the catalog license facet narrows the grid to a tier',
-      ),
-    ).toEqual([]);
+    expect(entriesForPlaywrightTest('/checkout/site/e2e/databases-licenses.spec.ts', FACET, FACET_FAILED)).toEqual([]);
   });
 
   it('accepts a site-relative path as well as an absolute one', () => {
-    const hits = entriesForPlaywrightTest(
-      'e2e/licenses.spec.ts',
-      'the catalog license facet narrows the grid to a tier',
-    );
-    expect(hits.map((entry) => entry.id)).toEqual(['pw-license-facet']);
+    expect(entriesForPlaywrightTest('e2e/licenses.spec.ts', FACET, FACET_FAILED).map((entry) => entry.id)).toEqual([
+      'pw-license-facet',
+    ]);
+  });
+
+  it('matches a timeout entry only when the test timed out, not when it failed an assertion', () => {
+    const AXE = 'the license badges introduce no axe violations on /software/';
+    expect(entriesForPlaywrightTest(LICENSES, AXE, [TIMED_OUT]).map((entry) => entry.id)).toEqual(['pw-license-badges-axe']);
+    // A real axe violation fails the same test, as an assertion.
+    expect(entriesForPlaywrightTest(LICENSES, AXE, [asserted('expect(received).toEqual(expected)')])).toEqual([]);
+    expect(entriesForPlaywrightTest(LICENSES, AXE, [])).toEqual([]);
+  });
+
+  it('matches a measured-value entry only on its own assertion', () => {
+    const file = '/checkout/site/e2e/hero-stripe.spec.ts';
+    const CLS = 'on a slowed phone the hero band records no layout shift and the page stays under good CLS';
+    const sum = asserted("Error: the page's total layout shift, every entry summed\n\nexpect(received).toBeLessThan(expected)");
+    expect(entriesForPlaywrightTest(file, CLS, [sum]).map((entry) => entry.id)).toEqual(['pw-hero-stripe-cls']);
+    // The band's own shifts, which the same test asserts first, are the defect it guards.
+    expect(entriesForPlaywrightTest(file, CLS, [asserted('Error: layout shifts whose source is the hero band')])).toEqual([]);
+    expect(entriesForPlaywrightTest(file, CLS, [TIMED_OUT])).toEqual([]);
+  });
+
+  it('matches when any one failed attempt has the shape', () => {
+    const AXE = 'the license badges introduce no axe violations on /software/';
+    expect(entriesForPlaywrightTest(LICENSES, AXE, [asserted('expect(received).toEqual(expected)'), TIMED_OUT]).map((e) => e.id)).toEqual([
+      'pw-license-badges-axe',
+    ]);
   });
 
   it('matches a templated title in its own file, at every value the loop generates', () => {
@@ -416,12 +511,27 @@ describe('entriesForPlaywrightTest', () => {
       suite: 'playwright',
       file: 'e2e/looped.spec.ts',
       unit: 'fits at ${width}px',
+      wholeModule: undefined,
+      failure: 'timeout',
     };
-    const match = (file: string, title: string) => entriesForPlaywrightTest(file, title, [looped]).map((e) => e.id);
+    const match = (file: string, title: string) => entriesForPlaywrightTest(file, title, [TIMED_OUT], [looped]).map((e) => e.id);
     expect(match('/checkout/site/e2e/looped.spec.ts', 'fits at 1600px')).toEqual(['looped']);
     expect(match('/checkout/site/e2e/looped.spec.ts', 'fits at 1920px')).toEqual(['looped']);
     expect(match('/checkout/site/e2e/looped.spec.ts', 'fits at 1600px, twice')).toEqual([]);
     expect(match('/checkout/site/e2e/other.spec.ts', 'fits at 1600px')).toEqual([]);
+  });
+});
+
+describe('errorText', () => {
+  it('drops colour codes and the source snippet a Playwright message quotes', () => {
+    const message =
+      "Error: \u001b[2mexpect(\u001b[22mlocator).toBeVisible() failed\n\nLocator: locator('.th-lead-full')\n" +
+      "Expected: visible\n\n  45 |   await page.goto('./topics/');\n> 47 |   await expect(lead).toBeVisible();";
+    expect(errorText(message)).toBe("Error: expect(locator).toBeVisible() failed\n\nLocator: locator('.th-lead-full')\nExpected: visible");
+  });
+
+  it('leaves a message with no snippet whole', () => {
+    expect(errorText('Test timeout of 30000ms exceeded.')).toBe('Test timeout of 30000ms exceeded.');
   });
 });
 

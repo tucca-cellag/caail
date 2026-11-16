@@ -17,7 +17,27 @@
 
 import type { Reporter, TestCase, TestResult } from '@playwright/test/reporter';
 
-import { entriesForPlaywrightTest, formatReport, type UnreliableEntry } from './register.js';
+import { entriesForPlaywrightTest, formatReport, type ObservedFailure, type UnreliableEntry } from './register.js';
+
+/**
+ * The text of a Playwright error as a `FailureShape` reads it: without colour codes, and cut
+ * before the source snippet its message quotes. The snippet shows lines around the failing
+ * one, so a text shape matched against it would also match a different assertion a line or
+ * two away.
+ */
+export function errorText(message: string): string {
+  const plain = message.replace(/\u001b\[[0-9;]*m/g, '');
+  const snippet = plain.search(/\n\s*>?\s*\d+ \|/);
+  return snippet < 0 ? plain : plain.slice(0, snippet);
+}
+
+/** A failed attempt of a test, as entries are matched against it. */
+export function observedFailure(result: Pick<TestResult, 'status' | 'errors'>): ObservedFailure {
+  return {
+    timedOut: result.status === 'timedOut',
+    texts: result.errors.map((error) => errorText(error.message ?? '')),
+  };
+}
 
 export default class KnownUnreliableReporter implements Reporter {
   /**
@@ -56,7 +76,10 @@ export default class KnownUnreliableReporter implements Reporter {
       // and `unexpected` are both worth reporting, since a registered test going flaky
       // is the entry doing its job.
       if (test.outcome() === 'expected') continue;
-      matched.push(...entriesForPlaywrightTest(test.location.file, test.title));
+      const failures = test.results
+        .filter((result) => result.status === 'failed' || result.status === 'timedOut')
+        .map(observedFailure);
+      matched.push(...entriesForPlaywrightTest(test.location.file, test.title, failures));
     }
     const report = formatReport(matched);
     if (report) console.error(report);

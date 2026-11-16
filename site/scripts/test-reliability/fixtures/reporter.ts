@@ -1,5 +1,5 @@
 /**
- * The real reporter, matching a register of entries for `suite-failures.fixture.ts`.
+ * The real reporter, matching a register of entries for the `.fixture.ts` modules beside it.
  *
  * Each entry's `unit` is its id, so `vitest-reporter.test.ts` can tell from the
  * printed report which entries matched. `expected` says whether the entry should.
@@ -9,14 +9,15 @@ import type { UnreliableEntry } from '../register.js';
 
 const entry = (
   id: string,
-  names: Pick<UnreliableEntry, 'tests' | 'suites'>,
+  scope: Pick<UnreliableEntry, 'tests' | 'suites' | 'wholeModule' | 'failure'>,
+  file = 'suite-failures.fixture.ts',
 ): UnreliableEntry => ({
   id,
   suite: 'vitest',
-  file: 'suite-failures.fixture.ts',
+  file,
   unit: id,
   anchor: '',
-  ...names,
+  ...scope,
   shape: 'load',
   condition: '',
   evidence: '',
@@ -26,17 +27,29 @@ const entry = (
 });
 
 export const FIXTURE_ENTRIES: readonly { entry: UnreliableEntry; expected: boolean }[] = [
-  { entry: entry('fixture-suite-hook-timeout', { suites: ['a suite whose own hook times out'] }), expected: true },
-  { entry: entry('fixture-nested-hook-timeout', { suites: ['a nested suite whose own hook times out'] }), expected: true },
-  { entry: entry('fixture-failed-test', { tests: ['fails an assertion'] }), expected: true },
+  { entry: entry('fixture-suite-hook-timeout', { suites: ['a suite whose own hook times out'], failure: 'timeout' }), expected: true },
+  {
+    entry: entry('fixture-nested-hook-timeout', { suites: ['a nested suite whose own hook times out'], failure: 'timeout' }),
+    expected: true,
+  },
+  { entry: entry('fixture-test-timeout', { tests: ['runs past its budget'], failure: 'timeout' }), expected: true },
+  // An assertion, by the text of what it failed with.
+  { entry: entry('fixture-assertion-by-text', { tests: ['fails an assertion'], failure: { text: ['a planted offender'] } }), expected: true },
+  { entry: entry('fixture-whole-module-timeouts', { wholeModule: true, failure: 'timeout' }, 'module-timeouts.fixture.ts'), expected: true },
+  // A real assertion failure in a test whose entry covers only its timeouts.
+  { entry: entry('fixture-assertion-as-timeout', { tests: ['fails an assertion'], failure: 'timeout' }), expected: false },
+  // An assertion whose text is not the one the entry names.
+  { entry: entry('fixture-assertion-other-text', { tests: ['fails an assertion'], failure: { text: ['another offender'] } }), expected: false },
   // Failed with an error of its own that is not a timeout: the hook found a defect, and
   // load does not explain it.
-  { entry: entry('fixture-suite-hook-throws', { suites: ['a suite whose own hook throws'] }), expected: false },
+  { entry: entry('fixture-suite-hook-throws', { suites: ['a suite whose own hook throws'], failure: 'timeout' }), expected: false },
   // Failed, because a test inside it did, with no error of its own: a real failure there
   // must not be labelled known-unreliable by naming the suite.
-  { entry: entry('fixture-suite-of-failed-test', { suites: ['a suite whose test fails'] }), expected: false },
+  { entry: entry('fixture-suite-of-failed-test', { suites: ['a suite whose test fails'], failure: 'timeout' }), expected: false },
   // Failed, because a suite inside it did. Its own hooks ran clean.
-  { entry: entry('fixture-parent-of-timed-out-hook', { suites: ['a parent suite'] }), expected: false },
+  { entry: entry('fixture-parent-of-timed-out-hook', { suites: ['a parent suite'], failure: 'timeout' }), expected: false },
+  // Its timeouts sit beside an assertion and a hook that threw, which they do not explain.
+  { entry: entry('fixture-whole-module-mixed', { wholeModule: true, failure: 'timeout' }), expected: false },
 ];
 
 export default class FixtureReporter extends KnownUnreliableReporter {
