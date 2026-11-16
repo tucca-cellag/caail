@@ -74,18 +74,23 @@ describe('register integrity', () => {
     expect(drifted).toEqual([]);
   });
 
-  it('every named vitest test still exists in its file', () => {
+  it('every named vitest test and suite still exists in its file', () => {
     // The vitest analogue of the Playwright title check below. Without it, renaming a
-    // test that an entry narrows to leaves the entry silently matching nothing: the
-    // register keeps listing it, the reporter never fires, and the failure it was
+    // test or suite that an entry narrows to leaves the entry silently matching nothing:
+    // the register keeps listing it, the reporter never fires, and the failure it was
     // written for reads as unregistered.
     const drifted: string[] = [];
     for (const entry of REGISTER) {
-      if (entry.suite !== 'vitest' || !entry.tests) continue;
+      if (entry.suite !== 'vitest') continue;
+      const named = [
+        ...(entry.tests ?? []).map((name) => ['test', name] as const),
+        ...(entry.suites ?? []).map((name) => ['suite', name] as const),
+      ];
+      if (named.length === 0) continue;
       const source = readFileSync(join(SITE_ROOT, entry.file), 'utf-8');
-      for (const name of entry.tests) {
+      for (const [kind, name] of named) {
         if (!source.includes(name)) {
-          drifted.push(`${entry.id}: no test named ${JSON.stringify(name)} in ${entry.file}`);
+          drifted.push(`${entry.id}: no ${kind} named ${JSON.stringify(name)} in ${entry.file}`);
         }
       }
     }
@@ -147,7 +152,7 @@ describe('entriesForVitestModule', () => {
   it('matches a module-level entry even when no failed test name is known', () => {
     // A hook timeout produces no failed TestCase, which is exactly how the five
     // slow-fixture entries fail. They must still match.
-    expect(entriesForVitestModule('scripts/parser/metrics.test.ts', []).map((e) => e.id)).toEqual([
+    expect(entriesForVitestModule('scripts/parser/metrics.test.ts', {}).map((e) => e.id)).toEqual([
       'vitest-metrics-corpus-hook',
     ]);
   });
@@ -155,13 +160,36 @@ describe('entriesForVitestModule', () => {
   it('a narrowed entry matches only when one of its named tests failed', () => {
     const file = 'src/lib/community.test.ts';
     const registered = 'appears nowhere under site/ except this module and its test';
-    expect(entriesForVitestModule(file, [registered]).map((e) => e.id)).toEqual([
+    expect(entriesForVitestModule(file, { tests: [registered] }).map((e) => e.id)).toEqual([
       'vitest-community-invite-walk',
     ]);
     // A real Slack-invite paste fails the SAME test, so that case is still registered;
     // what must not match is the module's other tests failing on their own.
-    expect(entriesForVitestModule(file, ['exposes a base-relative community path, not a baked-in /caail prefix'])).toEqual([]);
-    expect(entriesForVitestModule(file, [])).toEqual([]);
+    expect(
+      entriesForVitestModule(file, { tests: ['exposes a base-relative community path, not a baked-in /caail prefix'] }),
+    ).toEqual([]);
+    expect(entriesForVitestModule(file, {})).toEqual([]);
+    // A suite of the same name failing its own hook is not one of the named tests.
+    expect(entriesForVitestModule(file, { suites: [registered] })).toEqual([]);
+  });
+
+  it('a suite-narrowed entry matches only that suite failing with an error of its own', () => {
+    // `failures.suites` holds only suites whose own hook failed (`failuresIn` in the
+    // reporter, checked against vitest by vitest-reporter.test.ts). So a test failing
+    // inside the suite arrives as a failed test name and must not match the suite.
+    const hooked: UnreliableEntry = {
+      ...REGISTER[0],
+      id: 'suite-narrowed',
+      file: 'scripts/parser/fixture.test.ts',
+      tests: undefined,
+      suites: ['the suite with a hook'],
+    };
+    const match = (failures: Parameters<typeof entriesForVitestModule>[1]) =>
+      entriesForVitestModule(hooked.file, failures, [hooked]).map((e) => e.id);
+    expect(match({ suites: ['the suite with a hook'] })).toEqual(['suite-narrowed']);
+    expect(match({ tests: ['a test inside the suite with a hook'] })).toEqual([]);
+    expect(match({ suites: ['another suite'] })).toEqual([]);
+    expect(match({})).toEqual([]);
   });
 
   it('matches an absolute path ending in the registered file', () => {

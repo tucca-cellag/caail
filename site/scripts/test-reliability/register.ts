@@ -106,6 +106,24 @@ export interface UnreliableEntry {
    * this doubles as the vitest title-drift oracle.
    */
   tests?: readonly string[];
+  /**
+   * vitest only: match these `describe` blocks by name when one fails with an error of
+   * its own, which is how a suite-level `beforeAll` that times out fails.
+   *
+   * `tests` cannot register that hook. When it fails, vitest marks the suite failed with
+   * the hook's error and skips every test inside it, so no test fails and there is no
+   * name to match. Module-level matching would register it, and would also label every
+   * other suite in the module.
+   *
+   * Only a suite with an error of its own matches. A suite whose own hooks ran clean
+   * but which holds a failing test is failed too, with no error of its own, and that
+   * failure stays unlabelled: it is the genuine regression this narrowing exists not to
+   * excuse. `vitest-reporter.test.ts` runs the installed vitest on a fixture and fails if
+   * either half stops being how vitest reports it.
+   *
+   * Each name here must appear verbatim in `file`, as `tests` names must.
+   */
+  suites?: readonly string[];
   shape: Shape;
   /** One or two sentences: when does it misbehave, and when does it not. */
   condition: string;
@@ -127,13 +145,13 @@ export interface UnreliableEntry {
 
 /**
  * Playwright matching is always file plus exact title. vitest matching defaults to the
- * module and narrows to named tests when an entry sets `tests`.
+ * module and narrows to named tests or suites when an entry sets `tests` or `suites`.
  *
  * The default is not laziness: the five slow-fixture entries below genuinely fail as
  * whole files, and which test inside them fails moves between runs (three consecutive
  * full runs produced three different sets), so naming one would be precise about the
- * wrong thing. An entry whose module holds unrelated tests must set `tests`, or the
- * reporter labels those as known-unreliable on no evidence.
+ * wrong thing. An entry whose module holds unrelated tests must set `tests` or `suites`,
+ * or the reporter labels those as known-unreliable on no evidence.
  */
 export const REGISTER: readonly UnreliableEntry[] = [
   // -------------------------------------------------------------------------
@@ -406,6 +424,17 @@ export function openEntries(register: readonly UnreliableEntry[] = REGISTER): Un
   return register.filter((entry) => entry.status === 'open');
 }
 
+/** What failed inside one vitest module, for the entries that narrow below the module. */
+export interface VitestFailures {
+  /** The names of its failed tests. */
+  tests?: readonly string[];
+  /**
+   * The names of its suites that failed with an error of their own (a hook), not those
+   * that failed only because a test inside them did. See `UnreliableEntry.suites`.
+   */
+  suites?: readonly string[];
+}
+
 /**
  * Entries registered against a vitest module.
  *
@@ -415,17 +444,19 @@ export function openEntries(register: readonly UnreliableEntry[] = REGISTER): Un
  */
 export function entriesForVitestModule(
   moduleId: string,
-  failedTestNames: readonly string[] = [],
+  failures: VitestFailures = {},
   register: readonly UnreliableEntry[] = REGISTER,
 ): UnreliableEntry[] {
   const normalised = moduleId.replaceAll('\\', '/');
+  const named = (names: readonly string[] | undefined, failed: readonly string[] = []) =>
+    (names ?? []).some((name) => failed.includes(name));
   return register.filter((entry) => {
     if (entry.suite !== 'vitest') return false;
     if (normalised !== entry.file && !normalised.endsWith(`/${entry.file}`)) return false;
-    // No `tests` means the whole module is registered, which is the right reading for
-    // an entry whose failing test moves between runs.
-    if (!entry.tests) return true;
-    return entry.tests.some((name) => failedTestNames.includes(name));
+    // Neither `tests` nor `suites` means the whole module is registered, which is the
+    // right reading for an entry whose failing test moves between runs.
+    if (!entry.tests && !entry.suites) return true;
+    return named(entry.tests, failures.tests) || named(entry.suites, failures.suites);
   });
 }
 
