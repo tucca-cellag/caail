@@ -11,8 +11,11 @@
  * The scan counts tokens rather than parsing the code around them. Every `client:idle` must be
  * written `client:idle={{ timeout: IDLE_TIMEOUT_MS }}`, and `requestIdleCallback` may appear only
  * inside `onIdle` in `idle-timeout.ts`, the bounded way to ask for one. A token written as a
- * Markdown code span, directly after a backtick, is prose naming it and is let through. A
- * pattern that parses the tag or the call around a token misses a `>` inside the tag, an
+ * Markdown code span, directly after a backtick, is let through where it can only be words: on
+ * a comment line in script, and on a prose line of Markdown. In code the same backtick opens a
+ * template literal, which can become running code (`set:html`, `new Function`), so it is held
+ * to the rules like any other token. A pattern that parses the tag or the call around a token
+ * misses a `>` inside the tag, an
  * optional call and an alias, and fails a correct call with an inline arrow callback. Counting
  * tokens can only err loudly, on code that is correct but spelled differently, which is the
  * direction a guard should err in.
@@ -48,6 +51,28 @@ function sourceFiles(dir: string): string[] {
 /** The one way an island may be written idle. */
 const BOUNDED_DIRECTIVE = 'client:idle={{ timeout: IDLE_TIMEOUT_MS }}';
 
+/** How a file's text is read: as script with comments in it, or as Markdown prose with code in it. */
+type Kind = 'script' | 'prose';
+
+/** `.md` and `.mdx` are prose; script files and `.astro` (frontmatter, template, `<script>`) are script. */
+function kindOf(name: string): Kind {
+  return /\.mdx?$/.test(name) ? 'prose' : 'script';
+}
+
+/**
+ * Whether a code-span mention on `line` can only be words, so is let through.
+ *
+ * In script, a line that is a comment: it starts with `//`, `/*` or a JSDoc `*`. A comment
+ * trailing code on the same line is not told apart from the code, so a mention there fails,
+ * loudly. In prose, a line with no ESM, JSX, expression or attribute on it: one starting with
+ * `import` or `export`, or holding any of `{ } = < >`, may be code, so it does not qualify.
+ */
+function mentionsAllowed(line: string, kind: Kind): boolean {
+  const text = line.trim();
+  if (kind === 'script') return /^(\/\/|\/\*|\*)/.test(text);
+  return !/^(import|export)\b/.test(text) && !/[{}=<>]/.test(text);
+}
+
 /** Where `onIdle` is declared: the one span of code that may ask for an idle callback. */
 const ON_IDLE_DECLARATION = 'export function onIdle(';
 
@@ -66,13 +91,21 @@ function onIdleSpan(source: string): { from: number; to: number } | undefined {
 /**
  * The idle tokens in `source` that break the rules above, each as `line: why`, and how many
  * bounded idle waits it holds: islands written as `BOUNDED_DIRECTIVE`, and `onIdle` calls.
- * `isHelper` is for `idle-timeout.ts`, whose `onIdle` may name `requestIdleCallback`.
+ * `kind` says how to read the file (`kindOf`); `isHelper` is for `idle-timeout.ts`, whose
+ * `onIdle` may name `requestIdleCallback`.
  */
-function idleWaits(source: string, isHelper = false): { offences: string[]; bounded: number } {
+function idleWaits(
+  source: string,
+  { kind = 'script', isHelper = false }: { kind?: Kind; isHelper?: boolean } = {},
+): { offences: string[]; bounded: number } {
   const offences: string[] = [];
   let bounded = 0;
   const lineOf = (at: number) => source.slice(0, at).split('\n').length;
-  const inCodeSpan = (at: number) => source[at - 1] === '`';
+  const lineAt = (at: number) => {
+    const end = source.indexOf('\n', at);
+    return source.slice(source.lastIndexOf('\n', at) + 1, end < 0 ? source.length : end);
+  };
+  const inCodeSpan = (at: number) => source[at - 1] === '`' && mentionsAllowed(lineAt(at), kind);
   const span = isHelper ? onIdleSpan(source) : undefined;
   const inOnIdle = (at: number) => span !== undefined && at > span.from && at < span.to;
   for (const { index } of source.matchAll(/client:idle/g)) {
@@ -109,7 +142,7 @@ describe('IDLE_TIMEOUT_MS (tucca-cellag/caail-planning#604)', () => {
     let bounded = 0;
     for (const file of sourceFiles(SRC)) {
       const rel = relative(SRC, file).replaceAll('\\', '/');
-      const waits = idleWaits(readFileSync(file, 'utf-8'), rel === HELPER);
+      const waits = idleWaits(readFileSync(file, 'utf-8'), { kind: kindOf(rel), isHelper: rel === HELPER });
       bounded += waits.bounded;
       offences.push(...waits.offences.map((offence) => `${rel}:${offence}`));
     }
@@ -147,22 +180,48 @@ describe('IDLE_TIMEOUT_MS (tucca-cellag/caail-planning#604)', () => {
     expect(offences('// hydrates once requestIdleCallback fires')).toBe(1);
   });
 
-  it('passes a bounded island, an onIdle call and a code-span mention, and counts the waits', () => {
+  it('passes a bounded island, an onIdle call and a code-span mention in words, and counts the waits', () => {
     expect(idleWaits('<Widget client:idle={{ timeout: IDLE_TIMEOUT_MS }} />')).toEqual({ offences: [], bounded: 1 });
     expect(idleWaits('<Foo label="a > b" client:idle={{ timeout: IDLE_TIMEOUT_MS }} />')).toEqual({ offences: [], bounded: 1 });
     expect(idleWaits('onIdle(() => watchSearch());')).toEqual({ offences: [], bounded: 1 });
-    expect(idleWaits('hydrates after `client:idle` runs, as `requestIdleCallback` allows')).toEqual({ offences: [], bounded: 0 });
+    const none = { offences: [], bounded: 0 };
+    // A comment in script, in the three ways this repo writes one.
+    expect(idleWaits('      // the graph, after `client:idle` has already mounted cytoscape.')).toEqual(none);
+    expect(idleWaits(' * and therefore present but inert until `client:idle` hydration attached its')).toEqual(none);
+    expect(idleWaits('/* as `requestIdleCallback` allows */')).toEqual(none);
+    // A prose line of Markdown.
+    expect(idleWaits('hydrates after `client:idle` runs, as `requestIdleCallback` allows', { kind: 'prose' })).toEqual(none);
+  });
+
+  it('flags a code-span mention where the backtick opens a template literal in code', () => {
+    const offences = (source: string, kind: Kind = 'script') => idleWaits(source, { kind }).offences.length;
+    expect(offences('<script set:html={`requestIdleCallback(go)`} />')).toBe(1);
+    expect(offences('const run = new Function(`requestIdleCallback(go)`);')).toBe(1);
+    expect(offences('hydrates after `client:idle` runs, as `requestIdleCallback` allows')).toBe(2);
+    // A comment trailing code is not told apart from the code.
+    expect(offences('go(); // as `requestIdleCallback` allows')).toBe(1);
+    // In Markdown, a line with JSX, an expression or ESM on it may be code.
+    expect(offences('<Fragment set:html={`requestIdleCallback(go)`} />', 'prose')).toBe(1);
+    expect(offences('  html={`requestIdleCallback(go)`}', 'prose')).toBe(1);
+    expect(offences('const run = `requestIdleCallback(go)`;', 'prose')).toBe(1);
+    expect(offences('export const run = `requestIdleCallback`', 'prose')).toBe(1);
+  });
+
+  it('reads .md and .mdx as prose, and everything else it scans as script', () => {
+    expect(['a.md', 'a.mdx'].map(kindOf)).toEqual(['prose', 'prose']);
+    expect(['a.astro', 'a.ts', 'a.tsx', 'a.mjs'].map(kindOf)).toEqual(['script', 'script', 'script', 'script']);
   });
 
   it("lets onIdle ask for an idle callback, with an inline arrow callback or not", () => {
-    const helper = (body: string) => idleWaits(`${ON_IDLE_DECLARATION}cb: () => void): void {\n${body}\n}\n`, true).offences;
+    const helper = (body: string) =>
+      idleWaits(`${ON_IDLE_DECLARATION}cb: () => void): void {\n${body}\n}\n`, { isHelper: true }).offences;
     expect(helper('  globalThis.requestIdleCallback(() => cb(), { timeout: IDLE_TIMEOUT_MS });')).toEqual([]);
     expect(helper('  globalThis.requestIdleCallback(cb, { timeout: IDLE_TIMEOUT_MS });')).toEqual([]);
   });
 
   it('flags any other idle callback in the helper, and every one when onIdle is not there', () => {
     const onIdle = `${ON_IDLE_DECLARATION}cb: () => void): void {\n  globalThis.requestIdleCallback(cb, { timeout: IDLE_TIMEOUT_MS });\n}\n`;
-    const helper = (source: string) => idleWaits(source, true).offences;
+    const helper = (source: string) => idleWaits(source, { isHelper: true }).offences;
     expect(helper(`${onIdle}export const later = (cb) => globalThis.requestIdleCallback(cb);\n`)).toHaveLength(1);
     expect(helper(`const early = globalThis.requestIdleCallback;\n${onIdle}`)).toHaveLength(1);
     expect(helper('export function idleSoon(cb) {\n  globalThis.requestIdleCallback(cb, { timeout: IDLE_TIMEOUT_MS });\n}\n')).toHaveLength(1);
