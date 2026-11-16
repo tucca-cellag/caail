@@ -6,9 +6,9 @@
  *
  * Matched on the test title rather than the file, unlike the vitest side: the exact
  * title, or every title a templated one generates (`titleMatches` in `register.ts`).
- * `licenses.spec.ts` holds ten tests and one of them is registered, so a file-level
- * match would label the other nine as known-unreliable on no evidence, which is the
- * failure this whole register is meant to prevent rather than cause.
+ * `licenses.spec.ts` holds registered tests beside unregistered ones, so a file-level
+ * match would label the unregistered ones as known-unreliable on no evidence, which is
+ * the failure this whole register is meant to prevent rather than cause.
  *
  * Runs only in the runner process. Playwright re-evaluates `playwright.config.ts` in
  * every worker, but reporters are constructed and called by the runner, so unlike the

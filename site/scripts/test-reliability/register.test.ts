@@ -73,8 +73,8 @@ describe('register integrity', () => {
   });
 
   it('every Playwright entry with a unit-as-title matches an actual test title', () => {
-    // Playwright entries are matched by exact title at report time, so a title that
-    // drifts would silently stop matching and the register would quietly do nothing.
+    // Playwright entries are matched by title (`titleMatches`) at report time, so a title
+    // that drifts would silently stop matching and the register would quietly do nothing.
     // Checked only for entries whose file is a spec: the artifact entries point at the
     // preflight module and describe the suite rather than one named test.
     const drifted: string[] = [];
@@ -352,7 +352,7 @@ describe('unsupportedPlaceholders', () => {
 describe('entriesForPlaywrightTest', () => {
   const LICENSES = '/checkout/site/e2e/licenses.spec.ts';
 
-  it('matches on file plus exact test title', () => {
+  it('matches on file plus test title', () => {
     const hits = entriesForPlaywrightTest(
       LICENSES,
       'the catalog license facet narrows the grid to a tier',
@@ -360,7 +360,7 @@ describe('entriesForPlaywrightTest', () => {
     expect(hits.map((entry) => entry.id)).toEqual(['pw-license-facet']);
   });
 
-  it('does not match the other nine tests in the same registered file', () => {
+  it('does not match an unregistered test in the same registered file', () => {
     expect(entriesForPlaywrightTest(LICENSES, 'the /licenses/ hub lists the 4 tiers')).toEqual([]);
   });
 

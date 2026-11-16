@@ -149,7 +149,7 @@ export interface UnreliableEntry {
 }
 
 /**
- * Playwright matching is always file plus exact title. vitest matching defaults to the
+ * Playwright matching is always file plus title (`titleMatches`). vitest matching defaults to the
  * module and narrows to named tests or suites when an entry sets `tests` or `suites`.
  *
  * The default is not laziness: the five slow-fixture entries below genuinely fail as
@@ -706,12 +706,12 @@ export function unsupportedPlaceholders(named: string): string[] {
  *
  * Matched on **both** the spec file and the test title (`titleMatches`).
  *
- * The title is required because `licenses.spec.ts` holds ten tests and one of them is
- * registered, so a file-level match would label the other nine as known-unreliable on
- * no evidence. The file is required because a title is not unique across the suite:
- * copying a spec to cover `/databases/` alongside `/software/` is the obvious next
- * change here, and a title-only match would then greet a genuine failure in the new
- * file with the old file's "already mitigated" entry. Both halves of that are the
+ * The title is required because `licenses.spec.ts` holds registered tests beside
+ * unregistered ones, so a file-level match would label the unregistered ones as
+ * known-unreliable on no evidence. The file is required because a title is not unique
+ * across the suite: copying a spec to cover `/databases/` alongside `/software/` is the
+ * obvious next change here, and a title-only match would then greet a genuine failure in
+ * the new file with the old file's "already mitigated" entry. Both halves of that are the
  * mislabelling this register exists to prevent rather than cause.
  *
  * `file` is matched by suffix so Playwright's absolute `TestCase.location.file`
