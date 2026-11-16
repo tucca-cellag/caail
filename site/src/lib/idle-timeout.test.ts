@@ -77,15 +77,22 @@ function mentionsAllowed(line: string, kind: Kind): boolean {
 const ON_IDLE_DECLARATION = 'export function onIdle(';
 
 /**
- * The span of `source` from `onIdle`'s declaration to the `}` that closes it at the start of a
- * line, or none. Only `requestIdleCallback` inside it is exempt; elsewhere in the helper, as in
- * any other file, a code token of it is an offence. That `onIdle` itself asks with the bound is
- * the `onIdle` tests' job, below.
+ * The span of `source` from `onIdle`'s declaration to the brace that closes its body, matched by
+ * counting braces from the first one after the declaration, or none. The helper may name
+ * `requestIdleCallback` exactly once, inside it; any other code token of it, in the helper as in
+ * any other file, is an offence. That `onIdle` asks with the bound is the `onIdle` tests' job,
+ * below.
  */
 function onIdleSpan(source: string): { from: number; to: number } | undefined {
   const from = source.indexOf(ON_IDLE_DECLARATION);
-  const to = from < 0 ? -1 : source.indexOf('\n}', from);
-  return to < 0 ? undefined : { from, to };
+  const open = from < 0 ? -1 : source.indexOf('{', from);
+  if (open < 0) return undefined;
+  let depth = 0;
+  for (let at = open; at < source.length; at++) {
+    if (source[at] === '{') depth++;
+    else if (source[at] === '}' && --depth === 0) return { from, to: at };
+  }
+  return undefined;
 }
 
 /**
@@ -113,9 +120,14 @@ function idleWaits(
     if (source.startsWith(BOUNDED_DIRECTIVE, index)) bounded++;
     else offences.push(`${lineOf(index)}: client:idle not written ${BOUNDED_DIRECTIVE}`);
   }
+  const inside: number[] = [];
   for (const { index } of source.matchAll(/requestIdleCallback/g)) {
-    if (inCodeSpan(index) || inOnIdle(index)) continue;
-    offences.push(`${lineOf(index)}: requestIdleCallback outside onIdle in ${HELPER}; defer the work with onIdle`);
+    if (inCodeSpan(index)) continue;
+    if (inOnIdle(index)) inside.push(index);
+    else offences.push(`${lineOf(index)}: requestIdleCallback outside onIdle in ${HELPER}; defer the work with onIdle`);
+  }
+  if (isHelper && inside.length !== 1) {
+    offences.push(`${span ? lineOf(span.from) : 0}: onIdle names requestIdleCallback ${inside.length} times, not once`);
   }
   for (const { index } of source.matchAll(/\bonIdle\(/g)) if (!inCodeSpan(index) && !inOnIdle(index)) bounded++;
   return { offences, bounded };
@@ -219,14 +231,29 @@ describe('IDLE_TIMEOUT_MS (tucca-cellag/caail-planning#604)', () => {
     expect(helper('  globalThis.requestIdleCallback(cb, { timeout: IDLE_TIMEOUT_MS });')).toEqual([]);
   });
 
+  it('flags an idle callback after a one-line onIdle, and onIdle naming it twice', () => {
+    const helper = (source: string) => idleWaits(source, { isHelper: true }).offences;
+    const oneLine = `${ON_IDLE_DECLARATION}cb: () => void): void { globalThis.requestIdleCallback?.(cb, { timeout: IDLE_TIMEOUT_MS }); }\n`;
+    expect(helper(oneLine)).toEqual([]);
+    expect(helper(`${oneLine}export function idleNow(cb: () => void): void {\n  globalThis.requestIdleCallback(cb);\n}\n`)).toEqual([
+      `3: requestIdleCallback outside onIdle in ${HELPER}; defer the work with onIdle`,
+    ]);
+    const twice = `${ON_IDLE_DECLARATION}cb: () => void): void {\n  if (typeof globalThis.requestIdleCallback === 'function') globalThis.requestIdleCallback(cb, { timeout: IDLE_TIMEOUT_MS });\n}\n`;
+    expect(helper(twice)).toEqual(['1: onIdle names requestIdleCallback 2 times, not once']);
+  });
+
   it('flags any other idle callback in the helper, and every one when onIdle is not there', () => {
     const onIdle = `${ON_IDLE_DECLARATION}cb: () => void): void {\n  globalThis.requestIdleCallback(cb, { timeout: IDLE_TIMEOUT_MS });\n}\n`;
     const helper = (source: string) => idleWaits(source, { isHelper: true }).offences;
     expect(helper(`${onIdle}export const later = (cb) => globalThis.requestIdleCallback(cb);\n`)).toHaveLength(1);
     expect(helper(`const early = globalThis.requestIdleCallback;\n${onIdle}`)).toHaveLength(1);
-    expect(helper('export function idleSoon(cb) {\n  globalThis.requestIdleCallback(cb, { timeout: IDLE_TIMEOUT_MS });\n}\n')).toHaveLength(1);
+    // No onIdle: the call is outside it, and onIdle names it no times.
+    expect(helper('export function idleSoon(cb) {\n  globalThis.requestIdleCallback(cb, { timeout: IDLE_TIMEOUT_MS });\n}\n')).toEqual([
+      `2: requestIdleCallback outside onIdle in ${HELPER}; defer the work with onIdle`,
+      '0: onIdle names requestIdleCallback 0 times, not once',
+    ]);
     // Its islands are held to the same rule as any other file's.
-    expect(helper('<NetworkGraph client:idle />')).toHaveLength(1);
+    expect(helper(`<NetworkGraph client:idle />\n${onIdle}`)).toEqual([`1: client:idle not written ${BOUNDED_DIRECTIVE}`]);
   });
 
   it('names the line and the rule an offence breaks', () => {

@@ -35,9 +35,8 @@ export const IDLE_TIMEOUT_MS = 200;
  * browser has one.
  */
 export function onIdle(cb: () => void): void {
-  if (typeof globalThis.requestIdleCallback === 'function') {
-    globalThis.requestIdleCallback(cb, { timeout: IDLE_TIMEOUT_MS });
-  } else {
-    setTimeout(cb, 1);
-  }
+  // Named once, so the scan in idle-timeout.test.ts can require exactly one use of it here.
+  const ask = globalThis.requestIdleCallback?.bind(globalThis);
+  if (ask) ask(cb, { timeout: IDLE_TIMEOUT_MS });
+  else setTimeout(cb, 1);
 }
