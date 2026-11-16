@@ -37,17 +37,19 @@ const FIXTURE_BUDGET_MS = 110_000;
 let child: ChildProcess | undefined;
 
 /**
- * Kill the fixture vitest and the workers it started. It is spawned as the leader of its own
- * process group (`detached`) so the group can be killed whole; where there are no groups, the
- * process alone.
+ * Kill the fixture vitest and everything it started. It is spawned as the leader of its own
+ * process group (`detached`), and the group is killed whatever the leader's state: a leader
+ * that has exited can leave a hung worker in the group behind it. Where there are no process
+ * groups, the process alone.
  */
 function killFixture(): void {
-  if (!child || child.exitCode !== null || child.signalCode !== null) return;
+  if (child?.pid === undefined) return;
   try {
-    if (process.platform !== 'win32' && child.pid !== undefined) process.kill(-child.pid, 'SIGKILL');
-    else child.kill('SIGKILL');
-  } catch {
-    // Already gone between the check and the kill.
+    if (process.platform !== 'win32') process.kill(-child.pid, 'SIGKILL');
+    else if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL');
+  } catch (error) {
+    // ESRCH: nothing is left in the group, which is the outcome wanted.
+    if ((error as NodeJS.ErrnoException).code !== 'ESRCH') throw error;
   }
 }
 
@@ -85,16 +87,18 @@ function runFixture(cacheDir: string): Promise<{ code: number | null; stderr: st
 
 describe('the vitest reporter, run by the installed vitest', () => {
   let run: { code: number | null; stderr: string };
-  // Its cache goes here rather than beside the fixture, where vitest would create a
-  // node_modules of its own inside the source tree.
-  const cacheDir = mkdtempSync(join(tmpdir(), 'caail-reporter-fixture-'));
+  // The fixture's cache goes here rather than beside the fixture, where vitest would create
+  // a node_modules of its own inside the source tree. Made in the hook, so a run that skips
+  // these tests (`-t` for another name) makes none.
+  let cacheDir: string | undefined;
   beforeAll(async () => {
+    cacheDir = mkdtempSync(join(tmpdir(), 'caail-reporter-fixture-'));
     run = await runFixture(cacheDir);
   }, FIXTURE_BUDGET_MS + 10_000);
   // Whether the run finished, was killed above, or was abandoned by vitest's own timeout.
   afterAll(() => {
     killFixture();
-    rmSync(cacheDir, { recursive: true, force: true });
+    if (cacheDir) rmSync(cacheDir, { recursive: true, force: true });
   });
 
   /** The fixture entries whose unit the report printed, in register order. */
