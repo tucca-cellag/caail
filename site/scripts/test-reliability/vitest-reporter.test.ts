@@ -1,12 +1,13 @@
 /**
- * vitest-reporter.test.ts: the reporter labels a suite whose own hook failed, and does not
- * label a real test failure, as the installed vitest reports them.
+ * vitest-reporter.test.ts: the reporter labels a suite whose own hook timed out, and does
+ * not label a hook that threw or a real test failure, as the installed vitest reports them.
  *
  * Which failures a suite name may match is decided by how vitest reports a failed hook:
- * the suite fails with the hook's error and its tests are skipped, while a suite holding a
- * failing test fails with no error of its own. That is vitest's behaviour, not this repo's,
- * so a test over hand-built stand-ins would keep passing after an upgrade changed it, and
- * the reporter would quietly stop naming the entry, or start naming real failures. So this
+ * the suite fails with the hook's error, a timeout written as "Hook timed out in", and its
+ * tests are skipped, while a suite holding a failing test fails with no error of its own.
+ * That is vitest's behaviour, not this repo's, so a test over hand-built stand-ins would
+ * keep passing after an upgrade changed it, and the reporter would quietly stop naming the
+ * entry, or start naming real failures. So this
  * runs the installed vitest on `fixtures/suite-failures.fixture.ts` with the real reporter
  * and reads what it prints.
  */
@@ -106,12 +107,12 @@ describe('the vitest reporter, run by the installed vitest', () => {
     expect(run.code, run.stderr).toBe(1);
   });
 
-  it('labels a suite whose own hook failed, nested or not, and a failed test', () => {
+  it('labels a suite whose own hook timed out, nested or not, and a failed test', () => {
     const expected = FIXTURE_ENTRIES.filter(({ expected }) => expected).map(({ entry }) => entry.id);
     expect(printed().filter((id) => expected.includes(id)), run.stderr).toEqual(expected);
   });
 
-  it('does not label a suite that failed only because a test or a suite inside it did', () => {
+  it('does not label a hook that threw, nor a suite that failed only because a test or a suite inside it did', () => {
     const unexpected = FIXTURE_ENTRIES.filter(({ expected }) => !expected).map(({ entry }) => entry.id);
     expect(printed().filter((id) => unexpected.includes(id)), run.stderr).toEqual([]);
   });

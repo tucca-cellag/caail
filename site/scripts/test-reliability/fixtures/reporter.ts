@@ -26,14 +26,17 @@ const entry = (
 });
 
 export const FIXTURE_ENTRIES: readonly { entry: UnreliableEntry; expected: boolean }[] = [
-  { entry: entry('fixture-suite-own-hook', { suites: ['a suite whose own hook times out'] }), expected: true },
-  { entry: entry('fixture-nested-own-hook', { suites: ['a nested suite whose own hook throws'] }), expected: true },
+  { entry: entry('fixture-suite-hook-timeout', { suites: ['a suite whose own hook times out'] }), expected: true },
+  { entry: entry('fixture-nested-hook-timeout', { suites: ['a nested suite whose own hook times out'] }), expected: true },
   { entry: entry('fixture-failed-test', { tests: ['fails an assertion'] }), expected: true },
+  // Failed with an error of its own that is not a timeout: the hook found a defect, and
+  // load does not explain it.
+  { entry: entry('fixture-suite-hook-throws', { suites: ['a suite whose own hook throws'] }), expected: false },
   // Failed, because a test inside it did, with no error of its own: a real failure there
   // must not be labelled known-unreliable by naming the suite.
   { entry: entry('fixture-suite-of-failed-test', { suites: ['a suite whose test fails'] }), expected: false },
   // Failed, because a suite inside it did. Its own hooks ran clean.
-  { entry: entry('fixture-parent-of-failed-hook', { suites: ['a parent suite'] }), expected: false },
+  { entry: entry('fixture-parent-of-timed-out-hook', { suites: ['a parent suite'] }), expected: false },
 ];
 
 export default class FixtureReporter extends KnownUnreliableReporter {

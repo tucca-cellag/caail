@@ -4,14 +4,25 @@
  *
  * Named `.fixture.ts`, not `.test.ts`, so the suite's own run never collects it: every
  * failure below is deliberate. Each suite is one way a module can fail, and
- * `reporter.ts` beside it registers each by name.
+ * `reporter.ts` beside it registers each by name. The hooks that time out are given a
+ * budget far below what they wait for, so they fail at once and the run stays fast.
  */
 import { beforeAll, describe, expect, it } from 'vitest';
 
+/** A hook that overruns `budget`, the shape of a suite-level fixture hook under load. */
+const overrun = (budget: number) => beforeAll(() => new Promise((resolve) => setTimeout(resolve, 1_000)), budget);
+
 describe('a suite whose own hook times out', () => {
-  // The shape of a suite-level fixture hook overrunning its budget under load.
-  beforeAll(() => new Promise((resolve) => setTimeout(resolve, 1_000)), 10);
+  overrun(10);
   it('is skipped, not failed', () => {});
+});
+
+describe('a suite whose own hook throws', () => {
+  // What a hook does on a real defect, such as a build it runs rejecting its input.
+  beforeAll(() => {
+    throw new Error('the hook throws');
+  });
+  it('is skipped as well', () => {});
 });
 
 describe('a suite whose test fails', () => {
@@ -21,10 +32,8 @@ describe('a suite whose test fails', () => {
 });
 
 describe('a parent suite', () => {
-  describe('a nested suite whose own hook throws', () => {
-    beforeAll(() => {
-      throw new Error('the nested hook throws');
-    });
-    it('is skipped as well', () => {});
+  describe('a nested suite whose own hook times out', () => {
+    overrun(10);
+    it('is skipped too', () => {});
   });
 });

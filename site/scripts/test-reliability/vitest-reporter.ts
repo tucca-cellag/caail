@@ -45,20 +45,29 @@ function moduleFailed(module: TestModule): boolean {
 }
 
 /**
+ * The message vitest gives a hook that ran past its budget. It carries no error code of its
+ * own, so the message is what tells it apart; `vitest-reporter.test.ts` fails if the
+ * installed vitest stops writing it this way.
+ */
+const HOOK_TIMED_OUT = /^Hook timed out in \d+ms\./;
+
+/**
  * The failures inside `module` that an entry's `tests` or `suites` can name.
  *
  * Both walks descend into nested suites. `allTests('failed')` is empty when every failure
  * is a hook's, since a failed hook skips its tests rather than failing them; the
  * module-level entries match on the module anyway, and a suite-level hook is what
- * `suites` is for. A suite's `errors()` holds what failed in the suite itself, so a
- * suite that failed only because a test inside it did has none and is left out.
- * `vitest-reporter.test.ts` checks both halves against the installed vitest.
+ * `suites` is for. A suite's `errors()` holds what failed in the suite itself, and only a
+ * suite whose own hook timed out is collected. One that failed only because a test inside
+ * it did has no error of its own, and one whose hook threw has an error load does not
+ * explain: a hook that builds something and rejects its input has found a defect.
+ * `vitest-reporter.test.ts` checks each case against the installed vitest.
  */
 export function failuresIn(module: TestModule): VitestFailures {
   return {
     tests: [...module.children.allTests('failed')].map((test) => test.name),
     suites: [...module.children.allSuites()]
-      .filter((suite) => suite.errors().length > 0)
+      .filter((suite) => suite.errors().some((error) => HOOK_TIMED_OUT.test(error.message ?? '')))
       .map((suite) => suite.name),
   };
 }

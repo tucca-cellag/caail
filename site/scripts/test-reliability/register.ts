@@ -110,19 +110,22 @@ export interface UnreliableEntry {
    */
   tests?: readonly string[];
   /**
-   * vitest only: match these `describe` blocks by name when one fails with an error of
-   * its own, which is how a suite-level `beforeAll` that times out fails.
+   * vitest only: match these `describe` blocks by name when one's own hook times out,
+   * which is how a suite-level `beforeAll` fails under load.
    *
    * `tests` cannot register that hook. When it fails, vitest marks the suite failed with
    * the hook's error and skips every test inside it, so no test fails and there is no
    * name to match. Module-level matching would register it, and would also label every
    * other suite in the module.
    *
-   * Only a suite with an error of its own matches. A suite whose own hooks ran clean
-   * but which holds a failing test is failed too, with no error of its own, and that
-   * failure stays unlabelled: it is the genuine regression this narrowing exists not to
-   * excuse. `vitest-reporter.test.ts` runs the installed vitest on a fixture and fails if
-   * either half stops being how vitest reports it.
+   * Only a suite whose own error is a hook timeout matches. A suite whose hook threw is
+   * failed with an error of its own too, and stays unlabelled: a hook that builds
+   * something and rejects its input, as `buildLlmsFullText`'s does on a link it cannot
+   * make absolute, has found a defect that load does not explain. So does a suite whose
+   * hooks ran clean but which holds a failing test; it fails with no error of its own,
+   * and that failure is the genuine regression this narrowing exists not to excuse.
+   * `vitest-reporter.test.ts` runs the installed vitest on a fixture and fails if any of
+   * these stops being how vitest reports it.
    *
    * Each name here must be the name of exactly one `describe` call in `file`;
    * `register.test.ts` enforces it. The reporter matches a suite by its bare name, so a
@@ -625,8 +628,8 @@ export interface VitestFailures {
   /** The names of its failed tests. */
   tests?: readonly string[];
   /**
-   * The names of its suites that failed with an error of their own (a hook), not those
-   * that failed only because a test inside them did. See `UnreliableEntry.suites`.
+   * The names of its suites whose own hook timed out: not those whose hook threw, nor
+   * those that failed only because a test inside them did. See `UnreliableEntry.suites`.
    */
   suites?: readonly string[];
 }
