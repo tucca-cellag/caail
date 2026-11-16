@@ -50,6 +50,14 @@ export const FIXTURE_ENTRIES: readonly { entry: UnreliableEntry; expected: boole
   // Failed, because a test inside it did, with no error of its own: a real failure there
   // must not be labelled known-unreliable by naming the suite.
   { entry: entry('fixture-suite-of-failed-test', { suites: ['a suite whose test fails'], failure: 'timeout' }), expected: false },
+  // Its own hook timed out, but only after a test inside it really failed.
+  {
+    entry: entry('fixture-hook-timeout-after-failure', {
+      suites: ['a suite whose afterAll times out after a test fails'],
+      failure: 'timeout',
+    }),
+    expected: false,
+  },
   // Failed, because a suite inside it did. Its own hooks ran clean.
   { entry: entry('fixture-parent-of-timed-out-hook', { suites: ['a parent suite'], failure: 'timeout' }), expected: false },
   // A suite of that name exists only under another parent, made by `describe.each`: its

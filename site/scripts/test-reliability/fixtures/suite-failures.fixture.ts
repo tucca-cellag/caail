@@ -7,7 +7,7 @@
  * `reporter.ts` beside it registers each by name. Whatever times out is given a budget far
  * below what it waits for, so it fails at once and the run stays fast.
  */
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 /** A wait that overruns any budget given below, the shape of fixture work under load. */
 const overrun = () => new Promise((resolve) => setTimeout(resolve, 1_000));
@@ -32,6 +32,13 @@ describe('a suite whose test fails', () => {
 });
 
 it('runs past its budget', overrun, 10);
+
+describe('a suite whose afterAll times out after a test fails', () => {
+  afterAll(overrun, 10);
+  it('fails first', () => {
+    expect('a real failure').toBe('');
+  });
+});
 
 describe('a parent suite', () => {
   describe('a nested suite whose own hook times out', () => {

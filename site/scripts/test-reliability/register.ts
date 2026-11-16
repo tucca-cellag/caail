@@ -161,7 +161,9 @@ export interface UnreliableEntry {
    * something and rejects its input, as `buildLlmsFullText`'s does on a link it cannot
    * make absolute, has found a defect that load does not explain. So does a suite whose
    * hooks ran clean but which holds a failing test; it fails with no error of its own,
-   * and that failure is the genuine regression this narrowing exists not to excuse.
+   * and that failure is the genuine regression this narrowing exists not to excuse. And a
+   * suite whose hook did time out, if a test inside it failed first: an `afterAll` running
+   * out of time after a real failure does not account for that failure.
    * `vitest-reporter.test.ts` runs the installed vitest on a fixture and fails if any of
    * these stops being how vitest reports it.
    *
@@ -709,10 +711,11 @@ export interface VitestFailures {
   /** Its failed tests, by name. */
   tests?: readonly (ObservedFailure & { name: string })[];
   /**
-   * Its suites that failed with an error of their own, a hook's, by full name. Not those
-   * that failed only because a test or a suite inside them did. See `UnreliableEntry.suites`.
+   * Its suites that failed with an error of their own, a hook's, by full name, each saying
+   * whether a test inside it failed too. Not those that failed only because a test or a
+   * suite inside them did. See `UnreliableEntry.suites`.
    */
-  suites?: readonly (ObservedFailure & { name: string })[];
+  suites?: readonly (ObservedFailure & { name: string; holdsFailedTest?: boolean })[];
   /** The module's own errors, from a top-level hook, when it has any. */
   module?: ObservedFailure;
 }
@@ -743,7 +746,10 @@ export function entriesForVitestModule(
     }
     const named = (names: readonly string[] | undefined, failed: readonly (ObservedFailure & { name: string })[] = []) =>
       (names ?? []).some((name) => failed.some((f) => titleMatches(name, f.name) && fits(f)));
-    return named(entry.tests, failures.tests) || named(entry.suites, failures.suites);
+    // A suite whose hook timed out after a test inside it really failed would otherwise
+    // label that failure too, since the report counts entries, not failures.
+    const suitesAlone = (failures.suites ?? []).filter((suite) => !suite.holdsFailedTest);
+    return named(entry.tests, failures.tests) || named(entry.suites, suitesAlone);
   });
 }
 

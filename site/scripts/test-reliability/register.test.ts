@@ -355,6 +355,8 @@ describe('entriesForVitestModule', () => {
     expect(match({ suites: [{ name: 'the suite with a hook', ...asserted('Error: a link it cannot make absolute') }] })).toEqual([]);
     expect(match({ tests: [{ name: 'a test inside the suite with a hook', ...TIMED_OUT }] })).toEqual([]);
     expect(match({ suites: [{ name: 'another suite', ...TIMED_OUT }] })).toEqual([]);
+    // Its hook timed out, after a test inside it had failed: the timeout is not that failure.
+    expect(match({ suites: [{ name: 'the suite with a hook', holdsFailedTest: true, ...TIMED_OUT }] })).toEqual([]);
     expect(match({})).toEqual([]);
   });
 
