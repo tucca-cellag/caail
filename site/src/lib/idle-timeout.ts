@@ -20,9 +20,23 @@
  * api/Window.json): Safari ships `requestIdleCallback` only in its preview build behind a flag,
  * and iOS Safari mirrors it, so both take that fallback.
  *
- * `Analytics.astro` keeps its own fallback for such a browser, `setTimeout(cb, 1)`: the bound
- * here is the most it waits in a browser that has `requestIdleCallback`.
- *
  * No environment is read here, so the e2e specs can import it too.
  */
 export const IDLE_TIMEOUT_MS = 200;
+
+/**
+ * Run `cb` once the page is idle, or after `IDLE_TIMEOUT_MS` if it never is.
+ *
+ * The one place script under site/src asks for an idle callback, so the bound is part of the
+ * call rather than something each caller has to remember. In a browser with no
+ * `requestIdleCallback` it runs `cb` after `setTimeout(cb, 1)`, the fallback the search wiring
+ * in `Analytics.astro` had before it moved here; the bound is the most it waits where the
+ * browser has one.
+ */
+export function onIdle(cb: () => void): void {
+  if (typeof globalThis.requestIdleCallback === 'function') {
+    globalThis.requestIdleCallback(cb, { timeout: IDLE_TIMEOUT_MS });
+  } else {
+    setTimeout(cb, 1);
+  }
+}

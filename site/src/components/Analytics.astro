@@ -27,7 +27,7 @@
     parseResultCount,
     NO_QUERY_ANALYTICS_ATTR,
   } from '../lib/analytics';
-  import { IDLE_TIMEOUT_MS } from '../lib/idle-timeout';
+  import { onIdle } from '../lib/idle-timeout';
 
   /** Quiet period after the last search mutation before we judge a result set final. */
   const SEARCH_SETTLE_MS = 1200;
@@ -110,10 +110,7 @@
     }).observe(root, { childList: true, subtree: true });
   }
 
-  // Defer setup until the page is idle, or IDLE_TIMEOUT_MS if it never is: none of this is
+  // Defer setup until the page is idle, or a bounded wait if it never is: none of this is
   // needed before paint, and a page that never goes idle must still record its searches.
-  const onIdle = window.requestIdleCallback
-    ? (cb: () => void) => window.requestIdleCallback(cb, { timeout: IDLE_TIMEOUT_MS })
-    : (cb: () => void) => setTimeout(cb, 1);
   onIdle(() => watchSearch());
 </script>

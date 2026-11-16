@@ -12,9 +12,9 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { IDLE_TIMEOUT_MS } from './idle-timeout';
+import { IDLE_TIMEOUT_MS, onIdle } from './idle-timeout';
 
 const require = createRequire(import.meta.url);
 const ASTRO_CLIENT = join(dirname(require.resolve('astro/package.json')), 'dist', 'runtime', 'client');
@@ -79,5 +79,31 @@ describe('IDLE_TIMEOUT_MS (tucca-cellag/caail-planning#604)', () => {
     expect(idleWaits('<Widget client:idle={{ timeout: IDLE_TIMEOUT_MS }} />')).toEqual({ unbounded: 0, bounded: 1 });
     expect(idleWaits('window.requestIdleCallback(cb, { timeout: IDLE_TIMEOUT_MS })')).toEqual({ unbounded: 0, bounded: 1 });
     expect(idleWaits('hydrates after `client:idle` runs, as `requestIdleCallback` allows')).toEqual({ unbounded: 0, bounded: 0 });
+  });
+});
+
+describe('onIdle', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+  });
+
+  it('asks for an idle callback bounded by IDLE_TIMEOUT_MS', () => {
+    const asked: unknown[][] = [];
+    vi.stubGlobal('requestIdleCallback', (...args: unknown[]) => asked.push(args));
+    const cb = () => {};
+    onIdle(cb);
+    expect(asked).toEqual([[cb, { timeout: IDLE_TIMEOUT_MS }]]);
+  });
+
+  it('runs the callback on a 1 ms timer in a browser with no idle callback', () => {
+    vi.stubGlobal('requestIdleCallback', undefined);
+    vi.useFakeTimers();
+    let ran = 0;
+    onIdle(() => ran++);
+    vi.advanceTimersByTime(0);
+    expect(ran).toBe(0);
+    vi.advanceTimersByTime(1);
+    expect(ran).toBe(1);
   });
 });
