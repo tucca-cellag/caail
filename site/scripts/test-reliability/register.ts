@@ -397,8 +397,8 @@ export const REGISTER: readonly UnreliableEntry[] = [
     shape: 'load',
     condition:
       'The hover on the section rail timed out at 30s while the machine was loaded. The hover ' +
-      'comes before anything that depends on the width, so the entry names the test at every ' +
-      'width its loop generates.',
+      'is the same step at every width the loop generates, so the entry names the test at all ' +
+      'of them, though it was seen at one.',
     evidence:
       '2026-10-21, local gates for tucca-cellag/caail#261, each with a /code-review agent running ' +
       'alongside the full suite: locator.hover on .rail timed out at 30s, at 1600px. The ' +
