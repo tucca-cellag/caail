@@ -385,6 +385,144 @@ export const REGISTER: readonly UnreliableEntry[] = [
   },
 
   // -------------------------------------------------------------------------
+  // Playwright: a wait or a measured value that contention moves past its
+  // bound. Each passed once concurrency was held.
+  // -------------------------------------------------------------------------
+  {
+    id: 'pw-homepage-rail-hover',
+    suite: 'playwright',
+    file: 'e2e/homepage-agent.spec.ts',
+    unit: 'expanded labels stay clear of the content column at ${width}px',
+    anchor: "await page.locator('.rail').hover();",
+    shape: 'load',
+    condition:
+      'The hover on the section rail timed out at 30s while the machine was loaded. The hover ' +
+      'comes before anything that depends on the width, so the entry names the test at every ' +
+      'width its loop generates.',
+    evidence:
+      '2026-10-21, local gates for tucca-cellag/caail#261, each with a /code-review agent running ' +
+      'alongside the full suite: locator.hover on .rail timed out at 30s, at 1600px. The ' +
+      'network edge-click test failed the same way in the same runs. Run alone with ' +
+      '--workers=1 the spec passed in full, and the full suite passed three times running at ' +
+      '--workers=2.',
+    reproduce:
+      'cd site && CAAIL_E2E_PORT=<free> pnpm exec playwright test e2e/homepage-agent.spec.ts --workers=1',
+    status: 'open',
+    tickets: ['tucca-cellag/caail-planning#604'],
+  },
+  {
+    id: 'pw-network-small-node',
+    suite: 'playwright',
+    file: 'e2e/network-metrics.spec.ts',
+    unit: 'a small node selects when clicked at its centre',
+    anchor: 'const t = await pickSmallNode(page);',
+    shape: 'load',
+    condition:
+      'Ran past the 30s test timeout waiting for the selected node\'s panel (.ng-panel .ng-slug) ' +
+      'in a slow full run. Passed alone with --workers=1 on the same build.',
+    evidence:
+      '2026-10-29, local, on a branch that changed four paper titles and nothing on this page: ' +
+      'the full test:e2e run took 2.0 min against a usual 1.1 min, with a code-review agent ' +
+      'running alongside and 38% of memory free. Re-run alone with --workers=1 on the same dist ' +
+      'it passed in 1.8s. The suite had passed in full earlier on the same branch.',
+    reproduce:
+      'cd site && CAAIL_E2E_PORT=<free> pnpm exec playwright test e2e/network-metrics.spec.ts ' +
+      '-g "a small node selects" --workers=1',
+    status: 'open',
+    tickets: ['tucca-cellag/caail-planning#604'],
+  },
+  {
+    id: 'pw-report-two-steps',
+    suite: 'playwright',
+    file: 'e2e/report.spec.ts',
+    unit: 'a reason with nothing to ask takes two steps, not three',
+    anchor: "await expect(page.locator('#caail-h-review')).toHaveText('Step 2 of 2: Your report');",
+    shape: 'load',
+    condition:
+      'Ran past the 30s test timeout waiting for the review step\'s heading (#caail-h-review) ' +
+      'in a slow full run. Passed alone with --workers=1 on the same build.',
+    evidence:
+      '2026-10-29, the same run as pw-network-small-node (2.0 min against a usual 1.1 min, a ' +
+      'code-review agent alongside, 38% of memory free). Re-run alone with --workers=1 on the ' +
+      'same dist it passed in 0.7s.',
+    reproduce:
+      'cd site && CAAIL_E2E_PORT=<free> pnpm exec playwright test e2e/report.spec.ts ' +
+      '-g "a reason with nothing to ask" --workers=1',
+    status: 'open',
+    tickets: ['tucca-cellag/caail-planning#604'],
+  },
+  {
+    id: 'pw-license-badges-axe',
+    suite: 'playwright',
+    file: 'e2e/licenses.spec.ts',
+    unit: 'the license badges introduce no axe violations on /software/',
+    anchor: 'the license badges introduce no axe violations on /software/',
+    shape: 'load',
+    condition:
+      'Timed out in a run of seven specs with review agents running alongside, and passed with ' +
+      'its file run alone on the same build.',
+    evidence:
+      '2026-11-05, local, on a branch that changed only dataset entries: timed out in a run of ' +
+      'the datasets, topics, topics-band, network-metrics, report, citations and licenses specs ' +
+      'at head 032b51d, with review agents alongside; 99 of 100 passed. licenses.spec.ts re-run ' +
+      'alone on the same dist passed 10/10, at a worker count nobody recorded. 2026-11-16, on ' +
+      'a later build: the control below passed 10/10, this test in 5.1s.',
+    reproduce: 'cd site && CAAIL_E2E_PORT=<free> pnpm exec playwright test e2e/licenses.spec.ts --workers=1',
+    status: 'open',
+    tickets: ['tucca-cellag/caail-planning#604'],
+  },
+  {
+    id: 'pw-topics-lead-axe',
+    suite: 'playwright',
+    file: 'e2e/topics.spec.ts',
+    unit: 'a theme view with a named lead has no axe violations',
+    anchor: "const lead = page.locator('.th-lead-full');",
+    shape: 'load',
+    condition:
+      'The lead credit renders inside the topics hub island (client:load), and under contention ' +
+      'it was not visible within the 5s visibility wait. Passed with --workers=1 on the same ' +
+      'build.',
+    evidence:
+      '2026-11-05, local, on a branch that changed one dataset entry and its licence: ' +
+      '.th-lead-full not found within 5s on ./topics/?t=ai-methods-tooling, in a run of the ' +
+      'datasets, licenses, topics and topics-band specs at default workers, load average about ' +
+      '30. The control below passed 6/6 in 9s on the same dist.',
+    reproduce: 'cd site && CAAIL_E2E_PORT=<free> pnpm exec playwright test e2e/topics.spec.ts --workers=1',
+    status: 'open',
+    tickets: ['tucca-cellag/caail-planning#604'],
+  },
+  {
+    id: 'pw-hero-stripe-cls',
+    suite: 'playwright',
+    file: 'e2e/hero-stripe.spec.ts',
+    unit: 'on a slowed phone the hero band records no layout shift and the page stays under good CLS',
+    anchor: "await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });",
+    shape: 'load',
+    condition:
+      'A measured value, not a wait. The test throttles the CPU and sums every layout shift on ' +
+      'the page, and on a busy runner that sum went over GOOD_CLS. Load moves the measurement, ' +
+      'so the failure is a number over a threshold rather than a timeout. Passed with ' +
+      '--workers=1 on the same head.',
+    misleadingTriage:
+      'It fails an assertion on a measured layout shift, so it reads as a real CLS regression in ' +
+      'whatever the diff changed; its one occurrence was on a diff that changed nothing the ' +
+      'homepage renders. Sized from CI history it disappears: once a re-run passes, gh run list ' +
+      'reports the run as success, and the failed attempt shows only in ' +
+      'gh run view <id> --attempt 1.',
+    evidence:
+      '2026-11-13, CI: tucca-cellag/caail#297, run 43379061020 attempt 1 (head adf8d2a), the ' +
+      'summed layout shift was 0.174 against the 0.1 limit, the only failure of 275 e2e tests ' +
+      'in the job. The spec had passed on main\'s two previous test.yml runs, and the failed ' +
+      'job\'s re-run (attempt 2) passed on the same head. The control below passed 12/12 on that ' +
+      'head\'s dist, this test in 362 to 444 ms.',
+    reproduce:
+      'cd site && CAAIL_E2E_PORT=<free> pnpm exec playwright test e2e/hero-stripe.spec.ts ' +
+      '--workers=1 --repeat-each=3',
+    status: 'open',
+    tickets: ['tucca-cellag/caail-planning#604'],
+  },
+
+  // -------------------------------------------------------------------------
   // residue: a leftover from an earlier run in the same workspace.
   // -------------------------------------------------------------------------
   {
