@@ -4,7 +4,8 @@
  * Companion to `vitest-reporter.ts`; see that file and `register.ts` for why the
  * register is printed at the point of failure rather than kept as a document.
  *
- * Matched on the exact test title rather than the file, unlike the vitest side.
+ * Matched on the test title rather than the file, unlike the vitest side: the exact
+ * title, or every title a templated one generates (`titleMatches` in `register.ts`).
  * `licenses.spec.ts` holds ten tests and one of them is registered, so a file-level
  * match would label the other nine as known-unreliable on no evidence, which is the
  * failure this whole register is meant to prevent rather than cause.
