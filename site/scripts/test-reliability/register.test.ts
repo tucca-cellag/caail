@@ -27,6 +27,7 @@ import {
   entriesForPlaywrightTest,
   formatEntry,
   formatReport,
+  titleMatches,
   type UnreliableEntry,
 } from './register.js';
 
@@ -192,6 +193,19 @@ describe('entriesForVitestModule', () => {
     expect(match({})).toEqual([]);
   });
 
+  it('a test-narrowed entry may name a templated test', () => {
+    const looped: UnreliableEntry = {
+      ...REGISTER[0],
+      id: 'looped',
+      file: 'scripts/parser/fixture.test.ts',
+      tests: ['parses ${name}'],
+    };
+    const match = (tests: string[]) =>
+      entriesForVitestModule(looped.file, { tests }, [looped]).map((e) => e.id);
+    expect(match(['parses Papers.md'])).toEqual(['looped']);
+    expect(match(['emits Papers.md'])).toEqual([]);
+  });
+
   it('matches an absolute path ending in the registered file', () => {
     const hits = entriesForVitestModule('/checkout/site/scripts/db/emit.test.ts');
     expect(hits.map((entry) => entry.id)).toEqual(['vitest-db-emit']);
@@ -215,6 +229,35 @@ describe('entriesForVitestModule', () => {
 
   it('does not match a Playwright entry', () => {
     expect(entriesForVitestModule('e2e/licenses.spec.ts')).toEqual([]);
+  });
+});
+
+describe('titleMatches', () => {
+  const TEMPLATE = 'expanded labels stay clear of the content column at ${width}px';
+
+  it('matches an equal title, and only an equal one, when the name has no placeholder', () => {
+    expect(titleMatches('a test', 'a test')).toBe(true);
+    expect(titleMatches('a test', 'a test, again')).toBe(false);
+    expect(titleMatches('a test', 'A test')).toBe(false);
+  });
+
+  it('matches every title a templated name generates', () => {
+    expect(titleMatches(TEMPLATE, 'expanded labels stay clear of the content column at 1600px')).toBe(true);
+    expect(titleMatches(TEMPLATE, 'expanded labels stay clear of the content column at 2560px')).toBe(true);
+  });
+
+  it('does not match a title that differs outside the placeholder, or leaves it empty', () => {
+    expect(titleMatches(TEMPLATE, 'expanded labels stay clear of the content column at px')).toBe(false);
+    expect(titleMatches(TEMPLATE, 'expanded labels stay clear of the content column at 1600px wide')).toBe(false);
+    expect(titleMatches(TEMPLATE, 'collapsed labels stay clear of the content column at 1600px')).toBe(false);
+    // Nor one missing the text after the placeholder.
+    expect(titleMatches(TEMPLATE, 'expanded labels stay clear of the content column at 1600')).toBe(false);
+  });
+
+  it('reads the text outside a placeholder literally', () => {
+    expect(titleMatches('at ${n} (of ${total}) items', 'at 3 (of 9) items')).toBe(true);
+    expect(titleMatches('at ${n} (of ${total}) items', 'at 3 of 9 items')).toBe(false);
+    expect(titleMatches('a.b ${x}', 'axb 1')).toBe(false);
   });
 });
 
@@ -251,6 +294,21 @@ describe('entriesForPlaywrightTest', () => {
       'the catalog license facet narrows the grid to a tier',
     );
     expect(hits.map((entry) => entry.id)).toEqual(['pw-license-facet']);
+  });
+
+  it('matches a templated title in its own file, at every value the loop generates', () => {
+    const looped: UnreliableEntry = {
+      ...REGISTER[0],
+      id: 'looped',
+      suite: 'playwright',
+      file: 'e2e/looped.spec.ts',
+      unit: 'fits at ${width}px',
+    };
+    const match = (file: string, title: string) => entriesForPlaywrightTest(file, title, [looped]).map((e) => e.id);
+    expect(match('/checkout/site/e2e/looped.spec.ts', 'fits at 1600px')).toEqual(['looped']);
+    expect(match('/checkout/site/e2e/looped.spec.ts', 'fits at 1920px')).toEqual(['looped']);
+    expect(match('/checkout/site/e2e/looped.spec.ts', 'fits at 1600px, twice')).toEqual([]);
+    expect(match('/checkout/site/e2e/other.spec.ts', 'fits at 1600px')).toEqual([]);
   });
 });
 

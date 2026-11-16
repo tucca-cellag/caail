@@ -85,7 +85,10 @@ export interface UnreliableEntry {
   suite: 'vitest' | 'playwright';
   /** Path relative to `site/`. Must exist. */
   file: string;
-  /** Human label for the failing unit, for display. */
+  /**
+   * Human label for the failing unit, for display. On a Playwright entry it is also the
+   * test title the reporter matches (`titleMatches`), so it may be a template.
+   */
   unit: string;
   /**
    * A string that must appear verbatim in `file`. This is the anti-rot oracle, not a
@@ -94,7 +97,7 @@ export interface UnreliableEntry {
    */
   anchor: string;
   /**
-   * vitest only: match these exact test names rather than the whole module.
+   * vitest only: match these test names (`titleMatches`) rather than the whole module.
    *
    * Absent means module-level matching, which is right for the five slow-fixture
    * files: their failing *test* moves between runs, so naming one would be precise
@@ -102,8 +105,8 @@ export interface UnreliableEntry {
    * about, because the reporter would then label a genuine failure as known-unreliable
    * — the harm the Playwright side's title matching already exists to avoid.
    *
-   * Each name here must appear verbatim in `file`; `register.test.ts` enforces it, so
-   * this doubles as the vitest title-drift oracle.
+   * Each name here must appear verbatim in `file`, a template as its source writes it;
+   * `register.test.ts` enforces it, so this doubles as the vitest title-drift oracle.
    */
   tests?: readonly string[];
   /**
@@ -449,7 +452,7 @@ export function entriesForVitestModule(
 ): UnreliableEntry[] {
   const normalised = moduleId.replaceAll('\\', '/');
   const named = (names: readonly string[] | undefined, failed: readonly string[] = []) =>
-    (names ?? []).some((name) => failed.includes(name));
+    (names ?? []).some((name) => failed.some((title) => titleMatches(name, title)));
   return register.filter((entry) => {
     if (entry.suite !== 'vitest') return false;
     if (normalised !== entry.file && !normalised.endsWith(`/${entry.file}`)) return false;
@@ -461,9 +464,26 @@ export function entriesForVitestModule(
 }
 
 /**
+ * Whether `title`, as a test or suite reports it, is the one `named` names.
+ *
+ * Equal strings match. A `${…}` in `named` is a placeholder for one or more characters,
+ * so a title generated in a loop is named once, as its source writes it
+ * (`at ${width}px`), and matches every title the loop generates. Written that way it
+ * appears verbatim in its file, which the integrity checks in `register.test.ts`
+ * require; a title as it runs (`at 1600px`) is in no source to find. Everything outside
+ * a placeholder matches literally, and the whole title has to match.
+ */
+export function titleMatches(named: string, title: string): boolean {
+  const literals = named.split(/\$\{[^}]*\}/);
+  if (literals.length === 1) return named === title;
+  const pattern = literals.map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('.+');
+  return new RegExp(`^${pattern}$`).test(title);
+}
+
+/**
  * Entries registered against a Playwright test.
  *
- * Matched on **both** the spec file and the exact test title.
+ * Matched on **both** the spec file and the test title (`titleMatches`).
  *
  * The title is required because `licenses.spec.ts` holds ten tests and one of them is
  * registered, so a file-level match would label the other nine as known-unreliable on
@@ -485,7 +505,7 @@ export function entriesForPlaywrightTest(
   return register.filter(
     (entry) =>
       entry.suite === 'playwright' &&
-      entry.unit === title &&
+      titleMatches(entry.unit, title) &&
       (normalised === entry.file || normalised.endsWith(`/${entry.file}`)),
   );
 }
