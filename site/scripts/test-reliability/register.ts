@@ -358,20 +358,30 @@ export const REGISTER: readonly UnreliableEntry[] = [
     anchor: "await page.waitForSelector('.ng-canvas canvas'",
     shape: 'load',
     condition:
-      'Recorded in tucca-cellag/caail-planning#2 as a hydration-timing race on the graph. The specs now wait for the ' +
-      'cytoscape canvas, and the hub specs wait for the filter bar, so the window is closed.',
+      'Recorded in tucca-cellag/caail-planning#2 as a hydration-timing race on the graph, which the ' +
+      'canvas wait below closed. The test still runs past its 30s budget when the machine is ' +
+      'loaded, and passes with --workers=1 on the same build.',
     evidence:
       '2026-08-13: 45/45 under --repeat-each=3; did not reproduce. Note that Playwright ran ' +
       'that as 3 workers, one per repeat group, despite --workers=12: tests in one file are ' +
       'serial in one worker unless fullyParallel is set. So this is weaker evidence than the ' +
-      '16-worker runs above, and it is a lower bound rather than a clean bill of health.',
+      '16-worker runs above, and it is a lower bound rather than a clean bill of health. ' +
+      '2026-11-13, local, on a branch that did not touch the network page: timed out at 30.1s ' +
+      'in a full e2e pass (277 passed, 1 failed) run straight after another on the same ' +
+      'machine, and the reporter named this entry. The control below passed 3/3 at 1.2s each, ' +
+      '48/48 for the file.',
     reproduce:
       'cd site && CAAIL_E2E_PORT=<free> pnpm exec playwright test e2e/network-metrics.spec.ts ' +
-      '--repeat-each=3',
-    status: 'mitigated',
+      '--repeat-each=3 --workers=1',
+    status: 'open',
     mitigation:
-      "waitForSelector('.ng-canvas canvas') for the graph; retrying assertions on .hf-bar for the hub filters.",
-    tickets: ['tucca-cellag/caail-planning#207', 'tucca-cellag/caail-planning#2'],
+      "Partly: waitForSelector('.ng-canvas canvas') for the graph, and retrying assertions on " +
+      '.hf-bar for the hub filters, closed the race. They do not stop the timeout under load.',
+    tickets: [
+      'tucca-cellag/caail-planning#207',
+      'tucca-cellag/caail-planning#2',
+      'tucca-cellag/caail-planning#604',
+    ],
   },
 
   // -------------------------------------------------------------------------
