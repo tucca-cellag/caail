@@ -35,6 +35,7 @@ import { MATRIX_SECTION } from './types.js';
 import type { Catalog, CatalogEntry, DatasetInventory, DatasetInventoryRow, DoiRelation, OnRequestStudy, PapersData } from './types.js';
 import { isUnderBase, RETIRED_BASES, SITE_BASE, SITE_URL } from '../../src/content/site-config.ts';
 import { CATALOG_SOURCES } from './catalog.js';
+import { CORPUS_DATE_FORMAT } from './corpus-date-format.js';
 import { dedicatedLink, GITHUB_BLOB_BASE } from '../dedicated-links.ts';
 import { HAS_SCHEME, repoRelativePath, resolveCaailHref } from '../remark/rewrite-caail-links.ts';
 import { htmlLinkAttrs, markdownLinkTargets, scanHtml, type LinkTarget } from './link-targets.js';
@@ -468,9 +469,6 @@ export interface AgentApiInputs {
   /** ISO date stamped onto every response. Defaults to `readCorpusDate()`. */
   corpusDate?: string;
 }
-
-/** The form a corpus date takes, `YYYY-MM-DD`, as `readCorpusDate` returns it. */
-export const CORPUS_DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
  * The date the CORPUS last changed, read from git, not the date this build ran.

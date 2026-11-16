@@ -26,7 +26,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { SITE_URL } from '../../src/content/site-config.ts';
-import { CORPUS_DATE_FORMAT } from './agent-api.js';
+import { CORPUS_DATE_FORMAT } from './corpus-date-format.js';
 
 /** The files that carry the note, named as they are served from the site root. */
 export type LlmsFile = 'llms.txt' | 'llms-full.txt';
