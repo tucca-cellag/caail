@@ -10,7 +10,7 @@
  *
  * The scan counts tokens rather than parsing the code around them. Every `client:idle` must be
  * written `client:idle={{ timeout: IDLE_TIMEOUT_MS }}`, and `requestIdleCallback` may appear only
- * in `idle-timeout.ts`, whose `onIdle` is the bounded way to ask for one. A token written as a
+ * inside `onIdle` in `idle-timeout.ts`, the bounded way to ask for one. A token written as a
  * Markdown code span, directly after a backtick, is prose naming it and is let through. A
  * pattern that parses the tag or the call around a token misses a `>` inside the tag, an
  * optional call and an alias, and fails a correct call with an inline arrow callback. Counting
@@ -48,28 +48,43 @@ function sourceFiles(dir: string): string[] {
 /** The one way an island may be written idle. */
 const BOUNDED_DIRECTIVE = 'client:idle={{ timeout: IDLE_TIMEOUT_MS }}';
 
+/** Where `onIdle` is declared: the one span of code that may ask for an idle callback. */
+const ON_IDLE_DECLARATION = 'export function onIdle(';
+
+/**
+ * The span of `source` from `onIdle`'s declaration to the `}` that closes it at the start of a
+ * line, or none. Only `requestIdleCallback` inside it is exempt; elsewhere in the helper, as in
+ * any other file, a code token of it is an offence. That `onIdle` itself asks with the bound is
+ * the `onIdle` tests' job, below.
+ */
+function onIdleSpan(source: string): { from: number; to: number } | undefined {
+  const from = source.indexOf(ON_IDLE_DECLARATION);
+  const to = from < 0 ? -1 : source.indexOf('\n}', from);
+  return to < 0 ? undefined : { from, to };
+}
+
 /**
  * The idle tokens in `source` that break the rules above, each as `line: why`, and how many
  * bounded idle waits it holds: islands written as `BOUNDED_DIRECTIVE`, and `onIdle` calls.
- * `isHelper` is for `idle-timeout.ts`, which may name `requestIdleCallback`.
+ * `isHelper` is for `idle-timeout.ts`, whose `onIdle` may name `requestIdleCallback`.
  */
 function idleWaits(source: string, isHelper = false): { offences: string[]; bounded: number } {
   const offences: string[] = [];
   let bounded = 0;
   const lineOf = (at: number) => source.slice(0, at).split('\n').length;
   const inCodeSpan = (at: number) => source[at - 1] === '`';
+  const span = isHelper ? onIdleSpan(source) : undefined;
+  const inOnIdle = (at: number) => span !== undefined && at > span.from && at < span.to;
   for (const { index } of source.matchAll(/client:idle/g)) {
     if (inCodeSpan(index)) continue;
     if (source.startsWith(BOUNDED_DIRECTIVE, index)) bounded++;
     else offences.push(`${lineOf(index)}: client:idle not written ${BOUNDED_DIRECTIVE}`);
   }
-  if (!isHelper) {
-    for (const { index } of source.matchAll(/requestIdleCallback/g)) {
-      if (inCodeSpan(index)) continue;
-      offences.push(`${lineOf(index)}: requestIdleCallback outside ${HELPER}; defer the work with onIdle`);
-    }
-    for (const { index } of source.matchAll(/\bonIdle\(/g)) if (!inCodeSpan(index)) bounded++;
+  for (const { index } of source.matchAll(/requestIdleCallback/g)) {
+    if (inCodeSpan(index) || inOnIdle(index)) continue;
+    offences.push(`${lineOf(index)}: requestIdleCallback outside onIdle in ${HELPER}; defer the work with onIdle`);
   }
+  for (const { index } of source.matchAll(/\bonIdle\(/g)) if (!inCodeSpan(index) && !inOnIdle(index)) bounded++;
   return { offences, bounded };
 }
 
@@ -139,10 +154,18 @@ describe('IDLE_TIMEOUT_MS (tucca-cellag/caail-planning#604)', () => {
     expect(idleWaits('hydrates after `client:idle` runs, as `requestIdleCallback` allows')).toEqual({ offences: [], bounded: 0 });
   });
 
-  it('lets the helper ask for an idle callback, with an inline arrow callback or not', () => {
+  it("lets onIdle ask for an idle callback, with an inline arrow callback or not", () => {
+    const helper = (body: string) => idleWaits(`${ON_IDLE_DECLARATION}cb: () => void): void {\n${body}\n}\n`, true).offences;
+    expect(helper('  globalThis.requestIdleCallback(() => cb(), { timeout: IDLE_TIMEOUT_MS });')).toEqual([]);
+    expect(helper('  globalThis.requestIdleCallback(cb, { timeout: IDLE_TIMEOUT_MS });')).toEqual([]);
+  });
+
+  it('flags any other idle callback in the helper, and every one when onIdle is not there', () => {
+    const onIdle = `${ON_IDLE_DECLARATION}cb: () => void): void {\n  globalThis.requestIdleCallback(cb, { timeout: IDLE_TIMEOUT_MS });\n}\n`;
     const helper = (source: string) => idleWaits(source, true).offences;
-    expect(helper('globalThis.requestIdleCallback(() => cb(), { timeout: IDLE_TIMEOUT_MS });')).toEqual([]);
-    expect(helper('globalThis.requestIdleCallback(cb, { timeout: IDLE_TIMEOUT_MS });')).toEqual([]);
+    expect(helper(`${onIdle}export const later = (cb) => globalThis.requestIdleCallback(cb);\n`)).toHaveLength(1);
+    expect(helper(`const early = globalThis.requestIdleCallback;\n${onIdle}`)).toHaveLength(1);
+    expect(helper('export function idleSoon(cb) {\n  globalThis.requestIdleCallback(cb, { timeout: IDLE_TIMEOUT_MS });\n}\n')).toHaveLength(1);
     // Its islands are held to the same rule as any other file's.
     expect(helper('<NetworkGraph client:idle />')).toHaveLength(1);
   });
@@ -150,7 +173,7 @@ describe('IDLE_TIMEOUT_MS (tucca-cellag/caail-planning#604)', () => {
   it('names the line and the rule an offence breaks', () => {
     expect(idleWaits('one\n<Foo client:idle />\nrequestIdleCallback(cb)').offences).toEqual([
       `2: client:idle not written ${BOUNDED_DIRECTIVE}`,
-      `3: requestIdleCallback outside ${HELPER}; defer the work with onIdle`,
+      `3: requestIdleCallback outside onIdle in ${HELPER}; defer the work with onIdle`,
     ]);
   });
 });
