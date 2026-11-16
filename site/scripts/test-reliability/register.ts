@@ -99,11 +99,11 @@ export interface UnreliableEntry {
   /**
    * vitest only: match these test names (`titleMatches`) rather than the whole module.
    *
-   * Absent means module-level matching, which is right for the five slow-fixture
-   * files: their failing *test* moves between runs, so naming one would be precise
-   * about the wrong thing. It is wrong wherever a module holds tests the entry is not
-   * about, because the reporter would then label a genuine failure as known-unreliable
-   * — the harm the Playwright side's title matching already exists to avoid.
+   * Module-level matching (`wholeModule`) is right for the five slow-fixture files:
+   * their failing *test* moves between runs, so naming one would be precise about the
+   * wrong thing. It is wrong wherever a module holds tests the entry is not about,
+   * because the reporter would then label a genuine failure as known-unreliable, the
+   * harm the Playwright side's title matching already exists to avoid.
    *
    * Each name here must appear verbatim in `file`, a template as its source writes it;
    * `register.test.ts` enforces it, so this doubles as the vitest title-drift oracle.
@@ -132,6 +132,16 @@ export interface UnreliableEntry {
    * second `describe` of that name, under another parent, would be labelled too.
    */
   suites?: readonly string[];
+  /**
+   * vitest only: match a failure anywhere in `file`. Set only where the failing test
+   * moves between runs, so no name would hold.
+   *
+   * Every vitest entry sets this or narrows with `tests` or `suites`, never both, and
+   * `register.test.ts` fails on one that does neither. Without that, an entry that lost
+   * its narrowing would widen to its whole module in silence, and start labelling the
+   * module's other tests. An entry with none of the three matches nothing.
+   */
+  wholeModule?: true;
   shape: Shape;
   /** One or two sentences: when does it misbehave, and when does it not. */
   condition: string;
@@ -152,14 +162,15 @@ export interface UnreliableEntry {
 }
 
 /**
- * Playwright matching is always file plus title (`titleMatches`). vitest matching defaults to the
- * module and narrows to named tests or suites when an entry sets `tests` or `suites`.
+ * Playwright matching is always file plus title (`titleMatches`). vitest matching is by
+ * the named tests or suites an entry sets, or by the whole module where it says
+ * `wholeModule`.
  *
- * The default is not laziness: the five slow-fixture entries below genuinely fail as
- * whole files, and which test inside them fails moves between runs (three consecutive
- * full runs produced three different sets), so naming one would be precise about the
- * wrong thing. An entry whose module holds unrelated tests must set `tests` or `suites`,
- * or the reporter labels those as known-unreliable on no evidence.
+ * Whole-module matching is not laziness: the five slow-fixture entries below genuinely
+ * fail as whole files, and which test inside them fails moves between runs (three
+ * consecutive full runs produced three different sets), so naming one would be precise
+ * about the wrong thing. Every other entry narrows, or the reporter labels the rest of
+ * its module as known-unreliable on no evidence.
  */
 export const REGISTER: readonly UnreliableEntry[] = [
   // -------------------------------------------------------------------------
@@ -170,6 +181,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
   {
     id: 'vitest-metrics-corpus-hook',
     suite: 'vitest',
+    wholeModule: true,
     file: 'scripts/parser/metrics.test.ts',
     unit: 'beforeAll of "buildMetricsModel — real corpus"',
     anchor: "describe('buildMetricsModel — real corpus'",
@@ -194,6 +206,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
   {
     id: 'vitest-seed-topics-hook',
     suite: 'vitest',
+    wholeModule: true,
     file: 'scripts/db/seed.test.ts',
     unit: 'top-level beforeAll (seeds the real corpus)',
     anchor: 'summary = seedTopics(db);',
@@ -212,6 +225,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
   {
     id: 'vitest-db-dataset-entries',
     suite: 'vitest',
+    wholeModule: true,
     file: 'scripts/db/dataset-entries.test.ts',
     unit: "beforeAll of 'seedDatasets (rows + entries share the ds: namespace)'",
     anchor: "describe('seedDatasets (rows + entries share the ds: namespace)'",
@@ -226,6 +240,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
   {
     id: 'vitest-db-mutate',
     suite: 'vitest',
+    wholeModule: true,
     file: 'scripts/db/mutate.test.ts',
     unit: 'per-test timeout, most often the first addItem round-trip',
     anchor: 'assigns the next ref id, wires a matrix cell, round-trips reachable + lint-green',
@@ -245,6 +260,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
   {
     id: 'vitest-db-emit',
     suite: 'vitest',
+    wholeModule: true,
     file: 'scripts/db/emit.test.ts',
     unit: 'per-test timeout, most often the Papers.md round-trip',
     anchor: 're-parses to a JSON-identical model',
@@ -652,9 +668,9 @@ export function entriesForVitestModule(
   return register.filter((entry) => {
     if (entry.suite !== 'vitest') return false;
     if (normalised !== entry.file && !normalised.endsWith(`/${entry.file}`)) return false;
-    // Neither `tests` nor `suites` means the whole module is registered, which is the
-    // right reading for an entry whose failing test moves between runs.
-    if (!entry.tests && !entry.suites) return true;
+    // Only an entry that says so covers its whole module; one with no names and no
+    // `wholeModule` matches nothing rather than everything.
+    if (entry.wholeModule) return true;
     return named(entry.tests, failures.tests) || named(entry.suites, failures.suites);
   });
 }

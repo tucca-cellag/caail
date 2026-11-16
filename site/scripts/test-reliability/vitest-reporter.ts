@@ -6,10 +6,10 @@
  * staring at a failure deciding whether to bisect their diff, and nothing at that
  * moment points them at a file they have never opened.
  *
- * Reports at **module** granularity by default, because that is the granularity of the
- * evidence: three consecutive full runs of this suite produced three different failing
- * *tests* inside the same five files, so naming one test would be precise about the
- * wrong thing and would stop matching on the next run.
+ * Reports at **module** granularity for an entry that says `wholeModule`, because that
+ * is the granularity of its evidence: three consecutive full runs of this suite produced
+ * three different failing *tests* inside the same five files, so naming one test would be
+ * precise about the wrong thing and would stop matching on the next run.
  *
  * An entry that sets `tests` or `suites` narrows to those names, and the failures they
  * match are collected here (`failuresIn`). That matters where a module holds tests the

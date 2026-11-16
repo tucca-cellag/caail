@@ -146,6 +146,22 @@ describe('register integrity', () => {
     expect(wrong).toEqual([]);
   });
 
+  it('every vitest entry narrows to named tests or suites, or says it covers its whole module', () => {
+    // Without this, an entry that lost its `tests` or `suites` would stop matching at all
+    // (the matcher fails closed) and nothing would say so; and one given both would be
+    // claiming two scopes at once. Playwright entries match by title and take neither.
+    const wrong: string[] = [];
+    for (const entry of REGISTER) {
+      const narrowed = Boolean(entry.tests?.length || entry.suites?.length);
+      if (entry.suite === 'playwright') {
+        if (narrowed || entry.wholeModule) wrong.push(`${entry.id}: a Playwright entry sets tests, suites or wholeModule`);
+      } else if (narrowed === Boolean(entry.wholeModule)) {
+        wrong.push(`${entry.id}: ${narrowed ? 'narrows and says wholeModule' : 'neither narrows nor says wholeModule'}`);
+      }
+    }
+    expect(wrong).toEqual([]);
+  });
+
   it('a vitest entry whose module holds unregistered tests narrows to named tests', () => {
     // community.test.ts holds three tests and only one is residue-prone; one of the
     // other two is the guard against a real Slack-invite paste. An entry there without
@@ -239,14 +255,15 @@ describe('entriesForVitestModule', () => {
     expect(entriesForVitestModule(file, { suites: [registered] })).toEqual([]);
   });
 
-  it('a suite-narrowed entry matches only that suite failing with an error of its own', () => {
-    // `failures.suites` holds only suites whose own hook failed (`failuresIn` in the
+  it('a suite-narrowed entry matches only that suite, as failuresIn reports it', () => {
+    // `failures.suites` holds only suites whose own hook timed out (`failuresIn` in the
     // reporter, checked against vitest by vitest-reporter.test.ts). So a test failing
     // inside the suite arrives as a failed test name and must not match the suite.
     const hooked: UnreliableEntry = {
       ...REGISTER[0],
       id: 'suite-narrowed',
       file: 'scripts/parser/fixture.test.ts',
+      wholeModule: undefined,
       tests: undefined,
       suites: ['the suite with a hook'],
     };
@@ -263,6 +280,7 @@ describe('entriesForVitestModule', () => {
       ...REGISTER[0],
       id: 'looped',
       file: 'scripts/parser/fixture.test.ts',
+      wholeModule: undefined,
       tests: ['parses ${name}'],
     };
     const match = (tests: string[]) =>
@@ -286,6 +304,12 @@ describe('entriesForVitestModule', () => {
     // `other/scripts/db/emit.test.ts`; requiring the separator keeps a same-named file
     // in a different tree from inheriting an entry that was never about it.
     expect(entriesForVitestModule('somewhere/notscripts/db/emit.test.ts')).toEqual([]);
+  });
+
+  it('matches nothing for an entry that neither narrows nor says wholeModule', () => {
+    const unscoped: UnreliableEntry = { ...REGISTER[0], id: 'unscoped', wholeModule: undefined, tests: undefined };
+    expect(entriesForVitestModule(unscoped.file, { tests: ['any test'], suites: ['any suite'] }, [unscoped])).toEqual([]);
+    expect(entriesForVitestModule(unscoped.file, {}, [unscoped])).toEqual([]);
   });
 
   it('returns nothing for an unregistered module', () => {
