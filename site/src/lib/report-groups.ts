@@ -15,6 +15,7 @@
  */
 import reports from '../content/data/reports.json';
 import type { TopicRef } from './topic-chips';
+import { escapeRegExp } from './escape-regexp';
 import { siteSlug } from './heading-slug';
 
 /** One field-report record, mirroring `ReportSchema` in scripts/parser/types.ts. */
@@ -56,10 +57,6 @@ export const groupSlug = siteSlug;
  */
 export function editionAnchor(id: string): string {
   return id.replace(/[^a-z0-9]+/gi, '-');
-}
-
-function escapeRegExp(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 /** The series display name: the current edition's title without its edition label. */

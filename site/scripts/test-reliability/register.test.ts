@@ -20,6 +20,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { escapeRegExp } from '../../src/lib/escape-regexp.js';
 import {
   REGISTER,
   openEntries,
@@ -40,7 +41,7 @@ const SITE_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
  * with any modifier (`describe.skip(`, `describe.sequential(`).
  */
 function describeCalls(source: string, name: string): number {
-  const literal = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const literal = escapeRegExp(name);
   return ["'", '"', '`'].reduce(
     (total, quote) => total + [...source.matchAll(new RegExp(`\\bdescribe(?:\\.\\w+)*\\(\\s*${quote}${literal}${quote}`, 'g'))].length,
     0,

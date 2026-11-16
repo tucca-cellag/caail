@@ -68,6 +68,8 @@
  * command that reprints the real number.
  */
 
+import { escapeRegExp } from '../../src/lib/escape-regexp.js';
+
 /** The condition class an entry misbehaves under. See the module docstring. */
 export type Shape = 'load' | 'artifact' | 'residue';
 
@@ -695,7 +697,7 @@ export function entriesForVitestModule(
 export function titleMatches(named: string, title: string): boolean {
   const literals = named.split(/\$\{[^}]*\}/);
   if (literals.length === 1) return named === title;
-  const pattern = literals.map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('\\S+');
+  const pattern = literals.map(escapeRegExp).join('\\S+');
   return new RegExp(`^${pattern}$`).test(title);
 }
 
