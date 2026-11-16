@@ -258,6 +258,49 @@ export const REGISTER: readonly UnreliableEntry[] = [
   },
 
   // -------------------------------------------------------------------------
+  // vitest: one slow hook or test in a module of others, so each entry names it
+  // rather than the module.
+  // -------------------------------------------------------------------------
+  {
+    id: 'vitest-llms-full-hook',
+    suite: 'vitest',
+    file: 'scripts/parser/llms-full.test.ts',
+    unit: 'beforeAll of "buildLlmsFullText"',
+    anchor: 'relative = nonAbsoluteMarkdownTargets(fullText(), { page: true });',
+    suites: ['buildLlmsFullText'],
+    shape: 'load',
+    condition:
+      'Fails with "Hook timed out" under CPU contention. The hook builds the full llms-full.txt ' +
+      'text, resolving every page\'s links, and parses it once more for link targets. Passed in ' +
+      'a serial run of the same tree.',
+    evidence:
+      '2026-11-13, local, a parallel full run under heavy swap: the hook timed out at 30s, and ' +
+      'the registered metrics, seed and mutate entries failed alongside it. ' +
+      '--no-file-parallelism passed 1,858 of 1,858. Seen once.',
+    reproduce: 'pnpm --dir site test -- --no-file-parallelism',
+    status: 'open',
+    tickets: ['tucca-cellag/caail-planning#604'],
+  },
+  {
+    id: 'vitest-agent-api-link-scan',
+    suite: 'vitest',
+    file: 'scripts/parser/agent-api.test.ts',
+    unit: 'ships no relative Markdown link target in any emitted endpoint',
+    anchor: 'ships no relative Markdown link target in any emitted endpoint',
+    tests: ['ships no relative Markdown link target in any emitted endpoint'],
+    shape: 'load',
+    condition:
+      'Exceeds the per-test budget under CPU contention. The test builds every agent-API ' +
+      'endpoint and scans each string in them for Markdown link targets. Passed in a serial run.',
+    evidence:
+      '2026-11-14, local, a parallel vitest run on another branch: 21.9s against the 20s ' +
+      'budget. The serial control passed. Seen once.',
+    reproduce: 'pnpm --dir site test -- --no-file-parallelism',
+    status: 'open',
+    tickets: ['tucca-cellag/caail-planning#604'],
+  },
+
+  // -------------------------------------------------------------------------
   // Playwright: pre-hydration clicks on server-rendered island controls.
   // -------------------------------------------------------------------------
   {
