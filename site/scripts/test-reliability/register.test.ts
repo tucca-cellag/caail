@@ -34,6 +34,18 @@ import {
 /** `site/`, two levels up from `site/scripts/test-reliability/`. */
 const SITE_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
+/**
+ * How many `describe` calls in `source` are named exactly `name`, in any quote style and
+ * with any modifier (`describe.skip(`, `describe.sequential(`).
+ */
+function describeCalls(source: string, name: string): number {
+  const literal = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return ["'", '"', '`'].reduce(
+    (total, quote) => total + [...source.matchAll(new RegExp(`\\bdescribe(?:\\.\\w+)*\\(\\s*${quote}${literal}${quote}`, 'g'))].length,
+    0,
+  );
+}
+
 describe('register integrity', () => {
   it('has unique ids', () => {
     const ids = REGISTER.map((entry) => entry.id);
@@ -75,27 +87,43 @@ describe('register integrity', () => {
     expect(drifted).toEqual([]);
   });
 
-  it('every named vitest test and suite still exists in its file', () => {
-    // The vitest analogue of the Playwright title check below. Without it, renaming a
-    // test or suite that an entry narrows to leaves the entry silently matching nothing:
-    // the register keeps listing it, the reporter never fires, and the failure it was
+  it('every named vitest test still exists in its file', () => {
+    // The vitest analogue of the Playwright title check above. Without it, renaming a
+    // test that an entry narrows to leaves the entry silently matching nothing: the
+    // register keeps listing it, the reporter never fires, and the failure it was
     // written for reads as unregistered.
     const drifted: string[] = [];
     for (const entry of REGISTER) {
-      if (entry.suite !== 'vitest') continue;
-      const named = [
-        ...(entry.tests ?? []).map((name) => ['test', name] as const),
-        ...(entry.suites ?? []).map((name) => ['suite', name] as const),
-      ];
-      if (named.length === 0) continue;
+      if (entry.suite !== 'vitest' || !entry.tests) continue;
       const source = readFileSync(join(SITE_ROOT, entry.file), 'utf-8');
-      for (const [kind, name] of named) {
+      for (const name of entry.tests) {
         if (!source.includes(name)) {
-          drifted.push(`${entry.id}: no ${kind} named ${JSON.stringify(name)} in ${entry.file}`);
+          drifted.push(`${entry.id}: no test named ${JSON.stringify(name)} in ${entry.file}`);
         }
       }
     }
     expect(drifted).toEqual([]);
+  });
+
+  it('every named vitest suite is the name of exactly one describe call in its file', () => {
+    // A suite name can appear elsewhere in its module, as `buildLlmsFullText` does in
+    // the import of the function it tests, so finding the text proves nothing: renaming
+    // the describe would leave the entry matching nothing with this check green. The
+    // reporter matches a suite by its bare name, so a second describe of that name, under
+    // another parent, would be labelled too; requiring exactly one makes the bare name
+    // unambiguous, and a second one fails here instead of being mislabelled.
+    const wrong: string[] = [];
+    for (const entry of REGISTER) {
+      if (entry.suite !== 'vitest' || !entry.suites) continue;
+      const source = readFileSync(join(SITE_ROOT, entry.file), 'utf-8');
+      for (const name of entry.suites) {
+        const calls = describeCalls(source, name);
+        if (calls !== 1) {
+          wrong.push(`${entry.id}: ${calls} describe calls named ${JSON.stringify(name)} in ${entry.file}, not 1`);
+        }
+      }
+    }
+    expect(wrong).toEqual([]);
   });
 
   it('a vitest entry whose module holds unregistered tests narrows to named tests', () => {
@@ -141,6 +169,23 @@ describe('register integrity', () => {
         `${entry.id} is ${entry.shape}-shaped but does not say how triage misleads`,
       ).toBeTruthy();
     }
+  });
+});
+
+describe('describeCalls', () => {
+  it('counts a describe of that name in each quote style, with or without a modifier', () => {
+    expect(describeCalls("describe('a suite', () => {", 'a suite')).toBe(1);
+    expect(describeCalls('describe("a suite", () => {', 'a suite')).toBe(1);
+    expect(describeCalls('describe(`a suite`, () => {', 'a suite')).toBe(1);
+    expect(describeCalls("describe.skip(\n  'a suite',\n  () => {", 'a suite')).toBe(1);
+    expect(describeCalls("describe('a suite', () => {});\ndescribe('x', () => { describe('a suite', () => {}); });", 'a suite')).toBe(2);
+  });
+
+  it('does not count the name anywhere but a describe call', () => {
+    expect(describeCalls("import { a suite } from './x';\nit('a suite', () => {});", 'a suite')).toBe(0);
+    expect(describeCalls("describe('a suite, renamed', () => {", 'a suite')).toBe(0);
+    expect(describeCalls("describe('not a suite', () => {", 'a suite')).toBe(0);
+    expect(describeCalls("subdescribe('a suite', () => {", 'a suite')).toBe(0);
   });
 });
 

@@ -124,7 +124,9 @@ export interface UnreliableEntry {
    * excuse. `vitest-reporter.test.ts` runs the installed vitest on a fixture and fails if
    * either half stops being how vitest reports it.
    *
-   * Each name here must appear verbatim in `file`, as `tests` names must.
+   * Each name here must be the name of exactly one `describe` call in `file`;
+   * `register.test.ts` enforces it. The reporter matches a suite by its bare name, so a
+   * second `describe` of that name, under another parent, would be labelled too.
    */
   suites?: readonly string[];
   shape: Shape;
