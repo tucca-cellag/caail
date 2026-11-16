@@ -161,12 +161,17 @@ describe('onIdle', () => {
     vi.useRealTimers();
   });
 
-  it('asks for an idle callback bounded by IDLE_TIMEOUT_MS', () => {
-    const asked: unknown[][] = [];
-    vi.stubGlobal('requestIdleCallback', (...args: unknown[]) => asked.push(args));
-    const cb = () => {};
-    onIdle(cb);
-    expect(asked).toEqual([[cb, { timeout: IDLE_TIMEOUT_MS }]]);
+  it('asks for one idle callback, bounded by IDLE_TIMEOUT_MS, that runs the callback', () => {
+    // Checked by what the callback it hands over does, not by identity, so wrapping the
+    // callback in an arrow stays correct.
+    const asked: { run: () => void; options: unknown }[] = [];
+    vi.stubGlobal('requestIdleCallback', (run: () => void, options: unknown) => asked.push({ run, options }));
+    let ran = 0;
+    onIdle(() => ran++);
+    expect(asked.map(({ options }) => options)).toEqual([{ timeout: IDLE_TIMEOUT_MS }]);
+    expect(ran).toBe(0);
+    asked[0]!.run();
+    expect(ran).toBe(1);
   });
 
   it('runs the callback on a 1 ms timer in a browser with no idle callback', () => {
