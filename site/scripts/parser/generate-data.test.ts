@@ -178,10 +178,10 @@ describe('writeParseOutputs()', () => {
     };
   }
 
-  /** The date on the one corpus-date line of `text`. */
+  /** The date on the one corpus-date line of `text`: what follows the label, up to its comma. */
   function dateOn(text: string, file: string): string {
     const lines = text.split('\n');
-    return lines[findCorpusDateLine(lines, file)]!.slice(CORPUS_DATE_PREFIX.length, CORPUS_DATE_PREFIX.length + 10);
+    return lines[findCorpusDateLine(lines, file)]!.slice(CORPUS_DATE_PREFIX.length).split(',')[0]!.trim();
   }
 
   // Each run is a whole parse, about as long as generateData's run above, so like that run they

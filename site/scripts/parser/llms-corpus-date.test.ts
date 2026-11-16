@@ -45,6 +45,13 @@ describe('findCorpusDateLine', () => {
     expect(findCorpusDateLine(['# Title', 'The phrase Corpus date: mid-line', 'Corpus date: x', ''], 'llms.txt')).toBe(2);
   });
 
+  it('finds a bare placeholder whose trailing space an editor trimmed', () => {
+    // The refusal below tells a maintainer to keep one such line and let parse write the rest,
+    // so the line they are told to keep has to be found with or without the space after it.
+    expect(findCorpusDateLine(['# Title', '', 'Corpus date:', ''], 'llms.txt')).toBe(2);
+    expect(findCorpusDateLine(['# Title', '', 'Corpus date:\r', ''], 'llms.txt')).toBe(2);
+  });
+
   it('refuses none and two, naming the file', () => {
     expect(() => findCorpusDateLine(['# Title'], 'site/public/llms.txt')).toThrow(/^site\/public\/llms\.txt: .*found 0/);
     expect(() => findCorpusDateLine(['Corpus date: a', 'Corpus date: b'], 'llms.txt')).toThrow(/found 2/);
@@ -58,6 +65,11 @@ describe('stampCorpusDate', () => {
     const out = stampCorpusDate(page, '2026-11-14', 'llms.txt').split('\n');
     expect(out[4]).toBe(corpusDateNote('2026-11-14', 'llms.txt'));
     expect(out.filter((_, i) => i !== 4)).toEqual(page.split('\n').filter((_, i) => i !== 4));
+  });
+
+  it('writes the note over a bare placeholder as it does over a full line', () => {
+    const bare = page.replace('Corpus date: (pnpm parse writes this line)', 'Corpus date:');
+    expect(stampCorpusDate(bare, '2026-11-14', 'llms.txt')).toBe(stampCorpusDate(page, '2026-11-14', 'llms.txt'));
   });
 
   it('is idempotent, so a second parse changes nothing', () => {

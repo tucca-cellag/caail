@@ -31,8 +31,12 @@ import { CORPUS_DATE_FORMAT } from './corpus-date-format.js';
 /** The files that carry the note, named as they are served from the site root. */
 export type LlmsFile = 'llms.txt' | 'llms-full.txt';
 
-/** Every corpus-date line starts with this, which is how the line in `llms.txt` is found. */
-export const CORPUS_DATE_PREFIX = 'Corpus date: ';
+/**
+ * Every corpus-date line starts with this label, which is how the line in `llms.txt` is found.
+ * The space after it is not part of the match: a placeholder `Corpus date:` whose trailing space
+ * an editor trimmed on save is still the line parse writes.
+ */
+export const CORPUS_DATE_PREFIX = 'Corpus date:';
 
 /**
  * The note: the date and what it dates, where the canonical copy is served, and what a reader of
@@ -45,7 +49,7 @@ export function corpusDateNote(date: string, file: LlmsFile): string {
     throw new Error(`llms corpus date: "${date}" is not a YYYY-MM-DD date`);
   }
   return (
-    `${CORPUS_DATE_PREFIX}${date}, the day CAAIL's catalog data last changed ` +
+    `${CORPUS_DATE_PREFIX} ${date}, the day CAAIL's catalog data last changed ` +
     "(the agent API's corpusDate; a checkout with no git history uses the build date instead). " +
     `The canonical copy of this file is ${SITE_URL}${file}. ` +
     'Its prose can change without moving that date, so a copy read anywhere else may be out of date ' +
@@ -55,7 +59,7 @@ export function corpusDateNote(date: string, file: LlmsFile): string {
 
 /**
  * The index of the one corpus-date line in `lines` (a file's text split on `\n`). A line counts
- * only when it starts with `Corpus date: `, so the phrase in running prose is left alone. Throws
+ * only when it starts with `Corpus date:`, so the phrase in running prose is left alone. Throws
  * when there is no such line or more than one: a missing line would leave the file undated in
  * silence, and two would leave a reader to choose between them. `file` names the file in the
  * error.
