@@ -38,20 +38,13 @@ const FIXTURE_BUDGET_MS = 110_000;
 let child: ChildProcess | undefined;
 
 /**
- * Kill the fixture vitest and everything it started. It is spawned as the leader of its own
- * process group (`detached`), and the group is killed whatever the leader's state: a leader
- * that has exited can leave a hung worker in the group behind it. Where there are no process
- * groups, the process alone.
+ * Kill the fixture vitest if it is still running. It runs its tests in worker threads
+ * (`--pool=threads`, below), not in processes of their own, so they end with it, and there
+ * is nothing else to reap. A child that has exited is never signalled: its PID may already
+ * belong to an unrelated process.
  */
 function killFixture(): void {
-  if (child?.pid === undefined) return;
-  try {
-    if (process.platform !== 'win32') process.kill(-child.pid, 'SIGKILL');
-    else if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL');
-  } catch (error) {
-    // ESRCH: nothing is left in the group, which is the outcome wanted.
-    if ((error as NodeJS.ErrnoException).code !== 'ESRCH') throw error;
-  }
+  if (child && child.exitCode === null && child.signalCode === null) child.kill('SIGKILL');
 }
 
 /** Run the fixture in a vitest of its own, and collect its exit code and stderr. */
@@ -65,8 +58,8 @@ function runFixture(cacheDir: string): Promise<{ code: number | null; stderr: st
   return new Promise((resolve, reject) => {
     child = spawn(
       process.execPath,
-      [VITEST_CLI, 'run', '--root', FIXTURES, '--config', join(FIXTURES, 'vitest.config.ts')],
-      { env, stdio: ['ignore', 'ignore', 'pipe'], detached: process.platform !== 'win32' },
+      [VITEST_CLI, 'run', '--root', FIXTURES, '--config', join(FIXTURES, 'vitest.config.ts'), '--pool=threads'],
+      { env, stdio: ['ignore', 'ignore', 'pipe'] },
     );
     const timer = setTimeout(() => {
       killFixture();
