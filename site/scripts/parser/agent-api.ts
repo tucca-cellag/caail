@@ -35,6 +35,7 @@ import { MATRIX_SECTION } from './types.js';
 import type { Catalog, CatalogEntry, DatasetInventory, DatasetInventoryRow, DoiRelation, OnRequestStudy, PapersData } from './types.js';
 import { isUnderBase, RETIRED_BASES, SITE_BASE, SITE_URL } from '../../src/content/site-config.ts';
 import { CATALOG_SOURCES } from './catalog.js';
+import { CORPUS_DATE_FORMAT } from './corpus-date-format.js';
 import { dedicatedLink, GITHUB_BLOB_BASE } from '../dedicated-links.ts';
 import { HAS_SCHEME, repoRelativePath, resolveCaailHref } from '../remark/rewrite-caail-links.ts';
 import { htmlLinkAttrs, markdownLinkTargets, scanHtml, type LinkTarget } from './link-targets.js';
@@ -504,7 +505,7 @@ export function readCorpusDate(repoRoot: string): string {
     // --date=format-local with TZ=UTC normalises across contributors' timezones; %cs
     // alone is the committer's local date and can read a day ahead of UTC.
     const out = git(['log', '-1', '--date=format-local:%Y-%m-%d', '--format=%cd', '--', 'site/db/ndjson']);
-    if (/^\d{4}-\d{2}-\d{2}$/.test(out)) return out;
+    if (CORPUS_DATE_FORMAT.test(out)) return out;
   } catch (err) {
     if (err instanceof Error && err.message.startsWith('agent-api:')) throw err;
     /* git unavailable (tarball export): fall through to the clock */

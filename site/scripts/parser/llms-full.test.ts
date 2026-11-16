@@ -22,9 +22,12 @@ import { CAAIL_PAGES } from '../../src/content/caail-pages.js';
 import { CANONICAL_SOURCES } from '../../src/content/canonical-sources.js';
 import { isExcludedFromCorpus, isPublishedMarkdown } from '../../src/lib/canonical-files.js';
 import { nonAbsoluteMarkdownTargets } from './agent-api.js';
+import { corpusDateNote } from './llms-corpus-date.js';
 import { buildLlmsFullText, llmsFullSection, llmsFullSources } from './llms-full.js';
 
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
+/** A fixed corpus date, so the build under test depends on neither git nor the clock. */
+const CORPUS_DATE = '2026-01-02';
 const SITE_DOCS = 'site/src/content/docs';
 
 /**
@@ -173,7 +176,7 @@ function sources(): string[] {
   return (sourcesCache ??= llmsFullSources());
 }
 function fullText(): string {
-  return (textCache ??= buildLlmsFullText());
+  return (textCache ??= buildLlmsFullText(REPO_ROOT, CORPUS_DATE));
 }
 
 describe('llmsFullSources coverage, checked against the repo', () => {
@@ -254,6 +257,11 @@ describe('buildLlmsFullText', () => {
     expect(fullText().startsWith('# CAAIL — Cellular Agriculture AI Library (full canonical text)')).toBe(
       true,
     );
+  });
+
+  it('dates its header with the corpus date it is given', () => {
+    const header = fullText().split('\n# ===== ')[0]!;
+    expect(header).toContain(corpusDateNote(CORPUS_DATE, 'llms-full.txt'));
   });
 
   it('carries a per-file delimiter for each source', () => {

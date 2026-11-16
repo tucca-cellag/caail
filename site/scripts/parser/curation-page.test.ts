@@ -50,7 +50,8 @@ const skillReadme = readFileSync(join(REPO_ROOT, README_REL), 'utf-8');
 // Built ONCE. Each call re-reads ~45 files and runs four readdirSync passes; this file used
 // it in two places and llms-full.test.ts in a third, so one suite run concatenated the whole
 // 1 MB corpus three times.
-const llmsFull = buildLlmsFullText(REPO_ROOT);
+// A fixed corpus date: nothing here reads the header, and a fixed value keeps git out of it.
+const llmsFull = buildLlmsFullText(REPO_ROOT, '2026-01-02');
 const papers = JSON.parse(
   readFileSync(join(REPO_ROOT, 'site/src/content/data/papers.json'), 'utf-8'),
 ) as { references: { section: string }[] };
