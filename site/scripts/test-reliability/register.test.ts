@@ -165,8 +165,8 @@ describe('register integrity', () => {
 
   it('a vitest entry whose module holds unregistered tests narrows to named tests', () => {
     // community.test.ts holds three tests and only one is residue-prone; one of the
-    // other two is the guard against a real Slack-invite paste. An entry there without
-    // `tests` would label a genuine leak as a known artifact.
+    // other two is the guard against a real Slack-invite paste. An entry there given
+    // `wholeModule` instead of `tests` would label a genuine leak as a known artifact.
     const community = REGISTER.find((entry) => entry.file === 'src/lib/community.test.ts');
     expect(community?.tests, 'the community entry must narrow to its one residue-prone test').toBeTruthy();
   });
