@@ -129,6 +129,18 @@ describe('retrieval', () => {
     expect(found).toHaveLength(TOP_K);
   });
 
+  // The lookup is the named half's own work, so a lookup that throws fails that
+  // half alone, and the search by meaning still answers.
+  it('answers from the nearest entries when the lookup throws, naming the half that failed', async () => {
+    const { binding } = index([await stored(entry(1)), await stored(entry(2))]);
+    const broken = { match: () => { throw new Error('lookup broke'); }, knows: () => true };
+    const result = await retrieve('q', { AI: { run: defaultAi }, INDEX: binding }, broken, signal);
+
+    expect(result.entries.map((e) => e.id), 'a throwing lookup discarded the search by meaning').toEqual(['paper:1', 'paper:2']);
+    expect(result.failed?.half).toBe('named');
+    expect((result.failed?.error as Error).message).toBe('lookup broke');
+  });
+
   it('skips a named entry the index does not hold', async () => {
     const { binding } = index([await stored(entry(1))]);
     const found = await entriesOf('q', { AI: { run: defaultAi }, INDEX: binding, ALLOWED_ORIGIN: ORIGIN }, lookupNaming(['paper:404']), signal);

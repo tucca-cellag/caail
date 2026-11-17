@@ -737,6 +737,15 @@ describe('one half of retrieval failing', () => {
     expect(logged()).toEqual([{ error: 'named_retrieval_failed' }]);
   });
 
+  it('answers from the nearest entries when the lookup itself throws', async () => {
+    const spy = harness();
+    const throwing = { match: (): string[] => { throw new Error('lookup broke'); }, knows: () => true };
+    const res = await handlerWith(throwing).fetch(ask(QUESTION), spy.env, spy.ctx);
+
+    expect(res.status, 'a throwing lookup failed the whole question').toBe(200);
+    expect(logged()).toEqual([{ error: 'named_retrieval_failed' }]);
+  });
+
   it('answers from the named entries when the embedding fails', async () => {
     const spy = harness({ ai: embeddingFails(new Error('socket hang up')) });
     const res = await handlerWith(named).fetch(ask(QUESTION), spy.env, spy.ctx);

@@ -95,12 +95,16 @@ async function embed(ai: AiBinding, question: string, signal: AbortSignal): Prom
  * it returned for them before filtering. The cap comes after the fetch, so a
  * named entry the index lacks gives its place to the next one it holds. The
  * fetch itself is bounded by the lookup (MAX_NAMED_FETCHED).
+ *
+ * The lookup runs in here, not where the two halves are started, so a lookup
+ * that throws rejects this half alone and the search by meaning still answers.
  */
 async function named(
   index: IndexBinding,
-  itemIds: string[],
+  question: string,
   lookup: Lookup,
 ): Promise<{ entries: RetrievedEntry[]; returned: number }> {
+  const itemIds = lookup.match(question);
   if (itemIds.length === 0) return { entries: [], returned: 0 };
   const vectors = await index.getByIds(await Promise.all(itemIds.map(vectorId)));
   const byId = new Map<string, RetrievedEntry>();
@@ -142,7 +146,7 @@ export async function retrieve(
   signal: AbortSignal,
 ): Promise<Retrieval> {
   const [boosted, nearest] = await Promise.allSettled([
-    named(env.INDEX, lookup.match(question), lookup),
+    named(env.INDEX, question, lookup),
     embed(env.AI, question, signal).then((vector) =>
       env.INDEX.query(vector, { topK: TOP_K, namespace: ENTRY_NAMESPACE, returnMetadata: 'all' }),
     ),
