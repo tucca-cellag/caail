@@ -755,6 +755,33 @@ describe('one half of retrieval failing', () => {
     expect(logged()).toEqual([{ error: 'named_retrieval_failed' }, { error: 'index_empty' }]);
   });
 
+  // The index returned matches, but none is an entry this deploy holds: the
+  // index and the deployed corpus disagree, which an empty index would hide.
+  it('names a disagreement with the deploy, not an empty index, when every match is outside the deployed corpus', async () => {
+    const spy = harness();
+    const res = await handlerWith(lookupNaming([], () => false)).fetch(ask(QUESTION), spy.env, spy.ctx);
+
+    expect(res.status).toBe(503);
+    expect(logged()).toEqual([{ error: 'index_disagrees_with_deploy' }]);
+  });
+
+  it('names the same disagreement when every match links off the site', async () => {
+    const offSite = ENTRIES.map((entry) => ({ ...entry, link: `https://elsewhere.example/${entry.id}` }));
+    const spy = harness({ entries: offSite });
+    const res = await handlerWith().fetch(ask(QUESTION), spy.env, spy.ctx);
+
+    expect(res.status).toBe(503);
+    expect(logged()).toEqual([{ error: 'index_disagrees_with_deploy' }]);
+  });
+
+  it('logs the failed half and then the disagreement when the other half found only entries outside the deploy', async () => {
+    const spy = harness({ getByIds: fetchFails });
+    const res = await handlerWith(lookupNaming([ENTRIES[2].id], () => false)).fetch(ask(QUESTION), spy.env, spy.ctx);
+
+    expect(res.status).toBe(503);
+    expect(logged()).toEqual([{ error: 'named_retrieval_failed' }, { error: 'index_disagrees_with_deploy' }]);
+  });
+
   it('is a 503 when both halves fail', async () => {
     const spy = harness({ getByIds: fetchFails, ai: embeddingFails(new Error('socket hang up')) });
     const res = await handlerWith(named).fetch(ask(QUESTION), spy.env, spy.ctx);

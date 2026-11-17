@@ -308,12 +308,15 @@ async function answer(
       instance.indexMatchedAt = Date.now();
     }
 
-    const { entries, failed } = await racing(retrieve(question, env, lookup, deadline.signal), deadline.signal);
+    const { entries, failed, returned } = await racing(retrieve(question, env, lookup, deadline.signal), deadline.signal);
     // One half failed and the other answered: a degraded answer, not a failure,
     // but the only trace of it, since invocation logs are off.
     if (failed) logFailure(`${failed.half}_retrieval_failed`, workersAiCode(failed.error));
     if (entries.length === 0) {
-      logFailure('index_empty');
+      // An index that returned nothing is empty. One that returned vectors, none
+      // of them an entry this deploy holds or links to the site, disagrees with
+      // the deploy: built from another corpus, or not yet rebuilt or redeployed.
+      logFailure(returned === 0 ? 'index_empty' : 'index_disagrees_with_deploy');
       return text('service unavailable', 503, cors);
     }
     const output = await racing(

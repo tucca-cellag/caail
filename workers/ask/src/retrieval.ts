@@ -90,8 +90,13 @@ async function embed(ai: AiBinding, question: string, signal: AbortSignal): Prom
   return vector;
 }
 
-async function named(index: IndexBinding, itemIds: string[], lookup: Lookup): Promise<RetrievedEntry[]> {
-  if (itemIds.length === 0) return [];
+/** The named entries the index holds, and how many vectors it returned for them before filtering. */
+async function named(
+  index: IndexBinding,
+  itemIds: string[],
+  lookup: Lookup,
+): Promise<{ entries: RetrievedEntry[]; returned: number }> {
+  if (itemIds.length === 0) return { entries: [], returned: 0 };
   const vectors = await index.getByIds(await Promise.all(itemIds.map(vectorId)));
   const byId = new Map<string, RetrievedEntry>();
   for (const vector of vectors) {
@@ -99,13 +104,20 @@ async function named(index: IndexBinding, itemIds: string[], lookup: Lookup): Pr
     if (entry) byId.set(entry.id, entry);
   }
   // In the lookup's order, which ranks the strongest identifiers first.
-  return itemIds.map((id) => byId.get(id)).filter((entry): entry is RetrievedEntry => entry !== undefined);
+  const entries = itemIds.map((id) => byId.get(id)).filter((entry): entry is RetrievedEntry => entry !== undefined);
+  return { entries, returned: vectors.length };
 }
 
 export interface Retrieval {
   entries: RetrievedEntry[];
   /** The half that failed while the other answered, and why; null when both worked. */
   failed: { half: 'named' | 'nearest'; error: unknown } | null;
+  /**
+   * How many vectors the index returned across both halves, before the site and
+   * deployed-corpus filters. With no entries left, 0 means an empty index, and
+   * more means the index holds only entries this deploy does not.
+   */
+  returned: number;
 }
 
 /**
@@ -129,7 +141,8 @@ export async function retrieve(
       env.INDEX.query(vector, { topK: TOP_K, namespace: ENTRY_NAMESPACE, returnMetadata: 'all' }),
     ),
   ]);
-  const entries: RetrievedEntry[] = boosted.status === 'fulfilled' ? [...boosted.value] : [];
+  const entries: RetrievedEntry[] = boosted.status === 'fulfilled' ? [...boosted.value.entries] : [];
+  const returned = (boosted.status === 'fulfilled' ? boosted.value.returned : 0) + (nearest.status === 'fulfilled' ? nearest.value.matches.length : 0);
   if (nearest.status === 'fulfilled') {
     for (const match of nearest.value.matches) {
       const entry = entryOf(match, lookup);
@@ -143,5 +156,5 @@ export async function retrieve(
         ? { half: 'named', error: boosted.reason }
         : null;
   if (nearest.status === 'rejected' && entries.length === 0) throw nearest.reason;
-  return { entries: entries.slice(0, TOP_K), failed };
+  return { entries: entries.slice(0, TOP_K), failed, returned };
 }
