@@ -8,7 +8,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import eventsWorker from '../../events/src/index.ts';
-import { REQUEST_DEADLINE_MS, CORPUS_RECORD_ID, EMBEDDING_MODEL, MAX_BODY_BYTES } from './settings.ts';
+import { CORPUS_RECORD_ID, EMBEDDING_MODEL, INDEX_RECHECK_MS, MAX_BODY_BYTES, REQUEST_DEADLINE_MS } from './settings.ts';
 import { WORD_LIMIT } from './words.ts';
 import { MAX_TOKENS, SYSTEM_PROMPT, TEMPERATURE } from './model.ts';
 import { vectorId } from './ids.ts';
@@ -532,6 +532,26 @@ describe('the index was built the way questions are embedded', () => {
     await handler.fetch(ask(QUESTION), spy.env, spy.ctx);
 
     expect(spy.fetchedIds.filter((ids) => ids.includes(CORPUS_RECORD_ID))).toHaveLength(1);
+  });
+
+  // A warm instance that has seen a match must still notice a later rebuild with
+  // another model or prompts: it trusts the match for INDEX_RECHECK_MS, then
+  // reads the record again.
+  it('catches a mismatch that appears after a match once the interval has passed, and not before', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(1_000_000);
+    const record = corpusRecordFor();
+    const spy = harness({ corpusRecord: record });
+    const handler = handlerWith();
+    expect((await handler.fetch(ask(QUESTION), spy.env, spy.ctx)).status).toBe(200);
+
+    record.metadata = corpusRecordFor({ embeddingModel: '@cf/test/newer-embedding' }).metadata;
+    vi.setSystemTime(1_000_000 + INDEX_RECHECK_MS - 1);
+    expect((await handler.fetch(ask(QUESTION), spy.env, spy.ctx)).status, 'the record was read again inside the interval').toBe(200);
+
+    vi.setSystemTime(1_000_000 + INDEX_RECHECK_MS);
+    expect((await handler.fetch(ask(QUESTION), spy.env, spy.ctx)).status, 'the record was not read again once the interval passed').toBe(503);
+    expect(logs.lines.map((line) => JSON.parse(line))).toEqual([{ error: 'index_embedding_mismatch' }]);
   });
 
   it('reads it again after a mismatch, so a rebuild is noticed without a redeploy', async () => {

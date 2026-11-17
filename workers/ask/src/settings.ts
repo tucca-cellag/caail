@@ -63,6 +63,17 @@ export const META_NAMESPACE = 'meta';
 export const CORPUS_RECORD_ID = 'corpus';
 
 /**
+ * How long an instance trusts that the index matches how it embeds a question
+ * before reading the corpus record again. A rebuild with another model or other
+ * prompts is done by hand and the redeploy follows it, so a warm instance needs
+ * to notice within minutes, not at once. Five minutes is one read of the record
+ * per instance per five minutes at most, which a question rate in the hundreds
+ * a day barely notices, and it bounds the time a warm instance answers from a
+ * mismatched index.
+ */
+export const INDEX_RECHECK_MS = 5 * 60_000;
+
+/**
  * How long one request may take before the Worker gives up with a 503. For a
  * question it runs from before the body is read, so a body trickled slowly or
  * never finished is bounded too, through the index check, retrieval and the

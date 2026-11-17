@@ -25,7 +25,14 @@
  *   6. A check that the index was built the way questions are embedded, then
  *      retrieval, then the model.
  */
-import { CORPUS_RECORD_ID, EMBEDDING_MODEL, EMBEDDING_PROMPTS, MAX_BODY_BYTES, REQUEST_DEADLINE_MS } from './settings.ts';
+import {
+  CORPUS_RECORD_ID,
+  EMBEDDING_MODEL,
+  EMBEDDING_PROMPTS,
+  INDEX_RECHECK_MS,
+  MAX_BODY_BYTES,
+  REQUEST_DEADLINE_MS,
+} from './settings.ts';
 import { WORD_LIMIT, wordCount } from './words.ts';
 import { bundledLookup } from './bundled-lookup.ts';
 import { retrieve, type AiBinding, type IndexBinding, type StoredVector } from './retrieval.ts';
@@ -229,12 +236,14 @@ async function indexBuild(env: Env): Promise<'matches' | 'mismatch' | 'not_built
 }
 
 /**
- * Per instance: whether the index has been seen to match. Only a match is kept,
- * so after a mismatch or before a build each question reads the record again,
- * and a rebuild is noticed without a redeploy.
+ * Per instance: when the index was last seen to match, or null. A match is
+ * trusted for INDEX_RECHECK_MS and then read again, so a warm instance notices
+ * a later rebuild with another model or prompts. A mismatch, or no record, is
+ * never kept, so each question after it reads the record again and a rebuild
+ * is noticed without a redeploy.
  */
 interface InstanceState {
-  indexMatches: boolean;
+  indexMatchedAt: number | null;
 }
 
 async function answer(
@@ -257,13 +266,15 @@ async function answer(
     const words = wordCount(question);
     if (words < 1 || words > WORD_LIMIT) return text('bad request', 400, cors);
 
-    if (!instance.indexMatches) {
+    const checkedAt = instance.indexMatchedAt;
+    if (checkedAt === null || Date.now() - checkedAt >= INDEX_RECHECK_MS) {
       const build = await racing(indexBuild(env), deadline.signal);
       if (build !== 'matches') {
+        instance.indexMatchedAt = null;
         logFailure(build === 'mismatch' ? 'index_embedding_mismatch' : 'index_not_built');
         return text('service unavailable', 503, cors);
       }
-      instance.indexMatches = true;
+      instance.indexMatchedAt = Date.now();
     }
 
     const { entries, failed } = await racing(retrieve(question, env, lookup, deadline.signal), deadline.signal);
@@ -322,7 +333,7 @@ async function answer(
 
 /** The handler, with its lookup supplied, so a test can give it one built from fixtures. */
 export function createHandler(lookup: Lookup = bundledLookup) {
-  const instance: InstanceState = { indexMatches: false };
+  const instance: InstanceState = { indexMatchedAt: null };
   return {
     async fetch(request: Request, env: Env, ctx: Context): Promise<Response> {
       const cors = corsHeaders(env.ALLOWED_ORIGIN);
