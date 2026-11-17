@@ -9,7 +9,7 @@
  */
 import { vi } from 'vitest';
 import { createHandler, type Context, type Env } from './index.ts';
-import { CORPUS_RECORD_ID, EMBEDDING_DIMENSIONS, EMBEDDING_MODEL } from './settings.ts';
+import { CORPUS_RECORD_ID, EMBEDDING_DIMENSIONS, EMBEDDING_MODEL, EMBEDDING_PROMPTS } from './settings.ts';
 import { vectorId } from './ids.ts';
 import type { Lookup } from './lookup.ts';
 import type { RetrievedEntry, StoredVector } from './retrieval.ts';
@@ -73,6 +73,15 @@ export const chatOutput = (content: string) => ({
   choices: [{ index: 0, message: { role: 'assistant', content, refusal: null }, finish_reason: 'stop', logprobs: null }],
 });
 
+/** A corpus record as the index build writes it, with any field overridden. */
+export function corpusRecordFor(overrides: Record<string, unknown> = {}): StoredVector {
+  return {
+    id: CORPUS_RECORD_ID,
+    namespace: 'meta',
+    metadata: { corpusDate: '2026-11-14', embeddingModel: EMBEDDING_MODEL, embeddingPrompts: EMBEDDING_PROMPTS, documents: 907, ...overrides },
+  };
+}
+
 /** The default model: embeddings for the embedding model, ANSWER for any other. */
 export const defaultAi: AiRun = async (model) => (model === EMBEDDING_MODEL ? embeddingOutput() : chatOutput(ANSWER));
 
@@ -95,7 +104,7 @@ export function harness(
   const fetchedIds: string[][] = [];
   const record =
     options.corpusRecord === undefined
-      ? { id: CORPUS_RECORD_ID, namespace: 'meta', metadata: { corpusDate: '2026-11-14', embeddingModel: EMBEDDING_MODEL, documents: 907 } }
+      ? corpusRecordFor()
       : options.corpusRecord;
 
   const env: Env = {
@@ -115,9 +124,13 @@ export function harness(
         options.getByIds ??
         (async (ids) => {
           fetchedIds.push(ids);
+          // The corpus record alone is answered without hashing: hashing is real
+          // asynchronous work that a test on a fake clock does not wait for.
           const byVector = new Map<string, StoredVector>();
-          for (const entry of entries) byVector.set(await vectorId(entry.id), { id: await vectorId(entry.id), metadata: { ...entry } });
           if (record) byVector.set(CORPUS_RECORD_ID, record);
+          if (ids.some((id) => id !== CORPUS_RECORD_ID)) {
+            for (const entry of entries) byVector.set(await vectorId(entry.id), { id: await vectorId(entry.id), metadata: { ...entry } });
+          }
           return ids.map((id) => byVector.get(id)).filter((v): v is StoredVector => v !== undefined);
         }),
     },

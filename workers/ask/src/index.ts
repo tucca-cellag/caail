@@ -21,9 +21,10 @@
  *   4. GET reports which corpus the index was built from (`corpusStatus`).
  *   5. POST: a body over MAX_BODY_BYTES is 413, a body that is not
  *      `{ query: string }` is 400, and so is a question outside the word limit.
- *   6. Retrieval, then the model, under one deadline.
+ *   6. Under one deadline: a check that the index was built the way questions
+ *      are embedded (once per instance), then retrieval, then the model.
  */
-import { ANSWER_DEADLINE_MS, CORPUS_RECORD_ID, MAX_BODY_BYTES } from './settings.ts';
+import { ANSWER_DEADLINE_MS, CORPUS_RECORD_ID, EMBEDDING_MODEL, EMBEDDING_PROMPTS, MAX_BODY_BYTES } from './settings.ts';
 import { WORD_LIMIT, wordCount } from './words.ts';
 import { bundledLookup } from './bundled-lookup.ts';
 import { retrieve, type AiBinding, type IndexBinding, type StoredVector } from './retrieval.ts';
@@ -204,7 +205,36 @@ async function corpusStatus(env: Env, cors: CorsHeaders): Promise<Response> {
   );
 }
 
-async function answer(request: Request, env: Env, ctx: Context, lookup: Lookup, cors: CorsHeaders): Promise<Response> {
+/**
+ * Whether the index was built the way this Worker embeds a question: its corpus
+ * record's model and prompts against EMBEDDING_MODEL and EMBEDDING_PROMPTS. A
+ * question embedded one way and searched against entries embedded another finds
+ * unrelated entries and raises no error, so a mismatch has to be looked for.
+ */
+async function indexBuild(env: Env): Promise<'matches' | 'mismatch' | 'not_built'> {
+  const [record] = await env.INDEX.getByIds([CORPUS_RECORD_ID]);
+  const meta = record?.metadata ?? {};
+  if (typeof meta.corpusDate !== 'string') return 'not_built';
+  return meta.embeddingModel === EMBEDDING_MODEL && meta.embeddingPrompts === EMBEDDING_PROMPTS ? 'matches' : 'mismatch';
+}
+
+/**
+ * Per instance: whether the index has been seen to match. Only a match is kept,
+ * so after a mismatch or before a build each question reads the record again,
+ * and a rebuild is noticed without a redeploy.
+ */
+interface InstanceState {
+  indexMatches: boolean;
+}
+
+async function answer(
+  request: Request,
+  env: Env,
+  ctx: Context,
+  lookup: Lookup,
+  instance: InstanceState,
+  cors: CorsHeaders,
+): Promise<Response> {
   const raw = await readCapped(request, MAX_BODY_BYTES);
   if (raw === null) return text('payload too large', 413, cors);
   const question = queryOf(raw);
@@ -215,6 +245,15 @@ async function answer(request: Request, env: Env, ctx: Context, lookup: Lookup, 
   const deadline = new AbortController();
   const timer = setTimeout(() => deadline.abort(), ANSWER_DEADLINE_MS);
   try {
+    if (!instance.indexMatches) {
+      const build = await racing(indexBuild(env), deadline.signal);
+      if (build !== 'matches') {
+        logFailure(build === 'mismatch' ? 'index_embedding_mismatch' : 'index_not_built');
+        return text('service unavailable', 503, cors);
+      }
+      instance.indexMatches = true;
+    }
+
     const entries = await racing(retrieve(question, env, lookup, deadline.signal), deadline.signal);
     if (entries.length === 0) {
       logFailure('index_empty');
@@ -268,6 +307,7 @@ async function answer(request: Request, env: Env, ctx: Context, lookup: Lookup, 
 
 /** The handler, with its lookup supplied, so a test can give it one built from fixtures. */
 export function createHandler(lookup: Lookup = bundledLookup) {
+  const instance: InstanceState = { indexMatches: false };
   return {
     async fetch(request: Request, env: Env, ctx: Context): Promise<Response> {
       const cors = corsHeaders(env.ALLOWED_ORIGIN);
@@ -295,7 +335,7 @@ export function createHandler(lookup: Lookup = bundledLookup) {
       if (origin && origin !== env.ALLOWED_ORIGIN) return text('forbidden', 403, cors);
 
       if (request.method === 'GET') return corpusStatus(env, cors);
-      return answer(request, env, ctx, lookup, cors);
+      return answer(request, env, ctx, lookup, instance, cors);
     },
   };
 }

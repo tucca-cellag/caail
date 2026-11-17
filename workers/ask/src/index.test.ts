@@ -8,7 +8,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import eventsWorker from '../../events/src/index.ts';
-import { ANSWER_DEADLINE_MS, EMBEDDING_MODEL, MAX_BODY_BYTES } from './settings.ts';
+import { ANSWER_DEADLINE_MS, CORPUS_RECORD_ID, EMBEDDING_MODEL, MAX_BODY_BYTES } from './settings.ts';
 import { WORD_LIMIT } from './words.ts';
 import { MAX_TOKENS, SYSTEM_PROMPT, TEMPERATURE } from './model.ts';
 import { vectorId } from './ids.ts';
@@ -22,6 +22,7 @@ import {
   ask,
   captureLogs,
   chatOutput,
+  corpusRecordFor,
   defaultAi,
   embeddingOutput,
   handlerWith,
@@ -248,7 +249,8 @@ describe('an answered question', () => {
     const named = { match: () => [ENTRIES[2].id] };
     await handlerWith(named).fetch(ask(QUESTION), spy.env, spy.ctx);
 
-    expect(spy.fetchedIds).toEqual([[await vectorId(ENTRIES[2].id)]]);
+    // The corpus record first (the index check), then the named entry.
+    expect(spy.fetchedIds).toEqual([[CORPUS_RECORD_ID], [await vectorId(ENTRIES[2].id)]]);
     const user = (spy.aiCalls[1].inputs.messages as { content: string }[])[1].content;
     expect(user.indexOf(ENTRIES[2].link)).toBeLessThan(user.indexOf(ENTRIES[0].link));
     expect(user.match(/^Entry \d+$/gm)).toHaveLength(ENTRIES.length);
@@ -436,6 +438,59 @@ describe('failures', () => {
 
     expect(res.status).toBe(200);
     expect(logs.lines.map((line) => JSON.parse(line))).toEqual([{ error: 'record_not_written' }]);
+  });
+});
+
+/**
+ * A question is embedded with EMBEDDING_MODEL and EMBEDDING_PROMPTS, and is only
+ * comparable with entries embedded the same way. The corpus record says how the
+ * index was built; an index built otherwise would answer from unrelated entries
+ * with no error, so the POST path checks it first.
+ */
+describe('the index was built the way questions are embedded', () => {
+  const MISMATCHES = [
+    ['another embedding model', corpusRecordFor({ embeddingModel: '@cf/test/older-embedding' })],
+    ['other embedding prompts', corpusRecordFor({ embeddingPrompts: 'none' })],
+    ['no recorded prompts, as an index built before them has', corpusRecordFor({ embeddingPrompts: undefined })],
+  ] as const;
+
+  it.each(MISMATCHES)('refuses an index built with %s', async (_label, record) => {
+    const spy = harness({ corpusRecord: record });
+    const res = await handlerWith().fetch(ask(QUESTION), spy.env, spy.ctx);
+    await Promise.all(spy.waited);
+
+    expect(res.status).toBe(503);
+    expect(spy.aiCalls, 'a question was embedded or answered against a mismatched index').toEqual([]);
+    expect(spy.written).toEqual([]);
+    expect(logs.lines.map((line) => JSON.parse(line))).toEqual([{ error: 'index_embedding_mismatch' }]);
+  });
+
+  it('refuses an index with no corpus record', async () => {
+    const spy = harness({ corpusRecord: null });
+    const res = await handlerWith().fetch(ask(QUESTION), spy.env, spy.ctx);
+
+    expect(res.status).toBe(503);
+    expect(spy.aiCalls).toEqual([]);
+    expect(logs.lines.map((line) => JSON.parse(line))).toEqual([{ error: 'index_not_built' }]);
+  });
+
+  it('reads the corpus record once per instance once it matches', async () => {
+    const spy = harness();
+    const handler = handlerWith();
+    await handler.fetch(ask(QUESTION), spy.env, spy.ctx);
+    await handler.fetch(ask(QUESTION), spy.env, spy.ctx);
+
+    expect(spy.fetchedIds.filter((ids) => ids.includes(CORPUS_RECORD_ID))).toHaveLength(1);
+  });
+
+  it('reads it again after a mismatch, so a rebuild is noticed without a redeploy', async () => {
+    const record = corpusRecordFor({ embeddingModel: '@cf/test/older-embedding' });
+    const spy = harness({ corpusRecord: record });
+    const handler = handlerWith();
+    expect((await handler.fetch(ask(QUESTION), spy.env, spy.ctx)).status).toBe(503);
+
+    record.metadata = corpusRecordFor().metadata;
+    expect((await handler.fetch(ask(QUESTION), spy.env, spy.ctx)).status).toBe(200);
   });
 });
 
