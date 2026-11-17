@@ -35,6 +35,20 @@ describe('the model input', () => {
     expect([...positions].sort((a, b) => a - b)).toEqual(positions);
   });
 
+  // Every candidate's model page documents env.AI.run(model, { messages }), and
+  // the runtime types accept that form for each, so all three are sent it, with
+  // each model's own least-reasoning field.
+  it.each(['@cf/google/gemma-4-26b-a4b-it', '@cf/openai/gpt-oss-20b', '@cf/openai/gpt-oss-120b'])(
+    'sends %s the Chat Completions form with the settings',
+    (model) => {
+      const input = modelInput(model, ENTRIES, 'q');
+      expect(Array.isArray(input.messages)).toBe(true);
+      expect(input.max_tokens).toBe(MAX_TOKENS);
+      expect(input.temperature).toBe(TEMPERATURE);
+      for (const responsesField of ['input', 'instructions', 'reasoning', 'max_output_tokens']) expect(input).not.toHaveProperty(responsesField);
+    },
+  );
+
   it('asks each candidate model for its least reasoning, and passes nothing extra to any other model', () => {
     expect(modelInput('@cf/google/gemma-4-26b-a4b-it', ENTRIES, 'q').chat_template_kwargs).toEqual({ enable_thinking: false });
     expect(modelInput('@cf/openai/gpt-oss-20b', ENTRIES, 'q').reasoning_effort).toBe('low');
@@ -55,13 +69,44 @@ describe('the model input', () => {
   });
 });
 
+/**
+ * Each candidate's documented output, stubbed. The Workers AI runtime types give
+ * gemma-4-26b-a4b-it Chat Completions output, and both gpt-oss models
+ * Chat Completions or Responses output; Cloudflare's /ai/run example for
+ * gpt-oss-20b answers in the older `response` form. Each is read the same way.
+ */
+const responsesOutput = (text: string) => ({
+  object: 'response',
+  output: [
+    { id: 'r1', type: 'reasoning', summary: [{ type: 'summary_text', text: 'thinking about it' }], content: [{ type: 'reasoning_text', text: 'step one' }] },
+    { id: 'm1', type: 'message', role: 'assistant', status: 'completed', content: [{ type: 'output_text', text }] },
+  ],
+});
+
 describe('the answer', () => {
-  it('reads Chat Completions output', () => {
-    expect(answerText(chatOutput('  An answer.  '))).toBe('An answer.');
+  it.each([
+    ['@cf/google/gemma-4-26b-a4b-it, Chat Completions', chatOutput('  An answer.  ')],
+    ['@cf/openai/gpt-oss-20b, Chat Completions', chatOutput('An answer.')],
+    ['@cf/openai/gpt-oss-120b, Chat Completions', chatOutput('An answer.')],
+    ['@cf/openai/gpt-oss-20b, the /ai/run response form', { response: 'An answer.' }],
+    ['@cf/openai/gpt-oss-20b, Responses output items', responsesOutput('An answer.')],
+    ['@cf/openai/gpt-oss-120b, Responses output items', responsesOutput('An answer.')],
+    ['@cf/openai/gpt-oss-20b, the Responses output_text field', { object: 'response', output_text: 'An answer.' }],
+  ])('reads %s', (_label, output) => {
+    expect(answerText(output)).toBe('An answer.');
   });
 
-  it('reads the older response form', () => {
-    expect(answerText({ response: 'An answer.' })).toBe('An answer.');
+  it('reads only the message from Responses output, never the reasoning', () => {
+    const output = responsesOutput('The answer.');
+    expect(answerText(output)).toBe('The answer.');
+    expect(answerText(output)).not.toContain('step one');
+  });
+
+  it('joins a Responses message given in several text parts', () => {
+    const output = {
+      output: [{ type: 'message', role: 'assistant', content: [{ type: 'output_text', text: 'One ' }, { type: 'output_text', text: 'two.' }] }],
+    };
+    expect(answerText(output)).toBe('One two.');
   });
 
   it.each([
@@ -70,6 +115,9 @@ describe('the answer', () => {
     ['a blank answer', chatOutput(' \n ')],
     ['a null content', { choices: [{ message: { content: null } }] }],
     ['no choices', { choices: [] }],
+    ['a shape no candidate documents', { result: { text: 'An answer.' } }],
+    ['Responses output with only reasoning', { output: [{ type: 'reasoning', summary: [{ type: 'summary_text', text: 'x' }] }] }],
+    ['Responses output with only a refusal', { output: [{ type: 'message', content: [{ type: 'refusal', refusal: 'No.' }] }] }],
   ])('finds no answer in %s', (_label, output) => {
     expect(answerText(output)).toBeNull();
   });

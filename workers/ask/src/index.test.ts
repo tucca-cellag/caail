@@ -572,6 +572,27 @@ describe('failures', () => {
     expect(status).toBe(503);
   });
 
+  it('answers from a model that replies in Responses output', async () => {
+    const spy = harness({
+      ai: async (model) =>
+        model === EMBEDDING_MODEL
+          ? embeddingOutput()
+          : { object: 'response', output: [{ type: 'message', role: 'assistant', content: [{ type: 'output_text', text: ANSWER }] }] },
+    });
+    const res = await handlerWith().fetch(ask(QUESTION), spy.env, spy.ctx);
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ answer: ANSWER });
+  });
+
+  it('returns 503 empty_answer for a reply in a shape no candidate documents', async () => {
+    const spy = harness({ ai: async (model) => (model === EMBEDDING_MODEL ? embeddingOutput() : { result: { text: ANSWER } }) });
+    const { status, logged } = await fails(spy, () => handlerWith().fetch(ask(PRIVATE, HEADERS), spy.env, spy.ctx));
+
+    expect(status).toBe(503);
+    expect(logged).toEqual({ error: 'empty_answer' });
+  });
+
   it('returns 503 when the model answers with nothing', async () => {
     const spy = harness({ ai: async (model) => (model === EMBEDDING_MODEL ? embeddingOutput() : chatOutput('   ')) });
     const { status, logged } = await fails(spy, () => handlerWith().fetch(ask(PRIVATE, HEADERS), spy.env, spy.ctx));

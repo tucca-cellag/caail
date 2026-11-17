@@ -36,9 +36,12 @@ export const TEMPERATURE = 0.2;
 /**
  * How much each candidate model reasons before answering, at the least it
  * allows: the reasoning is paid for in output tokens and in latency, and the
- * answer has a deadline. The two settings are each model's own input field
- * (from the Workers AI runtime types), so a model missing here runs at its
- * default.
+ * answer has a deadline. Each is that model's own field in the Chat Completions
+ * form of its input, which every candidate's model page documents
+ * (`env.AI.run(model, { messages })`) and the Workers AI runtime types accept
+ * for each: gemma-4 turns thinking off with `chat_template_kwargs`, and the
+ * gpt-oss models, which cannot turn reasoning off, take `reasoning_effort`. A
+ * model missing here runs at its default.
  */
 const LEAST_REASONING: Record<string, Record<string, unknown>> = {
   '@cf/google/gemma-4-26b-a4b-it': { chat_template_kwargs: { enable_thinking: false } },
@@ -64,14 +67,39 @@ export function modelInput(modelId: string, entries: RetrievedEntry[], question:
   };
 }
 
+interface ModelOutput {
+  /** Chat Completions. */
+  choices?: { message?: { content?: unknown } }[];
+  /** The older /ai/run form. */
+  response?: unknown;
+  /** Responses: the text in one field, where a reply carries it. */
+  output_text?: unknown;
+  /** Responses: reasoning and message items; only message text is the answer. */
+  output?: { type?: unknown; content?: { type?: unknown; text?: unknown }[] }[];
+}
+
+/** The text of a Responses reply's message items, without its reasoning items. */
+function responsesText(output: ModelOutput['output']): string | undefined {
+  if (!Array.isArray(output)) return undefined;
+  const parts: string[] = [];
+  for (const item of output) {
+    if (item?.type !== 'message' || !Array.isArray(item.content)) continue;
+    for (const part of item.content) if (part?.type === 'output_text' && typeof part.text === 'string') parts.push(part.text);
+  }
+  return parts.length > 0 ? parts.join('') : undefined;
+}
+
 /**
- * The answer text from the model's output, or null when there is none. The
- * candidates answer in Chat Completions form; the older `response` form is read
- * too, so a model that answers that way is not mistaken for an empty answer.
+ * The answer text from the model's output, or null when there is none. Every
+ * shape a candidate is documented to answer in is read: the Workers AI runtime
+ * types give gemma-4 Chat Completions output and the gpt-oss models Chat
+ * Completions or Responses output, and Cloudflare's /ai/run example for
+ * gpt-oss answers in the older `response` form. Any other shape is no answer.
  */
 export function answerText(output: unknown): string | null {
-  const out = (output ?? {}) as { choices?: { message?: { content?: unknown } }[]; response?: unknown };
-  const content = out.choices?.[0]?.message?.content ?? out.response;
+  const out = (output ?? {}) as ModelOutput;
+  const candidates = [out.choices?.[0]?.message?.content, out.output_text, responsesText(out.output), out.response];
+  const content = candidates.find((value) => typeof value === 'string');
   if (typeof content !== 'string') return null;
   const answer = content.trim();
   return answer || null;
