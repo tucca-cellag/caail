@@ -87,19 +87,22 @@ const URL_IN_TEXT = /https?:\/\/[^\s<>()[\]"'`]+/gi;
 const TRAILING_PUNCTUATION: ReadonlySet<string> = new Set('.,;:!?*_');
 
 /**
- * What a link names, however it is written: its origin, its path, its `item`
- * query value and its fragment, each decoded. The URL parser lowercases the
- * scheme and host. Null for a link that does not parse or decode.
+ * What a link names, however it is written, so a citation that reaches the
+ * right entry is counted:
+ *   - a link with an `item` value names that entry by itself, so it is keyed on
+ *     its origin and the decoded item, and its page and fragment do not count;
+ *   - any other link is its page and its anchor: the origin, the decoded path
+ *     without a trailing slash, and the decoded fragment.
+ * The origin is kept, so a look-alike host never names an entry. The URL parser
+ * lowercases the scheme and host. Null for a link that does not parse or decode.
  */
 function linkKey(link: string): string | null {
   try {
     const url = new URL(link);
-    return JSON.stringify([
-      url.origin,
-      decodeURIComponent(url.pathname),
-      url.searchParams.get('item'),
-      decodeURIComponent(url.hash),
-    ]);
+    const item = url.searchParams.get('item');
+    if (item !== null) return JSON.stringify([url.origin, 'item', item]);
+    const path = decodeURIComponent(url.pathname);
+    return JSON.stringify([url.origin, path.endsWith('/') ? path.slice(0, -1) : path, decodeURIComponent(url.hash)]);
   } catch {
     return null;
   }
