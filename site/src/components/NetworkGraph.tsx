@@ -186,7 +186,7 @@ export default function NetworkGraph() {
       // *pure positional* shift — the container moves while its width and height
       // stay the same — leaves the cache stale and offsets every tap by that delta.
       // Here that shift comes from the async webfont swap reflowing the prose above
-      // the graph, after `client:idle` has already mounted cytoscape.
+      // the graph, after the island's idle hydration has already mounted cytoscape.
       //
       // No observer catches it: a ResizeObserver only sees the container's own box
       // (unchanged), and cytoscape already installs one of those itself. Instead,

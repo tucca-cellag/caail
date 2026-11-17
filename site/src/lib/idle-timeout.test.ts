@@ -8,16 +8,16 @@
  * The delay lives inside Astro, so the parity checks read the installed directive, both the
  * source module and the minified copy pages inline, and fail if either stops matching.
  *
- * The scan counts tokens rather than parsing the code around them. Every `client:idle` must be
- * written `client:idle={{ timeout: IDLE_TIMEOUT_MS }}`, and `requestIdleCallback` may appear only
- * inside `onIdle` in `idle-timeout.ts`, the bounded way to ask for one. A token written as a
- * Markdown code span, directly after a backtick, is let through where it can only be words: on
- * a comment line in script, and on a prose line of Markdown. In code the same backtick opens a
- * template literal, which can become running code (`set:html`, `new Function`), so it is held
- * to the rules like any other token. A pattern that parses the tag or the call around a token
- * misses a `>` inside the tag, an
- * optional call and an alias, and fails a correct call with an inline arrow callback. Counting
- * tokens can only err loudly, on code that is correct but spelled differently, which is the
+ * The scan counts tokens rather than parsing the code around them, anywhere in a file: code,
+ * comments and prose alike. Every `client:idle` must be written
+ * `client:idle={{ timeout: IDLE_TIMEOUT_MS }}`, and `requestIdleCallback` may appear only once,
+ * inside `onIdle` in `idle-timeout.ts`, the bounded way to ask for one. A pattern that parses the
+ * tag or the call around a token misses a `>` inside the tag, an optional call and an alias, and
+ * fails a correct call with an inline arrow callback. Telling a mention in a comment or in
+ * Markdown prose from code took a hand-written lexer that a template literal fooled in a new way
+ * each round, and a template literal can become running code (`set:html`, `new Function`). So
+ * no mention is told apart: prose under site/src describes the API rather than naming it.
+ * Counting tokens can only err loudly, on correct code or prose that names a token, which is the
  * direction a guard should err in.
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
@@ -51,48 +51,6 @@ function sourceFiles(dir: string): string[] {
 /** The one way an island may be written idle. */
 const BOUNDED_DIRECTIVE = 'client:idle={{ timeout: IDLE_TIMEOUT_MS }}';
 
-/** How a file's text is read: as script with comments in it, or as Markdown prose with code in it. */
-type Kind = 'script' | 'prose';
-
-/** `.md` and `.mdx` are prose; script files and `.astro` (frontmatter, template, `<script>`) are script. */
-function kindOf(name: string): Kind {
-  return /\.mdx?$/.test(name) ? 'prose' : 'script';
-}
-
-/**
- * The lines of a script that are comments, by index: a line starting with `//`, a line
- * starting with `/*`, and every line after one until a `*\/` closes it. A line starting with a
- * JSDoc `*` counts only inside such a block, since outside one it can be a line of a multi-line
- * template literal. A comment trailing code on the same line is not told apart from the code,
- * and a `/*` that does not start its line opens nothing, so a mention there fails, loudly.
- */
-function commentLines(source: string): Set<number> {
-  const comments = new Set<number>();
-  let inBlock = false;
-  source.split('\n').forEach((line, index) => {
-    const text = line.trim();
-    if (inBlock) {
-      comments.add(index);
-      inBlock = !text.includes('*/');
-    } else if (text.startsWith('//')) {
-      comments.add(index);
-    } else if (text.startsWith('/*')) {
-      comments.add(index);
-      inBlock = !text.slice(2).includes('*/');
-    }
-  });
-  return comments;
-}
-
-/**
- * Whether a prose line can only be words: one with no ESM, JSX, expression or attribute on it.
- * A line starting with `import` or `export`, or holding any of `{ } = < >`, may be code.
- */
-function proseLine(line: string): boolean {
-  const text = line.trim();
-  return !/^(import|export)\b/.test(text) && !/[{}=<>]/.test(text);
-}
-
 /** Where `onIdle` is declared: the one span of code that may ask for an idle callback. */
 const ON_IDLE_DECLARATION = 'export function onIdle(';
 
@@ -118,42 +76,27 @@ function onIdleSpan(source: string): { from: number; to: number } | undefined {
 /**
  * The idle tokens in `source` that break the rules above, each as `line: why`, and how many
  * bounded idle waits it holds: islands written as `BOUNDED_DIRECTIVE`, and `onIdle` calls.
- * `kind` says how to read the file (`kindOf`); `isHelper` is for `idle-timeout.ts`, whose
- * `onIdle` may name `requestIdleCallback`.
+ * `isHelper` is for `idle-timeout.ts`, whose `onIdle` names `requestIdleCallback` once.
  */
-function idleWaits(
-  source: string,
-  { kind = 'script', isHelper = false }: { kind?: Kind; isHelper?: boolean } = {},
-): { offences: string[]; bounded: number } {
+function idleWaits(source: string, { isHelper = false }: { isHelper?: boolean } = {}): { offences: string[]; bounded: number } {
   const offences: string[] = [];
   let bounded = 0;
   const lineOf = (at: number) => source.slice(0, at).split('\n').length;
-  const lineAt = (at: number) => {
-    const end = source.indexOf('\n', at);
-    return source.slice(source.lastIndexOf('\n', at) + 1, end < 0 ? source.length : end);
-  };
-  const comments = kind === 'script' ? commentLines(source) : undefined;
-  // A code-span mention is let through only where it can only be words: on a comment line in
-  // script, or a prose line in Markdown.
-  const inCodeSpan = (at: number) =>
-    source[at - 1] === '`' && (comments ? comments.has(lineOf(at) - 1) : proseLine(lineAt(at)));
   const span = isHelper ? onIdleSpan(source) : undefined;
   const inOnIdle = (at: number) => span !== undefined && at > span.from && at < span.to;
   for (const { index } of source.matchAll(/client:idle/g)) {
-    if (inCodeSpan(index)) continue;
     if (source.startsWith(BOUNDED_DIRECTIVE, index)) bounded++;
     else offences.push(`${lineOf(index)}: client:idle not written ${BOUNDED_DIRECTIVE}`);
   }
   const inside: number[] = [];
   for (const { index } of source.matchAll(/requestIdleCallback/g)) {
-    if (inCodeSpan(index)) continue;
     if (inOnIdle(index)) inside.push(index);
     else offences.push(`${lineOf(index)}: requestIdleCallback outside onIdle in ${HELPER}; defer the work with onIdle`);
   }
   if (isHelper && inside.length !== 1) {
     offences.push(`${span ? lineOf(span.from) : 0}: onIdle names requestIdleCallback ${inside.length} times, not once`);
   }
-  for (const { index } of source.matchAll(/\bonIdle\(/g)) if (!inCodeSpan(index) && !inOnIdle(index)) bounded++;
+  for (const { index } of source.matchAll(/\bonIdle\(/g)) if (!inOnIdle(index)) bounded++;
   return { offences, bounded };
 }
 
@@ -178,7 +121,7 @@ describe('IDLE_TIMEOUT_MS (tucca-cellag/caail-planning#604)', () => {
     let bounded = 0;
     for (const file of sourceFiles(SRC)) {
       const rel = relative(SRC, file).replaceAll('\\', '/');
-      const waits = idleWaits(readFileSync(file, 'utf-8'), { kind: kindOf(rel), isHelper: rel === HELPER });
+      const waits = idleWaits(readFileSync(file, 'utf-8'), { isHelper: rel === HELPER });
       bounded += waits.bounded;
       offences.push(...waits.offences.map((offence) => `${rel}:${offence}`));
     }
@@ -212,47 +155,36 @@ describe('IDLE_TIMEOUT_MS (tucca-cellag/caail-planning#604)', () => {
     expect(offences('window.requestIdleCallback?.(cb)')).toBe(1);
     expect(offences('const later = window.requestIdleCallback; later(cb, { timeout: IDLE_TIMEOUT_MS })')).toBe(1);
     expect(offences('window.requestIdleCallback(cb, { timeout: IDLE_TIMEOUT_MS })')).toBe(1);
-    // In prose too, unless it is written as a code span.
-    expect(offences('// hydrates once requestIdleCallback fires')).toBe(1);
   });
 
-  it('passes a bounded island, an onIdle call and a code-span mention in words, and counts the waits', () => {
+  it('flags a mention in a comment or in Markdown prose, written as a code span or not', () => {
+    const offences = (source: string) => idleWaits(source).offences.length;
+    expect(offences('// hydrates once requestIdleCallback fires')).toBe(1);
+    expect(offences('      // the graph, after `client:idle` has already mounted cytoscape.')).toBe(1);
+    expect(offences('/**\n * and therefore present but inert until `client:idle` hydration attached its\n */')).toBe(1);
+    expect(offences('/* as `requestIdleCallback` allows */')).toBe(1);
+    expect(offences('hydrates after `client:idle` runs, as `requestIdleCallback` allows')).toBe(2);
+    expect(offences('<!-- `requestIdleCallback` -->')).toBe(1);
+  });
+
+  it('passes a bounded island and an onIdle call, and counts the waits', () => {
     expect(idleWaits('<Widget client:idle={{ timeout: IDLE_TIMEOUT_MS }} />')).toEqual({ offences: [], bounded: 1 });
     expect(idleWaits('<Foo label="a > b" client:idle={{ timeout: IDLE_TIMEOUT_MS }} />')).toEqual({ offences: [], bounded: 1 });
     expect(idleWaits('onIdle(() => watchSearch());')).toEqual({ offences: [], bounded: 1 });
-    const none = { offences: [], bounded: 0 };
-    // A comment in script, in the three ways this repo writes one.
-    expect(idleWaits('      // the graph, after `client:idle` has already mounted cytoscape.')).toEqual(none);
-    expect(idleWaits('/**\n * and therefore present but inert until `client:idle` hydration attached its\n */')).toEqual(none);
-    expect(idleWaits('/* as `requestIdleCallback` allows */')).toEqual(none);
-    expect(idleWaits('/*\n  a block line with no star, as `requestIdleCallback` allows\n*/')).toEqual(none);
-    // A prose line of Markdown.
-    expect(idleWaits('hydrates after `client:idle` runs, as `requestIdleCallback` allows', { kind: 'prose' })).toEqual(none);
+    // Prose that describes the API rather than naming it.
+    expect(idleWaits("// after the island's idle hydration has mounted it")).toEqual({ offences: [], bounded: 0 });
   });
 
-  it('flags a code-span mention where the backtick opens a template literal in code', () => {
-    const offences = (source: string, kind: Kind = 'script') => idleWaits(source, { kind }).offences.length;
-    // A line of a multi-line template literal that starts with a star, outside any comment.
-    expect(offences('const html = `\n* ${`requestIdleCallback(go)`}\n`;')).toBe(1);
-    // After a comment block has closed.
-    expect(offences('/**\n * a comment\n */\n* `requestIdleCallback(go)`')).toBe(1);
-    // A /* that does not start its line opens nothing.
-    expect(offences("const glob = '**/*.md';\n* `requestIdleCallback(go)`")).toBe(1);
+  it('flags a token in a template literal, which can become running code', () => {
+    const offences = (source: string) => idleWaits(source).offences.length;
     expect(offences('<script set:html={`requestIdleCallback(go)`} />')).toBe(1);
     expect(offences('const run = new Function(`requestIdleCallback(go)`);')).toBe(1);
-    expect(offences('hydrates after `client:idle` runs, as `requestIdleCallback` allows')).toBe(2);
-    // A comment trailing code is not told apart from the code.
-    expect(offences('go(); // as `requestIdleCallback` allows')).toBe(1);
-    // In Markdown, a line with JSX, an expression or ESM on it may be code.
-    expect(offences('<Fragment set:html={`requestIdleCallback(go)`} />', 'prose')).toBe(1);
-    expect(offences('  html={`requestIdleCallback(go)`}', 'prose')).toBe(1);
-    expect(offences('const run = `requestIdleCallback(go)`;', 'prose')).toBe(1);
-    expect(offences('export const run = `requestIdleCallback`', 'prose')).toBe(1);
-  });
-
-  it('reads .md and .mdx as prose, and everything else it scans as script', () => {
-    expect(['a.md', 'a.mdx'].map(kindOf)).toEqual(['prose', 'prose']);
-    expect(['a.astro', 'a.ts', 'a.tsx', 'a.mjs'].map(kindOf)).toEqual(['script', 'script', 'script', 'script']);
+    // Lines of a multi-line template literal that look like comment lines.
+    expect(offences('const html = `\n* ${`requestIdleCallback(go)`}\n`;')).toBe(1);
+    expect(offences('const html = `\n// ${`requestIdleCallback(go)`}\n`;')).toBe(1);
+    expect(offences('const html = `\n/* ${`requestIdleCallback(go)`} */\n`;')).toBe(1);
+    // A line of a multi-line JSX expression in MDX that reads like prose.
+    expect(offences('<Fragment\n  set:html={\n    `requestIdleCallback(go)`\n  }\n/>')).toBe(1);
   });
 
   it("lets onIdle ask for an idle callback, with an inline arrow callback or not", () => {

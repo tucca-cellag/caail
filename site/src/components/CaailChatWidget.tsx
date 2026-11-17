@@ -17,7 +17,7 @@
  * context, so the element has to leave it.
  *
  * The portal also removes a race: rendered in place the button was server-rendered
- * and therefore present but inert until `client:idle` hydration attached its
+ * and therefore present but inert until the island's idle hydration attached its
  * handler. Portalled, it exists only once hydrated, so it is never a dead control.
  */
 import './chat-widget.css';
