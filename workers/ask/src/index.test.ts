@@ -205,6 +205,15 @@ describe('an answered question', () => {
     expect(user.content).toContain(`Question: ${QUESTION.query}`);
   });
 
+  it('answers from site entries under another allowed origin', async () => {
+    const spy = harness();
+    spy.env.ALLOWED_ORIGIN = 'http://localhost:4321';
+    const res = await handlerWith().fetch(ask(QUESTION, { Origin: 'http://localhost:4321' }), spy.env, spy.ctx);
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ answer: ANSWER });
+  });
+
   it('reads the model from configuration', async () => {
     const spy = harness();
     spy.env.MODEL_ID = '@cf/test/another-model';

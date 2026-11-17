@@ -68,6 +68,20 @@ describe('retrieval', () => {
     expect(found.slice(0, byName.length)).toEqual(byName);
   });
 
+  // Which origin may call the Worker (CORS) is not which links are the site's: a
+  // development Worker that allows a local origin still answers from site entries.
+  it('keeps site entries whatever origin the Worker allows to call it', async () => {
+    const { binding } = index([await stored(entry(1))], [await stored(entry(2))]);
+    const found = await retrieve(
+      'q',
+      { AI: { run: defaultAi }, INDEX: binding, ALLOWED_ORIGIN: 'http://localhost:4321' },
+      { match: () => ['paper:2'] },
+      signal,
+    );
+
+    expect(found.map((e) => e.id)).toEqual(['paper:2', 'paper:1']);
+  });
+
   it('skips a named entry the index does not hold', async () => {
     const { binding } = index([await stored(entry(1))]);
     const found = await retrieve('q', { AI: { run: defaultAi }, INDEX: binding, ALLOWED_ORIGIN: ORIGIN }, { match: () => ['paper:404'] }, signal);

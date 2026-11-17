@@ -7,6 +7,7 @@
  * Every entry is read back from the index's own metadata, so the model sees the
  * text that was embedded, whichever corpus the Worker was deployed with.
  */
+import { SITE_URL } from '../../../site/src/content/site-config.ts';
 import { CORPUS_RECORD_ID, EMBEDDING_DIMENSIONS, EMBEDDING_MODEL, ENTRY_NAMESPACE, MAX_NAMED, TOP_K } from './settings.ts';
 import { vectorId } from './ids.ts';
 import type { Lookup } from './lookup.ts';
@@ -47,13 +48,17 @@ export interface RetrievedEntry {
  * An entry from a vector's metadata, or null when the metadata is not an entry's.
  * The corpus record fails here (it has no link), and so does any entry whose link
  * is not on the site, so an answer can only ever be offered site links to cite.
+ *
+ * "On the site" is SITE_URL, the one definition the corpus builds links from,
+ * not ALLOWED_ORIGIN: that names who may call the Worker, which a development
+ * Worker sets to a local origin while it still answers from site entries.
  */
-function entryOf(vector: StoredVector, siteOrigin: string): RetrievedEntry | null {
+function entryOf(vector: StoredVector): RetrievedEntry | null {
   const meta = vector.metadata ?? {};
   const { id, kind, name, link, text } = meta;
   if (vector.id === CORPUS_RECORD_ID) return null;
   if (![id, kind, name, link, text].every((field) => typeof field === 'string' && field.length > 0)) return null;
-  if (!(link as string).startsWith(`${siteOrigin}/`)) return null;
+  if (!(link as string).startsWith(SITE_URL)) return null;
   return { id, kind, name, link, text } as RetrievedEntry;
 }
 
@@ -71,12 +76,12 @@ async function embed(ai: AiBinding, question: string, signal: AbortSignal): Prom
   return vector;
 }
 
-async function named(index: IndexBinding, itemIds: string[], siteOrigin: string): Promise<RetrievedEntry[]> {
+async function named(index: IndexBinding, itemIds: string[]): Promise<RetrievedEntry[]> {
   if (itemIds.length === 0) return [];
   const vectors = await index.getByIds(await Promise.all(itemIds.map(vectorId)));
   const byId = new Map<string, RetrievedEntry>();
   for (const vector of vectors) {
-    const entry = entryOf(vector, siteOrigin);
+    const entry = entryOf(vector);
     if (entry) byId.set(entry.id, entry);
   }
   // In the lookup's order, which ranks the strongest identifiers first.
@@ -85,12 +90,12 @@ async function named(index: IndexBinding, itemIds: string[], siteOrigin: string)
 
 export async function retrieve(
   question: string,
-  env: { AI: AiBinding; INDEX: IndexBinding; ALLOWED_ORIGIN: string },
+  env: { AI: AiBinding; INDEX: IndexBinding },
   lookup: Lookup,
   signal: AbortSignal,
 ): Promise<RetrievedEntry[]> {
   const [boosted, nearest] = await Promise.all([
-    named(env.INDEX, lookup.match(question).slice(0, MAX_NAMED), env.ALLOWED_ORIGIN),
+    named(env.INDEX, lookup.match(question).slice(0, MAX_NAMED)),
     embed(env.AI, question, signal).then((vector) =>
       env.INDEX.query(vector, { topK: TOP_K, namespace: ENTRY_NAMESPACE, returnMetadata: 'all' }),
     ),
@@ -98,7 +103,7 @@ export async function retrieve(
 
   const entries: RetrievedEntry[] = [...boosted];
   for (const match of nearest.matches) {
-    const entry = entryOf(match, env.ALLOWED_ORIGIN);
+    const entry = entryOf(match);
     if (entry && !entries.some((held) => held.id === entry.id)) entries.push(entry);
   }
   return entries.slice(0, TOP_K);
