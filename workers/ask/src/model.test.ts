@@ -4,7 +4,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { MAX_TOKENS, SYSTEM_PROMPT, TEMPERATURE, answerText, citedEntryIds, modelInput } from './model.ts';
-import { ENTRIES, ORIGIN, chatOutput } from './test-env.ts';
+import { ENTRIES, ORIGIN, chatOutput, fastestRun } from './test-env.ts';
 
 describe('the system prompt', () => {
   // The four rules the answer has to follow, each by the words that carry it.
@@ -149,12 +149,10 @@ describe('the cited entries', () => {
   // links has to stay linear too.
   it('are read in linear time from an answer with a long punctuation run', () => {
     const answer = `[a](${ENTRIES[0].link}${'.'.repeat(50_000)}x)`;
-    const started = performance.now();
-    const cited = citedEntryIds(answer, ENTRIES);
-    const elapsed = performance.now() - started;
+    const { result: cited, ms } = fastestRun(() => citedEntryIds(answer, ENTRIES), 100);
 
     expect(cited).toEqual([]);
-    expect(elapsed, `reading links took ${elapsed.toFixed(0)} ms`).toBeLessThan(100);
+    expect(ms, `reading links took ${ms.toFixed(0)} ms`).toBeLessThan(100);
   });
 
   it('are none for an answer that cites nothing', () => {

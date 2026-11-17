@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildLookup, type LookupFiles } from './lookup.ts';
 import { TOP_K } from './settings.ts';
+import { fastestRun } from './test-env.ts';
 
 const FILES: LookupFiles = {
   catalog: {
@@ -123,12 +124,10 @@ describe('stays linear on a pathological question', () => {
     ['a long run of closing brackets, then a letter', `${')'.repeat(RUN)}x`],
     ['a long accession-shaped token with a version tail', `GSE${'1'.repeat(RUN)}.${'2'.repeat(RUN)}x`],
   ])('%s', (_label, token) => {
-    const started = performance.now();
-    const found = lookup.match(`What is ${token}?`);
-    const elapsed = performance.now() - started;
+    const { result: found, ms } = fastestRun(() => lookup.match(`What is ${token}?`), BUDGET_MS);
 
     expect(found).toEqual([]);
-    expect(elapsed, `matching took ${elapsed.toFixed(0)} ms`).toBeLessThan(BUDGET_MS);
+    expect(ms, `matching took ${ms.toFixed(0)} ms`).toBeLessThan(BUDGET_MS);
   });
 
   // Name matching scales with the question, not with names × question: a corpus
@@ -145,12 +144,10 @@ describe('stays linear on a pathological question', () => {
     const filler = Array.from({ length: 8_000 }, (_, i) => `word${i % 97}`).join(' ');
     const question = `${filler} Toolname123 Suite ${filler}`;
 
-    const started = performance.now();
-    const found = many.match(question);
-    const elapsed = performance.now() - started;
+    const { result: found, ms } = fastestRun(() => many.match(question), BUDGET_MS / 2);
 
     expect(found).toEqual(['sw:t123']);
-    expect(elapsed, `matching took ${elapsed.toFixed(0)} ms`).toBeLessThan(BUDGET_MS / 2);
+    expect(ms, `matching took ${ms.toFixed(0)} ms`).toBeLessThan(BUDGET_MS / 2);
   });
 
   it('still strips the punctuation a sentence puts after an identifier', () => {

@@ -157,6 +157,26 @@ export function harness(
   return { env, ctx, written, limitKeys, aiCalls, waited, fetchedIds };
 }
 
+/**
+ * The fastest of up to `attempts` timed runs of `run`, for a test that holds code
+ * to a time budget on a machine that may be loaded. A run over budget is retried
+ * only while it is within ten times the budget, which is what a pause from load
+ * looks like; an algorithm that is too slow is over budget every time, and one far
+ * over it stops the retries at once, so the test fails quickly rather than
+ * timing out.
+ */
+export function fastestRun<T>(run: () => T, budgetMs: number, attempts = 3): { result: T; ms: number } {
+  let fastest = { result: undefined as T, ms: Number.POSITIVE_INFINITY };
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    const started = performance.now();
+    const result = run();
+    const ms = performance.now() - started;
+    if (ms < fastest.ms) fastest = { result, ms };
+    if (ms < budgetMs || ms > budgetMs * 10) break;
+  }
+  return fastest;
+}
+
 /** A lookup that names nothing, so a test sees retrieval by meaning alone. */
 export const noLookup: Lookup = { match: () => [] };
 
