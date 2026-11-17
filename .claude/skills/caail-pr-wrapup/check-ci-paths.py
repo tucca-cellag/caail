@@ -38,6 +38,16 @@ Five assertions, each guarding a failure this repo has actually had:
    adding a canonical directory means adding it there, or the guard will confirm
    an incomplete set is complete.
 
+One more assertion rides along because this script already reads `ship-pr.sh`
+and already runs in `guards.yml`, not because it is about paths:
+
+6. **Every `gh` watch in `ship-pr.sh` waits at least `WATCH_FLOOR_SECONDS`**,
+   from its one `WATCH_INTERVAL_SECONDS` constant. Each refresh of a watch is an
+   API call against the account's shared core limit, and the script's watches
+   are invisible to the hook that holds a typed watch to the same floor, since
+   they run inside the script. Both once polled at 10 and 15 seconds
+   (tucca-cellag/caail-planning#855).
+
 The ship-pr.sh comparison is deliberately a set comparison of pattern strings
 rather than a glob evaluation: it asks the question that keeps going wrong
 ("do these name the same things") without reimplementing GitHub's matching
@@ -67,6 +77,10 @@ SHIP_PR = Path(__file__).resolve().parent / "ship-pr.sh"
 # must both be tested and reach a reader. See assertion 5 on why this one list
 # cannot be derived.
 CONTENT_PATHS = ["site/**", "*.md", "ResearchAreas/**", "Methods/**", "Datasets/**", "Primers/**"]
+
+# The least a watch may wait between refreshes (assertion 6).
+WATCH_FLOOR_SECONDS = 60
+WATCH_CONSTANT = "WATCH_INTERVAL_SECONDS"
 
 # The three pattern forms ship-pr.sh's `path_matches` implements, and no others.
 SUPPORTED = (
@@ -167,6 +181,38 @@ def contains(label: str, superset: list[str], required: list[str], detail: str) 
     return False
 
 
+def watch_problems(src: str) -> list[str]:
+    """What breaks assertion 6 in a ship-pr.sh source; empty when nothing does.
+
+    A watch is any uncommented line running `gh ... --watch` or `gh run watch`.
+    Each must take its interval from the constant, written exactly as
+    `--interval "$WATCH_INTERVAL_SECONDS"`, so a literal in either form
+    (`--interval 10`, `-i 10`) fails rather than slipping past a number check.
+    """
+    problems = []
+    m = re.search(rf"^{WATCH_CONSTANT}=(\d+)\b", src, re.MULTILINE)
+    if not m:
+        problems.append(f"no {WATCH_CONSTANT}=<seconds> in ship-pr.sh")
+    elif int(m.group(1)) < WATCH_FLOOR_SECONDS:
+        problems.append(
+            f"{WATCH_CONSTANT} is {m.group(1)}, under the {WATCH_FLOOR_SECONDS} s floor"
+        )
+    watches = [
+        line.strip()
+        for line in src.splitlines()
+        if not line.lstrip().startswith("#")
+        and re.search(r"\bgh\b.*(--watch\b|\brun watch\b)", line)
+    ]
+    if not watches:
+        problems.append(
+            "no gh watch found in ship-pr.sh, so this assertion read nothing"
+        )
+    for line in watches:
+        if f'--interval "${WATCH_CONSTANT}"' not in line:
+            problems.append(f"a watch not on {WATCH_CONSTANT}: {line}")
+    return problems
+
+
 def main() -> int:
     filters, negated = load_filters()
     if not filters:
@@ -252,6 +298,21 @@ def main() -> int:
                    "canonical content not covered by test.yml")
     ok &= contains("docs.yml covers all canonical content", deploy, CONTENT_PATHS,
                    "canonical content not covered by docs.yml")
+
+    print(
+        f"\n=== every gh watch in ship-pr.sh waits {WATCH_FLOOR_SECONDS} s or more ==="
+    )
+    problems = watch_problems(SHIP_PR.read_text())
+    if problems:
+        print("  [FAIL] ship-pr.sh's watches")
+        for problem in problems:
+            print(f"           {problem}")
+        ok = False
+    else:
+        print(
+            f"  [PASS] every watch reads {WATCH_CONSTANT}, "
+            f"which is at least {WATCH_FLOOR_SECONDS}"
+        )
 
     print("\nALL PASS" if ok else "\nFAILURES — see above")
     return 0 if ok else 1

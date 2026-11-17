@@ -29,6 +29,13 @@ DEFAULT_BRANCH="$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name
 PAGES_BASE="https://caail.tufts.edu"                                     # CAAIL site root
 DEPLOY_WORKFLOW="docs.yml"                                              # the Pages deploy workflow
 
+# Seconds between refreshes of every `gh` watch below. Each refresh is an API
+# call against the core limit every session and subagent on the account shares,
+# and a watch run from inside this script is invisible to the hook that holds a
+# typed watch to a 60 s floor. check-ci-paths.py fails CI if this drops under
+# 60 or a watch stops reading it.
+WATCH_INTERVAL_SECONDS=60
+
 die() { printf 'ship-pr: %s\n' "$*" >&2; exit 1; }
 note() { printf '  %s\n' "$*"; }
 
@@ -248,7 +255,7 @@ cmd_watch_checks() {
     return 0
   fi
   # Checks exist → block on them; non-zero propagates a failure to the caller.
-  gh pr checks "$pr" --watch --interval 10
+  gh pr checks "$pr" --watch --interval "$WATCH_INTERVAL_SECONDS"
 }
 
 cmd_merge() {
@@ -351,7 +358,7 @@ cmd_watch_deploy() {
   fi
   note "watching deploy run $id …"
   # --exit-status makes a failed run (e.g. the Lighthouse gate) propagate non-zero.
-  gh run watch "$id" --interval 15 --exit-status
+  gh run watch "$id" --interval "$WATCH_INTERVAL_SECONDS" --exit-status
 }
 
 cmd_verify_live() {
