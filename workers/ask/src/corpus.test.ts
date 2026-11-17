@@ -14,7 +14,7 @@ import { editionAnchor as siteEditionAnchor } from '../../../site/src/lib/report
 import { siteSlug } from '../../../site/src/lib/heading-slug.ts';
 import { ON_REQUEST_HEADING } from '../../../site/scripts/parser/datasets.ts';
 import { INVENTORY_ANCHOR, ON_REQUEST_ANCHOR, buildCorpus, clip, corpusDateOf, editionAnchor, type ApiFiles } from './corpus.ts';
-import { catalogItemId, taxonomySlug } from './ids.ts';
+import { taxonomySlug } from './ids.ts';
 import { buildLookup } from './lookup.ts';
 
 const apiFile = (name: string) => JSON.parse(readFileSync(new URL(`../../../site/public/api/${name}`, import.meta.url), 'utf8'));
@@ -57,9 +57,12 @@ describe('one document per item the API serves', () => {
     for (const report of api.reports.reports) expect(byId.has(report.id)).toBe(true);
   });
 
-  it('derives catalog ids exactly as catalog.json writes itemId', () => {
-    for (const item of api.catalog.software) expect(catalogItemId('software', item.slug)).toBe(item.itemId);
-    for (const item of api.catalog.databases) expect(catalogItemId('database', item.slug)).toBe(item.itemId);
+  // Nothing rebuilds a catalog id from its slug: a served id of any form is kept.
+  it('keeps a catalog entry\'s served itemId', () => {
+    const [first, ...rest] = api.catalog.software;
+    const served = buildCorpus({ ...api, catalog: { ...api.catalog, software: [{ ...first, itemId: 'sw:served-id' }, ...rest] } });
+    expect(served.find((entry) => entry.id === 'sw:served-id')?.link).toBe(`${SITE_URL}software/#${first.slug}`);
+    expect(served.some((entry) => entry.id === first.itemId)).toBe(false);
   });
 
   it('names every document and starts its text with the name', () => {
@@ -150,7 +153,7 @@ describe('every link is a site page that names its entry', () => {
 
 describe('the lookup and the corpus agree', () => {
   const lookup = buildLookup({
-    catalogIndex: apiFile('catalog-index.json'),
+    catalog: api.catalog,
     papersIndex: apiFile('papers-index.json'),
     datasets: api.datasets,
     reports: api.reports,

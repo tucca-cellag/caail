@@ -7,19 +7,18 @@
  * luck. This finds it directly, and retrieval puts what it finds ahead of the
  * semantic matches.
  *
- * Built from the API's compact index files, which the Worker bundles. The ids it
- * returns are entry ids (ids.ts), so they are the same ids the index build gives
- * the same items; corpus.test.ts checks that every id it can return is one the
- * corpus holds.
+ * Built from the API files the Worker bundles. The ids it returns are entry ids
+ * (ids.ts), read as the files serve them where they serve one, so they are the
+ * ids the index build gives the same items; corpus.test.ts checks that every id
+ * it can return is one the corpus holds.
  */
 import { TOP_K } from './settings.ts';
-import { catalogItemId, onRequestItemId, paperItemId } from './ids.ts';
+import { onRequestItemId, paperItemId } from './ids.ts';
 import { trimTrailing, trimVersion } from './text.ts';
 
 interface LookupCatalogRow {
-  slug: string;
+  itemId: string;
   name: string;
-  kind: string;
   doi: string | null;
 }
 
@@ -31,7 +30,7 @@ interface LookupPaperRow {
 
 /** The files the lookup reads. Taxonomy is absent on purpose; see `buildLookup`. */
 export interface LookupFiles {
-  catalogIndex: { entries: LookupCatalogRow[] };
+  catalog: { software: LookupCatalogRow[]; databases: LookupCatalogRow[] };
   papersIndex: { references: LookupPaperRow[] };
   datasets: {
     entries: { id: string; name: string; doi: string | null; accessions: string[] }[];
@@ -103,11 +102,9 @@ export function buildLookup(files: LookupFiles): Lookup {
   const accessions = new Map<string, string[]>();
   const names = new Map<string, string[]>();
 
-  for (const row of files.catalogIndex.entries) {
-    if (row.kind !== 'software' && row.kind !== 'database') continue;
-    const id = catalogItemId(row.kind, row.slug);
-    add(names, row.name.trim(), id);
-    if (row.doi) add(dois, normalizeDoi(row.doi), id);
+  for (const row of [...files.catalog.software, ...files.catalog.databases]) {
+    add(names, row.name.trim(), row.itemId);
+    if (row.doi) add(dois, normalizeDoi(row.doi), row.itemId);
   }
   for (const ref of files.papersIndex.references) {
     const id = paperItemId(ref.id);

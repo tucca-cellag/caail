@@ -11,7 +11,7 @@
  * own schema is site/public/api/openapi.json.
  */
 import { SITE_URL } from '../../../site/src/content/site-config.ts';
-import { catalogItemId, onRequestItemId, paperItemId, taxonomySlug, termItemId } from './ids.ts';
+import { onRequestItemId, paperItemId, taxonomySlug, termItemId } from './ids.ts';
 
 interface TopicRef {
   label: string;
@@ -191,7 +191,7 @@ function topicsLine(topics: TopicRef[]): string | null {
 function catalogEntries(items: CatalogItem[], kind: 'software' | 'database'): CorpusEntry[] {
   const route = kind === 'software' ? 'software/' : 'databases/';
   return items.map((item) => ({
-    id: catalogItemId(kind, item.slug),
+    id: item.itemId,
     kind,
     name: item.name,
     link: sitePage(`${route}#${item.slug}`),

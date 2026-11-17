@@ -11,11 +11,6 @@
  * Pure: the Worker and the index build both import it.
  */
 
-/** A catalog entry's id, as catalog.json's `itemId` writes it (pinned by corpus.test.ts). */
-export function catalogItemId(kind: 'software' | 'database', slug: string): string {
-  return `${kind === 'software' ? 'sw' : 'db'}:${slug}`;
-}
-
 export function paperItemId(id: number): string {
   return `paper:${id}`;
 }

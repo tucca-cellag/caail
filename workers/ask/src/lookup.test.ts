@@ -7,13 +7,15 @@ import { buildLookup, type LookupFiles } from './lookup.ts';
 import { TOP_K } from './settings.ts';
 
 const FILES: LookupFiles = {
-  catalogIndex: {
-    entries: [
-      { slug: 'alphafold', name: 'AlphaFold', kind: 'software', doi: '10.1038/s41586-021-03819-2' },
-      { slug: 'ax', name: 'Ax', kind: 'software', doi: null },
-      { slug: 'gnps', name: 'GNPS', kind: 'software', doi: null },
-      { slug: 'gnps', name: 'GNPS', kind: 'database', doi: null },
-      { slug: 'string', name: 'STRING', kind: 'database', doi: '10.1093/NAR/GKAC1000' },
+  catalog: {
+    software: [
+      { itemId: 'sw:alphafold', name: 'AlphaFold', doi: '10.1038/s41586-021-03819-2' },
+      { itemId: 'sw:ax', name: 'Ax', doi: null },
+      { itemId: 'sw:gnps', name: 'GNPS', doi: null },
+    ],
+    databases: [
+      { itemId: 'db:gnps', name: 'GNPS', doi: null },
+      { itemId: 'db:string', name: 'STRING', doi: '10.1093/NAR/GKAC1000' },
     ],
   },
   papersIndex: {
@@ -49,6 +51,12 @@ describe('finds what a question names', () => {
     ['a report title', 'What does GFI State of the Industry: Cultivated Meat 2026 say?', ['report:gfi-2026']],
   ])('%s', (_label, question, expected) => {
     expect(lookup.match(question)).toEqual(expected);
+  });
+
+  // The id is the one catalog.json serves, whatever its form: nothing rebuilds it.
+  it('returns a catalog entry under its served itemId', () => {
+    const served = buildLookup({ ...FILES, catalog: { software: [{ itemId: 'sw:served-id', name: 'Servedname', doi: null }], databases: [] } });
+    expect(served.match('What is Servedname?')).toEqual(['sw:served-id']);
   });
 
   it('ranks identifiers ahead of names', () => {
@@ -103,8 +111,9 @@ describe('stays linear on a pathological question', () => {
 it('returns at most TOP_K', () => {
   const many: LookupFiles = {
     ...FILES,
-    catalogIndex: {
-      entries: Array.from({ length: TOP_K + 5 }, (_, i) => ({ slug: `tool-${i}`, name: `Toolname${i}`, kind: 'software', doi: null })),
+    catalog: {
+      software: Array.from({ length: TOP_K + 5 }, (_, i) => ({ itemId: `sw:tool-${i}`, name: `Toolname${i}`, doi: null })),
+      databases: [],
     },
   };
   const question = Array.from({ length: TOP_K + 5 }, (_, i) => `Toolname${i}`).join(' ');

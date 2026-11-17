@@ -9,7 +9,7 @@
  * Built on first use rather than at load, so a GET or a refused request never
  * pays for it.
  */
-import catalogIndex from '../../../site/public/api/catalog-index.json';
+import catalog from '../../../site/public/api/catalog.json';
 import papersIndex from '../../../site/public/api/papers-index.json';
 import datasets from '../../../site/public/api/datasets.json';
 import reports from '../../../site/public/api/reports.json';
@@ -18,6 +18,6 @@ import { buildLookup, type Lookup } from './lookup.ts';
 let built: Lookup | undefined;
 
 export function bundledLookup(): Lookup {
-  built ??= buildLookup({ catalogIndex, papersIndex, datasets, reports });
+  built ??= buildLookup({ catalog, papersIndex, datasets, reports });
   return built;
 }
