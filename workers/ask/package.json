@@ -8,7 +8,9 @@
   "scripts": {
     "check": "wrangler deploy --dry-run",
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy"
+    "deploy": "wrangler deploy",
+    "index:plan": "node --experimental-strip-types scripts/build-index.ts",
+    "index:build": "node --experimental-strip-types scripts/build-index.ts --write"
   },
   "devDependencies": {
     "wrangler": "4.151.3"
