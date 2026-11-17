@@ -3,9 +3,9 @@
  *
  * The entries a question names outright (lookup.ts) come first, fetched from
  * the index by id, at most MAX_NAMED of them; the nearest entries by meaning
- * fill the rest, up to TOP_K.
- * Every entry is read back from the index's own metadata, so the model sees the
- * text that was embedded, whichever corpus the Worker was deployed with.
+ * fill the rest, up to TOP_K. Only entries of the corpus this Worker bundles are
+ * kept, from either half (entryOf), and each is read back from the index's own
+ * metadata, so the model sees the text that was embedded.
  */
 import { SITE_URL } from '../../../site/src/content/site-config.ts';
 import {
