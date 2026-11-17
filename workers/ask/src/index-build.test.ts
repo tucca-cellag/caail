@@ -40,7 +40,15 @@ const plan = await planBuild(api);
 const vector = () => Array<number>(EMBEDDING_DIMENSIONS).fill(0.03);
 
 /** A recording CloudflareApi. `index` is what getIndex reports; `existing` is what listing returns. */
-function recordingApi(options: { index?: { dimensions: number; metric: string } | null; existing?: string[]; embed?: CloudflareApi['embed'] } = {}) {
+function recordingApi(
+  options: {
+    index?: { dimensions: number; metric: string } | null;
+    existing?: string[];
+    embed?: CloudflareApi['embed'];
+    failUpsert?: boolean;
+    failDelete?: boolean;
+  } = {},
+) {
   const steps: string[] = [];
   const embedded: string[] = [];
   const upserted: IndexVector[][] = [];
@@ -50,8 +58,18 @@ function recordingApi(options: { index?: { dimensions: number; metric: string } 
     createIndex: async () => void steps.push('createIndex'),
     embed: options.embed ?? (async (texts) => (steps.push('embed'), embedded.push(...texts), texts.map(vector))),
     listVectorIds: async () => (steps.push('list'), options.existing ?? []),
-    upsert: async (vectors) => (steps.push('upsert'), upserted.push(vectors), `m-up-${upserted.length}`),
-    deleteByIds: async (ids) => (steps.push('delete'), deleted.push(ids), `m-del-${deleted.length}`),
+    upsert: async (vectors) => {
+      steps.push('upsert');
+      if (options.failUpsert) throw new Error('index build: upserting vectors failed (HTTP 500)');
+      upserted.push(vectors);
+      return `m-up-${upserted.length}`;
+    },
+    deleteByIds: async (ids) => {
+      steps.push('delete');
+      if (options.failDelete) throw new Error('index build: deleting vectors failed (HTTP 500)');
+      deleted.push(ids);
+      return `m-del-${deleted.length}`;
+    },
   };
   return { cf, steps, upserted, deleted, embedded };
 }
@@ -98,7 +116,9 @@ describe('a run', () => {
     const result = await runBuild(plan, cf, { createIndex: true });
 
     const embeds = Math.ceil(plan.entries.length / EMBED_BATCH);
-    expect(steps).toEqual(['getIndex', ...Array(embeds).fill('embed'), 'createIndex', ...Array(Math.ceil((plan.entries.length + 1) / UPSERT_BATCH)).fill('upsert')]);
+    // The entries, then the corpus record in a write of its own.
+    expect(steps).toEqual(['getIndex', ...Array(embeds).fill('embed'), 'createIndex', ...Array(Math.ceil(plan.entries.length / UPSERT_BATCH) + 1).fill('upsert')]);
+    expect(upserted.at(-1)?.map((v) => v.id)).toEqual([CORPUS_RECORD_ID]);
     const all = upserted.flat();
     expect(all).toHaveLength(plan.entries.length + 1);
     expect(all.at(-1)?.id).toBe(CORPUS_RECORD_ID);
@@ -144,8 +164,27 @@ describe('a run', () => {
 
     expect(deleted).toEqual([['gone-1', 'gone-2']]);
     expect(result.deleted).toBe(2);
-    // Deletes are sent before the upsert that carries the corpus record.
-    expect(steps.lastIndexOf('delete')).toBeLessThan(steps.indexOf('upsert'));
+    // Deletes come last, after every entry and the corpus record were written, so
+    // a failure leaves extra entries, never missing ones.
+    expect(steps.indexOf('delete')).toBeGreaterThan(steps.lastIndexOf('upsert'));
+  });
+
+  it('deletes nothing and writes no corpus record when upserting the entries fails', async () => {
+    const { cf, steps, upserted, deleted } = recordingApi({ index: EXISTING, existing: [CORPUS_RECORD_ID, 'gone-1'], failUpsert: true });
+    await expect(runBuild(plan, cf, { createIndex: false })).rejects.toThrow(/upserting vectors failed/);
+
+    expect(deleted, 'stale vectors were deleted after a failed upsert').toEqual([]);
+    expect(steps).not.toContain('delete');
+    expect(upserted.flat().some((v) => v.id === CORPUS_RECORD_ID), 'the corpus record was written for a build that did not land').toBe(false);
+  });
+
+  it('reports a failed delete after the entries and the corpus record were written', async () => {
+    const { cf, upserted } = recordingApi({ index: EXISTING, existing: [CORPUS_RECORD_ID, 'gone-1'], failDelete: true });
+    await expect(runBuild(plan, cf, { createIndex: false })).rejects.toThrow(/deleting vectors failed/);
+
+    const written = upserted.flat();
+    expect(written).toHaveLength(plan.entries.length + 1);
+    expect(written.at(-1)?.id).toBe(CORPUS_RECORD_ID);
   });
 
   it.each([

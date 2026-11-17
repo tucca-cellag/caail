@@ -9,9 +9,12 @@
  * over Cloudflare's REST API.
  *
  * A run fails closed. Every document is embedded and checked before anything is
- * written, so a failed embedding leaves the index as it was. The corpus record,
- * which is what the Worker's GET reports, is the last vector of the last write,
- * so it names the new corpus only once everything before it was accepted.
+ * written, so a failed embedding leaves the index as it was. The writes then go
+ * in an order where any failure leaves a usable index: the entries first; then
+ * the corpus record, in a write of its own, which is what the Worker checks and
+ * the GET reports, so it names a build only once every entry was accepted; and
+ * only then the deletes of entries that have left the corpus. A failure part way
+ * leaves extra entries, never missing ones, and the old record in place.
  */
 import { buildCorpus, corpusDateOf, type ApiFiles, type CorpusEntry } from './corpus.ts';
 import { vectorId } from './ids.ts';
@@ -117,15 +120,15 @@ export function corpusRecord(plan: BuildPlan): IndexVector {
 
 /** How many requests each step sends. `existing` is the vector count already in the index, if any. */
 export function requestCounts(plan: BuildPlan, state: { indexExists: boolean; existing: number; stale: number }) {
-  const vectors = plan.entries.length + 1;
   return {
     getIndex: 1,
     createIndex: state.indexExists ? 0 : 1,
     embed: Math.ceil(plan.entries.length / EMBED_BATCH),
     // A new index is known to be empty, so it is not listed.
     list: state.indexExists ? Math.max(1, Math.ceil(state.existing / LIST_PAGE)) : 0,
+    // The entries in batches, then the corpus record in a request of its own.
+    upsert: Math.ceil(plan.entries.length / UPSERT_BATCH) + 1,
     delete: Math.ceil(state.stale / DELETE_BATCH),
-    upsert: Math.ceil(vectors / UPSERT_BATCH),
   };
 }
 
@@ -151,8 +154,9 @@ export function describePlan(plan: BuildPlan): string {
     `  ${fresh.embed} POST to Workers AI, embedding up to ${EMBED_BATCH} documents each (nothing is written if one fails)`,
     `  1 POST to create the index, only when it does not exist and --create-index is given`,
     `  1 or more GET listing the index's vector ids (${LIST_PAGE} per request), only when the index already existed`,
-    `  0 or more POST deleting vectors whose item has left the corpus (${DELETE_BATCH} per request)`,
-    `  ${fresh.upsert} POST upserting the ${vectors} vectors (${UPSERT_BATCH} per request; the corpus record last)`,
+    `  ${fresh.upsert - 1} POST upserting the ${plan.entries.length} entries (${UPSERT_BATCH} per request)`,
+    `  1 POST upserting the corpus record, once every entry was accepted`,
+    `  0 or more POST deleting vectors whose item has left the corpus (${DELETE_BATCH} per request), last`,
     '',
     `Total into a new index: ${totalRequests(fresh)}. Total rebuilding an index already holding this corpus: ${totalRequests(rebuild)}.`,
   ].join('\n');
@@ -206,8 +210,9 @@ export async function runBuild(plan: BuildPlan, cf: CloudflareApi, options: { cr
   const stale = index ? (await cf.listVectorIds()).filter((id) => !keep.has(id)) : [];
 
   const mutationIds: string[] = [];
+  for (const batch of chunks(vectors, UPSERT_BATCH)) mutationIds.push(await cf.upsert(batch));
+  mutationIds.push(await cf.upsert([corpusRecord(plan)]));
   for (const batch of chunks(stale, DELETE_BATCH)) mutationIds.push(await cf.deleteByIds(batch));
-  for (const batch of chunks([...vectors, corpusRecord(plan)], UPSERT_BATCH)) mutationIds.push(await cf.upsert(batch));
 
   return { created: !index, written: vectors.length + 1, deleted: stale.length, mutationIds };
 }
