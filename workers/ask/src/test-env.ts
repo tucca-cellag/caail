@@ -8,7 +8,7 @@
  * config-side one (the same split the events Worker's tests describe).
  */
 import { vi } from 'vitest';
-import { createHandler, type Context, type Env } from './index.ts';
+import { createHandler, type Env } from './index.ts';
 import { CORPUS_RECORD_ID, EMBEDDING_DIMENSIONS, EMBEDDING_MODEL, EMBEDDING_PROMPTS } from './settings.ts';
 import { vectorId } from './ids.ts';
 import type { Lookup } from './lookup.ts';
@@ -45,6 +45,15 @@ export const ENTRIES: RetrievedEntry[] = [
 export const ANSWER = `AlphaFold predicts protein structure ([AlphaFold](${ENTRIES[0].link})).`;
 
 export type AiRun = (model: string, inputs: Record<string, unknown>, options?: { signal?: AbortSignal }) => Promise<unknown>;
+
+/**
+ * The platform's execution context, which the handler is passed but does not
+ * use: nothing it does outlives the response. Tests pass one, and check through
+ * `waited` that nothing is handed to it.
+ */
+export interface Context {
+  waitUntil(promise: Promise<unknown>): void;
+}
 
 export interface Harness {
   env: Env;

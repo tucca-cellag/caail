@@ -68,13 +68,14 @@ describe('what the record holds', () => {
     expect(point.doubles[0]).toBeLessThanOrEqual(Date.now());
   });
 
-  it('is written through ctx.waitUntil, not before the response', async () => {
+  // writeDataPoint returns at once and the runtime writes the point in the
+  // background, so the record cannot delay the answer and needs no waitUntil.
+  it('is written once, directly, with nothing handed to ctx.waitUntil', async () => {
     const spy = harness();
     await handlerWith().fetch(ask({ query: 'which tools predict protein structure?' }), spy.env, spy.ctx);
 
-    expect(spy.waited).toHaveLength(1);
-    await Promise.all(spy.waited);
     expect(spy.written).toHaveLength(1);
+    expect(spy.waited, 'the record write was wrapped for ctx.waitUntil').toEqual([]);
   });
 });
 

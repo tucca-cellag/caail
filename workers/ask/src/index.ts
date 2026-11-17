@@ -53,11 +53,6 @@ export interface Env {
   MODEL_ID: string;
 }
 
-/** The one method of the execution context the handler uses. */
-export interface Context {
-  waitUntil(promise: Promise<unknown>): void;
-}
-
 /**
  * The first four groups of an IPv6 address: its /64, the unit a rate limit
  * should count. A copy of the events Worker's, for the same reasons, which its
@@ -249,7 +244,6 @@ interface InstanceState {
 async function answer(
   request: Request,
   env: Env,
-  ctx: Context,
   lookup: Lookup,
   instance: InstanceState,
   cors: CorsHeaders,
@@ -296,7 +290,9 @@ async function answer(
     }
 
     // The record is built from these five values and nothing else, after the
-    // answer exists, and written without holding the response back.
+    // answer exists. writeDataPoint returns at once and the runtime writes the
+    // point in the background, so the write does not delay the answer and needs
+    // no ctx.waitUntil; a write that throws is logged and the answer still goes.
     const point = questionRecord({
       question,
       answer: reply,
@@ -304,15 +300,11 @@ async function answer(
       modelId: env.MODEL_ID,
       time: Date.now(),
     });
-    ctx.waitUntil(
-      (async () => {
-        try {
-          env.RECORDS.writeDataPoint(point);
-        } catch {
-          logFailure('record_not_written');
-        }
-      })(),
-    );
+    try {
+      env.RECORDS.writeDataPoint(point);
+    } catch {
+      logFailure('record_not_written');
+    }
     return json({ answer: reply }, 200, cors);
   } catch (err) {
     if (deadline.signal.aborted) {
@@ -335,7 +327,7 @@ async function answer(
 export function createHandler(lookup: Lookup = bundledLookup) {
   const instance: InstanceState = { indexMatchedAt: null };
   return {
-    async fetch(request: Request, env: Env, ctx: Context): Promise<Response> {
+    async fetch(request: Request, env: Env): Promise<Response> {
       const cors = corsHeaders(env.ALLOWED_ORIGIN);
 
       if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
@@ -361,7 +353,7 @@ export function createHandler(lookup: Lookup = bundledLookup) {
       if (origin && origin !== env.ALLOWED_ORIGIN) return text('forbidden', 403, cors);
 
       if (request.method === 'GET') return corpusStatus(env, cors);
-      return answer(request, env, ctx, lookup, instance, cors);
+      return answer(request, env, lookup, instance, cors);
     },
   };
 }
