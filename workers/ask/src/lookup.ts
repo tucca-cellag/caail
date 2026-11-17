@@ -62,9 +62,6 @@ const DOI_IN_TEXT = /10\.\d{4,9}\/[^\s"'<>]+/g;
 /** Punctuation a sentence puts after an identifier, stripped by a walk, not a pattern (text.ts). */
 const TRAILING_PUNCTUATION: ReadonlySet<string> = new Set('.,;:!?)]}');
 
-/** A name shorter than this is matched only as an exact, case-sensitive word. */
-const SHORT_NAME = 4;
-
 function normalizeDoi(doi: string): string {
   return trimTrailing(doi.trim(), TRAILING_PUNCTUATION).toLowerCase();
 }
@@ -81,9 +78,12 @@ function longest(map: Map<string, string[]>): number {
   return max;
 }
 
-/** Lowercase words separated by single spaces, padded so a phrase match falls on word boundaries. */
-function phrase(text: string): string {
-  const words = text.normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+/**
+ * The words of a text, case kept, separated by single spaces and padded, so a
+ * name is found only as whole words in the case it is catalogued in.
+ */
+function wordsOf(text: string): string {
+  const words = text.normalize('NFKC').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
   return words ? ` ${words} ` : '';
 }
 
@@ -96,6 +96,13 @@ function add(map: Map<string, string[]>, key: string, id: string): void {
 
 /**
  * Build the lookup.
+ *
+ * A name matches only as a whole-word occurrence of its catalogued form, case
+ * included. Many names are ordinary words in another case: STRING and PRIDE are
+ * databases, "string" and "pride" are not, and "open problems" or "a virtual
+ * lab" in a question do not mean the Open Problems benchmark or the Virtual Lab
+ * agent. The cost is that a name written in another case, or a title quoted in
+ * another case, is not boosted; it is still found by meaning.
  *
  * Taxonomy terms are not boosted by name. Their labels ("Deep Learning",
  * "Scaffolding") are the ordinary vocabulary of a question, so boosting them
@@ -151,9 +158,9 @@ export function buildLookup(files: LookupFiles): Lookup {
   // Longest names first, so a name that contains a shorter one ranks ahead of it
   // when both match.
   const nameMatchers = [...names.entries()]
-    .map(([name, ids]) => ({ name, phrase: phrase(name), ids }))
-    .filter((matcher) => matcher.phrase)
-    .sort((a, b) => b.phrase.length - a.phrase.length);
+    .map(([name, ids]) => ({ words: wordsOf(name), ids }))
+    .filter((matcher) => matcher.words)
+    .sort((a, b) => b.words.length - a.words.length);
 
   return {
     match(question: string): string[] {
@@ -171,12 +178,8 @@ export function buildLookup(files: LookupFiles): Lookup {
         if (accession && accession.length <= longestAccession) take(accessions.get(accession));
       }
 
-      const questionPhrase = phrase(question);
-      const words = new Set(question.split(/[^\p{L}\p{N}]+/u).filter(Boolean));
-      for (const matcher of nameMatchers) {
-        const short = matcher.phrase.trim().length < SHORT_NAME;
-        if (short ? words.has(matcher.name) : questionPhrase.includes(matcher.phrase)) take(matcher.ids);
-      }
+      const questionWords = wordsOf(question);
+      for (const matcher of nameMatchers) if (questionWords.includes(matcher.words)) take(matcher.ids);
       return found.slice(0, TOP_K);
     },
   };

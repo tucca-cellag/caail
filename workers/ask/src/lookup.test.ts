@@ -12,10 +12,13 @@ const FILES: LookupFiles = {
       { itemId: 'sw:alphafold', name: 'AlphaFold', doi: '10.1038/s41586-021-03819-2' },
       { itemId: 'sw:ax', name: 'Ax', doi: null },
       { itemId: 'sw:gnps', name: 'GNPS', doi: null },
+      { itemId: 'sw:open-problems', name: 'Open Problems', doi: null },
+      { itemId: 'sw:virtual-lab', name: 'Virtual Lab', doi: null },
     ],
     databases: [
       { itemId: 'db:gnps', name: 'GNPS', doi: null },
       { itemId: 'db:string', name: 'STRING', doi: '10.1093/NAR/GKAC1000' },
+      { itemId: 'db:pride', name: 'PRIDE', doi: null },
     ],
   },
   papersIndex: {
@@ -58,10 +61,13 @@ describe('finds what a question names', () => {
     ['an entry accession', 'Where is PRJNA123456 described?', ['ds:cattlegtex']],
     ['a SubSeries accession, as its SuperSeries row', 'Which dataset holds GSE158414?', ['ds:gse158430']],
     ['a SubSeries with a row of its own, that row first', 'Which dataset holds GSE173196?', ['ds:gse173196', 'ds:gse158430']],
-    ['a name, in any case', 'how does alphafold work', ['sw:alphafold']],
+    ['a name as catalogued', 'how does AlphaFold work', ['sw:alphafold']],
+    ['an all-capitals name as catalogued', 'Is STRING useful for protein interactions?', ['db:string']],
+    ['a two-word name as catalogued', 'Has Open Problems benchmarked this?', ['sw:open-problems']],
+    ['a name with punctuation round it', 'What does "Virtual Lab" do?', ['sw:virtual-lab']],
     ['a name dual-listed in two files', 'Is GNPS a database?', ['sw:gnps', 'db:gnps']],
     ['a short name, as an exact word', 'Can Ax run Bayesian optimization?', ['sw:ax']],
-    ['a title', 'Summarize "Toward Sustainable Culture Media".', ['paper:1']],
+    ['a title as catalogued', 'Summarize "Toward sustainable culture media".', ['paper:1']],
     ['a report title', 'What does GFI State of the Industry: Cultivated Meat 2026 say?', ['report:gfi-2026']],
   ])('%s', (_label, question, expected) => {
     expect(lookup.match(question)).toEqual(expected);
@@ -79,7 +85,16 @@ describe('finds what a question names', () => {
 });
 
 describe('finds nothing a question does not name', () => {
+  // Names match only as catalogued, case and whole words, because many are
+  // ordinary words in another case. Each of these questions uses one of the
+  // fixture's names as an ordinary word.
   it.each([
+    ['a name in another case', 'how does alphafold work'],
+    ['an all-capitals name written as an ordinary word', 'which string of tools optimizes media?'],
+    ['a two-word name written as an ordinary phrase', 'what are the open problems in scaffolding?'],
+    ['a two-word name in another case', 'can a virtual lab replace bench work?'],
+    ['an all-capitals name written as an ordinary word, capitalised', 'Pride in the work is not a dataset.'],
+    ['a title in another case', 'Summarize "Toward Sustainable Culture Media".'],
     ['a name inside another word', 'alphafolding proteins'],
     ['a short name in another case', 'an ax to grind'],
     ['a short name inside another word', 'the Axolotl genome'],
