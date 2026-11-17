@@ -42,17 +42,18 @@ const vector = () => Array<number>(EMBEDDING_DIMENSIONS).fill(0.03);
 /** A recording CloudflareApi. `index` is what getIndex reports; `existing` is what listing returns. */
 function recordingApi(options: { index?: { dimensions: number; metric: string } | null; existing?: string[]; embed?: CloudflareApi['embed'] } = {}) {
   const steps: string[] = [];
+  const embedded: string[] = [];
   const upserted: IndexVector[][] = [];
   const deleted: string[][] = [];
   const cf: CloudflareApi = {
     getIndex: async () => (steps.push('getIndex'), options.index === undefined ? null : options.index),
     createIndex: async () => void steps.push('createIndex'),
-    embed: options.embed ?? (async (texts) => (steps.push('embed'), texts.map(vector))),
+    embed: options.embed ?? (async (texts) => (steps.push('embed'), embedded.push(...texts), texts.map(vector))),
     listVectorIds: async () => (steps.push('list'), options.existing ?? []),
     upsert: async (vectors) => (steps.push('upsert'), upserted.push(vectors), `m-up-${upserted.length}`),
     deleteByIds: async (ids) => (steps.push('delete'), deleted.push(ids), `m-del-${deleted.length}`),
   };
-  return { cf, steps, upserted, deleted };
+  return { cf, steps, upserted, deleted, embedded };
 }
 
 const EXISTING = { dimensions: EMBEDDING_DIMENSIONS, metric: 'cosine' };
@@ -79,7 +80,7 @@ describe('the plan', () => {
     expect(record.namespace).toBe(META_NAMESPACE);
     expect(record.namespace).not.toBe(ENTRY_NAMESPACE);
     expect(record.values).toHaveLength(EMBEDDING_DIMENSIONS);
-    expect(record.metadata).toEqual({ corpusDate: api.index.corpusDate, embeddingModel: EMBEDDING_MODEL, documents: plan.entries.length });
+    expect(record.metadata).toMatchObject({ corpusDate: api.index.corpusDate, embeddingModel: EMBEDDING_MODEL, documents: plan.entries.length });
   });
 
   it('prints the request totals it computes', () => {
@@ -104,6 +105,24 @@ describe('a run', () => {
     expect(all.slice(0, -1).every((v) => v.namespace === ENTRY_NAMESPACE)).toBe(true);
     expect(all[0].metadata).toEqual({ ...plan.entries[0].entry });
     expect(result).toMatchObject({ created: true, written: plan.entries.length + 1, deleted: 0 });
+  });
+
+  // EmbeddingGemma's document prompt, titled, as Google's EmbeddingGemma docs give
+  // it; the question side uses the query prompt (index.test.ts).
+  it('embeds each entry as a titled document, never with the query prompt', async () => {
+    const { cf, embedded } = recordingApi({ index: null });
+    await runBuild(plan, cf, { createIndex: true });
+
+    expect(embedded).toHaveLength(plan.entries.length);
+    plan.entries.forEach(({ entry }, n) => {
+      const body = entry.text.slice(entry.name.length + 1);
+      expect(embedded[n]).toBe(`title: ${entry.name} | text: ${body}`);
+    });
+    expect(embedded.some((text) => text.includes('task: search result'))).toBe(false);
+  });
+
+  it('records the prompts beside the model in the corpus record', () => {
+    expect(corpusRecord(plan).metadata.embeddingPrompts).toBe('task: search result | query: {query} / title: {title} | text: {text}');
   });
 
   it('will not create an index unless told to, and sends nothing past the check', async () => {

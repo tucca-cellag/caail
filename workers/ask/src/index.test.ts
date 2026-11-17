@@ -194,7 +194,8 @@ describe('an answered question', () => {
     await handlerWith().fetch(ask(QUESTION), spy.env, spy.ctx);
 
     expect(spy.aiCalls.map((call) => call.model)).toEqual([EMBEDDING_MODEL, MODEL]);
-    expect(spy.aiCalls[0].inputs).toEqual({ text: [QUESTION.query] });
+    // EmbeddingGemma's search-query prompt, as Google's EmbeddingGemma docs give it.
+    expect(spy.aiCalls[0].inputs).toEqual({ text: [`task: search result | query: ${QUESTION.query}`] });
     const { inputs } = spy.aiCalls[1];
     expect(inputs.max_tokens).toBe(MAX_TOKENS);
     expect(inputs.temperature).toBe(TEMPERATURE);

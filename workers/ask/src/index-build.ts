@@ -19,9 +19,11 @@ import {
   CORPUS_RECORD_ID,
   EMBEDDING_DIMENSIONS,
   EMBEDDING_MODEL,
+  EMBEDDING_PROMPTS,
   ENTRY_NAMESPACE,
   INDEX_NAME,
   META_NAMESPACE,
+  documentInput,
 } from './settings.ts';
 
 /** Documents per embedding request. */
@@ -104,7 +106,12 @@ export function corpusRecord(plan: BuildPlan): IndexVector {
     id: CORPUS_RECORD_ID,
     namespace: META_NAMESPACE,
     values,
-    metadata: { corpusDate: plan.corpusDate, embeddingModel: EMBEDDING_MODEL, documents: plan.entries.length },
+    metadata: {
+      corpusDate: plan.corpusDate,
+      embeddingModel: EMBEDDING_MODEL,
+      embeddingPrompts: EMBEDDING_PROMPTS,
+      documents: plan.entries.length,
+    },
   };
 }
 
@@ -151,6 +158,11 @@ export function describePlan(plan: BuildPlan): string {
   ].join('\n');
 }
 
+/** An entry's text after its first line, which is its name and is embedded as the title. */
+function bodyOf(entry: CorpusEntry): string {
+  return entry.text.startsWith(`${entry.name}\n`) ? entry.text.slice(entry.name.length + 1) : entry.text;
+}
+
 function checkEmbeddings(vectors: number[][], expected: number): void {
   if (vectors.length !== expected) throw new Error(`index build: asked for ${expected} embeddings, got ${vectors.length}`);
   for (const vector of vectors) {
@@ -182,7 +194,7 @@ export async function runBuild(plan: BuildPlan, cf: CloudflareApi, options: { cr
   // Everything is embedded and checked before the first write.
   const vectors: IndexVector[] = [];
   for (const batch of chunks(plan.entries, EMBED_BATCH)) {
-    const embedded = await cf.embed(batch.map(({ entry }) => entry.text));
+    const embedded = await cf.embed(batch.map(({ entry }) => documentInput(entry.name, bodyOf(entry))));
     checkEmbeddings(embedded, batch.length);
     batch.forEach(({ vectorId: id, entry }, n) => {
       vectors.push({ id, namespace: ENTRY_NAMESPACE, values: embedded[n], metadata: { ...entry } });

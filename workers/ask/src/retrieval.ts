@@ -8,7 +8,15 @@
  * text that was embedded, whichever corpus the Worker was deployed with.
  */
 import { SITE_URL } from '../../../site/src/content/site-config.ts';
-import { CORPUS_RECORD_ID, EMBEDDING_DIMENSIONS, EMBEDDING_MODEL, ENTRY_NAMESPACE, MAX_NAMED, TOP_K } from './settings.ts';
+import {
+  CORPUS_RECORD_ID,
+  EMBEDDING_DIMENSIONS,
+  EMBEDDING_MODEL,
+  ENTRY_NAMESPACE,
+  MAX_NAMED,
+  TOP_K,
+  queryInput,
+} from './settings.ts';
 import { vectorId } from './ids.ts';
 import type { Lookup } from './lookup.ts';
 
@@ -62,9 +70,9 @@ function entryOf(vector: StoredVector): RetrievedEntry | null {
   return { id, kind, name, link, text } as RetrievedEntry;
 }
 
-/** The question's embedding, checked for the shape the index was built with. */
+/** The question's embedding, as a search query, checked for the shape the index was built with. */
 async function embed(ai: AiBinding, question: string, signal: AbortSignal): Promise<number[]> {
-  const output = (await ai.run(EMBEDDING_MODEL, { text: [question] }, { signal })) as { data?: unknown };
+  const output = (await ai.run(EMBEDDING_MODEL, { text: [queryInput(question)] }, { signal })) as { data?: unknown };
   const vector = Array.isArray(output?.data) ? output.data[0] : undefined;
   if (
     !Array.isArray(vector) ||

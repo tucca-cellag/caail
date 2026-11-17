@@ -26,6 +26,29 @@ export const EMBEDDING_MODEL = '@cf/google/embeddinggemma-300m';
 /** What EMBEDDING_MODEL returns, and what the index is created with. */
 export const EMBEDDING_DIMENSIONS = 768;
 
+/**
+ * EmbeddingGemma's retrieval prompts, as Google's EmbeddingGemma documentation
+ * gives them: a question is embedded as a search query, and an entry as a
+ * document with its title. Workers AI's model page documents only a raw `text`
+ * input and does not say it adds a prompt, so both sides add them here. Like the
+ * model, they are part of how the index was built, so the corpus record stores
+ * EMBEDDING_PROMPTS beside EMBEDDING_MODEL and a mismatch means a rebuild.
+ */
+const QUERY_PROMPT = 'task: search result | query: ';
+
+/** The text embedded for a question. */
+export function queryInput(question: string): string {
+  return `${QUERY_PROMPT}${question}`;
+}
+
+/** The text embedded for an entry: its title, then its text. */
+export function documentInput(title: string, text: string): string {
+  return `title: ${title} | text: ${text}`;
+}
+
+/** Both prompts in one string, recorded in the corpus record. */
+export const EMBEDDING_PROMPTS = `${queryInput('{query}')} / ${documentInput('{title}', '{text}')}`;
+
 /** The Vectorize index. wrangler.toml binds it by this name (pinned by config.test.ts). */
 export const INDEX_NAME = 'caail-ask';
 
