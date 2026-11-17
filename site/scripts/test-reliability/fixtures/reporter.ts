@@ -40,6 +40,22 @@ export const FIXTURE_ENTRIES: readonly { entry: UnreliableEntry; expected: boole
   // An assertion, by the text of what it failed with.
   { entry: entry('fixture-assertion-by-text', { tests: ['fails an assertion'], failure: { text: ['a planted offender'] } }), expected: true },
   { entry: entry('fixture-whole-module-timeouts', { wholeModule: true, failure: 'timeout' }, 'module-timeouts.fixture.ts'), expected: true },
+  // Residue, read from the diff the installed vitest writes, coloured as the run below forces.
+  {
+    entry: entry('fixture-residue-only', {
+      tests: ['finds only leftovers'],
+      failure: { allListedUnder: ['test-results', 'playwright-report'] },
+    }),
+    expected: true,
+  },
+  // A file under src/ listed beside the leftover is a failure the residue does not explain.
+  {
+    entry: entry('fixture-residue-beside-paste', {
+      tests: ['finds a leftover beside a real paste'],
+      failure: { allListedUnder: ['test-results', 'playwright-report'] },
+    }),
+    expected: false,
+  },
   // A real assertion failure in a test whose entry covers only its timeouts.
   { entry: entry('fixture-assertion-as-timeout', { tests: ['fails an assertion'], failure: 'timeout' }), expected: false },
   // An assertion whose text is not the one the entry names.

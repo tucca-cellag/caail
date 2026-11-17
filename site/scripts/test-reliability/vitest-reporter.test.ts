@@ -50,10 +50,12 @@ function killFixture(): void {
 /** Run the fixture in a vitest of its own, and collect its exit code and stderr. */
 function runFixture(cacheDir: string): Promise<{ code: number | null; stderr: string }> {
   // The parent run's VITEST_* variables describe its own worker; a second vitest must not
-  // inherit them.
+  // inherit them. Colour is forced on, as in a terminal, so the diffs the reporter reads carry
+  // the control sequences it has to strip.
   const env = {
     ...Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('VITEST'))),
     CAAIL_REPORTER_FIXTURE_CACHE: cacheDir,
+    FORCE_COLOR: '1',
   };
   return new Promise((resolve, reject) => {
     child = spawn(

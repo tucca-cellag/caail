@@ -33,6 +33,16 @@ describe('a suite whose test fails', () => {
 
 it('runs past its budget', overrun, 10);
 
+describe('a residue walk', () => {
+  // The shape of community.test.ts's walk failing: a list of files that should be empty.
+  it('finds only leftovers', () => {
+    expect(['test-results/a-spec/error-context.md', 'playwright-report/index.html']).toEqual([]);
+  });
+  it('finds a leftover beside a real paste', () => {
+    expect(['test-results/a-spec/error-context.md', 'src/components/Hero.astro']).toEqual([]);
+  });
+});
+
 describe('a suite whose afterAll times out after a test fails', () => {
   afterAll(overrun, 10);
   it('fails first', () => {
