@@ -56,8 +56,9 @@ const TIMED_OUT = /^(Test|Hook) timed out in \d+ms\./;
 
 /**
  * The errors of one failed test, suite or module, as a `FailureShape` is checked against them:
- * each message and diff without terminal control sequences, which a coloured diff carries and
- * which would hide the `+   "x",` lines `allListedUnder` reads.
+ * each message and diff without terminal control sequences, which would hide the `+   "x",`
+ * lines `allListedUnder` reads. vitest 4.1.12 hands reporters a plain diff even with colour
+ * forced on (probed 2026-11-16), so this guards a later version that does not.
  */
 function observed(errors: readonly { message?: string; diff?: string }[]): ObservedFailure {
   const plain = (text: string | undefined) => stripVTControlCharacters(text ?? '');

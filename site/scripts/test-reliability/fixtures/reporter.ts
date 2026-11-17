@@ -40,7 +40,7 @@ export const FIXTURE_ENTRIES: readonly { entry: UnreliableEntry; expected: boole
   // An assertion, by the text of what it failed with.
   { entry: entry('fixture-assertion-by-text', { tests: ['fails an assertion'], failure: { text: ['a planted offender'] } }), expected: true },
   { entry: entry('fixture-whole-module-timeouts', { wholeModule: true, failure: 'timeout' }, 'module-timeouts.fixture.ts'), expected: true },
-  // Residue, read from the diff the installed vitest writes, coloured as the run below forces.
+  // Residue, read from the diff the installed vitest writes.
   {
     entry: entry('fixture-residue-only', {
       tests: ['finds only leftovers'],
