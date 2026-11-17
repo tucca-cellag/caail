@@ -14,7 +14,7 @@ export const TOP_K = 8;
  * means rebuilding the index: vectors from two models are not comparable, so the
  * corpus record stores the model it was built with and the GET reports it.
  */
-export const EMBEDDING_MODEL = '@cf/google/embeddinggemma-2';
+export const EMBEDDING_MODEL = '@cf/google/embeddinggemma-300m';
 
 /** What EMBEDDING_MODEL returns, and what the index is created with. */
 export const EMBEDDING_DIMENSIONS = 768;
