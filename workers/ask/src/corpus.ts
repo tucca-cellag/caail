@@ -177,6 +177,15 @@ function plain(markdown: string): string {
     .trim();
 }
 
+/** How a dataset page writes an empty table cell: a lone dash (U+2014). */
+const EMPTY_CELL = '\u2014';
+
+/** A table cell's plain text, or '' when the cell is empty or only the empty-cell dash. */
+function cellText(value: string | undefined): string {
+  const text = value ? plain(value) : '';
+  return text === EMPTY_CELL ? '' : text;
+}
+
 /** Cut text to `max` characters, at a sentence end where one falls in its second half. */
 export function clip(text: string, max: number): string {
   const flat = text.replace(/\s+/g, ' ').trim();
@@ -256,7 +265,7 @@ function paperEntries(papers: ApiFiles['papers']): CorpusEntry[] {
 function dataLine(row: InventoryRow): string {
   switch (row.dataStatus) {
     case 'deposit': {
-      const host = row.columns.Data ? plain(row.columns.Data) : '';
+      const host = cellText(row.columns.Data);
       const at = row.accession
         ? `accession ${row.accession}`
         : row.dataDoi
@@ -300,15 +309,14 @@ function datasetEntries(datasets: ApiFiles['datasets']): CorpusEntry[] {
 
   // Study, Paper and Data are the row's name, paper link and data, carried below
   // by name, paperDoi and the Data line; Description has a line of its own.
-  // An empty cell is written as a lone dash (U+2014) and is left out.
+  // Every cell goes through cellText, so an empty one is left out everywhere.
   const named = new Set(['Study', 'Paper', 'Data', 'Description']);
-  const EMPTY_CELL = '\u2014';
   const inventory = datasets.inventory.map((row) => {
     const facts = Object.entries(row.columns)
-      .filter(([label, value]) => !named.has(label) && plain(value) && plain(value) !== EMPTY_CELL)
-      .map(([label, value]) => `${label}: ${plain(value)}.`)
+      .filter(([label, value]) => !named.has(label) && cellText(value))
+      .map(([label, value]) => `${label}: ${cellText(value)}.`)
       .join(' ');
-    const description = row.columns.Description ? plain(row.columns.Description) : '';
+    const description = cellText(row.columns.Description);
     return {
       id: row.id,
       kind: 'dataset' as const,

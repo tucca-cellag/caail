@@ -148,6 +148,29 @@ describe('an inventory row says where its data are', () => {
     }
   });
 
+  // An empty cell is written as a lone dash, in every column. None reaches a
+  // document: not as a host name in the Data line, nor as a description.
+  it('leaves out a Data or Description cell that is only the empty-cell dash', () => {
+    const [template] = rows;
+    const empty = '\u2014';
+    const row = {
+      ...template,
+      id: 'ds:empty-cells',
+      columns: { ...template.columns, Data: empty, Description: empty },
+      dataStatus: 'deposit',
+      accession: null,
+      dataDoi: null,
+      dataUrl: 'https://zenodo.org/records/1',
+      subseries: [],
+    };
+    const built = buildCorpus({ ...api, datasets: { ...api.datasets, inventory: [row] } });
+    const text = built.find((entry) => entry.id === row.id)?.text ?? '';
+
+    expect(text).not.toContain(empty);
+    expect(text).toContain('Data: deposited in a repository, https://zenodo.org/records/1.');
+    expect(text).not.toMatch(/^Description:/m);
+  });
+
   it('calls no row a deposit for being in the inventory', () => {
     for (const row of rows) expect(textOf(row.id)).not.toMatch(/a deposit in the data inventory/);
   });
