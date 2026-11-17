@@ -254,7 +254,10 @@ async function answer(
       instance.indexMatches = true;
     }
 
-    const entries = await racing(retrieve(question, env, lookup, deadline.signal), deadline.signal);
+    const { entries, failed } = await racing(retrieve(question, env, lookup, deadline.signal), deadline.signal);
+    // One half failed and the other answered: a degraded answer, not a failure,
+    // but the only trace of it, since invocation logs are off.
+    if (failed) logFailure(`${failed.half}_retrieval_failed`, workersAiCode(failed.error));
     if (entries.length === 0) {
       logFailure('index_empty');
       return text('service unavailable', 503, cors);

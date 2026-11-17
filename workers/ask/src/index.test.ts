@@ -494,6 +494,74 @@ describe('the index was built the way questions are embedded', () => {
   });
 });
 
+/**
+ * Retrieval has two halves, the entries the question names (fetched by id) and
+ * the nearest by meaning (embedding, then query). One failing must not throw
+ * away what the other found; only both failing is a failure.
+ */
+describe('one half of retrieval failing', () => {
+  const named = { match: () => [ENTRIES[2].id] };
+  const fetchFails = async (ids: string[]) => {
+    if (ids.includes(CORPUS_RECORD_ID)) return [corpusRecordFor()];
+    throw new Error('vectorize unavailable');
+  };
+  const embeddingFails = (error: Error) => async (model: string) => {
+    if (model === EMBEDDING_MODEL) throw error;
+    return chatOutput(ANSWER);
+  };
+  const logged = () => logs.lines.map((line) => JSON.parse(line) as { error: string; code?: number });
+
+  it('answers from the nearest entries when fetching the named ones fails', async () => {
+    const spy = harness({ getByIds: fetchFails });
+    const res = await handlerWith(named).fetch(ask(QUESTION), spy.env, spy.ctx);
+    await Promise.all(spy.waited);
+
+    expect(res.status).toBe(200);
+    const user = (spy.aiCalls.at(-1)?.inputs.messages as { content: string }[])[1].content;
+    for (const entry of ENTRIES) expect(user).toContain(entry.link);
+    expect(spy.written).toHaveLength(1);
+    expect(logged()).toEqual([{ error: 'named_retrieval_failed' }]);
+  });
+
+  it('answers from the named entries when the embedding fails', async () => {
+    const spy = harness({ ai: embeddingFails(new Error('socket hang up')) });
+    const res = await handlerWith(named).fetch(ask(QUESTION), spy.env, spy.ctx);
+    await Promise.all(spy.waited);
+
+    expect(res.status).toBe(200);
+    const user = (spy.aiCalls.at(-1)?.inputs.messages as { content: string }[])[1].content;
+    expect(user).toContain(ENTRIES[2].link);
+    expect(user).not.toContain(ENTRIES[0].link);
+    expect(logged()).toEqual([{ error: 'nearest_retrieval_failed' }]);
+  });
+
+  it('names the Workers AI code when the embedding half fails on a limit but the named half answers', async () => {
+    const spy = harness({ ai: embeddingFails(new Error('3036: daily free allocation used up')) });
+    const res = await handlerWith(named).fetch(ask(QUESTION), spy.env, spy.ctx);
+
+    expect(res.status).toBe(200);
+    expect(logged()).toEqual([{ error: 'nearest_retrieval_failed', code: 3036 }]);
+  });
+
+  it('is a 503 when both halves fail', async () => {
+    const spy = harness({ getByIds: fetchFails, ai: embeddingFails(new Error('socket hang up')) });
+    const res = await handlerWith(named).fetch(ask(QUESTION), spy.env, spy.ctx);
+    await Promise.all(spy.waited);
+
+    expect(res.status).toBe(503);
+    expect(spy.written).toEqual([]);
+    expect(logged()).toEqual([{ error: 'upstream_failure' }]);
+  });
+
+  it('is still a 429 when both halves fail and the embedding failed on a Workers AI limit', async () => {
+    const spy = harness({ getByIds: fetchFails, ai: embeddingFails(new Error('3040: Capacity temporarily exceeded')) });
+    const res = await handlerWith(named).fetch(ask(QUESTION), spy.env, spy.ctx);
+
+    expect(res.status).toBe(429);
+    expect(logged()).toEqual([{ error: 'workers_ai_limit', code: 3040 }]);
+  });
+});
+
 describe('GET: the corpus the index was built from', () => {
   const get = (headers: Record<string, string> = {}) => new Request('https://ask.example/', { headers });
 

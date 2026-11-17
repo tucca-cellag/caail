@@ -27,12 +27,13 @@ function index(nearest: StoredVector[], stored: StoredVector[] = []) {
 
 const stored = async (e: RetrievedEntry): Promise<StoredVector> => ({ id: await vectorId(e.id), metadata: { ...e } });
 const signal = new AbortController().signal;
+const entriesOf = async (...args: Parameters<typeof retrieve>) => (await retrieve(...args)).entries;
 
 describe('retrieval', () => {
   it('takes the nearest TOP_K from the entries namespace, with their metadata', async () => {
     const nearest = await Promise.all(Array.from({ length: TOP_K + 4 }, (_, n) => stored(entry(n))));
     const { binding, queries } = index(nearest);
-    const found = await retrieve('q', { AI: { run: defaultAi }, INDEX: binding, ALLOWED_ORIGIN: ORIGIN }, { match: () => [] }, signal);
+    const found = await entriesOf('q', { AI: { run: defaultAi }, INDEX: binding, ALLOWED_ORIGIN: ORIGIN }, { match: () => [] }, signal);
 
     expect(found.map((e) => e.id)).toEqual(Array.from({ length: TOP_K }, (_, n) => `paper:${n}`));
     expect(queries).toEqual([{ topK: TOP_K, namespace: ENTRY_NAMESPACE, returnMetadata: 'all' }]);
@@ -42,7 +43,7 @@ describe('retrieval', () => {
     const nearest = await Promise.all([1, 2, 3].map((n) => stored(entry(n))));
     const named = await Promise.all([9, 2].map((n) => stored(entry(n))));
     const { binding } = index(nearest, named);
-    const found = await retrieve(
+    const found = await entriesOf(
       'q',
       { AI: { run: defaultAi }, INDEX: binding, ALLOWED_ORIGIN: ORIGIN },
       { match: () => ['paper:9', 'paper:2'] },
@@ -58,7 +59,7 @@ describe('retrieval', () => {
     const nearest = await Promise.all(Array.from({ length: TOP_K }, (_, n) => stored(entry(n))));
     const { binding } = index(nearest, named);
     const namedIds = named.map((v) => (v.metadata as unknown as RetrievedEntry).id);
-    const found = await retrieve('q', { AI: { run: defaultAi }, INDEX: binding, ALLOWED_ORIGIN: ORIGIN }, { match: () => namedIds }, signal);
+    const found = await entriesOf('q', { AI: { run: defaultAi }, INDEX: binding, ALLOWED_ORIGIN: ORIGIN }, { match: () => namedIds }, signal);
 
     const byName = found.filter((e) => namedIds.includes(e.id));
     expect(found).toHaveLength(TOP_K);
@@ -72,7 +73,7 @@ describe('retrieval', () => {
   // development Worker that allows a local origin still answers from site entries.
   it('keeps site entries whatever origin the Worker allows to call it', async () => {
     const { binding } = index([await stored(entry(1))], [await stored(entry(2))]);
-    const found = await retrieve(
+    const found = await entriesOf(
       'q',
       { AI: { run: defaultAi }, INDEX: binding, ALLOWED_ORIGIN: 'http://localhost:4321' },
       { match: () => ['paper:2'] },
@@ -84,7 +85,7 @@ describe('retrieval', () => {
 
   it('skips a named entry the index does not hold', async () => {
     const { binding } = index([await stored(entry(1))]);
-    const found = await retrieve('q', { AI: { run: defaultAi }, INDEX: binding, ALLOWED_ORIGIN: ORIGIN }, { match: () => ['paper:404'] }, signal);
+    const found = await entriesOf('q', { AI: { run: defaultAi }, INDEX: binding, ALLOWED_ORIGIN: ORIGIN }, { match: () => ['paper:404'] }, signal);
 
     expect(found.map((e) => e.id)).toEqual(['paper:1']);
   });
@@ -97,7 +98,7 @@ describe('retrieval', () => {
     ['a vector with no metadata', { id: 'x' }],
   ])('never offers %s', async (_label, vector) => {
     const { binding } = index([vector as StoredVector, await stored(entry(1))]);
-    const found = await retrieve('q', { AI: { run: defaultAi }, INDEX: binding, ALLOWED_ORIGIN: ORIGIN }, { match: () => [] }, signal);
+    const found = await entriesOf('q', { AI: { run: defaultAi }, INDEX: binding, ALLOWED_ORIGIN: ORIGIN }, { match: () => [] }, signal);
 
     expect(found.map((e) => e.id)).toEqual(['paper:1']);
   });

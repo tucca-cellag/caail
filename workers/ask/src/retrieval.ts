@@ -96,23 +96,44 @@ async function named(index: IndexBinding, itemIds: string[]): Promise<RetrievedE
   return itemIds.map((id) => byId.get(id)).filter((entry): entry is RetrievedEntry => entry !== undefined);
 }
 
+export interface Retrieval {
+  entries: RetrievedEntry[];
+  /** The half that failed while the other answered, and why; null when both worked. */
+  failed: { half: 'named' | 'nearest'; error: unknown } | null;
+}
+
+/**
+ * The two halves run side by side, and one failing does not throw away what the
+ * other found. A failure with nothing found by the other half (both failed, or
+ * the question named nothing) throws, with the nearest half's error when it
+ * failed: that half alone calls Workers AI, so only its error can be a Workers
+ * AI limit, which the handler passes on as a 429.
+ */
 export async function retrieve(
   question: string,
   env: { AI: AiBinding; INDEX: IndexBinding },
   lookup: Lookup,
   signal: AbortSignal,
-): Promise<RetrievedEntry[]> {
-  const [boosted, nearest] = await Promise.all([
+): Promise<Retrieval> {
+  const [boosted, nearest] = await Promise.allSettled([
     named(env.INDEX, lookup.match(question).slice(0, MAX_NAMED)),
     embed(env.AI, question, signal).then((vector) =>
       env.INDEX.query(vector, { topK: TOP_K, namespace: ENTRY_NAMESPACE, returnMetadata: 'all' }),
     ),
   ]);
-
-  const entries: RetrievedEntry[] = [...boosted];
-  for (const match of nearest.matches) {
-    const entry = entryOf(match);
-    if (entry && !entries.some((held) => held.id === entry.id)) entries.push(entry);
+  const entries: RetrievedEntry[] = boosted.status === 'fulfilled' ? [...boosted.value] : [];
+  if (nearest.status === 'fulfilled') {
+    for (const match of nearest.value.matches) {
+      const entry = entryOf(match);
+      if (entry && !entries.some((held) => held.id === entry.id)) entries.push(entry);
+    }
   }
-  return entries.slice(0, TOP_K);
+  const failed: Retrieval['failed'] =
+    nearest.status === 'rejected'
+      ? { half: 'nearest', error: nearest.reason }
+      : boosted.status === 'rejected'
+        ? { half: 'named', error: boosted.reason }
+        : null;
+  if (failed && entries.length === 0) throw failed.error;
+  return { entries: entries.slice(0, TOP_K), failed };
 }
