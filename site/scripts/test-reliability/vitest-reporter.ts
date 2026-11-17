@@ -23,6 +23,8 @@
  * appear with nothing in it.
  */
 
+import { stripVTControlCharacters } from 'node:util';
+
 import type { Reporter, TestModule } from 'vitest/node';
 
 import {
@@ -52,11 +54,16 @@ function moduleFailed(module: TestModule): boolean {
  */
 const TIMED_OUT = /^(Test|Hook) timed out in \d+ms\./;
 
-/** The errors of one failed test, suite or module, as a `FailureShape` is checked against them. */
+/**
+ * The errors of one failed test, suite or module, as a `FailureShape` is checked against them:
+ * each message and diff without terminal control sequences, which a coloured diff carries and
+ * which would hide the `+   "x",` lines `allListedUnder` reads.
+ */
 function observed(errors: readonly { message?: string; diff?: string }[]): ObservedFailure {
+  const plain = (text: string | undefined) => stripVTControlCharacters(text ?? '');
   return {
-    timedOut: errors.length > 0 && errors.every((error) => TIMED_OUT.test(error.message ?? '')),
-    texts: errors.flatMap((error) => [error.message ?? '', error.diff ?? '']),
+    timedOut: errors.length > 0 && errors.every((error) => TIMED_OUT.test(plain(error.message))),
+    texts: errors.flatMap((error) => [plain(error.message), plain(error.diff)]),
   };
 }
 

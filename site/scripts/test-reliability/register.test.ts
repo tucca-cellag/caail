@@ -610,6 +610,12 @@ describe('errorText', () => {
     expect(errorText(message)).toBe("Error: expect(locator).toBeVisible() failed\n\nLocator: locator('.th-lead-full')\nExpected: visible");
   });
 
+  it('drops a terminal hyperlink, so a locator inside one reads whole', () => {
+    const linked = "Locator: \u001b]8;;file:///x.ts\u0007locator('.th-lead-full')\u001b]8;;\u0007\nTimeout: 5000ms";
+    expect(errorText(linked)).toBe("Locator: locator('.th-lead-full')\nTimeout: 5000ms");
+    expect(waitedOn(errorText(linked))).toEqual(["locator('.th-lead-full')"]);
+  });
+
   it('leaves a message with no snippet whole', () => {
     expect(errorText('Test timeout of 30000ms exceeded.')).toBe('Test timeout of 30000ms exceeded.');
   });
