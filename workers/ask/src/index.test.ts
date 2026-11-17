@@ -252,11 +252,11 @@ describe('failures', () => {
   async function fails(spy: ReturnType<typeof harness>, run: () => Promise<Response>) {
     const res = await run();
     await Promise.all(spy.waited);
-    expect(spy.written).toEqual([]);
-    expect(logs.lines).toHaveLength(1);
+    expect(spy.written, 'a failed request wrote a question record').toEqual([]);
+    expect(logs.lines, 'a failure writes exactly one log line').toHaveLength(1);
     const line = logs.lines[0];
-    expect(line).not.toContain('ZQX-SECRET');
-    expect(line).not.toContain('203.0.113.99');
+    expect(line, 'the log line carries the question').not.toContain('ZQX-SECRET');
+    expect(line, 'the log line carries the address').not.toContain('203.0.113.99');
     return { status: res.status, logged: JSON.parse(line) as { error: string; code?: number } };
   }
 

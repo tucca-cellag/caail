@@ -80,7 +80,7 @@ describe('what the record holds', () => {
 
 describe('every field fits', () => {
   it('keeps the budgets inside the limit', () => {
-    expect(QUESTION_BYTES + ANSWER_BYTES + CITED_BYTES + MODEL_BYTES).toBeLessThanOrEqual(BLOB_LIMIT_BYTES);
+    expect(QUESTION_BYTES + ANSWER_BYTES + CITED_BYTES + MODEL_BYTES, 'the field budgets, summed').toBeLessThanOrEqual(BLOB_LIMIT_BYTES);
     expect(ANSWER_BYTES).toBeGreaterThan(0);
   });
 
@@ -107,17 +107,17 @@ describe('every field fits', () => {
     });
     const [question, answer, cited, model] = point.blobs;
 
-    expect(blobBytes(point.blobs)).toBeLessThanOrEqual(BLOB_LIMIT_BYTES);
-    expect(byteLength(question)).toBeLessThanOrEqual(QUESTION_BYTES);
-    expect(byteLength(answer)).toBeLessThanOrEqual(ANSWER_BYTES);
-    expect(byteLength(cited)).toBeLessThanOrEqual(CITED_BYTES);
-    expect(byteLength(model)).toBeLessThanOrEqual(MODEL_BYTES);
+    expect(blobBytes(point.blobs), "the record's blobs together, in bytes").toBeLessThanOrEqual(BLOB_LIMIT_BYTES);
+    expect(byteLength(question), 'the question blob, in bytes').toBeLessThanOrEqual(QUESTION_BYTES);
+    expect(byteLength(answer), 'the answer blob, in bytes').toBeLessThanOrEqual(ANSWER_BYTES);
+    expect(byteLength(cited), 'the cited-ids blob, in bytes').toBeLessThanOrEqual(CITED_BYTES);
+    expect(byteLength(model), 'the model blob, in bytes').toBeLessThanOrEqual(MODEL_BYTES);
     for (const blob of point.blobs) {
-      expect(blob).not.toContain('�');
-      expect([...blob].every((c) => c === char || /[ds:\-\d ]/.test(c))).toBe(true);
+      expect(blob, 'a cut split a character').not.toContain('\uFFFD');
+      expect([...blob].every((c) => c === char || /[ds:\-\d ]/.test(c)), 'a cut left part of a character').toBe(true);
     }
     // Cut to the budget, not short of it by more than one character.
-    expect(QUESTION_BYTES - byteLength(question)).toBeLessThan(byteLength(char));
+    expect(QUESTION_BYTES - byteLength(question), 'bytes left unused under the question budget').toBeLessThan(byteLength(char));
   });
 
   it('keeps whole cited ids only', () => {
