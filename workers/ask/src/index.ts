@@ -267,7 +267,7 @@ async function answer(request: Request, env: Env, ctx: Context, lookup: Lookup, 
 }
 
 /** The handler, with its lookup supplied, so a test can give it one built from fixtures. */
-export function createHandler(lookup: () => Lookup = bundledLookup) {
+export function createHandler(lookup: Lookup = bundledLookup) {
   return {
     async fetch(request: Request, env: Env, ctx: Context): Promise<Response> {
       const cors = corsHeaders(env.ALLOWED_ORIGIN);
@@ -295,7 +295,7 @@ export function createHandler(lookup: () => Lookup = bundledLookup) {
       if (origin && origin !== env.ALLOWED_ORIGIN) return text('forbidden', 403, cors);
 
       if (request.method === 'GET') return corpusStatus(env, cors);
-      return answer(request, env, ctx, lookup(), cors);
+      return answer(request, env, ctx, lookup, cors);
     },
   };
 }

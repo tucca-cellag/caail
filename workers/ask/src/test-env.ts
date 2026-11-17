@@ -138,7 +138,7 @@ export function harness(
 /** A lookup that names nothing, so a test sees retrieval by meaning alone. */
 export const noLookup: Lookup = { match: () => [] };
 
-export const handlerWith = (lookup: Lookup = noLookup) => createHandler(() => lookup);
+export const handlerWith = (lookup: Lookup = noLookup) => createHandler(lookup);
 
 /** A well-formed question post, so each test varies only the thing it is about. */
 export function ask(body: unknown, headers: Record<string, string> = {}): Request {

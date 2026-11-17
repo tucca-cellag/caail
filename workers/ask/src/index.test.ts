@@ -12,6 +12,8 @@ import { ANSWER_DEADLINE_MS, EMBEDDING_MODEL, MAX_BODY_BYTES } from './settings.
 import { WORD_LIMIT } from './words.ts';
 import { MAX_TOKENS, SYSTEM_PROMPT, TEMPERATURE } from './model.ts';
 import { vectorId } from './ids.ts';
+import { bundledLookup } from './bundled-lookup.ts';
+import datasetsFile from '../../../site/public/api/datasets.json';
 import {
   ANSWER,
   ENTRIES,
@@ -36,6 +38,16 @@ beforeEach(() => {
 afterEach(() => {
   logs.restore();
   vi.useRealTimers();
+});
+
+// Built when the module loads, which is the Worker's startup, so no request,
+// refused or answered, pays for building it.
+describe('the bundled lookup', () => {
+  it('is a built lookup at load, not a function a request calls', () => {
+    const row = datasetsFile.inventory.find((r) => r.accession !== null);
+    expect(typeof bundledLookup, 'the bundled lookup is built on a request').toBe('object');
+    expect(bundledLookup.match(`Which dataset is ${row?.accession}?`)).toContain(row?.id);
+  });
 });
 
 describe('handler order', () => {
