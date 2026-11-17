@@ -46,6 +46,7 @@ if (!accountId || !apiToken) {
 
 const result = await runBuild(plan, restApi({ accountId, apiToken }), {
   createIndex: process.argv.includes('--create-index'),
+  log: (line) => console.log(`\n${line}`),
 });
 console.log(
   `\n${result.created ? 'Created the index. ' : ''}${result.refused ? 'Refused the old corpus record first. ' : ''}` +

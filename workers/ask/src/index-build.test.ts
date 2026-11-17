@@ -19,6 +19,7 @@ import {
   requestCounts,
   restApi,
   runBuild,
+  settingsChangeNotice,
   totalRequests,
   type CloudflareApi,
   type IndexVector,
@@ -122,6 +123,10 @@ describe('the plan', () => {
     expect(record.namespace).not.toBe(ENTRY_NAMESPACE);
     expect(record.values).toHaveLength(EMBEDDING_DIMENSIONS);
     expect(record.metadata).toMatchObject({ corpusDate: api.index.corpusDate, embeddingModel: EMBEDDING_MODEL, documents: plan.entries.length });
+  });
+
+  it('states the safe order for a rebuild that changes the settings', () => {
+    expect(describePlan(plan)).toContain(settingsChangeNotice());
   });
 
   it('prints the request totals it computes', () => {
@@ -234,6 +239,28 @@ describe('a run', () => {
     } finally {
       logs.restore();
     }
+  });
+
+  // A warm instance trusts a match for INDEX_RECHECK_MS without reading the
+  // record, so the refusing record cannot reach it: a rebuild that changes the
+  // settings is safe only after the redeploy. The build says so before it
+  // writes anything.
+  it('prints the safe order before writing anything when the settings changed', async () => {
+    const { cf, steps } = recordingApi({ index: EXISTING, existing: [CORPUS_RECORD_ID], record: OLD_RECORD });
+    const printed: string[] = [];
+    await runBuild(plan, cf, { createIndex: false, log: (line) => (steps.push('notice'), printed.push(line)) });
+
+    expect(printed).toEqual([settingsChangeNotice()]);
+    expect(printed[0]).toMatch(/deploy the Worker .* first, then run this build/i);
+    expect(steps.indexOf('notice'), 'the order was printed after a write').toBeLessThan(steps.indexOf('upsert'));
+  });
+
+  it('prints no such notice for a rebuild with the same settings', async () => {
+    const { cf } = recordingApi({ index: EXISTING, existing: [CORPUS_RECORD_ID] });
+    const printed: string[] = [];
+    await runBuild(plan, cf, { createIndex: false, log: (line) => printed.push(line) });
+
+    expect(printed).toEqual([]);
   });
 
   it('treats a corpus record it cannot read as changed, and refuses it first', async () => {

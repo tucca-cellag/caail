@@ -74,12 +74,16 @@ export const CORPUS_RECORD_ID = 'corpus';
 
 /**
  * How long an instance trusts that the index matches how it embeds a question
- * before reading the corpus record again. A rebuild with another model or other
- * prompts is done by hand and the redeploy follows it, so a warm instance needs
- * to notice within minutes, not at once. Five minutes is one read of the record
- * per instance per five minutes at most, which a question rate in the hundreds
- * a day barely notices, and it bounds the time a warm instance answers from a
- * mismatched index.
+ * before reading the corpus record again. Five minutes is at most one read of
+ * the record per instance per five minutes, which a question rate in the
+ * hundreds a day barely notices.
+ *
+ * It is also how long a warm instance can miss a rebuild, which is why a
+ * rebuild that changes the model or the prompts has to come after the redeploy,
+ * not before (index-build.ts, settingsChangeNotice): instances on the new
+ * settings refuse the old record until the new one lands, while an instance
+ * still on the old settings would, for up to this long, query entries embedded
+ * the new way with the old settings.
  */
 export const INDEX_RECHECK_MS = 5 * 60_000;
 

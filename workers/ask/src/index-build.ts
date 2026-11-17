@@ -10,13 +10,11 @@
  *
  * A run fails closed. Every document is embedded and checked before anything is
  * written, so a failed embedding leaves the index as it was. The writes then go
- * in an order where any failure leaves an index the Worker either uses correctly
- * or refuses:
+ * in an order where any failure leaves an index that a Worker reading its corpus
+ * record either uses correctly or refuses:
  *   1. When the index's corpus record was written with other embedding settings,
  *      or cannot be read, it is first replaced with a record no Worker accepts,
- *      since the entries about to be written are embedded another way, and a
- *      Worker still on the old settings would otherwise read the old record and
- *      query them the old way.
+ *      since the entries about to be written are embedded another way.
  *   2. The entries.
  *   3. The corpus record, in a write of its own, which is what the Worker checks
  *      and the GET reports, so it names a build only once every entry was
@@ -24,6 +22,15 @@
  *   4. Only then the deletes of entries that have left the corpus.
  * A failure part way leaves extra entries, never missing ones, under either the
  * old record (same settings) or the refusing one (changed settings).
+ *
+ * That guarantee covers a Worker that reads the record, and a warm instance
+ * does not: it trusts a match for INDEX_RECHECK_MS. So a rebuild that changes
+ * the embedding settings is safe only in one order, which `settingsChangeNotice`
+ * states and the build prints when it sees the settings change: deploy the
+ * Worker with the new settings first, then rebuild. Instances on the new
+ * settings refuse the old record, and the refusing one, until the real record
+ * lands. Rebuilt first, a warm instance still on the old settings would query
+ * the new entries the old way for up to INDEX_RECHECK_MS, with no error.
  */
 import { buildCorpus, corpusDateOf, type ApiFiles, type CorpusEntry } from './corpus.ts';
 import { vectorId } from './ids.ts';
@@ -34,6 +41,7 @@ import {
   EMBEDDING_PROMPTS,
   ENTRY_NAMESPACE,
   INDEX_NAME,
+  INDEX_RECHECK_MS,
   META_NAMESPACE,
   builtWithTheseSettings,
   documentInput,
@@ -167,6 +175,18 @@ export function totalRequests(counts: ReturnType<typeof requestCounts>): number 
   return Object.values(counts).reduce((sum, n) => sum + n, 0);
 }
 
+/** The order a rebuild that changes the embedding settings has to follow, and why. */
+export function settingsChangeNotice(): string {
+  const minutes = INDEX_RECHECK_MS / 60_000;
+  return (
+    "When this build's embedding settings differ from the index's (a new model or new prompts): " +
+    'deploy the Worker with these settings (pnpm --dir workers/ask run deploy) first, then run this build. ' +
+    `A warm instance still on the old settings trusts the index it last checked for up to ${minutes} minutes, ` +
+    'so rebuilt first, the index would be queried the old way; instances on these settings refuse the old ' +
+    "record until this build's lands."
+  );
+}
+
 /** The plan, for a person to approve: what is indexed, and every request a run sends. */
 export function describePlan(plan: BuildPlan): string {
   const byKind = new Map<string, number>();
@@ -195,6 +215,8 @@ export function describePlan(plan: BuildPlan): string {
     `Total into a new index: ${totalRequests(fresh)}.`,
     `Total rebuilding an index that holds this corpus with these settings: ${totalRequests(rebuild)}.`,
     `Total rebuilding an index built with other embedding settings: ${totalRequests(changed)}.`,
+    '',
+    settingsChangeNotice(),
   ].join('\n');
 }
 
@@ -222,7 +244,11 @@ export interface BuildResult {
 }
 
 /** Send the plan. `createIndex` allows creating the index when it does not exist. */
-export async function runBuild(plan: BuildPlan, cf: CloudflareApi, options: { createIndex: boolean }): Promise<BuildResult> {
+export async function runBuild(
+  plan: BuildPlan,
+  cf: CloudflareApi,
+  options: { createIndex: boolean; log?: (line: string) => void },
+): Promise<BuildResult> {
   const index = await cf.getIndex();
   if (index && (index.dimensions !== EMBEDDING_DIMENSIONS || index.metric !== INDEX_METRIC)) {
     throw new Error(
@@ -259,6 +285,9 @@ export async function runBuild(plan: BuildPlan, cf: CloudflareApi, options: { cr
       refuse = true;
     }
   }
+
+  // Said before anything is written, so it can still be acted on.
+  if (refuse) options.log?.(settingsChangeNotice());
 
   const mutationIds: string[] = [];
   if (refuse) mutationIds.push(await cf.upsert([refusingRecord(plan)]));
