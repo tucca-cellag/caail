@@ -182,7 +182,18 @@ function racing<T>(promise: Promise<T>, signal: AbortSignal): Promise<T> {
   });
 }
 
-/** One request's deadline: its signal aborts after REQUEST_DEADLINE_MS. Call clear() when done. */
+/**
+ * One request's deadline: its signal aborts after REQUEST_DEADLINE_MS. Call
+ * clear() when done.
+ *
+ * What the signal does to a Workers AI call: the binding (workerd 1.20261019.1,
+ * the version wrangler 4.151.3 installs) puts `options.signal` on its own
+ * request to the Workers AI endpoint, so at the deadline that request is
+ * cancelled and the Worker stops waiting. Whether Workers AI then stops the
+ * inference, and stops charging for it, is not documented: a call cut off at
+ * the deadline may still run to completion and still count against the daily
+ * allocation.
+ */
 function startDeadline(): { signal: AbortSignal; clear: () => void } {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), REQUEST_DEADLINE_MS);
