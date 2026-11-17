@@ -206,14 +206,9 @@ export interface UnreliableEntry {
    * because the reporter would then label a genuine failure as known-unreliable, the
    * harm the Playwright side's title matching already exists to avoid.
    *
-   * Each ` > ` level of each full name here must be the name of a call in `file`: a
-   * `describe` or `suite` call for an enclosing suite, and an `it` or `test` call for the test itself, a template as its source writes it; `register.test.ts` enforces it, so
-   * renaming any level fails there. That proves each level still exists in the file, not that
-   * the levels still nest: moving one under a new parent changes its full name, the entry stops
-   * matching, and the failure prints as unregistered, the safe direction, with that check
-   * green. Checking the nesting would take parsing the file's suite structure, the hand-written
-   * lexing this register avoids elsewhere, or collecting the file with vitest, so it is not
-   * done.
+   * Each level of each full name here must be a call in `file`, the test's own an `it` or
+   * `test` call written as its source writes it, templates included; `missingLevels` in
+   * `register.test.ts` checks it, and says what that does and does not prove.
    */
   tests?: readonly string[];
   /**
@@ -242,14 +237,8 @@ export interface UnreliableEntry {
    * another parent is not labelled, however it was made: a second `describe`, a
    * `describe.each` row, a loop or `suite()`.
    *
-   * Each ` > ` level of each full name here must be the name of a call in `file`: a
-   * `describe` or `suite` call for an enclosing suite; `register.test.ts` enforces it, so
-   * renaming any level fails there. That proves each level still exists in the file, not that
-   * the levels still nest: moving one under a new parent changes its full name, the entry stops
-   * matching, and the failure prints as unregistered, the safe direction, with that check
-   * green. Checking the nesting would take parsing the file's suite structure, the hand-written
-   * lexing this register avoids elsewhere, or collecting the file with vitest, so it is not
-   * done.
+   * Each level of each full name here must be a `describe` or `suite` call in `file`;
+   * `missingLevels` in `register.test.ts` checks it, and says what that does and does not prove.
    */
   suites?: readonly string[];
   /**

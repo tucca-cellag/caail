@@ -63,6 +63,13 @@ const describeCalls = (source: string, name: string) => namedCalls(source, ['des
 /**
  * The levels of a vitest full name that are not a call of the right kind in `source`: each
  * enclosing level must be a `describe` or `suite` call, and the last a call of `last`.
+ *
+ * Checked for every name an entry's `tests` or `suites` gives, so renaming any level fails. It
+ * proves each level still exists in the file, not that the levels still nest: moving one under
+ * a new parent changes its full name, the entry stops matching, and the failure prints as
+ * unregistered, the safe direction, with this check green. Checking the nesting would take
+ * parsing the file's suite structure, the hand-written lexing this register avoids elsewhere,
+ * or collecting the file with vitest, so it is not done.
  */
 function missingLevels(source: string, fullName: string, last: readonly string[]): string[] {
   const levels = fullName.split(' > ');
@@ -138,7 +145,7 @@ describe('register integrity', () => {
     // test that an entry narrows to leaves the entry silently matching nothing: the
     // register keeps listing it, the reporter never fires, and the failure it was
     // written for reads as unregistered. It proves each level exists, not that the levels
-    // still nest (see `UnreliableEntry.tests`).
+    // still nest (see `missingLevels`).
     const wrong: string[] = [];
     for (const entry of REGISTER) {
       if (entry.suite !== 'vitest' || !entry.tests) continue;
@@ -158,7 +165,7 @@ describe('register integrity', () => {
     // the describe would leave the entry matching nothing with this check green. The
     // reporter matches a suite by its full name, so a same-named suite under another
     // parent is not this one, and the check asks only that each level still exists: not
-    // that the levels still nest (see `UnreliableEntry.suites`).
+    // that the levels still nest (see `missingLevels`).
     const wrong: string[] = [];
     for (const entry of REGISTER) {
       if (entry.suite !== 'vitest' || !entry.suites) continue;
