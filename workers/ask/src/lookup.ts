@@ -93,11 +93,15 @@ export function entryIdsOf(files: LookupFiles): Set<string> {
  * printable character, so it runs to the first space, ASCII quote, angle bracket
  * or typographic punctuation mark (TYPOGRAPHIC_PUNCTUATION, text.ts), which a
  * DOI pasted inside curly quotes or followed by an apostrophe would otherwise
- * keep. Linear: the suffix class is greedy with nothing after it to backtrack
- * into, and each start position does bounded work before it fails.
- * lookup.test.ts times it on a pathological question.
+ * keep. It starts only where a DOI can: not after a letter, digit, underscore
+ * or dot, so `v210.1038/...` yields no candidate starting inside the token,
+ * while a DOI after a space, bracket, quote, colon or the slash of a URL still
+ * does. Linear: the lookbehind reads one character, the suffix class is greedy
+ * with nothing after it to backtrack into, and each start position does
+ * bounded work before it fails. lookup.test.ts times it on a pathological
+ * question.
  */
-const DOI_IN_TEXT = new RegExp(`10\\.\\d{4,9}/[^\\s"'<>${TYPOGRAPHIC_PUNCTUATION}]+`, 'g');
+const DOI_IN_TEXT = new RegExp(`(?<![\\w.])10\\.\\d{4,9}/[^\\s"'<>${TYPOGRAPHIC_PUNCTUATION}]+`, 'g');
 
 /** Punctuation a sentence puts after an identifier, stripped by a walk, not a pattern (text.ts). */
 const TRAILING_PUNCTUATION: ReadonlySet<string> = new Set('.,;:!?)]}');

@@ -61,6 +61,11 @@ describe('finds what a question names', () => {
     // apostrophe or in full-width brackets is still found. Escaped so the
     // source shows which character.
     ['a DOI in curly quotes', 'Is “10.1038/s43016-022-00658-w” here?', ['ds:gse169291']],
+    // Where a DOI can start: after a space, a bracket, a quote or a colon.
+    ['a DOI after a space', 'about 10.1038/s43016-022-00658-w', ['ds:gse169291']],
+    ['a DOI after an opening parenthesis', 'about (10.1038/s43016-022-00658-w)', ['ds:gse169291']],
+    ['a DOI after an opening curly quote', '“10.1038/s43016-022-00658-w', ['ds:gse169291']],
+    ['a DOI after doi:', 'doi:10.1038/s43016-022-00658-w', ['ds:gse169291']],
     ['a DOI before a curly apostrophe', '10.1038/s43016-022-00658-w’s data', ['ds:gse169291']],
     ['a DOI in full-width brackets', '「10.1038/s43016-022-00658-w」（论文）', ['ds:gse169291']],
     ['a DOI before an ellipsis', 'and 10.1038/s43016-022-00658-w…', ['ds:gse169291']],
@@ -127,6 +132,10 @@ describe('finds nothing a question does not name', () => {
     ['a short name in another case', 'an ax to grind'],
     ['a short name inside another word', 'the Axolotl genome'],
     ['a DOI prefix only', 'anything under 10.1038/s41586'],
+    // A DOI starts only where one can: never inside another token.
+    ['a DOI inside a longer token', 'see v210.1038/s43016-022-00658-w'],
+    ['a DOI after a dot inside a token', 'see ref.10.1038/s43016-022-00658-w'],
+    ['a DOI after an underscore', 'see file_10.1038/s43016-022-00658-w'],
     ['an accession inside a longer token', 'GSE1692910 is not it'],
     ['an unrelated question', 'which tools optimize serum-free media?'],
     ['an empty question', ''],
