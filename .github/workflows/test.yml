@@ -245,14 +245,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Each Worker's behaviour is covered by the vitest suite in the `test` job, but
-  # vitest neither typechecks nor reads wrangler.toml. That matters more than
-  # usual here: a Worker's rate limit lives in the config, not the code, so a typo
-  # in its [[ratelimits]] block would disable it while every test still passed.
-  # `wrangler deploy --dry-run` bundles each Worker and resolves its bindings
+  # Each Worker's behaviour is covered by the vitest suite in the `test` job, and
+  # its config tests look for named lines in wrangler.toml, but no test reads the
+  # config the way wrangler does. That matters more than usual here: a Worker's
+  # rate limit lives in the config, not the code, so a config error there could
+  # disable it while the handler tests still passed. `wrangler deploy --dry-run`
+  # validates each Worker's config, resolves its bindings and bundles its code,
   # without contacting Cloudflare; for workers/ask the bundle also takes in the
-  # committed site/public/api/ it reads names from. Its own job so it does not
-  # queue behind the browser suite.
+  # committed site/public/api/ it reads names from. It does not type-check: the
+  # bundler strips types, and no job type-checks either Worker. Its own job so it
+  # does not queue behind the browser suite.
   worker:
     runs-on: ubuntu-latest
     strategy:
