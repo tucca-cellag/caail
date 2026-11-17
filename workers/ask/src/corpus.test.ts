@@ -16,6 +16,7 @@ import { ON_REQUEST_HEADING } from '../../../site/scripts/parser/datasets.ts';
 import { INVENTORY_ANCHOR, ON_REQUEST_ANCHOR, buildCorpus, clip, corpusDateOf, editionAnchor, type ApiFiles } from './corpus.ts';
 import { taxonomySlug } from './ids.ts';
 import { buildLookup } from './lookup.ts';
+import { citedEntryIds } from './model.ts';
 
 const apiFile = (name: string) => JSON.parse(readFileSync(new URL(`../../../site/public/api/${name}`, import.meta.url), 'utf8'));
 const repoFile = (path: string) => readFileSync(new URL(`../../../${path}`, import.meta.url), 'utf8');
@@ -231,6 +232,22 @@ describe('every link is a site page that names its entry', () => {
       expect(editionAnchor(report.id)).toBe(siteEditionAnchor(report.id));
       expect(byId.get(report.id)?.link).toBe(`${SITE_URL}field-reports/#${siteEditionAnchor(report.id)}`);
     }
+  });
+
+  // A study on request is named by its DOI, and DOIs may carry parentheses and
+  // semicolons, which would end a Markdown link early. Its item is
+  // percent-encoded in the link, so the link stays whole and still names it.
+  it('builds a link for a study whose DOI carries parentheses and a semicolon, and counts it as cited', () => {
+    const doi = '10.1016/S0168-1605(24)00001-2;V2';
+    const [first, ...rest] = api.datasets.onRequest;
+    const built = buildCorpus({ ...api, datasets: { ...api.datasets, onRequest: [{ ...first, paperDoi: doi }, ...rest] } });
+    const study = built.find((entry) => entry.id === `onrequest:${doi.toLowerCase()}`);
+
+    expect(study).toBeDefined();
+    const link = study?.link ?? '';
+    expect(link).not.toMatch(/[();]/);
+    expect(new URL(link).searchParams.get('item')).toBe(study?.id);
+    expect(citedEntryIds(`Listed as [a study](${link}).`, built)).toEqual([study?.id]);
   });
 
   it('sends a paper to the explorer or the reviews shelf by whether it is in the matrix', () => {

@@ -161,7 +161,29 @@ function sitePage(path: string): string {
  * answer cited; the page ignores it and opens at `fragment`, if one is given.
  */
 function itemOnPage(path: string, itemId: string, fragment = ''): string {
-  return sitePage(`${path}?item=${itemId}${fragment ? `#${fragment}` : ''}`);
+  return sitePage(`${path}?item=${encodeItem(itemId)}${fragment ? `#${fragment}` : ''}`);
+}
+
+/** Characters an item value keeps as written: unreserved ones, and `:` and `/`, which a query may hold. */
+const ITEM_KEPT = /^[A-Za-z0-9._~:/-]$/;
+
+/**
+ * An entry id as a query value: every character outside ITEM_KEPT is
+ * percent-encoded, parentheses and semicolons included, which `encodeURIComponent`
+ * leaves alone or a DOI may carry, and which would end a Markdown link early.
+ * Ordinary ids (`paper:17`, `ds:gse169291`) are unchanged. The link reader
+ * decodes the value before comparing (model.ts).
+ */
+function encodeItem(itemId: string): string {
+  let out = '';
+  for (const char of itemId) {
+    if (ITEM_KEPT.test(char)) {
+      out += char;
+    } else {
+      for (const byte of new TextEncoder().encode(char)) out += `%${byte.toString(16).toUpperCase().padStart(2, '0')}`;
+    }
+  }
+  return out;
 }
 
 function datasetsPage(page: string): string {
