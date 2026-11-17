@@ -13,12 +13,12 @@ export default defineConfig({
       'scripts/**/*.test.ts',
       'src/content/**/*.test.ts',
       'src/lib/**/*.test.ts',
-      // The events collector Worker lives outside site/ but has no vitest
-      // project of its own, so it runs here. A second test runner and a second
-      // CI job is how a suite quietly stops being run; one
-      // `pnpm --dir site test` covers everything. The Worker's search redaction
-      // is a copy of the one in src/lib/analytics.ts, so its parity test needs
-      // both in one run anyway.
+      // The Workers live outside site/ but have no vitest project of their
+      // own, so they run here. A second test runner and a second CI job is how
+      // a suite quietly stops being run; one `pnpm --dir site test` covers
+      // everything. Each Worker copies a rule from the site (the events
+      // Worker's search redaction, the ask Worker's word limit), so their
+      // parity tests need both sides in one run anyway.
       //
       // Spelled `*/src/**` rather than `**`: the default `**/node_modules/**`
       // exclude does not match across the leading `../`, so a broad glob
