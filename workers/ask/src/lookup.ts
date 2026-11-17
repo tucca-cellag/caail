@@ -15,7 +15,7 @@
  */
 import { MAX_NAMED_FETCHED } from './settings.ts';
 import { onRequestItemId, paperItemId, termItemId } from './ids.ts';
-import { trimTrailing, trimVersion } from './text.ts';
+import { TYPOGRAPHIC_PUNCTUATION, trimTrailing, trimVersion } from './text.ts';
 
 interface LookupCatalogRow {
   itemId: string;
@@ -89,11 +89,15 @@ export function entryIdsOf(files: LookupFiles): Set<string> {
 }
 
 /**
- * A DOI as it appears in running text. Linear: the suffix class is greedy with
- * nothing after it to backtrack into, and each start position does bounded work
- * before it fails. lookup.test.ts times it on a pathological question.
+ * A DOI as it appears in running text. A DOI's suffix may hold almost any
+ * printable character, so it runs to the first space, ASCII quote, angle bracket
+ * or typographic punctuation mark (TYPOGRAPHIC_PUNCTUATION, text.ts), which a
+ * DOI pasted inside curly quotes or followed by an apostrophe would otherwise
+ * keep. Linear: the suffix class is greedy with nothing after it to backtrack
+ * into, and each start position does bounded work before it fails.
+ * lookup.test.ts times it on a pathological question.
  */
-const DOI_IN_TEXT = /10\.\d{4,9}\/[^\s"'<>]+/g;
+const DOI_IN_TEXT = new RegExp(`10\\.\\d{4,9}/[^\\s"'<>${TYPOGRAPHIC_PUNCTUATION}]+`, 'g');
 
 /** Punctuation a sentence puts after an identifier, stripped by a walk, not a pattern (text.ts). */
 const TRAILING_PUNCTUATION: ReadonlySet<string> = new Set('.,;:!?)]}');

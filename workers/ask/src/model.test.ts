@@ -4,6 +4,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { MAX_TOKENS, SYSTEM_PROMPT, TEMPERATURE, answerText, citedEntryIds, modelInput } from './model.ts';
+import { TYPOGRAPHIC_PUNCTUATION } from './text.ts';
 import { ENTRIES, ORIGIN, chatOutput, fastestRun } from './test-env.ts';
 
 describe('the system prompt', () => {
@@ -201,13 +202,17 @@ describe('the cited entries', () => {
   });
 
   // Typographic punctuation is not a link character, so it ends the URL rather
-  // than being read into it. Escaped here so the source shows which character.
+  // than being read into it. The set is the one the DOI reader stops at
+  // (TYPOGRAPHIC_PUNCTUATION, text.ts), so both readers are held to it; it
+  // includes the closing curly quote, the ellipsis and the em dash.
   describe('before typographic punctuation', () => {
-    it.each([
-      ['a closing curly quote', '”'],
-      ['an ellipsis', '…'],
-      ['an em dash', '—'],
-    ])('count a bare link followed by %s', (_label, mark) => {
+    const marks = [...TYPOGRAPHIC_PUNCTUATION].map((mark) => [`U+${mark.codePointAt(0)?.toString(16).toUpperCase().padStart(4, '0')}`, mark]);
+
+    it('covers the closing curly quote, the ellipsis and the em dash', () => {
+      for (const mark of ['”', '…', '—']) expect(TYPOGRAPHIC_PUNCTUATION).toContain(mark);
+    });
+
+    it.each(marks)('count a bare link followed by %s', (_label, mark) => {
       expect(citedEntryIds(`See “${ENTRIES[0].link}${mark} for more.`, ENTRIES)).toEqual([ENTRIES[0].id]);
       expect(citedEntryIds(`It is ${ENTRIES[2].link}${mark}and more`, ENTRIES)).toEqual([ENTRIES[2].id]);
     });

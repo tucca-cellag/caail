@@ -8,6 +8,23 @@
  * body, so the word limit does not bound it. These walk instead.
  */
 
+/**
+ * Typographic punctuation a reader or a model writes round an identifier or a
+ * link: curly quotes and apostrophes, guillemets, the ellipsis, the en and em
+ * dashes, and the full-width and CJK brackets and sentence marks. None is part
+ * of a DOI or a corpus link as written, so each ends one. The DOI reader stops
+ * at these (lookup.ts). The link reader takes only link characters, which
+ * excludes them already, and model.test.ts runs it over every one of these.
+ * Escaped, so the source shows each code point.
+ */
+export const TYPOGRAPHIC_PUNCTUATION = [
+  '‘’‚‛“”„‟', // curly quotes and apostrophes
+  '«»‹›', // guillemets
+  '…–—', // ellipsis, en dash, em dash
+  '（）［］｛｝〈〉《》「」『』【】〔〕', // full-width and CJK brackets
+  '、。！，：；？', // CJK and full-width sentence marks
+].join('');
+
 /** `text` without any run of `chars` at its end. */
 export function trimTrailing(text: string, chars: ReadonlySet<string>): string {
   let end = text.length;

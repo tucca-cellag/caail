@@ -20,6 +20,7 @@ const FILES: LookupFiles = {
       { itemId: 'db:gnps', name: 'GNPS', doi: null },
       { itemId: 'db:string', name: 'STRING', doi: '10.1093/NAR/GKAC1000' },
       { itemId: 'db:pride', name: 'PRIDE', doi: null },
+      { itemId: 'db:paren', name: 'A database whose DOI ends in a parenthesis', doi: '10.1234/vol(12)' },
     ],
   },
   papersIndex: {
@@ -56,6 +57,18 @@ describe('finds what a question names', () => {
     ['a DOI, in any case and inside a URL', 'What cites https://doi.org/10.1016/J.SCITOTENV.2023.164988?', ['paper:1']],
     ['a DOI with a sentence after it', 'Is 10.1093/nar/gkac1000. indexed?', ['db:string']],
     ['a paper DOI an inventory row names', 'data for 10.1038/s43016-022-00658-w', ['ds:gse169291']],
+    // Typographic punctuation ends a DOI, so a DOI in curly quotes, before an
+    // apostrophe or in full-width brackets is still found. Escaped so the
+    // source shows which character.
+    ['a DOI in curly quotes', 'Is “10.1038/s43016-022-00658-w” here?', ['ds:gse169291']],
+    ['a DOI before a curly apostrophe', '10.1038/s43016-022-00658-w’s data', ['ds:gse169291']],
+    ['a DOI in full-width brackets', '「10.1038/s43016-022-00658-w」（论文）', ['ds:gse169291']],
+    ['a DOI before an ellipsis', 'and 10.1038/s43016-022-00658-w…', ['ds:gse169291']],
+    // A DOI may end in a closing parenthesis; the trailing strip is applied to
+    // the catalogued DOI too, so it still matches, bare or in brackets.
+    ['a DOI that ends in a closing parenthesis', 'what is 10.1234/vol(12)?', ['db:paren']],
+    ['the same DOI in parentheses', 'see (10.1234/vol(12)).', ['db:paren']],
+    ['the same DOI in curly quotes', '“10.1234/vol(12)”', ['db:paren']],
     ['a data DOI', 'what is 10.5281/zenodo.42', ['ds:sra051669']],
     ['an on-request study by its DOI', 'is 10.1016/j.ygeno.2024.110903 here', ['onrequest:10.1016/j.ygeno.2024.110903']],
     ['an accession, in any case', 'what is gse169291?', ['ds:gse169291']],
