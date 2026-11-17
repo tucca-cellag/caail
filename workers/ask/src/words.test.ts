@@ -5,14 +5,19 @@
  * agreeing, as normalizeQuery's parity test does for the events Worker.
  *
  * The widget keeps its count and its limit private to its module, so they are
- * read from its source: the `wordCount` arrow function, run through Node's own
- * type stripper, and the `WORD_LIMIT` literal. Each is required to appear exactly
- * once. If the widget is refactored so either cannot be found, this fails naming
- * which, the safe direction for a guard: the fix is to point it at the new home
- * (or import it, once the widget exports it), never to delete it.
+ * read from its source: the `wordCount` arrow function and the `WORD_LIMIT`
+ * literal. Each is required to appear exactly once. If the widget is refactored
+ * so either cannot be found, this fails naming which, the safe direction for a
+ * guard: the fix is to point it at the new home (or import it, once the widget
+ * exports it), never to delete it.
+ *
+ * The function is run as JavaScript by removing the one type annotation its
+ * signature carries. That is exact rather than a guess, because the pattern that
+ * finds the function matches that signature literally; any other TypeScript in
+ * its body makes it fail to evaluate, which fails the test. No transpiler is
+ * used, and no Node API newer than the repo's floor (Node 22.12).
  */
 import { readFileSync } from 'node:fs';
-import { stripTypeScriptTypes } from 'node:module';
 import { describe, expect, it } from 'vitest';
 import { WORD_LIMIT, wordCount } from './words.ts';
 
@@ -30,10 +35,13 @@ function widgetLimit(): number {
   return Number(once(/^const WORD_LIMIT = (\d+);$/m, '`const WORD_LIMIT = <n>;`')[1]);
 }
 
+const SIGNATURE = 'const wordCount = (text: string) => {';
+
 // Evaluates this repository's own widget source, in a test, and nothing else.
 function widgetWordCount(): (text: string) => number {
-  const source = once(/^const wordCount = \(text: string\) => \{\n[\s\S]*?\n\};$/m, '`const wordCount = (text: string) => { ... };`')[0];
-  return new Function(`${stripTypeScriptTypes(source)}\nreturn wordCount;`)() as (text: string) => number;
+  const source = once(/^const wordCount = \(text: string\) => \{\n[\s\S]*?\n\};$/m, `\`${SIGNATURE} ... };\``)[0];
+  const javascript = `const wordCount = (text) => {${source.slice(SIGNATURE.length)}`;
+  return new Function(`${javascript}\nreturn wordCount;`)() as (text: string) => number;
 }
 
 const words = (n: number) => Array.from({ length: n }, (_, i) => `w${i}`).join(' ');
