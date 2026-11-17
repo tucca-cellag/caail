@@ -27,11 +27,10 @@
  */
 import {
   CORPUS_RECORD_ID,
-  EMBEDDING_MODEL,
-  EMBEDDING_PROMPTS,
   INDEX_RECHECK_MS,
   MAX_BODY_BYTES,
   REQUEST_DEADLINE_MS,
+  builtWithTheseSettings,
 } from './settings.ts';
 import { WORD_LIMIT, wordCount } from './words.ts';
 import { bundledLookup } from './bundled-lookup.ts';
@@ -226,7 +225,7 @@ async function readCorpusRecord(env: Env, signal: AbortSignal): Promise<CorpusRe
   }
   const meta = record?.metadata ?? {};
   if (typeof meta.corpusDate !== 'string') return { status: 'missing' };
-  if (meta.embeddingModel !== EMBEDDING_MODEL || meta.embeddingPrompts !== EMBEDDING_PROMPTS) return { status: 'mismatch' };
+  if (!builtWithTheseSettings(meta)) return { status: 'mismatch' };
   return { status: 'match', meta };
 }
 

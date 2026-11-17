@@ -49,6 +49,16 @@ export function documentInput(title: string, text: string): string {
 /** Both prompts in one string, recorded in the corpus record. */
 export const EMBEDDING_PROMPTS = `${queryInput('{query}')} / ${documentInput('{title}', '{text}')}`;
 
+/**
+ * Whether a corpus record says its index was built with this Worker's embedding
+ * settings, EMBEDDING_MODEL and EMBEDDING_PROMPTS. The one place this is decided:
+ * the Worker refuses an index it is not, and the index build refuses the old
+ * record of one it is not before re-embedding, so the two must agree.
+ */
+export function builtWithTheseSettings(record: Record<string, unknown>): boolean {
+  return record.embeddingModel === EMBEDDING_MODEL && record.embeddingPrompts === EMBEDDING_PROMPTS;
+}
+
 /** The Vectorize index. wrangler.toml binds it by this name (pinned by config.test.ts). */
 export const INDEX_NAME = 'caail-ask';
 

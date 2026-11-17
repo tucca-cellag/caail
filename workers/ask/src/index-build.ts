@@ -35,6 +35,7 @@ import {
   ENTRY_NAMESPACE,
   INDEX_NAME,
   META_NAMESPACE,
+  builtWithTheseSettings,
   documentInput,
 } from './settings.ts';
 
@@ -137,11 +138,6 @@ export function corpusRecord(plan: BuildPlan): IndexVector {
 export function refusingRecord(plan: BuildPlan): IndexVector {
   const { corpusDate, ...rest } = corpusRecord(plan).metadata;
   return { ...corpusRecord(plan), metadata: { ...rest, rebuilding: corpusDate } };
-}
-
-/** Whether a corpus record was written with this build's embedding settings. */
-function sameSettings(record: Record<string, unknown>): boolean {
-  return record.embeddingModel === EMBEDDING_MODEL && record.embeddingPrompts === EMBEDDING_PROMPTS;
 }
 
 /**
@@ -258,7 +254,7 @@ export async function runBuild(plan: BuildPlan, cf: CloudflareApi, options: { cr
   if (index) {
     try {
       const existing = await cf.readCorpusRecord();
-      refuse = existing !== null && !sameSettings(existing);
+      refuse = existing !== null && !builtWithTheseSettings(existing);
     } catch {
       refuse = true;
     }
