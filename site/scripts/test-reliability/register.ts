@@ -100,6 +100,10 @@ export type Status =
  *    that is an assertion rather than a wait or a timeout, such as a measured value over its
  *    limit. Playwright's text is the error message cut before the source snippet it quotes;
  *    vitest's adds each error's diff.
+ *  - `{ allListedUnder }`: vitest only. It failed an assertion whose diff lists what was
+ *    received (`+   "path",` lines), and every item listed lies under one of these
+ *    directories. For residue: one item anywhere else, such as a real paste under `src/`
+ *    beside the leftover, is a failure the residue does not explain, and goes unlabelled.
  *
  * Every string a shape names must appear verbatim in `file` (for `wait`, each quoted selector),
  * or for a residue entry in its `reproduce`, which removes the leftover it names;
@@ -109,7 +113,13 @@ export type Status =
 export type FailureShape =
   | 'timeout'
   | { readonly wait: readonly string[] }
-  | { readonly text: readonly string[] };
+  | { readonly text: readonly string[] }
+  | { readonly allListedUnder: readonly string[] };
+
+/** The strings a failed vitest assertion's diff lists on its received side, `+   "x",`. */
+export function receivedItems(text: string): string[] {
+  return [...text.matchAll(/^\+\s+"(.*)",?$/gm)].map((m) => m[1]!);
+}
 
 /** An entry's `failure`: one shape, or several, any one of which labels a failure. */
 export type FailureShapes = FailureShape | readonly FailureShape[];
@@ -144,6 +154,10 @@ export function shapeMatches(shapes: FailureShapes | undefined, failure: Observe
   return all.some((shape) => {
     if (shape === 'timeout') return failure.timedOut;
     if ('wait' in shape) return failure.texts.some((text) => waitedOn(text).some((locator) => shape.wait.includes(locator)));
+    if ('allListedUnder' in shape) {
+      const items = failure.texts.flatMap(receivedItems);
+      return items.length > 0 && items.every((item) => shape.allListedUnder.some((dir) => item.startsWith(`${dir}/`)));
+    }
     return shape.text.some((text) => failure.texts.some((observed) => observed.includes(text)));
   });
 }
@@ -156,6 +170,7 @@ export function shapeStrings(shapes: FailureShapes | undefined): string[] {
     if (shape === 'timeout') return [];
     // A locator as Playwright describes it is in no source; the selectors quoted in it are.
     if ('wait' in shape) return shape.wait.flatMap((locator) => [...locator.matchAll(/'([^']*)'/g)].map((m) => m[1]!));
+    if ('allListedUnder' in shape) return [...shape.allListedUnder];
     return [...shape.text];
   });
 }
@@ -672,7 +687,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
     // what makes the condition true: widen it and this entry is obsolete, so the entry
     // should be forced back under review. The title is covered by `tests` above.
     anchor: "const SKIP = new Set(['node_modules', 'dist', 'coverage', '.astro', '.git', 'public']);",
-    failure: { text: ['test-results', 'playwright-report'] },
+    failure: { allListedUnder: ['test-results', 'playwright-report'] },
     shape: 'residue',
     condition:
       'The walk that enforces where the Slack invite may appear does not respect .gitignore. ' +

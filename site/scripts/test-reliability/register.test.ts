@@ -29,6 +29,7 @@ import {
   formatEntry,
   formatReport,
   shapeMatches,
+  receivedItems,
   shapeStrings,
   titleMatches,
   waitedOn,
@@ -322,6 +323,15 @@ describe('waitedOn', () => {
   });
 });
 
+describe('receivedItems', () => {
+  it("reads the received side of a vitest diff, and nothing from the expected side", () => {
+    const diff = '- Expected\n+ Received\n\n- []\n+ [\n+   "test-results/a/error-context.md",\n+   "src/b.astro",\n+ ]';
+    expect(receivedItems(diff)).toEqual(['test-results/a/error-context.md', 'src/b.astro']);
+    expect(receivedItems('- [\n-   "expected only",\n- ]')).toEqual([]);
+    expect(receivedItems('expected 1 to be 2')).toEqual([]);
+  });
+});
+
 describe('entriesForVitestModule', () => {
   const metricsHook = { suites: [{ name: 'buildMetricsModel — real corpus', ...TIMED_OUT }] };
 
@@ -353,12 +363,21 @@ describe('entriesForVitestModule', () => {
   it('a narrowed entry matches only when one of its named tests failed in its shape', () => {
     const file = 'src/lib/community.test.ts';
     const registered = 'appears nowhere under site/ except this module and its test';
-    const leftover = asserted('+   "test-results/homepage-agent-x/error-context.md",');
+    const listed = (...paths: string[]) => asserted(['- []', '+ [', ...paths.map((path) => `+   "${path}",`), '+ ]'].join('\n'));
+    const leftover = listed('test-results/homepage-agent-x/error-context.md', 'playwright-report/index.html');
     expect(entriesForVitestModule(file, { tests: [{ name: registered, ...leftover }] }).map((e) => e.id)).toEqual([
       'vitest-community-invite-walk',
     ]);
-    // A real Slack-invite paste fails the SAME test, and names a file no run left behind.
-    expect(entriesForVitestModule(file, { tests: [{ name: registered, ...asserted('+   "src/components/Hero.astro",') }] })).toEqual([]);
+    // A real Slack-invite paste fails the SAME test, and names a file no run left behind,
+    // whether or not a leftover is listed beside it.
+    expect(entriesForVitestModule(file, { tests: [{ name: registered, ...listed('src/components/Hero.astro') }] })).toEqual([]);
+    expect(
+      entriesForVitestModule(file, {
+        tests: [{ name: registered, ...listed('test-results/homepage-agent-x/error-context.md', 'src/components/Hero.astro') }],
+      }),
+    ).toEqual([]);
+    // A directory whose name merely starts the same is not the leftover directory.
+    expect(entriesForVitestModule(file, { tests: [{ name: registered, ...listed('test-results-archive/x.md') }] })).toEqual([]);
     // Nor do the module's other tests failing on their own match.
     expect(
       entriesForVitestModule(file, {
