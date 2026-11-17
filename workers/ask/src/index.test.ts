@@ -336,6 +336,31 @@ describe('failures', () => {
     expect(spy.aiCalls).toEqual([]);
   });
 
+  // A body that breaks mid-read (the client went away, or sent a broken upload)
+  // is the client's failure, not the service's: a 400 logged as its own error,
+  // so it never reads as Workers AI or Vectorize failing.
+  it('answers a body that breaks mid-read with 400, logged as its own error', async () => {
+    const spy = harness();
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode('{"query":"which tools'));
+        controller.error(new Error('connection reset by peer'));
+      },
+    });
+    const request = new Request('https://ask.example/', {
+      method: 'POST',
+      headers: { Origin: ORIGIN },
+      body,
+      // @ts-expect-error Node's fetch needs this to send a stream body.
+      duplex: 'half',
+    });
+    const { status, logged } = await fails(spy, () => handlerWith().fetch(request, spy.env, spy.ctx));
+
+    expect(status).toBe(400);
+    expect(logged).toEqual({ error: 'body_read_failed' });
+    expect(spy.aiCalls).toEqual([]);
+  });
+
   it('answers a slow body that arrives inside the deadline', async () => {
     vi.useFakeTimers();
     const spy = harness();

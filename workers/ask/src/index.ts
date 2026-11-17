@@ -267,7 +267,17 @@ async function answer(
   // finished, is cut off at the deadline like everything after it.
   const deadline = startDeadline();
   try {
-    const raw = await racing(readCapped(request, MAX_BODY_BYTES, deadline.signal), deadline.signal);
+    let raw: string | null;
+    try {
+      raw = await racing(readCapped(request, MAX_BODY_BYTES, deadline.signal), deadline.signal);
+    } catch (err) {
+      if (deadline.signal.aborted) throw err;
+      // The body broke mid-read: the client went away or sent a broken upload.
+      // That is the client's failure, so a 400 with a line of its own, never
+      // the upstream_failure that means Workers AI or Vectorize failed.
+      logFailure('body_read_failed');
+      return text('bad request', 400, cors);
+    }
     if (raw === null) return text('payload too large', 413, cors);
     const question = queryOf(raw);
     if (question === null) return text('bad request', 400, cors);
