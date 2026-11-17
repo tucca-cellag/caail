@@ -70,6 +70,36 @@ describe('finds nothing a question does not name', () => {
   });
 });
 
+/**
+ * A question is read once, by every identifier rule, so each rule has to stay
+ * linear in its length. The body cap bounds a question in bytes, not in words
+ * (one "word" can fill the whole body), so these run well past that cap: a rule
+ * that backtracks shows as seconds here, and a linear one as a few milliseconds.
+ */
+describe('stays linear on a pathological question', () => {
+  const RUN = 50_000;
+  const BUDGET_MS = 100;
+
+  it.each([
+    ['a long run of trailing punctuation, then a letter', `${'.'.repeat(RUN)}x`],
+    ['the same run inside a DOI', `10.1234/${'.'.repeat(RUN)}x`],
+    ['a long run of closing brackets, then a letter', `${')'.repeat(RUN)}x`],
+    ['a long accession-shaped token with a version tail', `GSE${'1'.repeat(RUN)}.${'2'.repeat(RUN)}x`],
+  ])('%s', (_label, token) => {
+    const started = performance.now();
+    const found = lookup.match(`What is ${token}?`);
+    const elapsed = performance.now() - started;
+
+    expect(found).toEqual([]);
+    expect(elapsed, `matching took ${elapsed.toFixed(0)} ms`).toBeLessThan(BUDGET_MS);
+  });
+
+  it('still strips the punctuation a sentence puts after an identifier', () => {
+    expect(lookup.match('See (10.1093/nar/gkac1000).')).toEqual(['db:string']);
+    expect(lookup.match('Is it GSE169291)?!')).toEqual(['ds:gse169291']);
+  });
+});
+
 it('returns at most TOP_K', () => {
   const many: LookupFiles = {
     ...FILES,

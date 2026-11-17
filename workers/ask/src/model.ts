@@ -7,6 +7,7 @@
  * but the model.
  */
 import type { RetrievedEntry } from './retrieval.ts';
+import { trimTrailing } from './text.ts';
 
 export const SYSTEM_PROMPT = [
   'You answer questions about CAAIL, the Cellular Agriculture AI Library: a curated index of the papers, software, databases and datasets in AI and machine learning for cellular agriculture.',
@@ -75,8 +76,10 @@ export function answerText(output: unknown): string | null {
   return answer || null;
 }
 
+/** A URL in the answer. Linear: a greedy class with nothing after it. */
 const URL_IN_TEXT = /https?:\/\/[^\s<>()[\]"'`]+/g;
-const TRAILING_PUNCTUATION = /[.,;:!?]+$/;
+/** Stripped by a walk, not a pattern, since the answer is text a question can steer (text.ts). */
+const TRAILING_PUNCTUATION: ReadonlySet<string> = new Set('.,;:!?');
 
 /**
  * The entries an answer cites: those whose link appears in it, exactly. Each
@@ -84,6 +87,6 @@ const TRAILING_PUNCTUATION = /[.,;:!?]+$/;
  * altered or made up names no entry and is not counted.
  */
 export function citedEntryIds(answer: string, entries: RetrievedEntry[]): string[] {
-  const linked = new Set((answer.match(URL_IN_TEXT) ?? []).map((url) => url.replace(TRAILING_PUNCTUATION, '')));
+  const linked = new Set((answer.match(URL_IN_TEXT) ?? []).map((url) => trimTrailing(url, TRAILING_PUNCTUATION)));
   return entries.filter((entry) => linked.has(entry.link)).map((entry) => entry.id);
 }

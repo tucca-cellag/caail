@@ -14,6 +14,7 @@
  */
 import { TOP_K } from './settings.ts';
 import { catalogItemId, onRequestItemId, paperItemId } from './ids.ts';
+import { trimTrailing, trimVersion } from './text.ts';
 
 interface LookupCatalogRow {
   slug: string;
@@ -46,22 +47,32 @@ export interface Lookup {
 }
 
 /**
- * A DOI as it appears in running text. The trailing class strips punctuation a
- * sentence puts after it.
+ * A DOI as it appears in running text. Linear: the suffix class is greedy with
+ * nothing after it to backtrack into, and each start position does bounded work
+ * before it fails. lookup.test.ts times it on a pathological question.
  */
 const DOI_IN_TEXT = /10\.\d{4,9}\/[^\s"'<>]+/g;
-const TRAILING_PUNCTUATION = /[.,;:!?)\]}]+$/;
+
+/** Punctuation a sentence puts after an identifier, stripped by a walk, not a pattern (text.ts). */
+const TRAILING_PUNCTUATION: ReadonlySet<string> = new Set('.,;:!?)]}');
 
 /** A name shorter than this is matched only as an exact, case-sensitive word. */
 const SHORT_NAME = 4;
 
 function normalizeDoi(doi: string): string {
-  return doi.trim().toLowerCase().replace(TRAILING_PUNCTUATION, '');
+  return trimTrailing(doi.trim(), TRAILING_PUNCTUATION).toLowerCase();
 }
 
 /** Accessions compare case-insensitively and without a version suffix (SRA051669.1 is SRA051669). */
 function normalizeAccession(accession: string): string {
-  return accession.trim().toUpperCase().replace(/\.\d+$/, '');
+  return trimVersion(trimTrailing(accession.trim(), TRAILING_PUNCTUATION)).toUpperCase();
+}
+
+/** The length of the longest key, or 0 for none. */
+function longest(map: Map<string, string[]>): number {
+  let max = 0;
+  for (const key of map.keys()) max = Math.max(max, key.length);
+  return max;
 }
 
 /** Lowercase words separated by single spaces, padded so a phrase match falls on word boundaries. */
@@ -122,6 +133,12 @@ export function buildLookup(files: LookupFiles): Lookup {
   }
   for (const report of files.reports.reports) add(names, report.title.trim(), report.id);
 
+  // Nothing longer than the longest identifier held can match one, so a longer
+  // candidate is dropped before it is looked up. The bounds come from the corpus,
+  // so they move with it.
+  const longestDoi = longest(dois);
+  const longestAccession = longest(accessions);
+
   // Longest names first, so a name that contains a shorter one ranks ahead of it
   // when both match.
   const nameMatchers = [...names.entries()]
@@ -136,9 +153,14 @@ export function buildLookup(files: LookupFiles): Lookup {
         for (const id of ids ?? []) if (!found.includes(id)) found.push(id);
       };
 
-      for (const doi of question.match(DOI_IN_TEXT) ?? []) take(dois.get(normalizeDoi(doi)));
-      const tokens = question.split(/[^A-Za-z0-9_.-]+/).filter(Boolean);
-      for (const token of tokens) take(accessions.get(normalizeAccession(token.replace(TRAILING_PUNCTUATION, ''))));
+      for (const candidate of question.match(DOI_IN_TEXT) ?? []) {
+        const doi = normalizeDoi(candidate);
+        if (doi.length <= longestDoi) take(dois.get(doi));
+      }
+      for (const token of question.split(/[^A-Za-z0-9_.-]+/)) {
+        const accession = normalizeAccession(token);
+        if (accession && accession.length <= longestAccession) take(accessions.get(accession));
+      }
 
       const questionPhrase = phrase(question);
       const words = new Set(question.split(/[^\p{L}\p{N}]+/u).filter(Boolean));

@@ -91,6 +91,18 @@ describe('the cited entries', () => {
     expect(citedEntryIds(answer, ENTRIES)).toEqual([]);
   });
 
+  // The answer is the model's text, and a question can steer it, so reading its
+  // links has to stay linear too.
+  it('are read in linear time from an answer with a long punctuation run', () => {
+    const answer = `[a](${ENTRIES[0].link}${'.'.repeat(50_000)}x)`;
+    const started = performance.now();
+    const cited = citedEntryIds(answer, ENTRIES);
+    const elapsed = performance.now() - started;
+
+    expect(cited).toEqual([]);
+    expect(elapsed, `reading links took ${elapsed.toFixed(0)} ms`).toBeLessThan(100);
+  });
+
   it('are none for an answer that cites nothing', () => {
     expect(citedEntryIds('CAAIL holds nothing on that.', ENTRIES)).toEqual([]);
   });
