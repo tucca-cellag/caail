@@ -1,0 +1,82 @@
+/**
+ * The exact-match boost, both directions: what a question names is found, and
+ * what it does not name is not.
+ */
+import { describe, expect, it } from 'vitest';
+import { buildLookup, type LookupFiles } from './lookup.ts';
+import { TOP_K } from './settings.ts';
+
+const FILES: LookupFiles = {
+  catalogIndex: {
+    entries: [
+      { slug: 'alphafold', name: 'AlphaFold', kind: 'software', doi: '10.1038/s41586-021-03819-2' },
+      { slug: 'ax', name: 'Ax', kind: 'software', doi: null },
+      { slug: 'gnps', name: 'GNPS', kind: 'software', doi: null },
+      { slug: 'gnps', name: 'GNPS', kind: 'database', doi: null },
+      { slug: 'string', name: 'STRING', kind: 'database', doi: '10.1093/NAR/GKAC1000' },
+    ],
+  },
+  papersIndex: {
+    references: [{ id: 1, title: 'Toward sustainable culture media', doi: '10.1016/j.scitotenv.2023.164988' }],
+  },
+  datasets: {
+    entries: [{ id: 'ds:cattlegtex', name: 'CattleGTEx', doi: null, accessions: ['PRJNA123456'] }],
+    inventory: [
+      { id: 'ds:gse169291', name: 'Spontaneous immortalization of chicken fibroblasts', accession: 'GSE169291', paperDoi: '10.1038/s43016-022-00658-w', dataDoi: null },
+      { id: 'ds:sra051669', name: 'A deposit with a versioned accession', accession: 'SRA051669.1', paperDoi: null, dataDoi: '10.5281/zenodo.42' },
+    ],
+    onRequest: [{ study: 'miR-10167-3p targets TCF7L1 (Hu et al. 2024)', paperDoi: '10.1016/j.ygeno.2024.110903' }],
+  },
+  reports: { reports: [{ id: 'report:gfi-2026', title: 'GFI State of the Industry: Cultivated Meat 2026' }] },
+};
+
+const lookup = buildLookup(FILES);
+
+describe('finds what a question names', () => {
+  it.each([
+    ['a DOI, in any case and inside a URL', 'What cites https://doi.org/10.1016/J.SCITOTENV.2023.164988?', ['paper:1']],
+    ['a DOI with a sentence after it', 'Is 10.1093/nar/gkac1000. indexed?', ['db:string']],
+    ['a paper DOI an inventory row names', 'data for 10.1038/s43016-022-00658-w', ['ds:gse169291']],
+    ['a data DOI', 'what is 10.5281/zenodo.42', ['ds:sra051669']],
+    ['an on-request study by its DOI', 'is 10.1016/j.ygeno.2024.110903 here', ['onrequest:10.1016/j.ygeno.2024.110903']],
+    ['an accession, in any case', 'what is gse169291?', ['ds:gse169291']],
+    ['an accession with a version suffix', 'SRA051669.1 and SRA051669.2', ['ds:sra051669']],
+    ['an entry accession', 'Where is PRJNA123456 described?', ['ds:cattlegtex']],
+    ['a name, in any case', 'how does alphafold work', ['sw:alphafold']],
+    ['a name dual-listed in two files', 'Is GNPS a database?', ['sw:gnps', 'db:gnps']],
+    ['a short name, as an exact word', 'Can Ax run Bayesian optimization?', ['sw:ax']],
+    ['a title', 'Summarize "Toward Sustainable Culture Media".', ['paper:1']],
+    ['a report title', 'What does GFI State of the Industry: Cultivated Meat 2026 say?', ['report:gfi-2026']],
+  ])('%s', (_label, question, expected) => {
+    expect(lookup.match(question)).toEqual(expected);
+  });
+
+  it('ranks identifiers ahead of names', () => {
+    expect(lookup.match('AlphaFold and GSE169291')).toEqual(['ds:gse169291', 'sw:alphafold']);
+  });
+});
+
+describe('finds nothing a question does not name', () => {
+  it.each([
+    ['a name inside another word', 'alphafolding proteins'],
+    ['a short name in another case', 'an ax to grind'],
+    ['a short name inside another word', 'the Axolotl genome'],
+    ['a DOI prefix only', 'anything under 10.1038/s41586'],
+    ['an accession inside a longer token', 'GSE1692910 is not it'],
+    ['an unrelated question', 'which tools optimize serum-free media?'],
+    ['an empty question', ''],
+  ])('%s', (_label, question) => {
+    expect(lookup.match(question)).toEqual([]);
+  });
+});
+
+it('returns at most TOP_K', () => {
+  const many: LookupFiles = {
+    ...FILES,
+    catalogIndex: {
+      entries: Array.from({ length: TOP_K + 5 }, (_, i) => ({ slug: `tool-${i}`, name: `Toolname${i}`, kind: 'software', doi: null })),
+    },
+  };
+  const question = Array.from({ length: TOP_K + 5 }, (_, i) => `Toolname${i}`).join(' ');
+  expect(buildLookup(many).match(question)).toHaveLength(TOP_K);
+});
