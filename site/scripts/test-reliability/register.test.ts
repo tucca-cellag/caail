@@ -29,7 +29,9 @@ import {
   formatEntry,
   formatReport,
   shapeMatches,
+  shapeStrings,
   titleMatches,
+  waitedOn,
   unsupportedPlaceholders,
   type ObservedFailure,
   type UnreliableEntry,
@@ -159,14 +161,13 @@ describe('register integrity', () => {
     expect(shapeless.map((entry) => entry.id)).toEqual([]);
   });
 
-  it("every text a failure shape matches on is in the entry's file, or a residue entry's control", () => {
-    // A text that no longer appears where the failure comes from is an assertion that was
-    // reworded, and the entry has stopped matching it.
+  it("every string a failure shape names is in the entry's file, or a residue entry's control", () => {
+    // A string that no longer appears where the failure comes from is an assertion that was
+    // reworded, or a selector that was changed, and the entry has stopped matching it.
     const stale: string[] = [];
     for (const entry of REGISTER) {
-      if (entry.failure === undefined || entry.failure === 'timeout') continue;
       const where = entry.shape === 'residue' ? entry.reproduce : readFileSync(join(SITE_ROOT, entry.file), 'utf-8');
-      for (const text of entry.failure.text) {
+      for (const text of shapeStrings(entry.failure)) {
         if (!where.includes(text)) stale.push(`${entry.id}: ${JSON.stringify(text)} not in its ${entry.shape === 'residue' ? 'reproduce' : 'file'}`);
       }
     }
@@ -277,6 +278,47 @@ describe('shapeMatches', () => {
   it('matches nothing without a shape', () => {
     expect(shapeMatches(undefined, TIMED_OUT)).toBe(false);
     expect(shapeMatches(undefined, asserted('anything'))).toBe(false);
+  });
+});
+
+describe('waitedOn', () => {
+  // Messages as Playwright 1.64 writes them, colour and snippet already removed.
+  const EXPECT = "Error: expect(locator).toHaveText(expected) failed\n\nLocator:  locator('#caail-h-review')\nExpected: \"Step 2 of 2: Your report\"\nReceived: \"\"\nTimeout:  5000ms\n\nCall log:\n  - Expect \"toHaveText\" locator('#caail-h-review') with timeout 5000ms";
+  const WAIT_FOR = "TimeoutError: page.waitForSelector: Timeout 20000ms exceeded.\nCall log:\n  - waiting for locator('.ng-canvas canvas') to be visible";
+  const CHAINED = "Error: expect(locator).toBeVisible() failed\n\nLocator: locator('.th-lead-full').locator('a')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found";
+
+  it('reads the locator an expect waited on, and the one an action or waitFor waited on', () => {
+    expect(waitedOn(EXPECT)).toEqual(["locator('#caail-h-review')"]);
+    expect(waitedOn(WAIT_FOR)).toEqual(["locator('.ng-canvas canvas')"]);
+    expect(waitedOn(CHAINED)).toEqual(["locator('.th-lead-full').locator('a')"]);
+  });
+
+  it('reads no wait from an assertion that does not wait, or a test timeout', () => {
+    expect(waitedOn('Error: expect(received).toEqual(expected) // deep equality\n\n- Array []\n+ Array [ "a violation" ]')).toEqual([]);
+    expect(waitedOn('Test timeout of 30000ms exceeded.')).toEqual([]);
+    // A locator named with no timeout beside it did not run out of one.
+    expect(waitedOn("Error: expect(locator).toHaveCount(expected) failed\n\nLocator: locator('.cb-card')\nExpected: 3")).toEqual([]);
+  });
+
+  it('matches a wait shape on its exact locator only', () => {
+    const lead = { wait: ["locator('.th-lead-full')"] } as const;
+    expect(shapeMatches(lead, asserted(CHAINED.replace(".locator('a')", '')))).toBe(true);
+    // The test's second wait, on the link inside the lead, is a different locator.
+    expect(shapeMatches(lead, asserted(CHAINED))).toBe(false);
+    expect(shapeMatches(lead, TIMED_OUT)).toBe(false);
+  });
+
+  it('labels any shape in a list', () => {
+    const report = ['timeout', { wait: ["locator('#caail-h-review')"] }] as const;
+    expect(shapeMatches(report, TIMED_OUT)).toBe(true);
+    expect(shapeMatches(report, asserted(EXPECT))).toBe(true);
+    expect(shapeMatches(report, asserted(WAIT_FOR))).toBe(false);
+  });
+
+  it('names the quoted selectors of a wait shape for the integrity check', () => {
+    expect(shapeStrings({ wait: ["locator('.lic-badge').first()", "locator('#a').locator('b')"] })).toEqual(['.lic-badge', '#a', 'b']);
+    expect(shapeStrings(['timeout', { text: ['total layout shift'] }])).toEqual(['total layout shift']);
+    expect(shapeStrings('timeout')).toEqual([]);
   });
 });
 
@@ -485,6 +527,16 @@ describe('entriesForPlaywrightTest', () => {
     expect(entriesForPlaywrightTest('e2e/licenses.spec.ts', FACET, FACET_FAILED).map((entry) => entry.id)).toEqual([
       'pw-license-facet',
     ]);
+  });
+
+  it('matches a wait entry when its wait ran out, as well as on a test timeout', () => {
+    const file = '/checkout/site/e2e/report.spec.ts';
+    const TWO_STEPS = 'a reason with nothing to ask takes two steps, not three';
+    const gaveUp = asserted("Error: expect(locator).toHaveText(expected) failed\n\nLocator:  locator('#caail-h-review')\nTimeout:  5000ms");
+    expect(entriesForPlaywrightTest(file, TWO_STEPS, [TIMED_OUT]).map((e) => e.id)).toEqual(['pw-report-two-steps']);
+    expect(entriesForPlaywrightTest(file, TWO_STEPS, [gaveUp]).map((e) => e.id)).toEqual(['pw-report-two-steps']);
+    // A wait on another element of the same flow is not the one recorded.
+    expect(entriesForPlaywrightTest(file, TWO_STEPS, [asserted("Locator: locator('#caail-step-detail')\nTimeout: 5000ms")])).toEqual([]);
   });
 
   it('matches a timeout entry only when the test timed out, not when it failed an assertion', () => {

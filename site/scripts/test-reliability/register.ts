@@ -87,18 +87,47 @@ export type Status =
  * prints as unregistered.
  *
  *  - `'timeout'`: it ran past its time budget. On Playwright, the test's own timeout
- *    (`result.status === 'timedOut'`); an `expect` that waited out a timeout of its own fails as
- *    an assertion, not as this. On vitest, every error it failed with is vitest's "Test timed
- *    out in" or "Hook timed out in".
+ *    (`result.status === 'timedOut'`); a wait that ran out of a timeout of its own fails with
+ *    status `failed`, and is `wait` below, not this. On vitest, every error it failed with is
+ *    vitest's "Test timed out in" or "Hook timed out in".
+ *  - `{ wait }`: Playwright only. It failed because a wait on one of these locators ran out of
+ *    its own timeout: an `expect` on the locator (its error names the locator beside a
+ *    `Timeout: NNNms` line) or an action or `waitFor` (`Timeout NNNms exceeded.`, then
+ *    `waiting for` the locator). Each is written as Playwright describes a locator,
+ *    `locator('.x')`, and matched exactly, so a locator chained off it is a different wait.
+ *    A non-waiting assertion, such as `toEqual` on axe violations, is never this.
  *  - `{ text }`: it failed with an error whose text holds one of these strings, for a failure
- *    that is an assertion rather than a timeout: a measured value over its limit, a wait an
- *    `expect` gave up on, or a residue path. Playwright's text is the error message cut before
- *    the source snippet it quotes; vitest's adds each error's diff. Each string must appear
- *    verbatim in `file`, or for a residue entry in its `reproduce`, which removes the leftover
- *    it names; `register.test.ts` enforces it, so a reworded assertion cannot leave the entry
- *    matching nothing unnoticed.
+ *    that is an assertion rather than a wait or a timeout, such as a measured value over its
+ *    limit. Playwright's text is the error message cut before the source snippet it quotes;
+ *    vitest's adds each error's diff.
+ *
+ * Every string a shape names must appear verbatim in `file` (for `wait`, each quoted selector),
+ * or for a residue entry in its `reproduce`, which removes the leftover it names;
+ * `register.test.ts` enforces it, so a reworded assertion or a changed selector cannot leave the
+ * entry matching nothing unnoticed. An entry may state several shapes, any of which labels.
  */
-export type FailureShape = 'timeout' | { readonly text: readonly string[] };
+export type FailureShape =
+  | 'timeout'
+  | { readonly wait: readonly string[] }
+  | { readonly text: readonly string[] };
+
+/** An entry's `failure`: one shape, or several, any one of which labels a failure. */
+export type FailureShapes = FailureShape | readonly FailureShape[];
+
+/**
+ * The locators a Playwright error says it waited on until a timeout of its own ran out, as
+ * Playwright describes them (`locator('.x')`). Read from the two ways Playwright 1.64 words it:
+ * an `expect` names its `Locator:` beside a `Timeout: NNNms` line, and an action or `waitFor`
+ * says `Timeout NNNms exceeded.` and then what it was `waiting for`.
+ */
+export function waitedOn(text: string): string[] {
+  const waits: string[] = [];
+  const expected = /^Locator:\s+(.+)$/m.exec(text);
+  if (expected && /^Timeout:\s+\d+ms$/m.test(text)) waits.push(expected[1]!.trim());
+  const acted = /^\s*- waiting for (.+?)(?: to be \w+)?$/m.exec(text);
+  if (acted && /\bTimeout \d+ms exceeded\./.test(text)) waits.push(acted[1]!.trim());
+  return waits;
+}
 
 /** One failure a reporter saw, in the terms a `FailureShape` is checked against. */
 export interface ObservedFailure {
@@ -108,11 +137,27 @@ export interface ObservedFailure {
   texts: readonly string[];
 }
 
-/** Whether `failure` has the shape `shape` describes. No shape matches nothing. */
-export function shapeMatches(shape: FailureShape | undefined, failure: ObservedFailure): boolean {
-  if (shape === undefined) return false;
-  if (shape === 'timeout') return failure.timedOut;
-  return shape.text.some((text) => failure.texts.some((observed) => observed.includes(text)));
+/** Whether `failure` has one of the shapes `shapes` describes. No shape matches nothing. */
+export function shapeMatches(shapes: FailureShapes | undefined, failure: ObservedFailure): boolean {
+  if (shapes === undefined) return false;
+  const all: readonly FailureShape[] = Array.isArray(shapes) ? shapes : [shapes as FailureShape];
+  return all.some((shape) => {
+    if (shape === 'timeout') return failure.timedOut;
+    if ('wait' in shape) return failure.texts.some((text) => waitedOn(text).some((locator) => shape.wait.includes(locator)));
+    return shape.text.some((text) => failure.texts.some((observed) => observed.includes(text)));
+  });
+}
+
+/** The strings a shape names, which `register.test.ts` requires to be found where it says. */
+export function shapeStrings(shapes: FailureShapes | undefined): string[] {
+  if (shapes === undefined) return [];
+  const all: readonly FailureShape[] = Array.isArray(shapes) ? shapes : [shapes as FailureShape];
+  return all.flatMap((shape) => {
+    if (shape === 'timeout') return [];
+    // A locator as Playwright describes it is in no source; the selectors quoted in it are.
+    if ('wait' in shape) return shape.wait.flatMap((locator) => [...locator.matchAll(/'([^']*)'/g)].map((m) => m[1]!));
+    return [...shape.text];
+  });
 }
 
 export interface UnreliableEntry {
@@ -191,7 +236,7 @@ export interface UnreliableEntry {
    * artifact entries, which no test failure matches, carry none. An entry without one
    * matches nothing.
    */
-  failure?: FailureShape;
+  failure?: FailureShapes;
   shape: Shape;
   /** One or two sentences: when does it misbehave, and when does it not. */
   condition: string;
@@ -499,7 +544,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
     file: 'e2e/network-metrics.spec.ts',
     unit: 'a small node selects when clicked at its centre',
     anchor: 'const t = await pickSmallNode(page);',
-    failure: 'timeout',
+    failure: ['timeout', { wait: ["locator('.ng-panel .ng-slug')"] }],
     shape: 'load',
     condition:
       'Ran past the 30s test timeout waiting for the selected node\'s panel (.ng-panel .ng-slug) ' +
@@ -521,7 +566,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
     file: 'e2e/report.spec.ts',
     unit: 'a reason with nothing to ask takes two steps, not three',
     anchor: "await expect(page.locator('#caail-h-review')).toHaveText('Step 2 of 2: Your report');",
-    failure: 'timeout',
+    failure: ['timeout', { wait: ["locator('#caail-h-review')"] }],
     shape: 'load',
     condition:
       'Ran past the 30s test timeout waiting for the review step\'s heading (#caail-h-review) ' +
@@ -542,11 +587,12 @@ export const REGISTER: readonly UnreliableEntry[] = [
     file: 'e2e/licenses.spec.ts',
     unit: 'the license badges introduce no axe violations on /software/',
     anchor: 'the license badges introduce no axe violations on /software/',
-    failure: 'timeout',
+    failure: ['timeout', { wait: ["locator('.lic-badge').first()"] }],
     shape: 'load',
     condition:
       'Timed out in a run of seven specs with review agents running alongside, and passed with ' +
-      'its file run alone on the same build.',
+      'its file run alone on the same build. The record does not say which wait ran out, so both ' +
+      'the test\'s own timeout and the badge\'s visibility wait giving up are covered.',
     evidence:
       '2026-11-05, local, on a branch that changed only dataset entries: timed out in a run of ' +
       'the datasets, topics, topics-band, network-metrics, report, citations and licenses specs ' +
@@ -563,7 +609,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
     file: 'e2e/topics.spec.ts',
     unit: 'a theme view with a named lead has no axe violations',
     anchor: "const lead = page.locator('.th-lead-full');",
-    failure: { text: ["locator('.th-lead-full')"] },
+    failure: { wait: ["locator('.th-lead-full')"] },
     shape: 'load',
     condition:
       'The lead credit renders inside the topics hub island (client:load), and under contention ' +
