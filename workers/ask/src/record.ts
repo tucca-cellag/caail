@@ -48,16 +48,11 @@ export function byteLength(text: string): number {
 
 /** The longest prefix of `text` within `max` UTF-8 bytes, never splitting a character. */
 export function clipBytes(text: string, max: number): string {
-  if (byteLength(text) <= max) return text;
-  let used = 0;
-  let out = '';
-  for (const char of text) {
-    const size = byteLength(char);
-    if (used + size > max) break;
-    used += size;
-    out += char;
-  }
-  return out;
+  // encodeInto writes whole characters only, stopping before one that would not
+  // fit, and `read` counts the UTF-16 units it consumed, so slicing there is the
+  // longest prefix within `max` bytes that splits no character.
+  const { read } = utf8.encodeInto(text, new Uint8Array(max));
+  return text.slice(0, read);
 }
 
 /** Whole ids, space-separated, as many as fit: a cut id would name a different entry or none. */
