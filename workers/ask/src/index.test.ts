@@ -260,14 +260,21 @@ describe('failures', () => {
     return { status: res.status, logged: JSON.parse(line) as { error: string; code?: number } };
   }
 
+  /** Start a request and run the clock to the deadline; say whether the handler has answered. */
+  async function atDeadline(run: () => Promise<Response>) {
+    let settled = false;
+    const pending = run().finally(() => {
+      settled = true;
+    });
+    await vi.advanceTimersByTimeAsync(ANSWER_DEADLINE_MS);
+    expect(settled, 'the handler was still waiting on the model at the deadline').toBe(true);
+    return pending;
+  }
+
   it('returns 503 when the model runs past the deadline', async () => {
     vi.useFakeTimers();
     const spy = harness({ ai: (model, inputs, opts) => (model === EMBEDDING_MODEL ? defaultAi(model, inputs, opts) : new Promise(() => {})) });
-    const { status, logged } = await fails(spy, async () => {
-      const pending = handlerWith().fetch(ask(PRIVATE, HEADERS), spy.env, spy.ctx);
-      await vi.advanceTimersByTimeAsync(ANSWER_DEADLINE_MS);
-      return pending;
-    });
+    const { status, logged } = await fails(spy, () => atDeadline(() => handlerWith().fetch(ask(PRIVATE, HEADERS), spy.env, spy.ctx)));
 
     expect(status).toBe(503);
     expect(logged).toEqual({ error: 'deadline' });
@@ -287,9 +294,11 @@ describe('failures', () => {
     await vi.advanceTimersByTimeAsync(ANSWER_DEADLINE_MS - 1);
     expect(signal?.aborted).toBe(false);
     await vi.advanceTimersByTimeAsync(1);
-    await pending;
 
-    expect(signal?.aborted).toBe(true);
+    expect(signal?.aborted, 'the model call was not aborted at the deadline').toBe(true);
+    // Settle the request so it does not outlive the test.
+    await vi.advanceTimersByTimeAsync(ANSWER_DEADLINE_MS);
+    await Promise.race([pending, Promise.resolve()]);
   });
 
   it('does not give up on a model that answers just inside the deadline', async () => {
