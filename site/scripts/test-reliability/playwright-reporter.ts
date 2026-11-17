@@ -23,7 +23,7 @@ import { entriesForPlaywrightTest, formatReport, type ObservedFailure, type Unre
 
 /**
  * The text of a Playwright error as a `FailureShape` reads it: without terminal control
- * sequences (colour, and hyperlinks, which would split a locator a wait shape matches exactly),
+ * sequences (colour, and hyperlinks, which would split a locator a `missing` shape matches exactly),
  * and cut before the source snippet its message quotes. The snippet shows lines around the
  * failing one, so a text shape matched against it would also match a different assertion a line
  * or two away.

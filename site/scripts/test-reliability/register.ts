@@ -87,32 +87,32 @@ export type Status =
  * prints as unregistered.
  *
  *  - `'timeout'`: it ran past its time budget. On Playwright, the test's own timeout
- *    (`result.status === 'timedOut'`); a wait that ran out of a timeout of its own fails with
- *    status `failed`, and is `wait` below, not this. On vitest, every error it failed with is
- *    vitest's "Test timed out in" or "Hook timed out in".
- *  - `{ wait }`: Playwright only. It failed because a wait on one of these locators ran out of
- *    its own timeout: an `expect` on the locator (its error names the locator beside a
- *    `Timeout: NNNms` line) or an action or `waitFor` (`Timeout NNNms exceeded.`, then
- *    `waiting for` the locator). Each is written as Playwright describes a locator,
- *    `locator('.x')`, and matched exactly, so a locator chained off it is a different wait.
- *    A non-waiting assertion, such as `toEqual` on axe violations, is never this.
+ *    (`result.status === 'timedOut'`); an `expect` that ran out of a timeout of its own fails
+ *    with status `failed` and is not this. On vitest, every error it failed with is vitest's
+ *    "Test timed out in" or "Hook timed out in".
+ *  - `{ missing }`: Playwright only. An `expect` on one of these locators ran out of its own
+ *    timeout with no element matching it (`notFound`). Every web-first assertion retries to its
+ *    timeout, so a timeout alone says nothing: a matched element with the wrong text or state,
+ *    which is how a regression in one usually fails, is not this. Each locator is written as
+ *    Playwright describes it, `locator('.x')`, and matched exactly, so a locator chained off it
+ *    is a different one.
  *  - `{ text }`: it failed with an error whose text holds one of these strings, for a failure
- *    that is an assertion rather than a wait or a timeout, such as a measured value over its
- *    limit. Playwright's text is the error message cut before the source snippet it quotes;
+ *    that is an assertion rather than a timeout, such as a measured value over its limit. Playwright's text is the error message cut before the source snippet it quotes;
  *    vitest's adds each error's diff.
  *  - `{ allListedUnder }`: vitest only. It failed an assertion whose diff lists what was
  *    received (`+   "path",` lines), and every item listed lies under one of these
  *    directories. For residue: one item anywhere else, such as a real paste under `src/`
  *    beside the leftover, is a failure the residue does not explain, and goes unlabelled.
  *
- * Every string a shape names must appear verbatim in `file` (for `wait`, each quoted selector),
- * or for a residue entry in its `reproduce`, which removes the leftover it names;
+ * Every string a shape names must appear verbatim in `file` (for `missing`, the whole
+ * `locator('...')` expression), or for a residue entry in its `reproduce`, which removes the
+ * leftover it names;
  * `register.test.ts` enforces it, so a reworded assertion or a changed selector cannot leave the
  * entry matching nothing unnoticed. An entry may state several shapes, any of which labels.
  */
 export type FailureShape =
   | 'timeout'
-  | { readonly wait: readonly string[] }
+  | { readonly missing: readonly string[] }
   | { readonly text: readonly string[] }
   | { readonly allListedUnder: readonly string[] };
 
@@ -125,18 +125,15 @@ export function receivedItems(text: string): string[] {
 export type FailureShapes = FailureShape | readonly FailureShape[];
 
 /**
- * The locators a Playwright error says it waited on until a timeout of its own ran out, as
- * Playwright describes them (`locator('.x')`). Read from the two ways Playwright 1.64 words it:
- * an `expect` names its `Locator:` beside a `Timeout: NNNms` line, and an action or `waitFor`
- * says `Timeout NNNms exceeded.` and then what it was `waiting for`.
+ * The locator a Playwright `expect` gave up on because no element matched it, as Playwright
+ * describes it (`locator('.x')`), or none. Playwright 1.64 writes that failure with a `Locator:`
+ * line, a `Timeout: NNNms` line and `Error: element(s) not found`; an element that matched but
+ * had the wrong text or state is written with a `Received:` line instead, and gives none here.
  */
-export function waitedOn(text: string): string[] {
-  const waits: string[] = [];
-  const expected = /^Locator:\s+(.+)$/m.exec(text);
-  if (expected && /^Timeout:\s+\d+ms$/m.test(text)) waits.push(expected[1]!.trim());
-  const acted = /^\s*- waiting for (.+?)(?: to be \w+)?$/m.exec(text);
-  if (acted && /\bTimeout \d+ms exceeded\./.test(text)) waits.push(acted[1]!.trim());
-  return waits;
+export function notFound(text: string): string[] {
+  const locator = /^Locator:\s+(.+)$/m.exec(text);
+  const gaveUp = /^Timeout:\s+\d+ms$/m.test(text) && /^Error: element\(s\) not found$/m.test(text);
+  return locator && gaveUp ? [locator[1]!.trim()] : [];
 }
 
 /** One failure a reporter saw, in the terms a `FailureShape` is checked against. */
@@ -162,7 +159,7 @@ export function shapeList(shapes: FailureShapes | undefined): readonly FailureSh
 export function shapeMatches(shapes: FailureShapes | undefined, failure: ObservedFailure): boolean {
   return shapeList(shapes).some((shape) => {
     if (shape === 'timeout') return failure.timedOut;
-    if ('wait' in shape) return failure.texts.some((text) => waitedOn(text).some((locator) => shape.wait.includes(locator)));
+    if ('missing' in shape) return failure.texts.some((text) => notFound(text).some((locator) => shape.missing.includes(locator)));
     if ('allListedUnder' in shape) {
       const items = failure.texts.flatMap(receivedItems);
       return items.length > 0 && items.every((item) => shape.allListedUnder.some((dir) => item.startsWith(`${dir}/`)));
@@ -175,8 +172,7 @@ export function shapeMatches(shapes: FailureShapes | undefined, failure: Observe
 export function shapeStrings(shapes: FailureShapes | undefined): string[] {
   return shapeList(shapes).flatMap((shape) => {
     if (shape === 'timeout') return [];
-    // A locator as Playwright describes it is in no source; the selectors quoted in it are.
-    if ('wait' in shape) return shape.wait.flatMap((locator) => [...locator.matchAll(/'([^']*)'/g)].map((m) => m[1]!));
+    if ('missing' in shape) return [...shape.missing];
     if ('allListedUnder' in shape) return [...shape.allListedUnder];
     return [...shape.text];
   });
@@ -581,7 +577,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
     file: 'e2e/network-metrics.spec.ts',
     unit: 'a small node selects when clicked at its centre',
     anchor: 'const t = await pickSmallNode(page);',
-    failure: ['timeout', { wait: ["locator('.ng-panel .ng-slug')"] }],
+    failure: 'timeout',
     shape: 'load',
     condition:
       'Ran past the 30s test timeout waiting for the selected node\'s panel (.ng-panel .ng-slug) ' +
@@ -603,7 +599,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
     file: 'e2e/report.spec.ts',
     unit: 'a reason with nothing to ask takes two steps, not three',
     anchor: "await expect(page.locator('#caail-h-review')).toHaveText('Step 2 of 2: Your report');",
-    failure: ['timeout', { wait: ["locator('#caail-h-review')"] }],
+    failure: 'timeout',
     shape: 'load',
     condition:
       'Ran past the 30s test timeout waiting for the review step\'s heading (#caail-h-review) ' +
@@ -624,12 +620,11 @@ export const REGISTER: readonly UnreliableEntry[] = [
     file: 'e2e/licenses.spec.ts',
     unit: 'the license badges introduce no axe violations on /software/',
     anchor: 'the license badges introduce no axe violations on /software/',
-    failure: ['timeout', { wait: ["locator('.lic-badge').first()"] }],
+    failure: 'timeout',
     shape: 'load',
     condition:
       'Timed out in a run of seven specs with review agents running alongside, and passed with ' +
-      'its file run alone on the same build. The record does not say which wait ran out, so both ' +
-      'the test\'s own timeout and the badge\'s visibility wait giving up are covered.',
+      'its file run alone on the same build.',
     evidence:
       '2026-11-05, local, on a branch that changed only dataset entries: timed out in a run of ' +
       'the datasets, topics, topics-band, network-metrics, report, citations and licenses specs ' +
@@ -646,7 +641,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
     file: 'e2e/topics.spec.ts',
     unit: 'a theme view with a named lead has no axe violations',
     anchor: "const lead = page.locator('.th-lead-full');",
-    failure: { wait: ["locator('.th-lead-full')"] },
+    failure: { missing: ["locator('.th-lead-full')"] },
     shape: 'load',
     condition:
       'The lead credit renders inside the topics hub island (client:load), and under contention ' +

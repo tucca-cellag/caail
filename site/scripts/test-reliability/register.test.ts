@@ -33,7 +33,7 @@ import {
   shapeList,
   shapeStrings,
   titleMatches,
-  waitedOn,
+  notFound,
   unsupportedPlaceholders,
   type ObservedFailure,
   type UnreliableEntry,
@@ -308,38 +308,41 @@ describe('shapeMatches', () => {
   });
 });
 
-describe('waitedOn', () => {
+describe('notFound', () => {
   // Messages as Playwright 1.64 writes them, colour and snippet already removed.
-  const EXPECT = "Error: expect(locator).toHaveText(expected) failed\n\nLocator:  locator('#caail-h-review')\nExpected: \"Step 2 of 2: Your report\"\nReceived: \"\"\nTimeout:  5000ms\n\nCall log:\n  - Expect \"toHaveText\" locator('#caail-h-review') with timeout 5000ms";
-  const WAIT_FOR = "TimeoutError: page.waitForSelector: Timeout 20000ms exceeded.\nCall log:\n  - waiting for locator('.ng-canvas canvas') to be visible";
-  const CHAINED = "Error: expect(locator).toBeVisible() failed\n\nLocator: locator('.th-lead-full').locator('a')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found";
+  const MISSING = "Error: expect(locator).toBeVisible() failed\n\nLocator: locator('.th-lead-full')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found";
+  const CHAINED = MISSING.replace("locator('.th-lead-full')", "locator('.th-lead-full').locator('a')");
+  const WRONG_TEXT = "Error: expect(locator).toHaveText(expected) failed\n\nLocator:  locator('#caail-h-review')\nExpected: \"Step 2 of 2: Your report\"\nReceived: \"Step 2 of 3: Your report\"\nTimeout:  5000ms";
+  const WRONG_STATE = "Error: expect(locator).toBeVisible() failed\n\nLocator: locator('.th-lead-full')\nExpected: visible\nReceived: hidden\nTimeout: 5000ms";
 
-  it('reads the locator an expect waited on, and the one an action or waitFor waited on', () => {
-    expect(waitedOn(EXPECT)).toEqual(["locator('#caail-h-review')"]);
-    expect(waitedOn(WAIT_FOR)).toEqual(["locator('.ng-canvas canvas')"]);
-    expect(waitedOn(CHAINED)).toEqual(["locator('.th-lead-full').locator('a')"]);
+  it('reads the locator an expect gave up on because nothing matched it', () => {
+    expect(notFound(MISSING)).toEqual(["locator('.th-lead-full')"]);
+    expect(notFound(CHAINED)).toEqual(["locator('.th-lead-full').locator('a')"]);
   });
 
-  it('reads no wait from an assertion that does not wait, or a test timeout', () => {
-    expect(waitedOn('Error: expect(received).toEqual(expected) // deep equality\n\n- Array []\n+ Array [ "a violation" ]')).toEqual([]);
-    expect(waitedOn('Test timeout of 30000ms exceeded.')).toEqual([]);
-    // A locator named with no timeout beside it did not run out of one.
-    expect(waitedOn("Error: expect(locator).toHaveCount(expected) failed\n\nLocator: locator('.cb-card')\nExpected: 3")).toEqual([]);
+  it('reads nothing from a matched element with the wrong text or state, or from other failures', () => {
+    // Every web-first assertion retries to its timeout, so a regression carries Timeout: too.
+    expect(notFound(WRONG_TEXT)).toEqual([]);
+    expect(notFound(WRONG_STATE)).toEqual([]);
+    expect(notFound('Error: expect(received).toEqual(expected) // deep equality\n\n- Array []\n+ Array [ "a violation" ]')).toEqual([]);
+    expect(notFound('Test timeout of 30000ms exceeded.')).toEqual([]);
+    expect(notFound("TimeoutError: page.waitForSelector: Timeout 20000ms exceeded.\nCall log:\n  - waiting for locator('.ng-canvas canvas') to be visible")).toEqual([]);
   });
 
-  it('matches a wait shape on its exact locator only', () => {
-    const lead = { wait: ["locator('.th-lead-full')"] } as const;
-    expect(shapeMatches(lead, asserted(CHAINED.replace(".locator('a')", '')))).toBe(true);
+  it('matches a missing shape on its exact locator only', () => {
+    const lead = { missing: ["locator('.th-lead-full')"] } as const;
+    expect(shapeMatches(lead, asserted(MISSING))).toBe(true);
     // The test's second wait, on the link inside the lead, is a different locator.
     expect(shapeMatches(lead, asserted(CHAINED))).toBe(false);
+    expect(shapeMatches(lead, asserted(WRONG_STATE))).toBe(false);
     expect(shapeMatches(lead, TIMED_OUT)).toBe(false);
   });
 
   it('labels any shape in a list', () => {
-    const report = ['timeout', { wait: ["locator('#caail-h-review')"] }] as const;
-    expect(shapeMatches(report, TIMED_OUT)).toBe(true);
-    expect(shapeMatches(report, asserted(EXPECT))).toBe(true);
-    expect(shapeMatches(report, asserted(WAIT_FOR))).toBe(false);
+    const both = ['timeout', { missing: ["locator('.th-lead-full')"] }] as const;
+    expect(shapeMatches(both, TIMED_OUT)).toBe(true);
+    expect(shapeMatches(both, asserted(MISSING))).toBe(true);
+    expect(shapeMatches(both, asserted(WRONG_STATE))).toBe(false);
   });
 
   it('lists one shape, several, or none', () => {
@@ -349,8 +352,11 @@ describe('waitedOn', () => {
     expect(shapeList(undefined)).toEqual([]);
   });
 
-  it('names the quoted selectors of a wait shape for the integrity check', () => {
-    expect(shapeStrings({ wait: ["locator('.lic-badge').first()", "locator('#a').locator('b')"] })).toEqual(['.lic-badge', '#a', 'b']);
+  it('names the whole locator of a missing shape for the integrity check', () => {
+    expect(shapeStrings({ missing: ["locator('.th-lead-full')", "locator('#a').locator('b')"] })).toEqual([
+      "locator('.th-lead-full')",
+      "locator('#a').locator('b')",
+    ]);
     expect(shapeStrings(['timeout', { text: ['total layout shift'] }])).toEqual(['total layout shift']);
     expect(shapeStrings('timeout')).toEqual([]);
   });
@@ -585,14 +591,23 @@ describe('entriesForPlaywrightTest', () => {
     ]);
   });
 
-  it('matches a wait entry when its wait ran out, as well as on a test timeout', () => {
+  it('matches a timeout entry on its test timeout, not on an expect giving up', () => {
+    // The report flow back at three steps fails the same expect, with Timeout: on it.
     const file = '/checkout/site/e2e/report.spec.ts';
     const TWO_STEPS = 'a reason with nothing to ask takes two steps, not three';
-    const gaveUp = asserted("Error: expect(locator).toHaveText(expected) failed\n\nLocator:  locator('#caail-h-review')\nTimeout:  5000ms");
+    const atThree = asserted(
+      "Error: expect(locator).toHaveText(expected) failed\n\nLocator:  locator('#caail-h-review')\nExpected: \"Step 2 of 2: Your report\"\nReceived: \"Step 2 of 3: Your report\"\nTimeout:  5000ms",
+    );
     expect(entriesForPlaywrightTest(file, TWO_STEPS, [TIMED_OUT]).map((e) => e.id)).toEqual(['pw-report-two-steps']);
-    expect(entriesForPlaywrightTest(file, TWO_STEPS, [gaveUp]).map((e) => e.id)).toEqual(['pw-report-two-steps']);
-    // A wait on another element of the same flow is not the one recorded.
-    expect(entriesForPlaywrightTest(file, TWO_STEPS, [asserted("Locator: locator('#caail-step-detail')\nTimeout: 5000ms")])).toEqual([]);
+    expect(entriesForPlaywrightTest(file, TWO_STEPS, [atThree])).toEqual([]);
+  });
+
+  it('matches the lead entry when the lead is not found, not when it renders wrongly', () => {
+    const file = '/checkout/site/e2e/topics.spec.ts';
+    const LEAD = 'a theme view with a named lead has no axe violations';
+    const missing = asserted("Error: expect(locator).toBeVisible() failed\n\nLocator: locator('.th-lead-full')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found");
+    expect(entriesForPlaywrightTest(file, LEAD, [missing]).map((e) => e.id)).toEqual(['pw-topics-lead-axe']);
+    expect(entriesForPlaywrightTest(file, LEAD, [asserted("Locator: locator('.th-lead-full')\nReceived: hidden\nTimeout: 5000ms")])).toEqual([]);
   });
 
   it('matches a timeout entry only when the test timed out, not when it failed an assertion', () => {
@@ -650,7 +665,7 @@ describe('errorText', () => {
   it('drops a terminal hyperlink, so a locator inside one reads whole', () => {
     const linked = "Locator: \u001b]8;;file:///x.ts\u0007locator('.th-lead-full')\u001b]8;;\u0007\nTimeout: 5000ms";
     expect(errorText(linked)).toBe("Locator: locator('.th-lead-full')\nTimeout: 5000ms");
-    expect(waitedOn(errorText(linked))).toEqual(["locator('.th-lead-full')"]);
+    expect(errorText(linked)).toContain("locator('.th-lead-full')\n");
   });
 
   it('leaves a message with no snippet whole', () => {
