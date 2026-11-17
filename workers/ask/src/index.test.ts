@@ -156,6 +156,32 @@ describe('handler order', () => {
     expect(spy.aiCalls).toEqual([]);
   });
 
+  // Cancelling the rest of an oversized body is housekeeping: a cancel that
+  // fails must not turn the 413 into a body-read failure.
+  it('still refuses an oversized body with 413 when cancelling the rest of it fails', async () => {
+    const spy = harness();
+    const chunk = new TextEncoder().encode('x'.repeat(1024));
+    const body = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        controller.enqueue(chunk);
+      },
+      cancel() {
+        return Promise.reject(new Error('cancel failed'));
+      },
+    });
+    const request = new Request('https://ask.example/', {
+      method: 'POST',
+      headers: { Origin: ORIGIN },
+      body,
+      // @ts-expect-error Node's fetch needs this to send a stream body.
+      duplex: 'half',
+    });
+    const res = await handlerWith().fetch(request, spy.env, spy.ctx);
+
+    expect(res.status).toBe(413);
+    expect(logs.lines).toEqual([]);
+  });
+
   it('refuses an oversized body that declares no length', async () => {
     const spy = harness();
     const big = new TextEncoder().encode(JSON.stringify({ query: 'x'.repeat(MAX_BODY_BYTES) }));

@@ -141,7 +141,10 @@ async function readCapped(request: Request, max: number, signal: AbortSignal): P
     if (done) break;
     size += value.byteLength;
     if (size > max) {
-      await reader.cancel();
+      // Not awaited, and its failure swallowed, as on the abort path: the rest of
+      // the body is unwanted either way, and a cancel that rejects must not turn
+      // the 413 into a body-read failure.
+      void reader.cancel().catch(() => {});
       return null;
     }
     chunks.push(value);
