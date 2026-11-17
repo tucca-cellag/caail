@@ -8,6 +8,7 @@
  */
 import type { RetrievedEntry } from './retrieval.ts';
 import { trimTrailing } from './text.ts';
+import { linkKey } from './links.ts';
 
 export const SYSTEM_PROMPT = [
   'You answer questions about CAAIL, the Cellular Agriculture AI Library: a curated index of the papers, software, databases and datasets in AI and machine learning for cellular agriculture.',
@@ -85,31 +86,6 @@ const URL_IN_TEXT = /https?:\/\/[^\s<>()[\]"'`]+/gi;
  * is stripped, so an underscore inside a link is kept.
  */
 const TRAILING_PUNCTUATION: ReadonlySet<string> = new Set('.,;:!?*_');
-
-/**
- * What a link names, however it is written, so a citation that reaches the
- * right entry is counted, and one that does not, is not:
- *   - a link with an `item` value is its page and its item: the origin, the
- *     decoded path without a trailing slash, and the decoded item. Its fragment
- *     does not count, but its page does, since the right item on another page
- *     lands the reader on a page that ignores it;
- *   - any other link is its page and its anchor: the origin, the decoded path
- *     without a trailing slash, and the decoded fragment.
- * The origin is kept, so a look-alike host never names an entry. The URL parser
- * lowercases the scheme and host. Null for a link that does not parse or decode.
- */
-function linkKey(link: string): string | null {
-  try {
-    const url = new URL(link);
-    const decoded = decodeURIComponent(url.pathname);
-    const path = decoded.endsWith('/') ? decoded.slice(0, -1) : decoded;
-    const item = url.searchParams.get('item');
-    if (item !== null) return JSON.stringify([url.origin, path, 'item', item]);
-    return JSON.stringify([url.origin, path, decodeURIComponent(url.hash)]);
-  } catch {
-    return null;
-  }
-}
 
 /**
  * The entries an answer cites: those whose link appears in it. Each link names

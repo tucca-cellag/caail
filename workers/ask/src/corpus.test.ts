@@ -81,6 +81,16 @@ describe('one document per item the API serves', () => {
     expect(() => corpusDateOf({ ...api, reports: { ...api.reports, corpusDate: '1999-01-01' } })).toThrow(/reports is dated 1999-01-01/);
   });
 
+  // citedEntryIds maps a cited link to one entry, so no two entries may have
+  // links it reads as the same, even when their ids differ.
+  it('refuses two entries whose links name the same thing', () => {
+    const [first, ...rest] = api.datasets.entries;
+    const twin = { ...first, id: `${first.id}-twin` };
+    expect(() => buildCorpus({ ...api, datasets: { ...api.datasets, entries: [first, twin, ...rest] } })).toThrow(
+      /have links that name the same entry/,
+    );
+  });
+
   it('refuses a duplicate id', () => {
     const twice = { ...api, reports: { ...api.reports, reports: [api.reports.reports[0], api.reports.reports[0]] } };
     expect(() => buildCorpus(twice)).toThrow(/two items share the id/);

@@ -12,6 +12,7 @@
  */
 import { SITE_URL } from '../../../site/src/content/site-config.ts';
 import { onRequestItemId, paperItemId, taxonomySlug, termItemId } from './ids.ts';
+import { linkKey } from './links.ts';
 
 interface TopicRef {
   label: string;
@@ -434,6 +435,16 @@ export function buildCorpus(api: ApiFiles): CorpusEntry[] {
   for (const entry of corpus) {
     if (seen.has(entry.id)) throw new Error(`corpus: two items share the id ${entry.id}`);
     seen.add(entry.id);
+  }
+  // A cited link is mapped back to one entry by its key (links.ts), so two
+  // entries whose links the reader takes for the same would be miscounted.
+  const byKey = new Map<string, string>();
+  for (const entry of corpus) {
+    const key = linkKey(entry.link);
+    if (key === null) throw new Error(`corpus: ${entry.id}'s link ${entry.link} does not parse`);
+    const other = byKey.get(key);
+    if (other !== undefined) throw new Error(`corpus: ${other} and ${entry.id} have links that name the same entry`);
+    byKey.set(key, entry.id);
   }
   return corpus;
 }
