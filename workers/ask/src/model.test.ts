@@ -109,6 +109,16 @@ describe('the answer', () => {
     expect(answerText(output)).toBe('One two.');
   });
 
+  // A reply that leaves one field empty and puts its text in another has an
+  // answer; an empty field earlier in the reading order does not hide it.
+  it.each([
+    ['an empty content beside output_text', { choices: [{ message: { content: '' } }], output_text: 'An answer.' }],
+    ['a blank content beside a response', { choices: [{ message: { content: ' \n ' } }], response: 'An answer.' }],
+    ['an empty output_text beside Responses output items', { ...responsesOutput('An answer.'), output_text: '' }],
+  ])('reads past %s', (_label, output) => {
+    expect(answerText(output)).toBe('An answer.');
+  });
+
   it.each([
     ['nothing', undefined],
     ['an empty answer', chatOutput('')],
@@ -118,6 +128,10 @@ describe('the answer', () => {
     ['a shape no candidate documents', { result: { text: 'An answer.' } }],
     ['Responses output with only reasoning', { output: [{ type: 'reasoning', summary: [{ type: 'summary_text', text: 'x' }] }] }],
     ['Responses output with only a refusal', { output: [{ type: 'message', content: [{ type: 'refusal', refusal: 'No.' }] }] }],
+    [
+      'a reply whose every field is empty or blank',
+      { choices: [{ message: { content: '' } }], output_text: ' ', output: [{ type: 'message', content: [{ type: 'output_text', text: '\n' }] }], response: '' },
+    ],
   ])('finds no answer in %s', (_label, output) => {
     expect(answerText(output)).toBeNull();
   });

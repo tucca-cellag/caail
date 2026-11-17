@@ -95,14 +95,18 @@ function responsesText(output: ModelOutput['output']): string | undefined {
  * types give gemma-4 Chat Completions output and the gpt-oss models Chat
  * Completions or Responses output, and Cloudflare's /ai/run example for
  * gpt-oss answers in the older `response` form. Any other shape is no answer.
+ *
+ * The first candidate with text after trimming is the answer, so a reply that
+ * leaves one field empty and puts its text in another is still read.
  */
 export function answerText(output: unknown): string | null {
   const out = (output ?? {}) as ModelOutput;
   const candidates = [out.choices?.[0]?.message?.content, out.output_text, responsesText(out.output), out.response];
-  const content = candidates.find((value) => typeof value === 'string');
-  if (typeof content !== 'string') return null;
-  const answer = content.trim();
-  return answer || null;
+  for (const value of candidates) {
+    const answer = typeof value === 'string' ? value.trim() : '';
+    if (answer) return answer;
+  }
+  return null;
 }
 
 /** A URL in the answer, in any case. Linear: a greedy class with nothing after it. */
