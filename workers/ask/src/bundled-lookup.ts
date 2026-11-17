@@ -3,7 +3,8 @@
  *
  * The bundle is the corpus as of the deploy, and the index is the corpus as of
  * its last build, so the two can differ, and the bundle decides. A name the
- * bundle knows and the index lacks fetches nothing. An entry the index holds and
+ * bundle knows and the index lacks fetches nothing, and gives its place to the
+ * next named entry the index holds (retrieval.ts). An entry the index holds and
  * the bundle does not know is never offered, from either half of retrieval
  * (retrieval.ts drops it), so an entry removed from the corpus stays out even
  * while the index still holds it, and one a rebuild added waits for the

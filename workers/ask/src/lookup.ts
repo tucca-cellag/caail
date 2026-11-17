@@ -12,7 +12,7 @@
  * ids the index build gives the same items; corpus.test.ts checks that every id
  * it can return is one the corpus holds.
  */
-import { MAX_NAMED } from './settings.ts';
+import { MAX_NAMED_FETCHED } from './settings.ts';
 import { onRequestItemId, paperItemId, termItemId } from './ids.ts';
 import { trimTrailing, trimVersion } from './text.ts';
 
@@ -50,7 +50,10 @@ export interface LookupFiles {
 }
 
 export interface Lookup {
-  /** Entry ids the question names, strongest first, at most MAX_NAMED. */
+  /**
+   * Entry ids the question names, strongest first, at most MAX_NAMED_FETCHED.
+   * Retrieval keeps the first MAX_NAMED of them the index holds.
+   */
   match(question: string): string[];
   /** Whether the corpus these files hold has an entry with this id. */
   knows(id: string): boolean;
@@ -227,7 +230,7 @@ export function buildLookup(files: LookupFiles): Lookup {
       // Longest names first, so a name that contains a shorter one ranks ahead of
       // it when both match.
       for (const matcher of [...hits].sort((a, b) => b.rank - a.rank)) take(matcher.ids);
-      return found.slice(0, MAX_NAMED);
+      return found.slice(0, MAX_NAMED_FETCHED);
     },
   };
 }

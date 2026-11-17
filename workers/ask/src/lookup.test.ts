@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { buildLookup, type LookupFiles } from './lookup.ts';
-import { TOP_K } from './settings.ts';
+import { MAX_NAMED_FETCHED } from './settings.ts';
 import { fastestRun } from './test-env.ts';
 
 const FILES: LookupFiles = {
@@ -170,16 +170,17 @@ describe('stays linear on a pathological question', () => {
   });
 });
 
-it('names at most half of TOP_K entries, leaving the rest to meaning', () => {
+// The lookup bounds what one question fetches from the index; retrieval, not the
+// lookup, keeps MAX_NAMED of what the index holds (retrieval.test.ts).
+it('returns at most MAX_NAMED_FETCHED ids, however many entries a question names', () => {
+  const count = MAX_NAMED_FETCHED + 5;
   const many: LookupFiles = {
     ...FILES,
     catalog: {
-      software: Array.from({ length: TOP_K + 5 }, (_, i) => ({ itemId: `sw:tool-${i}`, name: `Toolname${i}`, doi: null })),
+      software: Array.from({ length: count }, (_, i) => ({ itemId: `sw:tool-${i}`, name: `Toolname${i}`, doi: null })),
       databases: [],
     },
   };
-  const question = Array.from({ length: TOP_K + 5 }, (_, i) => `Toolname${i}`).join(' ');
-  const found = buildLookup(many).match(question);
-  expect(found.length).toBeGreaterThan(0);
-  expect(found.length, 'entries named').toBeLessThanOrEqual(TOP_K / 2);
+  const question = Array.from({ length: count }, (_, i) => `Toolname${i}`).join(' ');
+  expect(buildLookup(many).match(question), 'ids returned').toHaveLength(MAX_NAMED_FETCHED);
 });

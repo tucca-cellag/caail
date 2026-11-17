@@ -17,6 +17,17 @@ export const TOP_K = 8;
 export const MAX_NAMED = Math.floor(TOP_K / 2);
 
 /**
+ * The most named ids the lookup returns, and so the most one question fetches
+ * from the index by id: twice MAX_NAMED. Retrieval keeps the first MAX_NAMED of
+ * them the index holds, so the spare places let a named entry the index lacks
+ * (one a deploy added before the rebuild) give way to the next one it holds,
+ * as many as it keeps. The bound stops a question naming many entries from
+ * making the fetch any larger, and keeps it near TOP_K, the number the search
+ * by meaning asks for.
+ */
+export const MAX_NAMED_FETCHED = 2 * MAX_NAMED;
+
+/**
  * The embedding model, for the entries and for each question alike. Changing it
  * means rebuilding the index: vectors from two models are not comparable, so the
  * corpus record stores the model it was built with and the GET reports it.

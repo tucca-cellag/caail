@@ -2,8 +2,8 @@
  * Retrieval: the entries one answer is built from.
  *
  * The entries a question names outright (lookup.ts) come first, fetched from
- * the index by id, at most MAX_NAMED of them; the nearest entries by meaning
- * fill the rest, up to TOP_K. Only entries of the corpus this Worker bundles are
+ * the index by id, and the first MAX_NAMED of them the index holds are kept;
+ * the nearest entries by meaning fill the rest, up to TOP_K. Only entries of the corpus this Worker bundles are
  * kept, from either half (entryOf), and each is read back from the index's own
  * metadata, so the model sees the text that was embedded.
  */
@@ -90,7 +90,12 @@ async function embed(ai: AiBinding, question: string, signal: AbortSignal): Prom
   return vector;
 }
 
-/** The named entries the index holds, and how many vectors it returned for them before filtering. */
+/**
+ * The first MAX_NAMED of the named entries the index holds, and how many vectors
+ * it returned for them before filtering. The cap comes after the fetch, so a
+ * named entry the index lacks gives its place to the next one it holds. The
+ * fetch itself is bounded by the lookup (MAX_NAMED_FETCHED).
+ */
 async function named(
   index: IndexBinding,
   itemIds: string[],
@@ -104,8 +109,8 @@ async function named(
     if (entry) byId.set(entry.id, entry);
   }
   // In the lookup's order, which ranks the strongest identifiers first.
-  const entries = itemIds.map((id) => byId.get(id)).filter((entry): entry is RetrievedEntry => entry !== undefined);
-  return { entries, returned: vectors.length };
+  const held = itemIds.map((id) => byId.get(id)).filter((entry): entry is RetrievedEntry => entry !== undefined);
+  return { entries: held.slice(0, MAX_NAMED), returned: vectors.length };
 }
 
 export interface Retrieval {
@@ -137,7 +142,7 @@ export async function retrieve(
   signal: AbortSignal,
 ): Promise<Retrieval> {
   const [boosted, nearest] = await Promise.allSettled([
-    named(env.INDEX, lookup.match(question).slice(0, MAX_NAMED), lookup),
+    named(env.INDEX, lookup.match(question), lookup),
     embed(env.AI, question, signal).then((vector) =>
       env.INDEX.query(vector, { topK: TOP_K, namespace: ENTRY_NAMESPACE, returnMetadata: 'all' }),
     ),

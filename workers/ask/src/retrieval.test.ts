@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { retrieve, type IndexBinding, type RetrievedEntry, type StoredVector } from './retrieval.ts';
-import { CORPUS_RECORD_ID, ENTRY_NAMESPACE, TOP_K } from './settings.ts';
+import { CORPUS_RECORD_ID, ENTRY_NAMESPACE, MAX_NAMED, MAX_NAMED_FETCHED, TOP_K } from './settings.ts';
 import { vectorId } from './ids.ts';
 import { ORIGIN, defaultAi, lookupNaming } from './test-env.ts';
 
@@ -107,6 +107,26 @@ describe('retrieval', () => {
 
     expect(result.entries.map((e) => e.id), 'the named entries were dropped').toEqual(['paper:2']);
     expect(result.failed).toBeNull();
+  });
+
+  /**
+   * Between a deploy that adds entries and the rebuild that indexes them, the
+   * strongest names a question holds can be ones the index lacks. They give
+   * their places to the next named entries it holds, and the cap still holds.
+   */
+  it('keeps MAX_NAMED named entries the index holds when the top-ranked names are missing from it', async () => {
+    const missing = Array.from({ length: MAX_NAMED - 1 }, (_, n) => `paper:${400 + n}`);
+    const held = Array.from({ length: MAX_NAMED + 1 }, (_, n) => entry(100 + n));
+    const nearest = await Promise.all(Array.from({ length: TOP_K }, (_, n) => stored(entry(n))));
+    const { binding } = index(nearest, await Promise.all(held.map(stored)));
+    const namedIds = [...missing, ...held.map((e) => e.id)];
+    expect(namedIds).toHaveLength(MAX_NAMED_FETCHED);
+    const found = await entriesOf('q', { AI: { run: defaultAi }, INDEX: binding }, lookupNaming(namedIds), signal);
+
+    const byName = found.filter((e) => namedIds.includes(e.id)).map((e) => e.id);
+    expect(byName, 'the named entries the index holds').toEqual(held.slice(0, MAX_NAMED).map((e) => e.id));
+    expect(found.slice(0, MAX_NAMED).map((e) => e.id), 'named entries come first').toEqual(byName);
+    expect(found).toHaveLength(TOP_K);
   });
 
   it('skips a named entry the index does not hold', async () => {
