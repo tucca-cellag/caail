@@ -12,7 +12,7 @@
  */
 import { SITE_URL } from '../../../site/src/content/site-config.ts';
 import { onRequestItemId, paperItemId, taxonomySlug, termItemId } from './ids.ts';
-import { linkKey } from './links.ts';
+import { LINK_TRAILING, linkKey } from './links.ts';
 
 interface TopicRef {
   label: string;
@@ -437,9 +437,14 @@ export function buildCorpus(api: ApiFiles): CorpusEntry[] {
     seen.add(entry.id);
   }
   // A cited link is mapped back to one entry by its key (links.ts), so two
-  // entries whose links the reader takes for the same would be miscounted.
+  // entries whose links the reader takes for the same would be miscounted, and
+  // a link ending in a character the reader strips would never be counted.
   const byKey = new Map<string, string>();
   for (const entry of corpus) {
+    const last = entry.link.at(-1) ?? '';
+    if (LINK_TRAILING.has(last)) {
+      throw new Error(`corpus: ${entry.id}'s link ${entry.link} ends in "${last}", which an answer's reader strips`);
+    }
     const key = linkKey(entry.link);
     if (key === null) throw new Error(`corpus: ${entry.id}'s link ${entry.link} does not parse`);
     const other = byKey.get(key);

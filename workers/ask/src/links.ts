@@ -7,6 +7,15 @@
  */
 
 /**
+ * What can follow a link in an answer without being part of it: sentence
+ * punctuation, and Markdown emphasis (`*`, `_`) round a bare link. The answer
+ * reader strips these from the end of every URL it finds (model.ts), so the
+ * corpus build refuses a link that ends in one (corpus.ts): such a link could
+ * never be counted as cited.
+ */
+export const LINK_TRAILING: ReadonlySet<string> = new Set('.,;:!?*_');
+
+/**
  * What a link names, however it is written, so a citation that reaches the
  * right entry is counted, and one that does not, is not:
  *   - a link with an `item` value is its page and its item: the origin, the

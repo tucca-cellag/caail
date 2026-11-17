@@ -8,7 +8,7 @@
  */
 import type { RetrievedEntry } from './retrieval.ts';
 import { trimTrailing } from './text.ts';
-import { linkKey } from './links.ts';
+import { LINK_TRAILING, linkKey } from './links.ts';
 
 export const SYSTEM_PROMPT = [
   'You answer questions about CAAIL, the Cellular Agriculture AI Library: a curated index of the papers, software, databases and datasets in AI and machine learning for cellular agriculture.',
@@ -111,24 +111,20 @@ export function answerText(output: unknown): string | null {
 
 /** A URL in the answer, in any case. Linear: a greedy class with nothing after it. */
 const URL_IN_TEXT = /https?:\/\/[^\s<>()[\]"'`]+/gi;
-/**
- * What can follow a link without being part of it: sentence punctuation, and
- * Markdown emphasis (`*`, `_`) round a bare link. Stripped by a walk, not a
- * pattern, since the answer is text a question can steer (text.ts). Only the end
- * is stripped, so an underscore inside a link is kept.
- */
-const TRAILING_PUNCTUATION: ReadonlySet<string> = new Set('.,;:!?*_');
 
 /**
  * The entries an answer cites: those whose link appears in it. Each link names
  * one entry (corpus.ts), so a link maps to one id, and a link is compared by
  * what it names rather than by its spelling, so a percent-encoded `?item=`
  * still counts. A link the model altered or made up names no entry and is not
- * counted.
+ * counted. What follows a link without being part of it (LINK_TRAILING) is
+ * stripped by a walk, not a pattern, since the answer is text a question can
+ * steer (text.ts). Only the end is stripped, so an underscore inside a link is
+ * kept.
  */
 export function citedEntryIds(answer: string, entries: RetrievedEntry[]): string[] {
   const linked = new Set(
-    (answer.match(URL_IN_TEXT) ?? []).map((url) => linkKey(trimTrailing(url, TRAILING_PUNCTUATION))),
+    (answer.match(URL_IN_TEXT) ?? []).map((url) => linkKey(trimTrailing(url, LINK_TRAILING))),
   );
   linked.delete(null);
   return entries.filter((entry) => linked.has(linkKey(entry.link))).map((entry) => entry.id);

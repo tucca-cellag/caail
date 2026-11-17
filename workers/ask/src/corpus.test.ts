@@ -15,6 +15,7 @@ import { siteSlug } from '../../../site/src/lib/heading-slug.ts';
 import { ON_REQUEST_HEADING } from '../../../site/scripts/parser/datasets.ts';
 import { INVENTORY_ANCHOR, ON_REQUEST_ANCHOR, buildCorpus, clip, corpusDateOf, editionAnchor, type ApiFiles } from './corpus.ts';
 import { taxonomySlug } from './ids.ts';
+import { LINK_TRAILING } from './links.ts';
 import { buildLookup, entryIdsOf } from './lookup.ts';
 import { citedEntryIds } from './model.ts';
 
@@ -89,6 +90,24 @@ describe('one document per item the API serves', () => {
     expect(() => buildCorpus({ ...api, datasets: { ...api.datasets, entries: [first, twin, ...rest] } })).toThrow(
       /have links that name the same entry/,
     );
+  });
+
+  // The answer reader strips sentence punctuation and emphasis from the end of a
+  // link (LINK_TRAILING), so a link ending in one could never be counted.
+  it.each([
+    ['an underscore', 'tool_'],
+    ['a full stop', 'tool.'],
+  ])('refuses a link ending in %s, which the answer reader strips', (_label, slug) => {
+    const [first, ...rest] = api.catalog.software;
+    const built = () => buildCorpus({ ...api, catalog: { ...api.catalog, software: [{ ...first, slug }, ...rest] } });
+    expect(built).toThrow(new RegExp(`software/#tool\\${slug.at(-1)} ends in .*, which an answer's reader strips`));
+  });
+
+  it('builds today\'s corpus with every link counted when cited bare at a sentence end', () => {
+    for (const entry of corpus) {
+      expect(LINK_TRAILING.has(entry.link.at(-1) ?? ''), entry.link).toBe(false);
+      expect(citedEntryIds(`See ${entry.link}.`, [entry]), entry.link).toEqual([entry.id]);
+    }
   });
 
   it('refuses a duplicate id', () => {
