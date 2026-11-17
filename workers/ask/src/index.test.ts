@@ -8,7 +8,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import eventsWorker from '../../events/src/index.ts';
-import { ANSWER_DEADLINE_MS, CORPUS_RECORD_ID, EMBEDDING_MODEL, MAX_BODY_BYTES } from './settings.ts';
+import { REQUEST_DEADLINE_MS, CORPUS_RECORD_ID, EMBEDDING_MODEL, MAX_BODY_BYTES } from './settings.ts';
 import { WORD_LIMIT } from './words.ts';
 import { MAX_TOKENS, SYSTEM_PROMPT, TEMPERATURE } from './model.ts';
 import { vectorId } from './ids.ts';
@@ -290,10 +290,61 @@ describe('failures', () => {
     const pending = run().finally(() => {
       settled = true;
     });
-    await vi.advanceTimersByTimeAsync(ANSWER_DEADLINE_MS);
-    expect(settled, 'the handler was still waiting on the model at the deadline').toBe(true);
+    await vi.advanceTimersByTimeAsync(REQUEST_DEADLINE_MS);
+    expect(settled, 'the handler was still waiting at the deadline').toBe(true);
     return pending;
   }
+
+  /** A POST whose body arrives as `chunks`, each after `delayMs`, closed only if `close`. */
+  function trickled(chunks: string[], { delayMs, close }: { delayMs: number; close: boolean }): Request {
+    const encoder = new TextEncoder();
+    let sent = 0;
+    const body = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        return new Promise<void>((resolve) => {
+          if (sent === chunks.length) {
+            if (close) controller.close();
+            return; // Never settles when the body is left open: the next read waits for ever.
+          }
+          setTimeout(() => {
+            controller.enqueue(encoder.encode(chunks[sent++]));
+            resolve();
+          }, delayMs);
+        });
+      },
+    });
+    return new Request('https://ask.example/', {
+      method: 'POST',
+      headers: { Origin: ORIGIN },
+      body,
+      // @ts-expect-error Node's fetch needs this to send a stream body.
+      duplex: 'half',
+    });
+  }
+
+  // The deadline starts before the body is read, so a caller trickling a body,
+  // or never finishing one, cannot hold a request open without bound.
+  it('cuts off a body that never ends at the deadline', async () => {
+    vi.useFakeTimers();
+    const spy = harness();
+    const { status, logged } = await fails(spy, () =>
+      atDeadline(() => handlerWith().fetch(trickled(['{"query":"never fin'], { delayMs: 10, close: false }), spy.env, spy.ctx)),
+    );
+
+    expect(status).toBe(503);
+    expect(logged).toEqual({ error: 'deadline' });
+    expect(spy.aiCalls).toEqual([]);
+  });
+
+  it('answers a slow body that arrives inside the deadline', async () => {
+    vi.useFakeTimers();
+    const spy = harness();
+    const chunks = ['{"query":"which tools ', 'predict protein ', 'structure?"}'];
+    const pending = handlerWith().fetch(trickled(chunks, { delayMs: 1_000, close: true }), spy.env, spy.ctx);
+    await vi.advanceTimersByTimeAsync(chunks.length * 1_000 + 10);
+
+    expect((await pending).status).toBe(200);
+  });
 
   it('returns 503 when the model runs past the deadline', async () => {
     vi.useFakeTimers();
@@ -315,13 +366,13 @@ describe('failures', () => {
       },
     });
     const pending = handlerWith().fetch(ask(QUESTION), spy.env, spy.ctx);
-    await vi.advanceTimersByTimeAsync(ANSWER_DEADLINE_MS - 1);
+    await vi.advanceTimersByTimeAsync(REQUEST_DEADLINE_MS - 1);
     expect(signal?.aborted).toBe(false);
     await vi.advanceTimersByTimeAsync(1);
 
     expect(signal?.aborted, 'the model call was not aborted at the deadline').toBe(true);
     // Settle the request so it does not outlive the test.
-    await vi.advanceTimersByTimeAsync(ANSWER_DEADLINE_MS);
+    await vi.advanceTimersByTimeAsync(REQUEST_DEADLINE_MS);
     await Promise.race([pending, Promise.resolve()]);
   });
 
@@ -331,10 +382,10 @@ describe('failures', () => {
       ai: (model, inputs, opts) =>
         model === EMBEDDING_MODEL
           ? defaultAi(model, inputs, opts)
-          : new Promise((resolve) => setTimeout(() => resolve(chatOutput(ANSWER)), ANSWER_DEADLINE_MS - 100)),
+          : new Promise((resolve) => setTimeout(() => resolve(chatOutput(ANSWER)), REQUEST_DEADLINE_MS - 100)),
     });
     const pending = handlerWith().fetch(ask(QUESTION), spy.env, spy.ctx);
-    await vi.advanceTimersByTimeAsync(ANSWER_DEADLINE_MS - 100);
+    await vi.advanceTimersByTimeAsync(REQUEST_DEADLINE_MS - 100);
 
     expect((await pending).status).toBe(200);
   });
@@ -590,6 +641,22 @@ describe('GET: the corpus the index was built from', () => {
 
     const site = harness();
     expect((await handlerWith().fetch(get({ Origin: ORIGIN }), site.env, site.ctx)).status).toBe(200);
+  });
+
+  it('gives up on an index read that never returns, at the deadline', async () => {
+    vi.useFakeTimers();
+    const spy = harness({ getByIds: () => new Promise(() => {}) });
+    let settled = false;
+    const pending = handlerWith()
+      .fetch(get(), spy.env, spy.ctx)
+      .finally(() => {
+        settled = true;
+      });
+    await vi.advanceTimersByTimeAsync(REQUEST_DEADLINE_MS);
+
+    expect(settled, 'the GET was still waiting on the index at the deadline').toBe(true);
+    expect((await pending).status).toBe(503);
+    expect(logs.lines.map((line) => JSON.parse(line))).toEqual([{ error: 'deadline' }]);
   });
 
   it('returns 503 when the index has no corpus record', async () => {

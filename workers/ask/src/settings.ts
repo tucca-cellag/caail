@@ -63,11 +63,13 @@ export const META_NAMESPACE = 'meta';
 export const CORPUS_RECORD_ID = 'corpus';
 
 /**
- * How long retrieval and the model together may take before the Worker gives up
- * with a 503. The widget sets no timeout of its own, so this is the only bound a
- * reader waits under.
+ * How long one request may take before the Worker gives up with a 503. For a
+ * question it runs from before the body is read, so a body trickled slowly or
+ * never finished is bounded too, through the index check, retrieval and the
+ * model. For a GET it bounds the index read. The widget sets no timeout of its
+ * own, so this is the only bound a reader waits under.
  */
-export const ANSWER_DEADLINE_MS = 25_000;
+export const REQUEST_DEADLINE_MS = 25_000;
 
 /**
  * The largest request body read. The word limit does not bound length (one

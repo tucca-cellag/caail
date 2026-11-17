@@ -19,12 +19,13 @@
  *   2. The rate limit, before anything else is read.
  *   3. A foreign Origin is 403.
  *   4. GET reports which corpus the index was built from (`corpusStatus`).
- *   5. POST: a body over MAX_BODY_BYTES is 413, a body that is not
- *      `{ query: string }` is 400, and so is a question outside the word limit.
- *   6. Under one deadline: a check that the index was built the way questions
- *      are embedded (once per instance), then retrieval, then the model.
+ *   5. POST, under one deadline from here on: a body over MAX_BODY_BYTES is 413,
+ *      a body that is not `{ query: string }` is 400, and so is a question
+ *      outside the word limit.
+ *   6. A check that the index was built the way questions are embedded, then
+ *      retrieval, then the model.
  */
-import { ANSWER_DEADLINE_MS, CORPUS_RECORD_ID, EMBEDDING_MODEL, EMBEDDING_PROMPTS, MAX_BODY_BYTES } from './settings.ts';
+import { CORPUS_RECORD_ID, EMBEDDING_MODEL, EMBEDDING_PROMPTS, MAX_BODY_BYTES, REQUEST_DEADLINE_MS } from './settings.ts';
 import { WORD_LIMIT, wordCount } from './words.ts';
 import { bundledLookup } from './bundled-lookup.ts';
 import { retrieve, type AiBinding, type IndexBinding, type StoredVector } from './retrieval.ts';
@@ -127,12 +128,16 @@ function workersAiCode(err: unknown): number | undefined {
  */
 const WORKERS_AI_LIMITS = new Set([3036, 3040]);
 
-/** The body, or null once it passes `max` bytes; the rest is never read. */
-async function readCapped(request: Request, max: number): Promise<string | null> {
+/**
+ * The body, or null once it passes `max` bytes; the rest is never read. Reading
+ * stops, and the body is cancelled, when `signal` aborts.
+ */
+async function readCapped(request: Request, max: number, signal: AbortSignal): Promise<string | null> {
   const declared = Number(request.headers.get('Content-Length'));
   if (Number.isFinite(declared) && declared > max) return null;
   if (!request.body) return '';
   const reader = request.body.getReader();
+  signal.addEventListener('abort', () => void reader.cancel().catch(() => {}), { once: true });
   const chunks: Uint8Array[] = [];
   let size = 0;
   for (;;) {
@@ -183,15 +188,20 @@ function racing<T>(promise: Promise<T>, signal: AbortSignal): Promise<T> {
 
 /**
  * GET: which corpus the index was built from, read from the index's corpus
- * record, so a live check can compare it with api/index.json.
+ * record, so a live check can compare it with api/index.json. The read has the
+ * request deadline too.
  */
 async function corpusStatus(env: Env, cors: CorsHeaders): Promise<Response> {
+  const deadline = new AbortController();
+  const timer = setTimeout(() => deadline.abort(), REQUEST_DEADLINE_MS);
   let record: StoredVector | undefined;
   try {
-    [record] = await env.INDEX.getByIds([CORPUS_RECORD_ID]);
+    [record] = await racing(env.INDEX.getByIds([CORPUS_RECORD_ID]), deadline.signal);
   } catch {
-    logFailure('index_unavailable');
+    logFailure(deadline.signal.aborted ? 'deadline' : 'index_unavailable');
     return text('service unavailable', 503, cors);
+  } finally {
+    clearTimeout(timer);
   }
   const meta = record?.metadata ?? {};
   if (typeof meta.corpusDate !== 'string') {
@@ -235,16 +245,18 @@ async function answer(
   instance: InstanceState,
   cors: CorsHeaders,
 ): Promise<Response> {
-  const raw = await readCapped(request, MAX_BODY_BYTES);
-  if (raw === null) return text('payload too large', 413, cors);
-  const question = queryOf(raw);
-  if (question === null) return text('bad request', 400, cors);
-  const words = wordCount(question);
-  if (words < 1 || words > WORD_LIMIT) return text('bad request', 400, cors);
-
+  // Started before the body is read, so a body trickled slowly, or never
+  // finished, is cut off at the deadline like everything after it.
   const deadline = new AbortController();
-  const timer = setTimeout(() => deadline.abort(), ANSWER_DEADLINE_MS);
+  const timer = setTimeout(() => deadline.abort(), REQUEST_DEADLINE_MS);
   try {
+    const raw = await racing(readCapped(request, MAX_BODY_BYTES, deadline.signal), deadline.signal);
+    if (raw === null) return text('payload too large', 413, cors);
+    const question = queryOf(raw);
+    if (question === null) return text('bad request', 400, cors);
+    const words = wordCount(question);
+    if (words < 1 || words > WORD_LIMIT) return text('bad request', 400, cors);
+
     if (!instance.indexMatches) {
       const build = await racing(indexBuild(env), deadline.signal);
       if (build !== 'matches') {
