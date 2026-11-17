@@ -10,7 +10,9 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "index:plan": "node --experimental-strip-types scripts/build-index.ts",
-    "index:build": "node --experimental-strip-types scripts/build-index.ts --write"
+    "index:build": "node --experimental-strip-types scripts/build-index.ts --write",
+    "score:plan": "node --experimental-strip-types scripts/score-questions.ts",
+    "score:run": "node --experimental-strip-types scripts/score-questions.ts --send"
   },
   "devDependencies": {
     "wrangler": "4.151.3"
