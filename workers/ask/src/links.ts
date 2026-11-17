@@ -7,6 +7,18 @@
  */
 
 /**
+ * The characters a corpus link may hold after its scheme, as the body of a
+ * regular-expression character class. Every link is written into a Markdown
+ * link by the model and found again in its answer, so it must survive both
+ * untouched: no spaces, parentheses or brackets, which would end a Markdown link
+ * early. The corpus build refuses a link with any other character (corpus.ts,
+ * LINK_SAFE), and the answer reader takes a URL as a run of these and nothing
+ * else (model.ts), so any other character, typographic punctuation included,
+ * ends it.
+ */
+export const LINK_CHARS = 'A-Za-z0-9.:/?#=_~%-';
+
+/**
  * What can follow a link in an answer without being part of it: sentence
  * punctuation, and Markdown emphasis (`*`, `_`) round a bare link. The answer
  * reader strips these from the end of every URL it finds (model.ts), so the

@@ -150,7 +150,7 @@ describe('the cited entries', () => {
     ['a percent-encoded item', `[a](${ORIGIN}/papers/explorer/?item=paper%3A1)`, ['paper:1']],
     ['an encoded item and fragment', `[a](${ORIGIN}/datasets/chicken/?item=ds%3Agse169291#complete%2Ddata%2Dinventory)`, ['ds:gse169291']],
     ['an upper-case scheme and host', `[a](HTTPS://CAAIL.TUFTS.EDU/software/#alphafold)`, ['sw:alphafold']],
-    ['another query parameter beside the item', `[a](${ORIGIN}/papers/explorer/?utm=x&item=paper:1)`, ['paper:1']],
+    ['another query parameter after the item', `[a](${ORIGIN}/papers/explorer/?item=paper:1&utm=x)`, ['paper:1']],
     // An item link is its page and its item: the fragment and a trailing slash
     // do not change which entry it cites.
     ['an item link with its fragment dropped', `[a](${ORIGIN}/datasets/chicken/?item=ds:gse169291)`, ['ds:gse169291']],
@@ -171,6 +171,9 @@ describe('the cited entries', () => {
     ['an anchored link to another anchor', `[a](${ORIGIN}/software/#alphafold2)`],
     ['a link that does not parse', '[a](https://caail.tufts.edu:99999/software/#alphafold)'],
     ['a malformed escape', `[a](${ORIGIN}/papers/explorer/?item=paper%3)`],
+    // `&` is not a character a corpus link holds (LINK_CHARS), so the URL ends
+    // before it, and what is left names no entry.
+    ['another query parameter before the item', `[a](${ORIGIN}/papers/explorer/?utm=x&item=paper:1)`],
   ])('do not count %s', (_label, answer) => {
     expect(citedEntryIds(answer, ENTRIES)).toEqual([]);
   });
@@ -194,6 +197,26 @@ describe('the cited entries', () => {
     it('keep an underscore that is part of the link', () => {
       expect(citedEntryIds(`See **${underscored.link}**`, [underscored])).toEqual(['ds:a_b']);
       expect(citedEntryIds(`See ${ORIGIN}/datasets/cow/?item=ds:a_`, [underscored])).toEqual([]);
+    });
+  });
+
+  // Typographic punctuation is not a link character, so it ends the URL rather
+  // than being read into it. Escaped here so the source shows which character.
+  describe('before typographic punctuation', () => {
+    it.each([
+      ['a closing curly quote', '”'],
+      ['an ellipsis', '…'],
+      ['an em dash', '—'],
+    ])('count a bare link followed by %s', (_label, mark) => {
+      expect(citedEntryIds(`See “${ENTRIES[0].link}${mark} for more.`, ENTRIES)).toEqual([ENTRIES[0].id]);
+      expect(citedEntryIds(`It is ${ENTRIES[2].link}${mark}and more`, ENTRIES)).toEqual([ENTRIES[2].id]);
+    });
+
+    it('still count a link with a percent-encoded character', () => {
+      expect(citedEntryIds(`See ${ORIGIN}/papers/explorer/?item=paper%3A1”.`, ENTRIES)).toEqual(['paper:1']);
+      expect(citedEntryIds(`See ${ORIGIN}/datasets/chicken/?item=ds%3Agse169291#complete%2Ddata%2Dinventory…`, ENTRIES)).toEqual([
+        'ds:gse169291',
+      ]);
     });
   });
 

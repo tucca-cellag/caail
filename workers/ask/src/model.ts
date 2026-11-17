@@ -8,7 +8,7 @@
  */
 import type { RetrievedEntry } from './retrieval.ts';
 import { trimTrailing } from './text.ts';
-import { LINK_TRAILING, linkKey } from './links.ts';
+import { LINK_CHARS, LINK_TRAILING, linkKey } from './links.ts';
 
 export const SYSTEM_PROMPT = [
   'You answer questions about CAAIL, the Cellular Agriculture AI Library: a curated index of the papers, software, databases and datasets in AI and machine learning for cellular agriculture.',
@@ -109,8 +109,12 @@ export function answerText(output: unknown): string | null {
   return null;
 }
 
-/** A URL in the answer, in any case. Linear: a greedy class with nothing after it. */
-const URL_IN_TEXT = /https?:\/\/[^\s<>()[\]"'`]+/gi;
+/**
+ * A URL in the answer, in any case, as a run of the characters a corpus link may
+ * hold (LINK_CHARS), so anything else after a link, typographic punctuation
+ * included, ends it. Linear: a greedy class with nothing after it.
+ */
+const URL_IN_TEXT = new RegExp(`https?://[${LINK_CHARS}]+`, 'gi');
 
 /**
  * The entries an answer cites: those whose link appears in it. Each link names

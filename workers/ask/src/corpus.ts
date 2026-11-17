@@ -12,7 +12,7 @@
  */
 import { SITE_URL } from '../../../site/src/content/site-config.ts';
 import { onRequestItemId, paperItemId, taxonomySlug, termItemId } from './ids.ts';
-import { LINK_TRAILING, linkKey } from './links.ts';
+import { LINK_CHARS, LINK_TRAILING, linkKey } from './links.ts';
 
 interface TopicRef {
   label: string;
@@ -138,12 +138,8 @@ export function editionAnchor(id: string): string {
   return id.replace(/[^a-z0-9]+/gi, '-');
 }
 
-/**
- * Characters a link may use. Every link is written into a Markdown link by the
- * model and found again in its answer, so it must survive both untouched: no
- * spaces, parentheses or brackets, which would end a Markdown link early.
- */
-const LINK_SAFE = /^https:\/\/[A-Za-z0-9.:/?#=_~%-]+$/;
+/** A link made only of the characters a link may use (LINK_CHARS, links.ts). */
+const LINK_SAFE = new RegExp(`^https://[${LINK_CHARS}]+$`);
 
 /**
  * An absolute URL for a path on the site. The path is resolved against SITE_URL
