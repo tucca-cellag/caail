@@ -1,0 +1,97 @@
+/**
+ * What the model is sent and what is read back from it.
+ */
+import { readFileSync } from 'node:fs';
+import { describe, expect, it } from 'vitest';
+import { MAX_TOKENS, SYSTEM_PROMPT, TEMPERATURE, answerText, citedEntryIds, modelInput } from './model.ts';
+import { ENTRIES, ORIGIN, chatOutput } from './test-env.ts';
+
+describe('the system prompt', () => {
+  // The four rules the answer has to follow, each by the words that carry it.
+  it.each([
+    ['answers only from the entries supplied', /Answer only from the entries supplied/],
+    ["cites each claim with its entry's link", /Cite every claim with a Markdown link to the entry it comes from/],
+    ['says plainly when CAAIL holds nothing', /say plainly that CAAIL holds nothing/],
+    ['never fills in from general knowledge', /Never fill in from general knowledge/],
+    ['takes no position on whether an approach succeeds', /takes no position on whether an approach succeeds/],
+  ])('%s', (_label, pattern) => {
+    expect(SYSTEM_PROMPT).toMatch(pattern);
+  });
+});
+
+describe('the model input', () => {
+  it('sets max_tokens above the platform default of 256, and a low temperature', () => {
+    const input = modelInput('@cf/test/model', ENTRIES, 'q');
+    expect(input.max_tokens).toBe(MAX_TOKENS);
+    expect(MAX_TOKENS).toBeGreaterThan(256);
+    expect(input.temperature).toBe(TEMPERATURE);
+    expect(TEMPERATURE).toBeLessThanOrEqual(0.3);
+  });
+
+  it('gives each entry its link, in retrieval order', () => {
+    const user = (modelInput('@cf/test/model', ENTRIES, 'q').messages as { content: string }[])[1].content;
+    const positions = ENTRIES.map((entry) => user.indexOf(`Link: ${entry.link}`));
+    expect(positions.every((p) => p >= 0)).toBe(true);
+    expect([...positions].sort((a, b) => a - b)).toEqual(positions);
+  });
+
+  it('asks each candidate model for its least reasoning, and passes nothing extra to any other model', () => {
+    expect(modelInput('@cf/google/gemma-4-26b-a4b-it', ENTRIES, 'q').chat_template_kwargs).toEqual({ enable_thinking: false });
+    expect(modelInput('@cf/openai/gpt-oss-20b', ENTRIES, 'q').reasoning_effort).toBe('low');
+    expect(modelInput('@cf/openai/gpt-oss-120b', ENTRIES, 'q').reasoning_effort).toBe('low');
+    expect(Object.keys(modelInput('@cf/test/model', ENTRIES, 'q')).sort()).toEqual(['max_tokens', 'messages', 'temperature']);
+  });
+
+  // A model set in wrangler.toml but missing from the reasoning table would run
+  // at its default reasoning, slower and dearer, with nothing failing.
+  it('has a reasoning setting for the model wrangler.toml configures', () => {
+    const configured = readFileSync(new URL('../wrangler.toml', import.meta.url), 'utf8').match(/^MODEL_ID = "([^"]+)"$/m)?.[1];
+    expect(configured).toBeDefined();
+    expect(Object.keys(modelInput(configured as string, ENTRIES, 'q')).sort()).not.toEqual([
+      'max_tokens',
+      'messages',
+      'temperature',
+    ]);
+  });
+});
+
+describe('the answer', () => {
+  it('reads Chat Completions output', () => {
+    expect(answerText(chatOutput('  An answer.  '))).toBe('An answer.');
+  });
+
+  it('reads the older response form', () => {
+    expect(answerText({ response: 'An answer.' })).toBe('An answer.');
+  });
+
+  it.each([
+    ['nothing', undefined],
+    ['an empty answer', chatOutput('')],
+    ['a blank answer', chatOutput(' \n ')],
+    ['a null content', { choices: [{ message: { content: null } }] }],
+    ['no choices', { choices: [] }],
+  ])('finds no answer in %s', (_label, output) => {
+    expect(answerText(output)).toBeNull();
+  });
+});
+
+describe('the cited entries', () => {
+  it('are the entries whose links appear, exactly', () => {
+    const answer = `Yes ([a](${ENTRIES[0].link})), and see ${ENTRIES[2].link}.`;
+    expect(citedEntryIds(answer, ENTRIES)).toEqual([ENTRIES[0].id, ENTRIES[2].id]);
+  });
+
+  it('do not include an entry whose link was altered, cut or made up', () => {
+    const answer = [
+      `[a](${ENTRIES[0].link}x)`,
+      `[b](${ENTRIES[1].link.replace('paper:1', 'paper:10')})`,
+      `[c](${ENTRIES[2].link.split('#')[0]})`,
+      `[d](${ORIGIN}/papers/explorer/?item=paper:999)`,
+    ].join(' ');
+    expect(citedEntryIds(answer, ENTRIES)).toEqual([]);
+  });
+
+  it('are none for an answer that cites nothing', () => {
+    expect(citedEntryIds('CAAIL holds nothing on that.', ENTRIES)).toEqual([]);
+  });
+});

@@ -67,6 +67,8 @@ const PINNED: Array<[file: string, mustContain: string]> = [
   ['workers/events/wrangler.toml', `ALLOWED_ORIGIN = "${SITE_ORIGIN}"`],
   ['workers/events/src/index.test.ts', `'${SITE_ORIGIN}'`],
   ['workers/events/scripts/burst.sh', SITE_ORIGIN],
+  ['workers/ask/wrangler.toml', `ALLOWED_ORIGIN = "${SITE_ORIGIN}"`],
+  ['workers/ask/src/test-env.ts', `'${SITE_ORIGIN}'`],
   ['.claude-plugin/marketplace.json', SITE_URL],
   ['plugin/.claude-plugin/plugin.json', SITE_URL],
   ['plugin-contribute/.claude-plugin/plugin.json', SITE_URL],

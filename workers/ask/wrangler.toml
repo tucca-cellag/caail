@@ -1,0 +1,57 @@
+name = "caail-ask"
+main = "src/index.ts"
+compatibility_date = "2026-08-01"
+
+# Workers AI: the embedding of each question, and the model that answers. Called
+# straight through the binding, with no AI Gateway in between: a gateway logs
+# prompts and responses by default, and this Worker keeps no record but its own.
+[ai]
+binding = "AI"
+
+# The entries, built from site/public/api/ by `pnpm run index:build`. The name
+# is INDEX_NAME in src/settings.ts, which the build writes to; config.test.ts
+# pins the two together.
+[[vectorize]]
+binding = "INDEX"
+index_name = "caail-ask"
+
+# The question records (src/record.ts). Its own dataset, apart from the events
+# Worker's, so neither can be read for the other. Analytics Engine keeps a data
+# point three months and cannot delete one early.
+[[analytics_engine_datasets]]
+binding = "RECORDS"
+dataset = "caail_ask"
+
+# Per-caller cap on questions, keyed by IPv4 address or IPv6 /64 (src/index.ts),
+# with its own namespace so its counters are not the events Worker's. The id is
+# account-scoped: bindings sharing an id share counters.
+#
+# An address is a shared key, a campus network most of all, and Ask CAAIL has no
+# user identity to key on instead, so the cap is set generously. It is the
+# platform's approximate, per-location counter, like the events Worker's (see
+# workers/events/wrangler.toml for what that does and does not buy). `period`
+# accepts only 10 or 60.
+[[ratelimits]]
+name = "RATE_LIMITER"
+namespace_id = "7002"
+
+  [ratelimits.simple]
+  limit = 10
+  period = 60
+
+# Custom logs on, so the one line each failure writes is kept. Invocation logs
+# off: each carries the request, response and related metadata, which is what
+# this Worker promises not to keep.
+[observability]
+enabled = true
+
+[observability.logs]
+invocation_logs = false
+
+[vars]
+# The only origin allowed to call: the site's SITE_ORIGIN, which
+# site/src/content/site-config.test.ts pins this line to.
+ALLOWED_ORIGIN = "https://caail.tufts.edu"
+# The model that answers: configuration, not code. One of the candidates the
+# fixed question set scores; the rest of the call is the same for each.
+MODEL_ID = "@cf/google/gemma-4-26b-a4b-it"
