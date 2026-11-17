@@ -175,8 +175,9 @@ export interface UnreliableEntry {
    */
   suites?: readonly string[];
   /**
-   * vitest only: match a failure anywhere in `file`. Set only where the failing test
-   * moves between runs, so no name would hold.
+   * vitest only: match failures anywhere in `file`, when every one of them has the entry's
+   * `failure` shape. Set only where the failing test moves between runs, so no name would
+   * hold.
    *
    * Every vitest entry sets this or narrows with `tests` or `suites`, never both, and
    * `register.test.ts` fails on one that does neither. Without that, an entry that lost
