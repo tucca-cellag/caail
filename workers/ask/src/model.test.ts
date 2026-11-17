@@ -89,10 +89,10 @@ describe('the cited entries', () => {
     ['an encoded item and fragment', `[a](${ORIGIN}/datasets/chicken/?item=ds%3Agse169291#complete%2Ddata%2Dinventory)`, ['ds:gse169291']],
     ['an upper-case scheme and host', `[a](HTTPS://CAAIL.TUFTS.EDU/software/#alphafold)`, ['sw:alphafold']],
     ['another query parameter beside the item', `[a](${ORIGIN}/papers/explorer/?utm=x&item=paper:1)`, ['paper:1']],
-    // An item names its entry by itself, so the page and the fragment around it
-    // do not change which entry a link cites.
+    // An item link is its page and its item: the fragment and a trailing slash
+    // do not change which entry it cites.
     ['an item link with its fragment dropped', `[a](${ORIGIN}/datasets/chicken/?item=ds:gse169291)`, ['ds:gse169291']],
-    ['an item on another page of the site', `[a](${ORIGIN}/papers/reviews/?item=paper:1)`, ['paper:1']],
+    ['an item link with its trailing slash dropped', `[a](${ORIGIN}/papers/explorer?item=paper:1)`, ['paper:1']],
     // A link without an item is the page and its anchor; a trailing slash is not part of either.
     ['an anchored link with its trailing slash dropped', `[a](${ORIGIN}/software#alphafold)`, ['sw:alphafold']],
   ])('count %s', (_label, answer, expected) => {
@@ -102,6 +102,8 @@ describe('the cited entries', () => {
   it.each([
     ['an encoded item naming another entry', `[a](${ORIGIN}/papers/explorer/?item=paper%3A10)`],
     ['an item link naming another item', `[a](${ORIGIN}/datasets/chicken/?item=ds:gse169292)`],
+    // The right item on the wrong page lands the reader on a page that ignores it.
+    ['the item on another page of the site', `[a](${ORIGIN}/papers/reviews/?item=paper:1)`],
     ['the item on another host', '[a](https://caail.tufts.edu.evil.example/papers/explorer/?item=paper:1)'],
     ['the path on another host', '[a](https://caail.tufts.edu.evil.example/software/#alphafold)'],
     ['an anchored link to another anchor', `[a](${ORIGIN}/software/#alphafold2)`],

@@ -88,9 +88,11 @@ const TRAILING_PUNCTUATION: ReadonlySet<string> = new Set('.,;:!?*_');
 
 /**
  * What a link names, however it is written, so a citation that reaches the
- * right entry is counted:
- *   - a link with an `item` value names that entry by itself, so it is keyed on
- *     its origin and the decoded item, and its page and fragment do not count;
+ * right entry is counted, and one that does not, is not:
+ *   - a link with an `item` value is its page and its item: the origin, the
+ *     decoded path without a trailing slash, and the decoded item. Its fragment
+ *     does not count, but its page does, since the right item on another page
+ *     lands the reader on a page that ignores it;
  *   - any other link is its page and its anchor: the origin, the decoded path
  *     without a trailing slash, and the decoded fragment.
  * The origin is kept, so a look-alike host never names an entry. The URL parser
@@ -99,10 +101,11 @@ const TRAILING_PUNCTUATION: ReadonlySet<string> = new Set('.,;:!?*_');
 function linkKey(link: string): string | null {
   try {
     const url = new URL(link);
+    const decoded = decodeURIComponent(url.pathname);
+    const path = decoded.endsWith('/') ? decoded.slice(0, -1) : decoded;
     const item = url.searchParams.get('item');
-    if (item !== null) return JSON.stringify([url.origin, 'item', item]);
-    const path = decodeURIComponent(url.pathname);
-    return JSON.stringify([url.origin, path.endsWith('/') ? path.slice(0, -1) : path, decodeURIComponent(url.hash)]);
+    if (item !== null) return JSON.stringify([url.origin, path, 'item', item]);
+    return JSON.stringify([url.origin, path, decodeURIComponent(url.hash)]);
   } catch {
     return null;
   }
