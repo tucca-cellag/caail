@@ -9,8 +9,9 @@
  *
  * Built from the API files the Worker bundles. The ids it returns are entry ids
  * (ids.ts), read as the files serve them where they serve one, so they are the
- * ids the index build gives the same items; corpus.test.ts checks that every id
- * it can return is one the corpus holds.
+ * ids the index build gives the same items. It and `entryIdsOf` walk the files
+ * apart, so corpus.test.ts checks that every id it can return (`nameable`) is
+ * one `entryIdsOf` knows: retrieval would drop any other in silence.
  */
 import { MAX_NAMED_FETCHED } from './settings.ts';
 import { onRequestItemId, paperItemId, termItemId } from './ids.ts';
@@ -57,6 +58,12 @@ export interface Lookup {
   match(question: string): string[];
   /** Whether the corpus these files hold has an entry with this id. */
   knows(id: string): boolean;
+}
+
+/** The lookup `buildLookup` builds, which also says every id it can return. */
+export interface BuiltLookup extends Lookup {
+  /** Every id `match` can return: the ids some DOI, accession or name in the files leads to. */
+  nameable: ReadonlySet<string>;
 }
 
 /**
@@ -143,7 +150,7 @@ function add(map: Map<string, string[]>, key: string, id: string): void {
  * papers. A question about what a term means still finds its definition by
  * meaning.
  */
-export function buildLookup(files: LookupFiles): Lookup {
+export function buildLookup(files: LookupFiles): BuiltLookup {
   const known = entryIdsOf(files);
   const dois = new Map<string, string[]>();
   const accessions = new Map<string, string[]>();
@@ -182,6 +189,9 @@ export function buildLookup(files: LookupFiles): Lookup {
   }
   for (const report of files.reports.reports) add(names, report.title.trim(), report.id);
 
+  const nameable = new Set<string>();
+  for (const map of [dois, accessions, names]) for (const ids of map.values()) for (const id of ids) nameable.add(id);
+
   // Nothing longer than the longest identifier held can match one, so a longer
   // candidate is dropped before it is looked up. The bounds come from the corpus,
   // so they move with it.
@@ -202,6 +212,7 @@ export function buildLookup(files: LookupFiles): Lookup {
 
   return {
     knows: (id: string) => known.has(id),
+    nameable,
     match(question: string): string[] {
       const found: string[] = [];
       const take = (ids: string[] | undefined) => {

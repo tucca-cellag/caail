@@ -14,7 +14,7 @@ import { editionAnchor as siteEditionAnchor } from '../../../site/src/lib/report
 import { siteSlug } from '../../../site/src/lib/heading-slug.ts';
 import { ON_REQUEST_HEADING } from '../../../site/scripts/parser/datasets.ts';
 import { INVENTORY_ANCHOR, ON_REQUEST_ANCHOR, buildCorpus, clip, corpusDateOf, editionAnchor, type ApiFiles } from './corpus.ts';
-import { taxonomySlug } from './ids.ts';
+import { taxonomySlug, termItemId } from './ids.ts';
 import { LINK_TRAILING } from './links.ts';
 import { buildLookup, entryIdsOf } from './lookup.ts';
 import { citedEntryIds } from './model.ts';
@@ -303,6 +303,17 @@ describe('the lookup and the corpus agree', () => {
     expect(entryIdsOf(files)).toEqual(new Set(corpus.map((entry) => entry.id)));
     for (const entry of corpus) expect(lookup.knows(entry.id), entry.id).toBe(true);
     expect(lookup.knows('paper:999999')).toBe(false);
+  });
+
+  // The lookup and entryIdsOf walk the files apart, each with its own id rules,
+  // and retrieval drops in silence any named id entryIdsOf does not know. So
+  // every id the lookup can return must be one it knows, and every entry but the
+  // taxonomy terms, which are not boosted by name, one the lookup can return.
+  it('can return exactly the ids entryIdsOf knows, but the taxonomy terms', () => {
+    const known = entryIdsOf(files);
+    const terms = new Set(Object.keys(files.taxonomy.definitions).map(termItemId));
+    expect([...lookup.nameable].filter((id) => !known.has(id)), 'ids the lookup can return that entryIdsOf does not know').toEqual([]);
+    expect([...known].filter((id) => !terms.has(id) && !lookup.nameable.has(id)), 'entries the lookup cannot return').toEqual([]);
   });
 
   // A lookup id the corpus does not hold would fetch nothing from the index, and
