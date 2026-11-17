@@ -1,0 +1,18 @@
+{
+  "name": "caail-ask",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "packageManager": "pnpm@9.15.9",
+  "description": "Ask CAAIL: answers a question from the entries CAAIL indexes.",
+  "scripts": {
+    "check": "wrangler deploy --dry-run",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "index:plan": "node --experimental-strip-types scripts/build-index.ts",
+    "index:build": "node --experimental-strip-types scripts/build-index.ts --write"
+  },
+  "devDependencies": {
+    "wrangler": "4.151.3"
+  }
+}

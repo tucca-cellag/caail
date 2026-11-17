@@ -8,9 +8,9 @@ on:
   pull_request:
     paths:
       - site/**
-      # The events collector Worker has no npm project of its own; its suite
-      # runs inside site's vitest (see site/vitest.config.ts), so a change
-      # confined to workers/ has to trigger this workflow or it goes untested.
+      # The Workers have no vitest project of their own; their suites run
+      # inside site's vitest (see site/vitest.config.ts), so a change confined
+      # to workers/ has to trigger this workflow or it goes untested.
       - workers/**
       - '*.md'
       - ResearchAreas/**
@@ -245,32 +245,45 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # The events collector Worker's behaviour is covered by the vitest suite in the
-  # `test` job, but vitest neither typechecks nor reads wrangler.toml. That
-  # matters more than usual here: the rate limit lives in the config, not the
-  # code, so a typo in the [[ratelimits]] block would disable it while every test
-  # still passed. `wrangler deploy --dry-run` bundles the Worker and resolves its
-  # bindings without contacting Cloudflare. Its own job so it does not queue
-  # behind the browser suite.
+  # Each Worker's behaviour is covered by the vitest suite in the `test` job, and
+  # its config tests look for named lines in wrangler.toml, but no test reads the
+  # config the way wrangler does. That matters more than usual here: a Worker's
+  # rate limit lives in the config, not the code, so a config error there could
+  # disable it while the handler tests still passed. `wrangler deploy --dry-run`
+  # validates each Worker's config, resolves its bindings and bundles its code,
+  # without contacting Cloudflare; for workers/ask the bundle also takes in the
+  # committed site/public/api/ it reads names from. It does not type-check: the
+  # bundler strips types, and no job type-checks either Worker. Its own job so it
+  # does not queue behind the browser suite.
   worker:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        worker: [workers/events, workers/ask]
     steps:
       - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v6
         with:
           # The exact pnpm is the packageManager field of the package.json named
-          # below. Do not add a version here.
+          # below. Do not add a version here. One file for both legs:
+          # site/scripts/package-manager.test.ts reads this path as written and
+          # does not expand a matrix expression, and it holds every package's pin
+          # to one pnpm, so the events package names the ask package's pnpm too.
           package_json_file: workers/events/package.json
       - uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: pnpm
-          cache-dependency-path: workers/events/pnpm-lock.yaml
+          cache-dependency-path: ${{ matrix.worker }}/pnpm-lock.yaml
       - name: Install
-        run: pnpm --dir workers/events install --frozen-lockfile
-      - name: Validate bindings and bundle
-        run: pnpm --dir workers/events check
+        run: pnpm --dir "$WORKER" install --frozen-lockfile
         env:
+          WORKER: ${{ matrix.worker }}
+      - name: Validate bindings and bundle
+        run: pnpm --dir "$WORKER" check
+        env:
+          WORKER: ${{ matrix.worker }}
           # A dry run needs no Cloudflare credentials. This only stops wrangler
           # phoning home from CI.
           WRANGLER_SEND_METRICS: 'false'

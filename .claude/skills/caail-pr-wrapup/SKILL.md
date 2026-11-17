@@ -65,9 +65,16 @@ Run the helper from the repo (worktree) root: `bash .claude/skills/caail-pr-wrap
   `pnpm --dir site build` and `pnpm --dir site test:e2e` for the affected specs. A red gate means the
   branch isn't ready; fix it before shipping.
 - **`gh` is authenticated** (`gh auth status`).
-- **If the branch touches `workers/**` at all, deploy the Worker by hand before step 2**:
-  `pnpm --dir workers/events run deploy`. No workflow deploys it, so shipping the code does not ship the
-  change, and a push publishes a commit message describing behaviour that is not live yet. Check this
+- **If the branch touches `workers/**` at all, deploy each Worker it changes by hand before step 2**:
+  `pnpm --dir workers/events run deploy` for the events Worker, `pnpm --dir workers/ask run deploy` for
+  the ask Worker. No workflow deploys either, so shipping the code does not ship the change, and a push
+  publishes a commit message describing behaviour that is not live yet. The ask Worker's index is built
+  by hand too, after a corpus change: `pnpm --dir workers/ask run index:plan` prints every request a
+  build would send and sends nothing, so it can be read and approved, then
+  `pnpm --dir workers/ask run index:build` sends it (the header of `workers/ask/scripts/build-index.ts`
+  covers the first run and the credentials). A change to the embedding settings (the model or the
+  prompts) has one safe order, **deploy the Worker first, then rebuild**, which `settingsChangeNotice()`
+  in `workers/ask/src/index-build.ts` explains and the build prints when it sees the settings change. Check this
   against the whole branch, not just what the review rounds edited: the re-gate table in `reference/review-phase.md` only covers
   files a *round* touched, so a branch whose original commits changed the Worker and whose rounds did not
   would otherwise never be reminded.
