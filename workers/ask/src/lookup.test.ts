@@ -131,6 +131,28 @@ describe('stays linear on a pathological question', () => {
     expect(elapsed, `matching took ${elapsed.toFixed(0)} ms`).toBeLessThan(BUDGET_MS);
   });
 
+  // Name matching scales with the question, not with names × question: a corpus
+  // grown many times over still answers a long question in milliseconds.
+  it('matches names in time that does not grow with the number of names', () => {
+    const names = 20_000;
+    const many = buildLookup({
+      ...FILES,
+      catalog: {
+        software: Array.from({ length: names }, (_, i) => ({ itemId: `sw:t${i}`, name: `Toolname${i} Suite`, doi: null })),
+        databases: [],
+      },
+    });
+    const filler = Array.from({ length: 8_000 }, (_, i) => `word${i % 97}`).join(' ');
+    const question = `${filler} Toolname123 Suite ${filler}`;
+
+    const started = performance.now();
+    const found = many.match(question);
+    const elapsed = performance.now() - started;
+
+    expect(found).toEqual(['sw:t123']);
+    expect(elapsed, `matching took ${elapsed.toFixed(0)} ms`).toBeLessThan(BUDGET_MS / 2);
+  });
+
   it('still strips the punctuation a sentence puts after an identifier', () => {
     expect(lookup.match('See (10.1093/nar/gkac1000).')).toEqual(['db:string']);
     expect(lookup.match('Is it GSE169291)?!')).toEqual(['ds:gse169291']);

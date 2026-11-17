@@ -78,13 +78,16 @@ function longest(map: Map<string, string[]>): number {
   return max;
 }
 
-/**
- * The words of a text, case kept, separated by single spaces and padded, so a
- * name is found only as whole words in the case it is catalogued in.
- */
-function wordsOf(text: string): string {
-  const words = text.normalize('NFKC').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
-  return words ? ` ${words} ` : '';
+/** The words of a text, case kept: a name is found only as whole words in the case it is catalogued in. */
+function wordsOf(text: string): string[] {
+  return text.normalize('NFKC').split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+}
+
+interface NameMatcher {
+  words: string[];
+  /** The name's length in characters, which ranks a longer name ahead of one it contains. */
+  rank: number;
+  ids: string[];
 }
 
 function add(map: Map<string, string[]>, key: string, id: string): void {
@@ -155,12 +158,17 @@ export function buildLookup(files: LookupFiles): Lookup {
   const longestDoi = longest(dois);
   const longestAccession = longest(accessions);
 
-  // Longest names first, so a name that contains a shorter one ranks ahead of it
-  // when both match.
-  const nameMatchers = [...names.entries()]
-    .map(([name, ids]) => ({ words: wordsOf(name), ids }))
-    .filter((matcher) => matcher.words)
-    .sort((a, b) => b.words.length - a.words.length);
+  // Names indexed by their first word, so a question is matched by looking up
+  // each of its own words rather than by scanning it once per name: the cost
+  // follows the question's length, not the number of names.
+  const byFirstWord = new Map<string, NameMatcher[]>();
+  for (const [name, ids] of names) {
+    const words = wordsOf(name);
+    if (words.length === 0) continue;
+    const matchers = byFirstWord.get(words[0]) ?? [];
+    matchers.push({ words, rank: words.join(' ').length, ids });
+    byFirstWord.set(words[0], matchers);
+  }
 
   return {
     match(question: string): string[] {
@@ -178,8 +186,19 @@ export function buildLookup(files: LookupFiles): Lookup {
         if (accession && accession.length <= longestAccession) take(accessions.get(accession));
       }
 
-      const questionWords = wordsOf(question);
-      for (const matcher of nameMatchers) if (questionWords.includes(matcher.words)) take(matcher.ids);
+      const words = wordsOf(question);
+      const hits = new Set<NameMatcher>();
+      for (let i = 0; i < words.length; i++) {
+        for (const matcher of byFirstWord.get(words[i]) ?? []) {
+          if (hits.has(matcher) || i + matcher.words.length > words.length) continue;
+          let k = 1;
+          while (k < matcher.words.length && words[i + k] === matcher.words[k]) k++;
+          if (k === matcher.words.length) hits.add(matcher);
+        }
+      }
+      // Longest names first, so a name that contains a shorter one ranks ahead of
+      // it when both match.
+      for (const matcher of [...hits].sort((a, b) => b.rank - a.rank)) take(matcher.ids);
       return found.slice(0, MAX_NAMED);
     },
   };
