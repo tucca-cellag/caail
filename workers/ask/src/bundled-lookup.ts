@@ -14,6 +14,7 @@ import catalog from '../../../site/public/api/catalog.json';
 import papersIndex from '../../../site/public/api/papers-index.json';
 import datasets from '../../../site/public/api/datasets.json';
 import reports from '../../../site/public/api/reports.json';
+import taxonomy from '../../../site/public/api/taxonomy.json';
 import { buildLookup, type Lookup } from './lookup.ts';
 
-export const bundledLookup: Lookup = buildLookup({ catalog, papersIndex, datasets, reports });
+export const bundledLookup: Lookup = buildLookup({ catalog, papersIndex, datasets, reports, taxonomy });

@@ -177,8 +177,16 @@ export function fastestRun<T>(run: () => T, budgetMs: number, attempts = 3): { r
   return fastest;
 }
 
+/**
+ * A lookup that names `ids` for any question, and knows every entry id unless
+ * `knows` says otherwise (which entries the deployed corpus holds).
+ */
+export function lookupNaming(ids: string[], knows: (id: string) => boolean = () => true): Lookup {
+  return { match: () => ids, knows };
+}
+
 /** A lookup that names nothing, so a test sees retrieval by meaning alone. */
-export const noLookup: Lookup = { match: () => [] };
+export const noLookup: Lookup = lookupNaming([]);
 
 export const handlerWith = (lookup: Lookup = noLookup) => createHandler(lookup);
 

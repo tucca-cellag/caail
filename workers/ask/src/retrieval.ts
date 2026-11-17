@@ -62,12 +62,17 @@ export interface RetrievedEntry {
  * not ALLOWED_ORIGIN: that names who may call the Worker, which a development
  * Worker sets to a local origin while it still answers from site entries.
  */
-function entryOf(vector: StoredVector): RetrievedEntry | null {
+function entryOf(vector: StoredVector, lookup: Lookup): RetrievedEntry | null {
   const meta = vector.metadata ?? {};
   const { id, kind, name, link, text } = meta;
   if (vector.id === CORPUS_RECORD_ID) return null;
   if (![id, kind, name, link, text].every((field) => typeof field === 'string' && field.length > 0)) return null;
   if (!(link as string).startsWith(SITE_URL)) return null;
+  // Only entries of the corpus this Worker was deployed with. An entry a
+  // rebuild removed may still be in the index if its delete failed or has not
+  // landed; an entry a rebuild added waits for the redeploy, which errs toward
+  // fewer entries rather than a withdrawn one.
+  if (!lookup.knows(id as string)) return null;
   return { id, kind, name, link, text } as RetrievedEntry;
 }
 
@@ -85,12 +90,12 @@ async function embed(ai: AiBinding, question: string, signal: AbortSignal): Prom
   return vector;
 }
 
-async function named(index: IndexBinding, itemIds: string[]): Promise<RetrievedEntry[]> {
+async function named(index: IndexBinding, itemIds: string[], lookup: Lookup): Promise<RetrievedEntry[]> {
   if (itemIds.length === 0) return [];
   const vectors = await index.getByIds(await Promise.all(itemIds.map(vectorId)));
   const byId = new Map<string, RetrievedEntry>();
   for (const vector of vectors) {
-    const entry = entryOf(vector);
+    const entry = entryOf(vector, lookup);
     if (entry) byId.set(entry.id, entry);
   }
   // In the lookup's order, which ranks the strongest identifiers first.
@@ -119,7 +124,7 @@ export async function retrieve(
   signal: AbortSignal,
 ): Promise<Retrieval> {
   const [boosted, nearest] = await Promise.allSettled([
-    named(env.INDEX, lookup.match(question).slice(0, MAX_NAMED)),
+    named(env.INDEX, lookup.match(question).slice(0, MAX_NAMED), lookup),
     embed(env.AI, question, signal).then((vector) =>
       env.INDEX.query(vector, { topK: TOP_K, namespace: ENTRY_NAMESPACE, returnMetadata: 'all' }),
     ),
@@ -127,7 +132,7 @@ export async function retrieve(
   const entries: RetrievedEntry[] = boosted.status === 'fulfilled' ? [...boosted.value] : [];
   if (nearest.status === 'fulfilled') {
     for (const match of nearest.value.matches) {
-      const entry = entryOf(match);
+      const entry = entryOf(match, lookup);
       if (entry && !entries.some((held) => held.id === entry.id)) entries.push(entry);
     }
   }

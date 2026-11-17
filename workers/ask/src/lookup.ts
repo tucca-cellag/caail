@@ -13,7 +13,7 @@
  * it can return is one the corpus holds.
  */
 import { MAX_NAMED } from './settings.ts';
-import { onRequestItemId, paperItemId } from './ids.ts';
+import { onRequestItemId, paperItemId, termItemId } from './ids.ts';
 import { trimTrailing, trimVersion } from './text.ts';
 
 interface LookupCatalogRow {
@@ -45,11 +45,37 @@ export interface LookupFiles {
     onRequest: { study: string; paperDoi: string | null }[];
   };
   reports: { reports: { id: string; title: string }[] };
+  /** Read for its terms' ids only; terms are not boosted by name (see buildLookup). */
+  taxonomy: { definitions: Record<string, string> };
 }
 
 export interface Lookup {
   /** Entry ids the question names, strongest first, at most MAX_NAMED. */
   match(question: string): string[];
+  /** Whether the corpus these files hold has an entry with this id. */
+  knows(id: string): boolean;
+}
+
+/**
+ * Every entry id the corpus in these files holds, derived by the same id rules
+ * the corpus build uses (ids.ts): each catalog item's served itemId, `paper:<n>`
+ * for each reference, each dataset entry's and inventory row's served id, a
+ * study on request by its DOI, each report's served id, and `term:<slug>` for
+ * each taxonomy definition. corpus.test.ts checks it equals the built corpus's
+ * ids. The Worker drops any vector outside it, so an entry the index still
+ * holds after leaving the corpus, because a rebuild's deletes failed or have
+ * not landed, is never offered to the model.
+ */
+export function entryIdsOf(files: LookupFiles): Set<string> {
+  const ids = new Set<string>();
+  for (const row of [...files.catalog.software, ...files.catalog.databases]) ids.add(row.itemId);
+  for (const ref of files.papersIndex.references) ids.add(paperItemId(ref.id));
+  for (const entry of files.datasets.entries) ids.add(entry.id);
+  for (const row of files.datasets.inventory) ids.add(row.id);
+  for (const study of files.datasets.onRequest) if (study.paperDoi) ids.add(onRequestItemId(study.paperDoi));
+  for (const report of files.reports.reports) ids.add(report.id);
+  for (const label of Object.keys(files.taxonomy.definitions)) ids.add(termItemId(label));
+  return ids;
 }
 
 /**
@@ -115,6 +141,7 @@ function add(map: Map<string, string[]>, key: string, id: string): void {
  * meaning.
  */
 export function buildLookup(files: LookupFiles): Lookup {
+  const known = entryIdsOf(files);
   const dois = new Map<string, string[]>();
   const accessions = new Map<string, string[]>();
   const names = new Map<string, string[]>();
@@ -171,6 +198,7 @@ export function buildLookup(files: LookupFiles): Lookup {
   }
 
   return {
+    knows: (id: string) => known.has(id),
     match(question: string): string[] {
       const found: string[] = [];
       const take = (ids: string[] | undefined) => {

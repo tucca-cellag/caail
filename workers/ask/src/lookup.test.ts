@@ -46,6 +46,7 @@ const FILES: LookupFiles = {
     onRequest: [{ study: 'miR-10167-3p targets TCF7L1 (Hu et al. 2024)', paperDoi: '10.1016/j.ygeno.2024.110903' }],
   },
   reports: { reports: [{ id: 'report:gfi-2026', title: 'GFI State of the Industry: Cultivated Meat 2026' }] },
+  taxonomy: { definitions: { 'Deep Learning': 'A definition.' } },
 };
 
 const lookup = buildLookup(FILES);
@@ -82,6 +83,19 @@ describe('finds what a question names', () => {
 
   it('ranks identifiers ahead of names', () => {
     expect(lookup.match('AlphaFold and GSE169291')).toEqual(['ds:gse169291', 'sw:alphafold']);
+  });
+});
+
+describe('knows the corpus the files hold', () => {
+  it.each([['sw:alphafold'], ['paper:1'], ['ds:gse169291'], ['onrequest:10.1016/j.ygeno.2024.110903'], ['report:gfi-2026'], ['term:deep-learning']])(
+    'knows %s',
+    (id) => {
+      expect(lookup.knows(id)).toBe(true);
+    },
+  );
+
+  it.each([['sw:removed'], ['paper:2'], ['term:scaffolding'], ['corpus']])('does not know %s', (id) => {
+    expect(lookup.knows(id)).toBe(false);
   });
 });
 

@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { retrieve, type IndexBinding, type RetrievedEntry, type StoredVector } from './retrieval.ts';
 import { CORPUS_RECORD_ID, ENTRY_NAMESPACE, TOP_K } from './settings.ts';
 import { vectorId } from './ids.ts';
-import { ORIGIN, defaultAi } from './test-env.ts';
+import { ORIGIN, defaultAi, lookupNaming } from './test-env.ts';
 
 const entry = (n: number): RetrievedEntry => ({
   id: `paper:${n}`,
@@ -33,7 +33,7 @@ describe('retrieval', () => {
   it('takes the nearest TOP_K from the entries namespace, with their metadata', async () => {
     const nearest = await Promise.all(Array.from({ length: TOP_K + 4 }, (_, n) => stored(entry(n))));
     const { binding, queries } = index(nearest);
-    const found = await entriesOf('q', { AI: { run: defaultAi }, INDEX: binding, ALLOWED_ORIGIN: ORIGIN }, { match: () => [] }, signal);
+    const found = await entriesOf('q', { AI: { run: defaultAi }, INDEX: binding, ALLOWED_ORIGIN: ORIGIN }, lookupNaming([]), signal);
 
     expect(found.map((e) => e.id)).toEqual(Array.from({ length: TOP_K }, (_, n) => `paper:${n}`));
     expect(queries).toEqual([{ topK: TOP_K, namespace: ENTRY_NAMESPACE, returnMetadata: 'all' }]);
@@ -46,7 +46,7 @@ describe('retrieval', () => {
     const found = await entriesOf(
       'q',
       { AI: { run: defaultAi }, INDEX: binding, ALLOWED_ORIGIN: ORIGIN },
-      { match: () => ['paper:9', 'paper:2'] },
+      lookupNaming(['paper:9', 'paper:2']),
       signal,
     );
 
@@ -59,7 +59,7 @@ describe('retrieval', () => {
     const nearest = await Promise.all(Array.from({ length: TOP_K }, (_, n) => stored(entry(n))));
     const { binding } = index(nearest, named);
     const namedIds = named.map((v) => (v.metadata as unknown as RetrievedEntry).id);
-    const found = await entriesOf('q', { AI: { run: defaultAi }, INDEX: binding, ALLOWED_ORIGIN: ORIGIN }, { match: () => namedIds }, signal);
+    const found = await entriesOf('q', { AI: { run: defaultAi }, INDEX: binding, ALLOWED_ORIGIN: ORIGIN }, lookupNaming(namedIds), signal);
 
     const byName = found.filter((e) => namedIds.includes(e.id));
     expect(found).toHaveLength(TOP_K);
@@ -76,16 +76,32 @@ describe('retrieval', () => {
     const found = await entriesOf(
       'q',
       { AI: { run: defaultAi }, INDEX: binding, ALLOWED_ORIGIN: 'http://localhost:4321' },
-      { match: () => ['paper:2'] },
+      lookupNaming(['paper:2']),
       signal,
     );
 
     expect(found.map((e) => e.id)).toEqual(['paper:2', 'paper:1']);
   });
 
+  /**
+   * The index can hold entries the corpus no longer does, when a rebuild's
+   * deletes failed or have not landed. The Worker bundles the corpus it was
+   * deployed with, so an entry outside it is dropped from either half, whatever
+   * order the build wrote in.
+   */
+  it('drops an entry the deployed corpus does not hold, from either half, and keeps one it does', async () => {
+    const removed = entry(99);
+    const current = entry(1);
+    const { binding } = index([await stored(removed), await stored(current)], [await stored(removed)]);
+    const lookup = lookupNaming([removed.id], (id) => id !== removed.id);
+    const found = await entriesOf('q', { AI: { run: defaultAi }, INDEX: binding, ALLOWED_ORIGIN: ORIGIN }, lookup, signal);
+
+    expect(found.map((e) => e.id), 'an entry the corpus no longer holds was offered to the model').toEqual([current.id]);
+  });
+
   it('skips a named entry the index does not hold', async () => {
     const { binding } = index([await stored(entry(1))]);
-    const found = await entriesOf('q', { AI: { run: defaultAi }, INDEX: binding, ALLOWED_ORIGIN: ORIGIN }, { match: () => ['paper:404'] }, signal);
+    const found = await entriesOf('q', { AI: { run: defaultAi }, INDEX: binding, ALLOWED_ORIGIN: ORIGIN }, lookupNaming(['paper:404']), signal);
 
     expect(found.map((e) => e.id)).toEqual(['paper:1']);
   });
@@ -98,7 +114,7 @@ describe('retrieval', () => {
     ['a vector with no metadata', { id: 'x' }],
   ])('never offers %s', async (_label, vector) => {
     const { binding } = index([vector as StoredVector, await stored(entry(1))]);
-    const found = await entriesOf('q', { AI: { run: defaultAi }, INDEX: binding, ALLOWED_ORIGIN: ORIGIN }, { match: () => [] }, signal);
+    const found = await entriesOf('q', { AI: { run: defaultAi }, INDEX: binding, ALLOWED_ORIGIN: ORIGIN }, lookupNaming([]), signal);
 
     expect(found.map((e) => e.id)).toEqual(['paper:1']);
   });

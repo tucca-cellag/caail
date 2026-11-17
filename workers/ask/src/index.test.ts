@@ -27,6 +27,7 @@ import {
   embeddingOutput,
   handlerWith,
   harness,
+  lookupNaming,
 } from './test-env.ts';
 
 const QUESTION = { query: 'which tools predict protein structure?' };
@@ -272,7 +273,7 @@ describe('an answered question', () => {
 
   it('puts an entry the question names first, fetched from the index by id', async () => {
     const spy = harness();
-    const named = { match: () => [ENTRIES[2].id] };
+    const named = lookupNaming([ENTRIES[2].id]);
     await handlerWith(named).fetch(ask(QUESTION), spy.env, spy.ctx);
 
     // The corpus record first (the index check), then the named entry.
@@ -538,7 +539,7 @@ describe('failures', () => {
         throw new Error('3036 vectors could not be read');
       },
     });
-    const res = await handlerWith({ match: () => [ENTRIES[2].id] }).fetch(ask(QUESTION), spy.env, spy.ctx);
+    const res = await handlerWith(lookupNaming([ENTRIES[2].id])).fetch(ask(QUESTION), spy.env, spy.ctx);
 
     expect(res.status).toBe(200);
     expect(logs.lines.map((line) => JSON.parse(line))).toEqual([{ error: 'named_retrieval_failed' }]);
@@ -680,7 +681,7 @@ describe('the index was built the way questions are embedded', () => {
  * away what the other found; only both failing is a failure.
  */
 describe('one half of retrieval failing', () => {
-  const named = { match: () => [ENTRIES[2].id] };
+  const named = lookupNaming([ENTRIES[2].id]);
   const fetchFails = async (ids: string[]) => {
     if (ids.includes(CORPUS_RECORD_ID)) return [corpusRecordFor()];
     throw new Error('vectorize unavailable');

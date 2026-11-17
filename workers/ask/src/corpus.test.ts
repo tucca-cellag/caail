@@ -15,7 +15,7 @@ import { siteSlug } from '../../../site/src/lib/heading-slug.ts';
 import { ON_REQUEST_HEADING } from '../../../site/scripts/parser/datasets.ts';
 import { INVENTORY_ANCHOR, ON_REQUEST_ANCHOR, buildCorpus, clip, corpusDateOf, editionAnchor, type ApiFiles } from './corpus.ts';
 import { taxonomySlug } from './ids.ts';
-import { buildLookup } from './lookup.ts';
+import { buildLookup, entryIdsOf } from './lookup.ts';
 import { citedEntryIds } from './model.ts';
 
 const apiFile = (name: string) => JSON.parse(readFileSync(new URL(`../../../site/public/api/${name}`, import.meta.url), 'utf8'));
@@ -269,11 +269,21 @@ describe('every link is a site page that names its entry', () => {
 });
 
 describe('the lookup and the corpus agree', () => {
-  const lookup = buildLookup({
+  const files = {
     catalog: api.catalog,
     papersIndex: apiFile('papers-index.json'),
     datasets: api.datasets,
     reports: api.reports,
+    taxonomy: api.taxonomy,
+  };
+  const lookup = buildLookup(files);
+
+  // The Worker drops any vector outside this set, so it has to be exactly the
+  // corpus: an id missing from it would make an entry unreachable.
+  it('knows exactly the ids the corpus holds, derived from the bundled files', () => {
+    expect(entryIdsOf(files)).toEqual(new Set(corpus.map((entry) => entry.id)));
+    for (const entry of corpus) expect(lookup.knows(entry.id), entry.id).toBe(true);
+    expect(lookup.knows('paper:999999')).toBe(false);
   });
 
   // A lookup id the corpus does not hold would fetch nothing from the index, and
