@@ -68,6 +68,8 @@
  * command that reprints the real number.
  */
 
+import { escapeRegExp } from '../../src/lib/escape-regexp.js';
+
 /** The condition class an entry misbehaves under. See the module docstring. */
 export type Shape = 'load' | 'artifact' | 'residue';
 
@@ -79,13 +81,113 @@ export type Status =
   /** A preflight check aborts the run naming the cause before any test runs. */
   | 'guarded';
 
+/**
+ * How an entry's unit fails under its condition. A failure is labelled only when it has this
+ * shape, so the same test failing another way, such as the assertion a real defect trips,
+ * prints as unregistered.
+ *
+ *  - `'timeout'`: it ran past its time budget. On Playwright, the test's own timeout
+ *    (`result.status === 'timedOut'`); an `expect` that ran out of a timeout of its own fails
+ *    with status `failed` and is not this. On vitest, every error it failed with is vitest's
+ *    "Test timed out in" or "Hook timed out in".
+ *  - `{ missing }`: Playwright only. An `expect` on one of these locators ran out of its own
+ *    timeout with no element matching it (`notFound`). Every web-first assertion retries to its
+ *    timeout, so a timeout alone says nothing: a matched element with the wrong text or state,
+ *    which is how a regression in one usually fails, is not this. Each locator is written as
+ *    Playwright describes it, `locator('.x')`, and matched exactly, so a locator chained off it
+ *    is a different one.
+ *  - `{ text }`: it failed with an error whose text holds one of these strings, for a failure
+ *    that is an assertion rather than a timeout, such as a measured value over its limit. Playwright's text is the error message cut before the source snippet it quotes;
+ *    vitest's adds each error's diff.
+ *  - `{ allListedUnder }`: vitest only. It failed an assertion whose diff lists what was
+ *    received (`+   "path",` lines), and every item listed lies under one of these
+ *    directories. For residue: one item anywhere else, such as a real paste under `src/`
+ *    beside the leftover, is a failure the residue does not explain, and goes unlabelled.
+ *
+ * Every string a shape names must appear verbatim in `file` (for `missing`, the whole
+ * `locator('...')` expression), or for a residue entry in its `reproduce`, which removes the
+ * leftover it names;
+ * `register.test.ts` enforces it, so a reworded assertion or a changed selector cannot leave the
+ * entry matching nothing unnoticed. An entry may state several shapes, any of which labels.
+ */
+export type FailureShape =
+  | 'timeout'
+  | { readonly missing: readonly string[] }
+  | { readonly text: readonly string[] }
+  | { readonly allListedUnder: readonly string[] };
+
+/** The strings a failed vitest assertion's diff lists on its received side, `+   "x",`. */
+export function receivedItems(text: string): string[] {
+  return [...text.matchAll(/^\+\s+"(.*)",?$/gm)].map((m) => m[1]!);
+}
+
+/** An entry's `failure`: one shape, or several, any one of which labels a failure. */
+export type FailureShapes = FailureShape | readonly FailureShape[];
+
+/**
+ * The locator a Playwright `expect` gave up on because no element matched it, as Playwright
+ * describes it (`locator('.x')`), or none. Playwright 1.64 writes that failure with a `Locator:`
+ * line, a `Timeout: NNNms` line and `Error: element(s) not found`; an element that matched but
+ * had the wrong text or state is written with a `Received:` line instead, and gives none here.
+ */
+export function notFound(text: string): string[] {
+  const locator = /^Locator:\s+(.+)$/m.exec(text);
+  const gaveUp = /^Timeout:\s+\d+ms$/m.test(text) && /^Error: element\(s\) not found$/m.test(text);
+  return locator && gaveUp ? [locator[1]!.trim()] : [];
+}
+
+/** One failure a reporter saw, in the terms a `FailureShape` is checked against. */
+export interface ObservedFailure {
+  /** Whether it ran past its time budget, as `FailureShape`'s `'timeout'` reads that. */
+  timedOut: boolean;
+  /** The text of the errors it failed with. */
+  texts: readonly string[];
+}
+
+/** Whether an entry states several shapes rather than one. */
+function isShapeList(shapes: FailureShapes): shapes is readonly FailureShape[] {
+  return Array.isArray(shapes);
+}
+
+/** The shapes an entry's `failure` states, as a list however many it states. */
+export function shapeList(shapes: FailureShapes | undefined): readonly FailureShape[] {
+  if (shapes === undefined) return [];
+  return isShapeList(shapes) ? shapes : [shapes];
+}
+
+/** Whether `failure` has one of the shapes `shapes` describes. No shape matches nothing. */
+export function shapeMatches(shapes: FailureShapes | undefined, failure: ObservedFailure): boolean {
+  return shapeList(shapes).some((shape) => {
+    if (shape === 'timeout') return failure.timedOut;
+    if ('missing' in shape) return failure.texts.some((text) => notFound(text).some((locator) => shape.missing.includes(locator)));
+    if ('allListedUnder' in shape) {
+      const items = failure.texts.flatMap(receivedItems);
+      return items.length > 0 && items.every((item) => shape.allListedUnder.some((dir) => item.startsWith(`${dir}/`)));
+    }
+    return shape.text.some((text) => failure.texts.some((observed) => observed.includes(text)));
+  });
+}
+
+/** The strings a shape names, which `register.test.ts` requires to be found where it says. */
+export function shapeStrings(shapes: FailureShapes | undefined): string[] {
+  return shapeList(shapes).flatMap((shape) => {
+    if (shape === 'timeout') return [];
+    if ('missing' in shape) return [...shape.missing];
+    if ('allListedUnder' in shape) return [...shape.allListedUnder];
+    return [...shape.text];
+  });
+}
+
 export interface UnreliableEntry {
   /** Stable slug. Referenced from commit messages and tickets; do not reuse. */
   id: string;
   suite: 'vitest' | 'playwright';
   /** Path relative to `site/`. Must exist. */
   file: string;
-  /** Human label for the failing unit, for display. */
+  /**
+   * Human label for the failing unit, for display. On a Playwright entry it is also the
+   * test title the reporter matches (`titleMatches`), so it may be a template.
+   */
   unit: string;
   /**
    * A string that must appear verbatim in `file`. This is the anti-rot oracle, not a
@@ -94,18 +196,69 @@ export interface UnreliableEntry {
    */
   anchor: string;
   /**
-   * vitest only: match these exact test names rather than the whole module.
+   * vitest only: match these tests by full name (`titleMatches`) rather than the whole module.
+   * A full name is vitest's `TestCase.fullName`: the test's name after each enclosing suite's,
+   * joined by ` > `, so a test of the same name under another parent is not this one.
    *
-   * Absent means module-level matching, which is right for the five slow-fixture
-   * files: their failing *test* moves between runs, so naming one would be precise
-   * about the wrong thing. It is wrong wherever a module holds tests the entry is not
-   * about, because the reporter would then label a genuine failure as known-unreliable
-   * — the harm the Playwright side's title matching already exists to avoid.
+   * Module-level matching (`wholeModule`) is right for the five slow-fixture files:
+   * their failing *test* moves between runs, so naming one would be precise about the
+   * wrong thing. It is wrong wherever a module holds tests the entry is not about,
+   * because the reporter would then label a genuine failure as known-unreliable, the
+   * harm the Playwright side's title matching already exists to avoid.
    *
-   * Each name here must appear verbatim in `file`; `register.test.ts` enforces it, so
-   * this doubles as the vitest title-drift oracle.
+   * Each level of each full name here must be a call in `file`, the test's own an `it` or
+   * `test` call written as its source writes it, templates included; `missingLevels` in
+   * `register.test.ts` checks it, and says what that does and does not prove.
    */
   tests?: readonly string[];
+  /**
+   * vitest only: match these `describe` blocks by full name when one's own hook times out,
+   * which is how a suite-level `beforeAll` fails under load. A full name is vitest's
+   * `TestSuite.fullName`: the suite's name after each enclosing suite's, joined by ` > `.
+   *
+   * `tests` cannot register that hook. When it fails, vitest marks the suite failed with
+   * the hook's error and skips every test inside it, so no test fails and there is no
+   * name to match. Module-level matching would register it, and would also label every
+   * other suite in the module.
+   *
+   * A suite matches only when its own error has the entry's `failure` shape, which for a
+   * hook under load is `'timeout'`. A suite whose hook threw is failed with an error of its
+   * own too, and stays unlabelled under that shape: a hook that builds
+   * something and rejects its input, as `buildLlmsFullText`'s does on a link it cannot
+   * make absolute, has found a defect that load does not explain. So does a suite whose
+   * hooks ran clean but which holds a failing test; it fails with no error of its own,
+   * and that failure is the genuine regression this narrowing exists not to excuse. And a
+   * suite whose hook did time out, if a test inside it failed first: an `afterAll` running
+   * out of time after a real failure does not account for that failure.
+   * `vitest-reporter.test.ts` runs the installed vitest on a fixture and fails if any of
+   * these stops being how vitest reports it.
+   *
+   * Matching the full name rather than the bare one means a suite of the same name under
+   * another parent is not labelled, however it was made: a second `describe`, a
+   * `describe.each` row, a loop or `suite()`.
+   *
+   * Each level of each full name here must be a `describe` or `suite` call in `file`;
+   * `missingLevels` in `register.test.ts` checks it, and says what that does and does not prove.
+   */
+  suites?: readonly string[];
+  /**
+   * vitest only: match failures anywhere in `file`, when every one of them has the entry's
+   * `failure` shape. Set only where the failing test moves between runs, so no name would
+   * hold.
+   *
+   * Every vitest entry sets this or narrows with `tests` or `suites`, never both, and
+   * `register.test.ts` fails on one that does neither. Without that, an entry that lost
+   * its narrowing would widen to its whole module in silence, and start labelling the
+   * module's other tests. An entry with none of the three matches nothing.
+   */
+  wholeModule?: true;
+  /**
+   * The shape of failure this entry covers (`FailureShape`), read from its evidence. Every
+   * entry a reporter can match states one, which `register.test.ts` checks; the preflight's
+   * artifact entries, which no test failure matches, carry none. An entry without one
+   * matches nothing.
+   */
+  failure?: FailureShapes;
   shape: Shape;
   /** One or two sentences: when does it misbehave, and when does it not. */
   condition: string;
@@ -126,14 +279,16 @@ export interface UnreliableEntry {
 }
 
 /**
- * Playwright matching is always file plus exact title. vitest matching defaults to the
- * module and narrows to named tests when an entry sets `tests`.
+ * Playwright matching is always file plus title (`titleMatches`). vitest matching is by
+ * the named tests or suites an entry sets, or by the whole module where it says
+ * `wholeModule`. Either way, only a failure of the shape the entry's `failure` states,
+ * read from its evidence, is labelled: the same test failing another way is not.
  *
- * The default is not laziness: the five slow-fixture entries below genuinely fail as
- * whole files, and which test inside them fails moves between runs (three consecutive
- * full runs produced three different sets), so naming one would be precise about the
- * wrong thing. An entry whose module holds unrelated tests must set `tests`, or the
- * reporter labels those as known-unreliable on no evidence.
+ * Whole-module matching is not laziness: the five slow-fixture entries below genuinely
+ * fail as whole files, and which test inside them fails moves between runs (three
+ * consecutive full runs produced three different sets), so naming one would be precise
+ * about the wrong thing. Every other entry narrows, or the reporter labels the rest of
+ * its module as known-unreliable on no evidence.
  */
 export const REGISTER: readonly UnreliableEntry[] = [
   // -------------------------------------------------------------------------
@@ -144,9 +299,11 @@ export const REGISTER: readonly UnreliableEntry[] = [
   {
     id: 'vitest-metrics-corpus-hook',
     suite: 'vitest',
+    wholeModule: true,
     file: 'scripts/parser/metrics.test.ts',
     unit: 'beforeAll of "buildMetricsModel — real corpus"',
     anchor: "describe('buildMetricsModel — real corpus'",
+    failure: 'timeout',
     shape: 'load',
     condition:
       'Fails with "Hook timed out" when the machine is under CPU contention. Passes alone, ' +
@@ -168,9 +325,11 @@ export const REGISTER: readonly UnreliableEntry[] = [
   {
     id: 'vitest-seed-topics-hook',
     suite: 'vitest',
+    wholeModule: true,
     file: 'scripts/db/seed.test.ts',
     unit: 'top-level beforeAll (seeds the real corpus)',
     anchor: 'summary = seedTopics(db);',
+    failure: 'timeout',
     shape: 'load',
     condition:
       'Same "Hook timed out" as metrics.test.ts, under the same contention. The hook seeds ' +
@@ -186,9 +345,11 @@ export const REGISTER: readonly UnreliableEntry[] = [
   {
     id: 'vitest-db-dataset-entries',
     suite: 'vitest',
+    wholeModule: true,
     file: 'scripts/db/dataset-entries.test.ts',
     unit: "beforeAll of 'seedDatasets (rows + entries share the ds: namespace)'",
     anchor: "describe('seedDatasets (rows + entries share the ds: namespace)'",
+    failure: 'timeout',
     shape: 'load',
     condition: 'Hook timeout under contention. Runs ~1.6s serial.',
     evidence: '2026-08-12: in one of three consecutive full runs, each of which failed a different set.',
@@ -200,9 +361,11 @@ export const REGISTER: readonly UnreliableEntry[] = [
   {
     id: 'vitest-db-mutate',
     suite: 'vitest',
+    wholeModule: true,
     file: 'scripts/db/mutate.test.ts',
     unit: 'per-test timeout, most often the first addItem round-trip',
     anchor: 'assigns the next ref id, wires a matrix cell, round-trips reachable + lint-green',
+    failure: 'timeout',
     shape: 'load',
     condition:
       'Individual tests exceed the per-test budget under contention. Each test imports a ' +
@@ -219,9 +382,11 @@ export const REGISTER: readonly UnreliableEntry[] = [
   {
     id: 'vitest-db-emit',
     suite: 'vitest',
+    wholeModule: true,
     file: 'scripts/db/emit.test.ts',
     unit: 'per-test timeout, most often the Papers.md round-trip',
     anchor: 're-parses to a JSON-identical model',
+    failure: 'timeout',
     shape: 'load',
     condition:
       'Individual tests exceed the per-test budget under contention. The slowest test emits ' +
@@ -237,6 +402,51 @@ export const REGISTER: readonly UnreliableEntry[] = [
   },
 
   // -------------------------------------------------------------------------
+  // vitest: one slow hook or test in a module of others, so each entry names it
+  // rather than the module.
+  // -------------------------------------------------------------------------
+  {
+    id: 'vitest-llms-full-hook',
+    suite: 'vitest',
+    file: 'scripts/parser/llms-full.test.ts',
+    unit: 'beforeAll of "buildLlmsFullText"',
+    anchor: 'relative = nonAbsoluteMarkdownTargets(fullText(), { page: true });',
+    suites: ['buildLlmsFullText'],
+    failure: 'timeout',
+    shape: 'load',
+    condition:
+      'Fails with "Hook timed out" under CPU contention. The hook builds the full llms-full.txt ' +
+      'text, resolving every page\'s links, and parses it once more for link targets. Passed in ' +
+      'a serial run of the same tree.',
+    evidence:
+      '2026-11-13, local, a parallel full run under heavy swap: the hook timed out at 30s, and ' +
+      'the registered metrics, seed and mutate entries failed alongside it. ' +
+      '--no-file-parallelism passed 1,858 of 1,858. Seen once.',
+    reproduce: 'pnpm --dir site test -- --no-file-parallelism',
+    status: 'open',
+    tickets: ['tucca-cellag/caail-planning#604'],
+  },
+  {
+    id: 'vitest-agent-api-link-scan',
+    suite: 'vitest',
+    file: 'scripts/parser/agent-api.test.ts',
+    unit: 'ships no relative Markdown link target in any emitted endpoint',
+    anchor: 'ships no relative Markdown link target in any emitted endpoint',
+    tests: ['site-relative hrefs in the API > ships no relative Markdown link target in any emitted endpoint'],
+    failure: 'timeout',
+    shape: 'load',
+    condition:
+      'Exceeds the per-test budget under CPU contention. The test builds every agent-API ' +
+      'endpoint and scans each string in them for Markdown link targets. Passed in a serial run.',
+    evidence:
+      '2026-11-14, local, a parallel vitest run on another branch: 21.9s against the 20s ' +
+      'budget. The serial control passed. Seen once.',
+    reproduce: 'pnpm --dir site test -- --no-file-parallelism',
+    status: 'open',
+    tickets: ['tucca-cellag/caail-planning#604'],
+  },
+
+  // -------------------------------------------------------------------------
   // Playwright: pre-hydration clicks on server-rendered island controls.
   // -------------------------------------------------------------------------
   {
@@ -245,6 +455,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
     file: 'e2e/licenses.spec.ts',
     unit: 'the catalog license facet narrows the grid to a tier',
     anchor: 'the catalog license facet narrows the grid to a tier',
+    failure: { text: ['toBeLessThan'] },
     shape: 'load',
     condition:
       'Clicked the license facet before CatalogBrowser hydrated, so the click was lost and ' +
@@ -273,6 +484,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
     file: 'e2e/citations.spec.ts',
     unit: 'the "Most cited" facet narrows Software to cited entries, most-cited first',
     anchor: 'the "Most cited" facet narrows Software to cited entries, most-cited first',
+    failure: { text: ['toBeLessThan'] },
     shape: 'load',
     condition:
       'The same pre-hydration click as the license facet, on the same island and page. Fixed ' +
@@ -292,22 +504,177 @@ export const REGISTER: readonly UnreliableEntry[] = [
     file: 'e2e/network-metrics.spec.ts',
     unit: 'edges are inert — clicking a connection selects nothing and clears the panel',
     anchor: "await page.waitForSelector('.ng-canvas canvas'",
+    failure: 'timeout',
     shape: 'load',
     condition:
-      'Recorded in tucca-cellag/caail-planning#2 as a hydration-timing race on the graph. The specs now wait for the ' +
-      'cytoscape canvas, and the hub specs wait for the filter bar, so the window is closed.',
+      'Recorded in tucca-cellag/caail-planning#2 as a hydration-timing race on the graph, which the ' +
+      'canvas wait below closed. The test still runs past its 30s budget when the machine is ' +
+      'loaded, and passes with --workers=1 on the same build.',
     evidence:
       '2026-08-13: 45/45 under --repeat-each=3; did not reproduce. Note that Playwright ran ' +
       'that as 3 workers, one per repeat group, despite --workers=12: tests in one file are ' +
       'serial in one worker unless fullyParallel is set. So this is weaker evidence than the ' +
-      '16-worker runs above, and it is a lower bound rather than a clean bill of health.',
+      '16-worker runs above, and it is a lower bound rather than a clean bill of health. ' +
+      '2026-11-13, local, on a branch that did not touch the network page: timed out at 30.1s ' +
+      'in a full e2e pass (277 passed, 1 failed) run straight after another on the same ' +
+      'machine, and the reporter named this entry. The control below passed 3/3 at 1.2s each, ' +
+      '48/48 for the file.',
     reproduce:
       'cd site && CAAIL_E2E_PORT=<free> pnpm exec playwright test e2e/network-metrics.spec.ts ' +
-      '--repeat-each=3',
-    status: 'mitigated',
+      '--repeat-each=3 --workers=1',
+    status: 'open',
     mitigation:
-      "waitForSelector('.ng-canvas canvas') for the graph; retrying assertions on .hf-bar for the hub filters.",
-    tickets: ['tucca-cellag/caail-planning#207', 'tucca-cellag/caail-planning#2'],
+      "Partly: waitForSelector('.ng-canvas canvas') for the graph, and retrying assertions on " +
+      '.hf-bar for the hub filters, closed the race. They do not stop the timeout under load.',
+    tickets: [
+      'tucca-cellag/caail-planning#207',
+      'tucca-cellag/caail-planning#2',
+      'tucca-cellag/caail-planning#604',
+    ],
+  },
+
+  // -------------------------------------------------------------------------
+  // Playwright: a wait or a measured value that contention moves past its
+  // bound. Each passed once concurrency was held.
+  // -------------------------------------------------------------------------
+  {
+    id: 'pw-homepage-rail-hover',
+    suite: 'playwright',
+    file: 'e2e/homepage-agent.spec.ts',
+    unit: 'expanded labels stay clear of the content column at ${width}px',
+    anchor: "await page.locator('.rail').hover();",
+    failure: 'timeout',
+    shape: 'load',
+    condition:
+      'The hover on the section rail timed out at 30s while the machine was loaded. The hover ' +
+      'is the same step at every width the loop generates, so the entry names the test at all ' +
+      'of them, though it was seen at one.',
+    evidence:
+      '2026-10-21, local gates for tucca-cellag/caail#261, each with a /code-review agent running ' +
+      'alongside the full suite: locator.hover on .rail timed out at 30s, at 1600px. The ' +
+      'network edge-click test failed the same way in the same runs. Run alone with ' +
+      '--workers=1 the spec passed in full, and the full suite passed three times running at ' +
+      '--workers=2.',
+    reproduce:
+      'cd site && CAAIL_E2E_PORT=<free> pnpm exec playwright test e2e/homepage-agent.spec.ts --workers=1',
+    status: 'open',
+    tickets: ['tucca-cellag/caail-planning#604'],
+  },
+  {
+    id: 'pw-network-small-node',
+    suite: 'playwright',
+    file: 'e2e/network-metrics.spec.ts',
+    unit: 'a small node selects when clicked at its centre',
+    anchor: 'const t = await pickSmallNode(page);',
+    failure: 'timeout',
+    shape: 'load',
+    condition:
+      'Ran past the 30s test timeout waiting for the selected node\'s panel (.ng-panel .ng-slug) ' +
+      'in a slow full run. Passed alone with --workers=1 on the same build.',
+    evidence:
+      '2026-10-29, local, on a branch that changed four paper titles and nothing on this page: ' +
+      'the full test:e2e run took 2.0 min against a usual 1.1 min, with a code-review agent ' +
+      'running alongside and 38% of memory free. Re-run alone with --workers=1 on the same dist ' +
+      'it passed in 1.8s. The suite had passed in full earlier on the same branch.',
+    reproduce:
+      'cd site && CAAIL_E2E_PORT=<free> pnpm exec playwright test e2e/network-metrics.spec.ts ' +
+      '-g "a small node selects" --workers=1',
+    status: 'open',
+    tickets: ['tucca-cellag/caail-planning#604'],
+  },
+  {
+    id: 'pw-report-two-steps',
+    suite: 'playwright',
+    file: 'e2e/report.spec.ts',
+    unit: 'a reason with nothing to ask takes two steps, not three',
+    anchor: "await expect(page.locator('#caail-h-review')).toHaveText('Step 2 of 2: Your report');",
+    failure: 'timeout',
+    shape: 'load',
+    condition:
+      'Ran past the 30s test timeout waiting for the review step\'s heading (#caail-h-review) ' +
+      'in a slow full run. Passed alone with --workers=1 on the same build.',
+    evidence:
+      '2026-10-29, the same run as pw-network-small-node (2.0 min against a usual 1.1 min, a ' +
+      'code-review agent alongside, 38% of memory free). Re-run alone with --workers=1 on the ' +
+      'same dist it passed in 0.7s.',
+    reproduce:
+      'cd site && CAAIL_E2E_PORT=<free> pnpm exec playwright test e2e/report.spec.ts ' +
+      '-g "a reason with nothing to ask" --workers=1',
+    status: 'open',
+    tickets: ['tucca-cellag/caail-planning#604'],
+  },
+  {
+    id: 'pw-license-badges-axe',
+    suite: 'playwright',
+    file: 'e2e/licenses.spec.ts',
+    unit: 'the license badges introduce no axe violations on /software/',
+    anchor: 'the license badges introduce no axe violations on /software/',
+    failure: 'timeout',
+    shape: 'load',
+    condition:
+      'Timed out in a run of seven specs with review agents running alongside, and passed with ' +
+      'its file run alone on the same build.',
+    evidence:
+      '2026-11-05, local, on a branch that changed only dataset entries: timed out in a run of ' +
+      'the datasets, topics, topics-band, network-metrics, report, citations and licenses specs ' +
+      'at head 032b51d, with review agents alongside; 99 of 100 passed. licenses.spec.ts re-run ' +
+      'alone on the same dist passed 10/10, at a worker count nobody recorded. 2026-11-16, on ' +
+      'a later build: the control below passed 10/10, this test in 5.1s.',
+    reproduce: 'cd site && CAAIL_E2E_PORT=<free> pnpm exec playwright test e2e/licenses.spec.ts --workers=1',
+    status: 'open',
+    tickets: ['tucca-cellag/caail-planning#604'],
+  },
+  {
+    id: 'pw-topics-lead-axe',
+    suite: 'playwright',
+    file: 'e2e/topics.spec.ts',
+    unit: 'a theme view with a named lead has no axe violations',
+    anchor: "const lead = page.locator('.th-lead-full');",
+    failure: { missing: ["locator('.th-lead-full')"] },
+    shape: 'load',
+    condition:
+      'The lead credit renders inside the topics hub island (client:load), and under contention ' +
+      'it was not visible within the 5s visibility wait. Passed with --workers=1 on the same ' +
+      'build.',
+    evidence:
+      '2026-11-05, local, on a branch that changed one dataset entry and its licence: ' +
+      '.th-lead-full not found within 5s on ./topics/?t=ai-methods-tooling, in a run of the ' +
+      'datasets, licenses, topics and topics-band specs at default workers, load average about ' +
+      '30. The control below passed 6/6 in 9s on the same dist.',
+    reproduce: 'cd site && CAAIL_E2E_PORT=<free> pnpm exec playwright test e2e/topics.spec.ts --workers=1',
+    status: 'open',
+    tickets: ['tucca-cellag/caail-planning#604'],
+  },
+  {
+    id: 'pw-hero-stripe-cls',
+    suite: 'playwright',
+    file: 'e2e/hero-stripe.spec.ts',
+    unit: 'on a slowed phone the hero band records no layout shift and the page stays under good CLS',
+    anchor: "await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });",
+    failure: { text: ['total layout shift, every entry summed'] },
+    shape: 'load',
+    condition:
+      'A measured value, not a wait. The test throttles the CPU and sums every layout shift on ' +
+      'the page, and on a busy runner that sum went over GOOD_CLS. Load moves the measurement, ' +
+      'so the failure is a number over a threshold rather than a timeout. Passed with ' +
+      '--workers=1 on the same head.',
+    misleadingTriage:
+      'It fails an assertion on a measured layout shift, so it reads as a real CLS regression in ' +
+      'whatever the diff changed; its one occurrence was on a diff that changed nothing the ' +
+      'homepage renders. Sized from CI history it disappears: once a re-run passes, gh run list ' +
+      'reports the run as success, and the failed attempt shows only in ' +
+      'gh run view <id> --attempt 1.',
+    evidence:
+      '2026-11-13, CI: tucca-cellag/caail#297, run 43379061020 attempt 1 (head adf8d2a), the ' +
+      'summed layout shift was 0.174 against the 0.1 limit, the only failure of 275 e2e tests ' +
+      'in the job. The spec had passed on main\'s two previous test.yml runs, and the failed ' +
+      'job\'s re-run (attempt 2) passed on the same head. The control below passed 12/12 on that ' +
+      'head\'s dist, this test in 362 to 444 ms.',
+    reproduce:
+      'cd site && CAAIL_E2E_PORT=<free> pnpm exec playwright test e2e/hero-stripe.spec.ts ' +
+      '--workers=1 --repeat-each=3',
+    status: 'open',
+    tickets: ['tucca-cellag/caail-planning#604'],
   },
 
   // -------------------------------------------------------------------------
@@ -321,11 +688,12 @@ export const REGISTER: readonly UnreliableEntry[] = [
     // Two tests in this module have nothing to do with residue, and one of them is the
     // guard against a real Slack-invite paste. Matching the module would greet that
     // leak with "this is a known artifact".
-    tests: ['appears nowhere under site/ except this module and its test'],
+    tests: ['the community Slack invite is confined to two places > appears nowhere under site/ except this module and its test'],
     // Anchored on the skip list rather than the test title, because the skip list is
     // what makes the condition true: widen it and this entry is obsolete, so the entry
     // should be forced back under review. The title is covered by `tests` above.
     anchor: "const SKIP = new Set(['node_modules', 'dist', 'coverage', '.astro', '.git', 'public']);",
+    failure: { allListedUnder: ['test-results', 'playwright-report'] },
     shape: 'residue',
     condition:
       'The walk that enforces where the Slack invite may appear does not respect .gitignore. ' +
@@ -406,6 +774,20 @@ export function openEntries(register: readonly UnreliableEntry[] = REGISTER): Un
   return register.filter((entry) => entry.status === 'open');
 }
 
+/** What failed inside one vitest module, in the terms an entry is matched against. */
+export interface VitestFailures {
+  /** Its failed tests, by full name. */
+  tests?: readonly (ObservedFailure & { name: string })[];
+  /**
+   * Its suites that failed with an error of their own, a hook's, by full name, each saying
+   * whether a test inside it failed too. Not those that failed only because a test or a
+   * suite inside them did. See `UnreliableEntry.suites`.
+   */
+  suites?: readonly (ObservedFailure & { name: string; holdsFailedTest?: boolean })[];
+  /** The module's own errors, from a top-level hook, when it has any. */
+  module?: ObservedFailure;
+}
+
 /**
  * Entries registered against a vitest module.
  *
@@ -415,31 +797,89 @@ export function openEntries(register: readonly UnreliableEntry[] = REGISTER): Un
  */
 export function entriesForVitestModule(
   moduleId: string,
-  failedTestNames: readonly string[] = [],
+  failures: VitestFailures = {},
   register: readonly UnreliableEntry[] = REGISTER,
 ): UnreliableEntry[] {
   const normalised = moduleId.replaceAll('\\', '/');
   return register.filter((entry) => {
     if (entry.suite !== 'vitest') return false;
     if (normalised !== entry.file && !normalised.endsWith(`/${entry.file}`)) return false;
-    // No `tests` means the whole module is registered, which is the right reading for
-    // an entry whose failing test moves between runs.
-    if (!entry.tests) return true;
-    return entry.tests.some((name) => failedTestNames.includes(name));
+    const fits = (failure: ObservedFailure) => shapeMatches(entry.failure, failure);
+    // Only an entry that says so covers its whole module, and only when every failure in
+    // it has the entry's shape: one assertion failing beside the timeouts is a failure the
+    // entry does not explain. One with no names and no `wholeModule` matches nothing.
+    if (entry.wholeModule) {
+      const all = [...(failures.tests ?? []), ...(failures.suites ?? []), ...(failures.module ? [failures.module] : [])];
+      return all.length > 0 && all.every(fits);
+    }
+    const named = (names: readonly string[] | undefined, failed: readonly (ObservedFailure & { name: string })[] = []) =>
+      (names ?? []).some((name) => failed.some((f) => titleMatches(name, f.name) && fits(f)));
+    // A suite whose hook timed out after a test inside it really failed would otherwise
+    // label that failure too, since the report counts entries, not failures.
+    const suitesAlone = (failures.suites ?? []).filter((suite) => !suite.holdsFailedTest);
+    return named(entry.tests, failures.tests) || named(entry.suites, suitesAlone);
   });
+}
+
+/**
+ * Whether `title`, as a test or suite reports it, is the one `named` names.
+ *
+ * Equal strings match. A `${…}` in `named` is a placeholder for one or more characters
+ * other than whitespace, so a title generated in a loop is named once, as its source writes it
+ * (`at ${width}px`), and matches every title the loop generates. Written that way it
+ * appears verbatim in its file, which the integrity checks in `register.test.ts`
+ * require; a title as it runs (`at 1600px`) is in no source to find. Everything outside
+ * a placeholder matches literally, and the whole title has to match. A placeholder ends at
+ * its first `}`, so one that can hold a `}` would split wrongly; `unsupportedPlaceholders`
+ * names those, and the integrity checks refuse an entry that uses one.
+ *
+ * No whitespace, so that a different test in the same file sharing the template's prefix
+ * and suffix, with words between them, is not labelled with this entry. The cost is a loop
+ * whose value holds a space: its titles go unmatched, and a failure there prints as
+ * unregistered, which a reader notices, where a mislabel would be believed.
+ */
+export function titleMatches(named: string, title: string): boolean {
+  const literals = named.split(/\$\{[^}]*\}/);
+  if (literals.length === 1) return named === title;
+  const pattern = literals.map(escapeRegExp).join('\\S+');
+  return new RegExp(`^${pattern}$`).test(title);
+}
+
+/**
+ * The placeholders in `named` that `titleMatches` cannot split, as written, so the integrity
+ * checks in `register.test.ts` can refuse them.
+ *
+ * `titleMatches` ends a placeholder at its first `}`. That is right for a variable, a property
+ * or an index (`${width}`, `${viewport.width}`, `${sizes[0]}`), and wrong wherever a `}` can sit
+ * inside the placeholder, which takes a brace, a string, template or regex literal, or a
+ * comment: so a `{`, a quote, a backtick or a `/` in one. Such a placeholder splits in the
+ * wrong place and the entry silently matches nothing, so it is refused rather than parsed. So
+ * is a `${` with no closing `}`.
+ */
+export function unsupportedPlaceholders(named: string): string[] {
+  const refused: string[] = [];
+  const rest = named.replace(/\$\{([^}]*)\}/g, (placeholder: string, body: string) => {
+    if (/[{'"`/]/.test(body)) refused.push(placeholder);
+    return '';
+  });
+  if (rest.includes('${')) refused.push(rest.slice(rest.indexOf('${')));
+  return refused;
 }
 
 /**
  * Entries registered against a Playwright test.
  *
- * Matched on **both** the spec file and the exact test title.
+ * Matched on **both** the spec file and the test title (`titleMatches`), and only when every
+ * one of the test's failed attempts, in `failures`, has the entry's `failure` shape: with
+ * retries, a timeout on one attempt does not account for an assertion failing on another, as a
+ * whole-module vitest entry does not account for an assertion beside its timeouts.
  *
- * The title is required because `licenses.spec.ts` holds ten tests and one of them is
- * registered, so a file-level match would label the other nine as known-unreliable on
- * no evidence. The file is required because a title is not unique across the suite:
- * copying a spec to cover `/databases/` alongside `/software/` is the obvious next
- * change here, and a title-only match would then greet a genuine failure in the new
- * file with the old file's "already mitigated" entry. Both halves of that are the
+ * The title is required because `licenses.spec.ts` holds registered tests beside
+ * unregistered ones, so a file-level match would label the unregistered ones as
+ * known-unreliable on no evidence. The file is required because a title is not unique
+ * across the suite: copying a spec to cover `/databases/` alongside `/software/` is the
+ * obvious next change here, and a title-only match would then greet a genuine failure in
+ * the new file with the old file's "already mitigated" entry. Both halves of that are the
  * mislabelling this register exists to prevent rather than cause.
  *
  * `file` is matched by suffix so Playwright's absolute `TestCase.location.file`
@@ -448,14 +888,17 @@ export function entriesForVitestModule(
 export function entriesForPlaywrightTest(
   file: string,
   title: string,
+  failures: readonly ObservedFailure[],
   register: readonly UnreliableEntry[] = REGISTER,
 ): UnreliableEntry[] {
   const normalised = file.replaceAll('\\', '/');
   return register.filter(
     (entry) =>
       entry.suite === 'playwright' &&
-      entry.unit === title &&
-      (normalised === entry.file || normalised.endsWith(`/${entry.file}`)),
+      titleMatches(entry.unit, title) &&
+      (normalised === entry.file || normalised.endsWith(`/${entry.file}`)) &&
+      failures.length > 0 &&
+      failures.every((failure) => shapeMatches(entry.failure, failure)),
   );
 }
 

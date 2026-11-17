@@ -4,19 +4,43 @@
  * Companion to `vitest-reporter.ts`; see that file and `register.ts` for why the
  * register is printed at the point of failure rather than kept as a document.
  *
- * Matched on the exact test title rather than the file, unlike the vitest side.
- * `licenses.spec.ts` holds ten tests and one of them is registered, so a file-level
- * match would label the other nine as known-unreliable on no evidence, which is the
- * failure this whole register is meant to prevent rather than cause.
+ * Matched on the test title rather than the file, unlike the vitest side: the exact
+ * title, or every title a templated one generates (`titleMatches` in `register.ts`).
+ * `licenses.spec.ts` holds registered tests beside unregistered ones, so a file-level
+ * match would label the unregistered ones as known-unreliable on no evidence, which is
+ * the failure this whole register is meant to prevent rather than cause.
  *
  * Runs only in the runner process. Playwright re-evaluates `playwright.config.ts` in
  * every worker, but reporters are constructed and called by the runner, so unlike the
  * preflight this needs no guard against firing once per worker.
  */
 
+import { stripVTControlCharacters } from 'node:util';
+
 import type { Reporter, TestCase, TestResult } from '@playwright/test/reporter';
 
-import { entriesForPlaywrightTest, formatReport, type UnreliableEntry } from './register.js';
+import { entriesForPlaywrightTest, formatReport, type ObservedFailure, type UnreliableEntry } from './register.js';
+
+/**
+ * The text of a Playwright error as a `FailureShape` reads it: without terminal control
+ * sequences (colour, and hyperlinks, which would split a locator a `missing` shape matches exactly),
+ * and cut before the source snippet its message quotes. The snippet shows lines around the
+ * failing one, so a text shape matched against it would also match a different assertion a line
+ * or two away.
+ */
+export function errorText(message: string): string {
+  const plain = stripVTControlCharacters(message);
+  const snippet = plain.search(/\n\s*>?\s*\d+ \|/);
+  return snippet < 0 ? plain : plain.slice(0, snippet);
+}
+
+/** A failed attempt of a test, as entries are matched against it. */
+export function observedFailure(result: Pick<TestResult, 'status' | 'errors'>): ObservedFailure {
+  return {
+    timedOut: result.status === 'timedOut',
+    texts: result.errors.map((error) => errorText(error.message ?? '')),
+  };
+}
 
 export default class KnownUnreliableReporter implements Reporter {
   /**
@@ -55,7 +79,10 @@ export default class KnownUnreliableReporter implements Reporter {
       // and `unexpected` are both worth reporting, since a registered test going flaky
       // is the entry doing its job.
       if (test.outcome() === 'expected') continue;
-      matched.push(...entriesForPlaywrightTest(test.location.file, test.title));
+      const failures = test.results
+        .filter((result) => result.status === 'failed' || result.status === 'timedOut')
+        .map(observedFailure);
+      matched.push(...entriesForPlaywrightTest(test.location.file, test.title, failures));
     }
     const report = formatReport(matched);
     if (report) console.error(report);

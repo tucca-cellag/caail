@@ -7,40 +7,97 @@
  * the next idle wait reintroducing it: a page that never goes idle never ran an unbounded one.
  * The delay lives inside Astro, so the parity checks read the installed directive, both the
  * source module and the minified copy pages inline, and fail if either stops matching.
+ *
+ * The scan counts tokens rather than parsing the code around them, anywhere in a file: code,
+ * comments and prose alike. Every `client:idle` must be written
+ * `client:idle={{ timeout: IDLE_TIMEOUT_MS }}`, and `requestIdleCallback` may appear only once,
+ * inside `onIdle` in `idle-timeout.ts`, the bounded way to ask for one. A pattern that parses the
+ * tag or the call around a token misses a `>` inside the tag, an optional call and an alias, and
+ * fails a correct call with an inline arrow callback. Telling a mention in a comment or in
+ * Markdown prose from code took a hand-written lexer that a template literal fooled in a new way
+ * each round, and a template literal can become running code (`set:html`, `new Function`). So
+ * no mention is told apart: prose under site/src describes the API rather than naming it.
+ * Counting tokens can only err loudly, on correct code or prose that names a token, which is the
+ * direction a guard should err in.
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { IDLE_TIMEOUT_MS } from './idle-timeout';
+import { IDLE_TIMEOUT_MS, onIdle } from './idle-timeout';
 
 const require = createRequire(import.meta.url);
 const ASTRO_CLIENT = join(dirname(require.resolve('astro/package.json')), 'dist', 'runtime', 'client');
 const SRC = join(dirname(fileURLToPath(import.meta.url)), '..');
+/** The one module allowed to ask the browser for an idle callback, relative to `SRC`. */
+const HELPER = 'lib/idle-timeout.ts';
 
-/** Source files under `dir` an island directive or an idle callback could sit in, tests excepted. */
+/** Whether a file named `name` is one an island directive or an idle callback could sit in, tests excepted. */
+function isScanned(name: string): boolean {
+  return /\.(astro|mdx|md|[cm]?[jt]sx?)$/.test(name) && !/\.test\.[cm]?[jt]sx?$/.test(name);
+}
+
+/** The scanned files under `dir`. */
 function sourceFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
     const path = join(dir, name);
     if (statSync(path).isDirectory()) return sourceFiles(path);
-    return /\.(astro|mdx|md|ts|tsx)$/.test(name) && !/\.test\.tsx?$/.test(name) ? [path] : [];
+    return isScanned(name) ? [path] : [];
   });
 }
 
-/** A component's `client:idle` directive, bounded by the shared constant or not. */
-const IDLE_DIRECTIVE = /<[A-Za-z][\w.]*\b[^<>]*?\sclient:idle\b/g;
-const BOUNDED_DIRECTIVE = /<[A-Za-z][\w.]*\b[^<>]*?\sclient:idle=\{\{ timeout: IDLE_TIMEOUT_MS \}\}/g;
-/** A `requestIdleCallback(` call, bounded by the shared constant or not. */
-const IDLE_CALL = /requestIdleCallback\(/g;
-const BOUNDED_CALL = /requestIdleCallback\([^)]*\btimeout: IDLE_TIMEOUT_MS\b/g;
+/** The one way an island may be written idle. */
+const BOUNDED_DIRECTIVE = 'client:idle={{ timeout: IDLE_TIMEOUT_MS }}';
 
-/** The idle waits in `source` that the shared constant does not bound, and how many it does. */
-function idleWaits(source: string): { unbounded: number; bounded: number } {
-  const count = (re: RegExp) => [...source.matchAll(re)].length;
-  const bounded = count(BOUNDED_DIRECTIVE) + count(BOUNDED_CALL);
-  return { unbounded: count(IDLE_DIRECTIVE) + count(IDLE_CALL) - bounded, bounded };
+/** Where `onIdle` is declared: the one span of code that may ask for an idle callback. */
+const ON_IDLE_DECLARATION = 'export function onIdle(';
+
+/**
+ * The span of `source` from `onIdle`'s declaration to the brace that closes its body, matched by
+ * counting braces from the first one after the declaration, or none. The helper may name
+ * `requestIdleCallback` exactly once, inside it; any other code token of it, in the helper as in
+ * any other file, is an offence. That `onIdle` asks with the bound is the `onIdle` tests' job,
+ * below.
+ */
+function onIdleSpan(source: string): { from: number; to: number } | undefined {
+  const from = source.indexOf(ON_IDLE_DECLARATION);
+  const open = from < 0 ? -1 : source.indexOf('{', from);
+  if (open < 0) return undefined;
+  let depth = 0;
+  for (let at = open; at < source.length; at++) {
+    if (source[at] === '{') depth++;
+    else if (source[at] === '}' && --depth === 0) return { from, to: at };
+  }
+  return undefined;
+}
+
+/**
+ * The idle tokens in `source` that break the rules above, each as `line: why`, and how many
+ * bounded idle waits it holds: islands written as `BOUNDED_DIRECTIVE`, and `onIdle` calls.
+ * `isHelper` is for `idle-timeout.ts`, whose `onIdle` names `requestIdleCallback` once.
+ */
+function idleWaits(source: string, { isHelper = false }: { isHelper?: boolean } = {}): { offences: string[]; bounded: number } {
+  const offences: string[] = [];
+  let bounded = 0;
+  const lineOf = (at: number) => source.slice(0, at).split('\n').length;
+  const span = isHelper ? onIdleSpan(source) : undefined;
+  const inOnIdle = (at: number) => span !== undefined && at > span.from && at < span.to;
+  for (const { index } of source.matchAll(/client:idle/g)) {
+    if (source.startsWith(BOUNDED_DIRECTIVE, index)) bounded++;
+    else offences.push(`${lineOf(index)}: client:idle not written ${BOUNDED_DIRECTIVE}`);
+  }
+  const inside: number[] = [];
+  for (const { index } of source.matchAll(/requestIdleCallback/g)) {
+    if (inOnIdle(index)) inside.push(index);
+    else offences.push(`${lineOf(index)}: requestIdleCallback outside onIdle in ${HELPER}; defer the work with onIdle`);
+  }
+  if (isHelper && inside.length !== 1) {
+    offences.push(`${span ? lineOf(span.from) : 0}: onIdle names requestIdleCallback ${inside.length} times, not once`);
+  }
+  for (const { index } of source.matchAll(/\bonIdle\(/g)) if (!inOnIdle(index)) bounded++;
+  return { offences, bounded };
 }
 
 /** The fallback delay in a copy of Astro's idle directive, read by `pattern`. */
@@ -60,24 +117,143 @@ describe('IDLE_TIMEOUT_MS (tucca-cellag/caail-planning#604)', () => {
   });
 
   it('bounds every idle wait under site/src, and finds the ones it bounds', () => {
-    const unbounded: string[] = [];
+    const offences: string[] = [];
     let bounded = 0;
     for (const file of sourceFiles(SRC)) {
-      const waits = idleWaits(readFileSync(file, 'utf-8'));
+      const rel = relative(SRC, file).replaceAll('\\', '/');
+      const waits = idleWaits(readFileSync(file, 'utf-8'), { isHelper: rel === HELPER });
       bounded += waits.bounded;
-      if (waits.unbounded > 0) unbounded.push(`${relative(SRC, file)}: ${waits.unbounded}`);
+      offences.push(...waits.offences.map((offence) => `${rel}:${offence}`));
     }
-    expect(unbounded, 'an idle wait with no IDLE_TIMEOUT_MS bound never runs on a page that never goes idle').toEqual([]);
+    expect(offences, 'an idle wait with no IDLE_TIMEOUT_MS bound never runs on a page that never goes idle').toEqual([]);
     // The chat widget, the citation network and the search-event wiring: a scan that read nothing would pass above.
     expect(bounded).toBeGreaterThanOrEqual(3);
   });
 
-  it('flags an unbounded or differently bounded wait, and not a bounded one or a mention in prose', () => {
-    expect(idleWaits('<NetworkGraph client:idle />')).toEqual({ unbounded: 1, bounded: 0 });
-    expect(idleWaits('<Widget client:idle={{ timeout: 500 }} />')).toEqual({ unbounded: 1, bounded: 0 });
-    expect(idleWaits('requestIdleCallback(() => go())')).toEqual({ unbounded: 1, bounded: 0 });
-    expect(idleWaits('<Widget client:idle={{ timeout: IDLE_TIMEOUT_MS }} />')).toEqual({ unbounded: 0, bounded: 1 });
-    expect(idleWaits('window.requestIdleCallback(cb, { timeout: IDLE_TIMEOUT_MS })')).toEqual({ unbounded: 0, bounded: 1 });
-    expect(idleWaits('hydrates after `client:idle` runs, as `requestIdleCallback` allows')).toEqual({ unbounded: 0, bounded: 0 });
+  it('scans script of every kind, and no test', () => {
+    for (const name of ['a.astro', 'a.mdx', 'a.md', 'a.ts', 'a.tsx', 'a.js', 'a.jsx', 'a.mjs', 'a.cjs', 'a.mts']) {
+      expect(isScanned(name), name).toBe(true);
+    }
+    for (const name of ['a.test.ts', 'a.test.tsx', 'a.test.js', 'a.test.mjs', 'a.css', 'a.json']) {
+      expect(isScanned(name), name).toBe(false);
+    }
+  });
+
+  it('flags an island not written with the bound, wherever the tag puts it', () => {
+    const offences = (source: string) => idleWaits(source).offences.length;
+    expect(offences('<NetworkGraph client:idle />')).toBe(1);
+    expect(offences('<Widget client:idle={{ timeout: 500 }} />')).toBe(1);
+    expect(offences('<Widget client:idle={{timeout: IDLE_TIMEOUT_MS}} />')).toBe(1);
+    // A `>` inside the tag, before the directive.
+    expect(offences('<Foo label="a > b" client:idle />')).toBe(1);
+    expect(offences('<Foo test={a > b} client:idle={{ timeout: 500 }} />')).toBe(1);
+  });
+
+  it('flags any idle callback asked for outside the helper, bounded or not', () => {
+    const offences = (source: string) => idleWaits(source).offences.length;
+    expect(offences('requestIdleCallback(() => go())')).toBe(1);
+    expect(offences('window.requestIdleCallback?.(cb)')).toBe(1);
+    expect(offences('const later = window.requestIdleCallback; later(cb, { timeout: IDLE_TIMEOUT_MS })')).toBe(1);
+    expect(offences('window.requestIdleCallback(cb, { timeout: IDLE_TIMEOUT_MS })')).toBe(1);
+  });
+
+  it('flags a mention in a comment or in Markdown prose, written as a code span or not', () => {
+    const offences = (source: string) => idleWaits(source).offences.length;
+    expect(offences('// hydrates once requestIdleCallback fires')).toBe(1);
+    expect(offences('      // the graph, after `client:idle` has already mounted cytoscape.')).toBe(1);
+    expect(offences('/**\n * and therefore present but inert until `client:idle` hydration attached its\n */')).toBe(1);
+    expect(offences('/* as `requestIdleCallback` allows */')).toBe(1);
+    expect(offences('hydrates after `client:idle` runs, as `requestIdleCallback` allows')).toBe(2);
+    expect(offences('<!-- `requestIdleCallback` -->')).toBe(1);
+  });
+
+  it('passes a bounded island and an onIdle call, and counts the waits', () => {
+    expect(idleWaits('<Widget client:idle={{ timeout: IDLE_TIMEOUT_MS }} />')).toEqual({ offences: [], bounded: 1 });
+    expect(idleWaits('<Foo label="a > b" client:idle={{ timeout: IDLE_TIMEOUT_MS }} />')).toEqual({ offences: [], bounded: 1 });
+    expect(idleWaits('onIdle(() => watchSearch());')).toEqual({ offences: [], bounded: 1 });
+    // Prose that describes the API rather than naming it.
+    expect(idleWaits("// after the island's idle hydration has mounted it")).toEqual({ offences: [], bounded: 0 });
+  });
+
+  it('flags a token in a template literal, which can become running code', () => {
+    const offences = (source: string) => idleWaits(source).offences.length;
+    expect(offences('<script set:html={`requestIdleCallback(go)`} />')).toBe(1);
+    expect(offences('const run = new Function(`requestIdleCallback(go)`);')).toBe(1);
+    // Lines of a multi-line template literal that look like comment lines.
+    expect(offences('const html = `\n* ${`requestIdleCallback(go)`}\n`;')).toBe(1);
+    expect(offences('const html = `\n// ${`requestIdleCallback(go)`}\n`;')).toBe(1);
+    expect(offences('const html = `\n/* ${`requestIdleCallback(go)`} */\n`;')).toBe(1);
+    // A line of a multi-line JSX expression in MDX that reads like prose.
+    expect(offences('<Fragment\n  set:html={\n    `requestIdleCallback(go)`\n  }\n/>')).toBe(1);
+  });
+
+  it("lets onIdle ask for an idle callback, with an inline arrow callback or not", () => {
+    const helper = (body: string) =>
+      idleWaits(`${ON_IDLE_DECLARATION}cb: () => void): void {\n${body}\n}\n`, { isHelper: true }).offences;
+    expect(helper('  globalThis.requestIdleCallback(() => cb(), { timeout: IDLE_TIMEOUT_MS });')).toEqual([]);
+    expect(helper('  globalThis.requestIdleCallback(cb, { timeout: IDLE_TIMEOUT_MS });')).toEqual([]);
+  });
+
+  it('flags an idle callback after a one-line onIdle, and onIdle naming it twice', () => {
+    const helper = (source: string) => idleWaits(source, { isHelper: true }).offences;
+    const oneLine = `${ON_IDLE_DECLARATION}cb: () => void): void { globalThis.requestIdleCallback?.(cb, { timeout: IDLE_TIMEOUT_MS }); }\n`;
+    expect(helper(oneLine)).toEqual([]);
+    expect(helper(`${oneLine}export function idleNow(cb: () => void): void {\n  globalThis.requestIdleCallback(cb);\n}\n`)).toEqual([
+      `3: requestIdleCallback outside onIdle in ${HELPER}; defer the work with onIdle`,
+    ]);
+    const twice = `${ON_IDLE_DECLARATION}cb: () => void): void {\n  if (typeof globalThis.requestIdleCallback === 'function') globalThis.requestIdleCallback(cb, { timeout: IDLE_TIMEOUT_MS });\n}\n`;
+    expect(helper(twice)).toEqual(['1: onIdle names requestIdleCallback 2 times, not once']);
+  });
+
+  it('flags any other idle callback in the helper, and every one when onIdle is not there', () => {
+    const onIdle = `${ON_IDLE_DECLARATION}cb: () => void): void {\n  globalThis.requestIdleCallback(cb, { timeout: IDLE_TIMEOUT_MS });\n}\n`;
+    const helper = (source: string) => idleWaits(source, { isHelper: true }).offences;
+    expect(helper(`${onIdle}export const later = (cb) => globalThis.requestIdleCallback(cb);\n`)).toHaveLength(1);
+    expect(helper(`const early = globalThis.requestIdleCallback;\n${onIdle}`)).toHaveLength(1);
+    // No onIdle: the call is outside it, and onIdle names it no times.
+    expect(helper('export function idleSoon(cb) {\n  globalThis.requestIdleCallback(cb, { timeout: IDLE_TIMEOUT_MS });\n}\n')).toEqual([
+      `2: requestIdleCallback outside onIdle in ${HELPER}; defer the work with onIdle`,
+      '0: onIdle names requestIdleCallback 0 times, not once',
+    ]);
+    // Its islands are held to the same rule as any other file's.
+    expect(helper(`<NetworkGraph client:idle />\n${onIdle}`)).toEqual([`1: client:idle not written ${BOUNDED_DIRECTIVE}`]);
+  });
+
+  it('names the line and the rule an offence breaks', () => {
+    expect(idleWaits('one\n<Foo client:idle />\nrequestIdleCallback(cb)').offences).toEqual([
+      `2: client:idle not written ${BOUNDED_DIRECTIVE}`,
+      `3: requestIdleCallback outside onIdle in ${HELPER}; defer the work with onIdle`,
+    ]);
+  });
+});
+
+describe('onIdle', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+  });
+
+  it('asks for one idle callback, bounded by IDLE_TIMEOUT_MS, that runs the callback', () => {
+    // Checked by what the callback it hands over does, not by identity, so wrapping the
+    // callback in an arrow stays correct.
+    const asked: { run: () => void; options: unknown }[] = [];
+    vi.stubGlobal('requestIdleCallback', (run: () => void, options: unknown) => asked.push({ run, options }));
+    let ran = 0;
+    onIdle(() => ran++);
+    expect(asked.map(({ options }) => options)).toEqual([{ timeout: IDLE_TIMEOUT_MS }]);
+    expect(ran).toBe(0);
+    asked[0]!.run();
+    expect(ran).toBe(1);
+  });
+
+  it('runs the callback on a 1 ms timer in a browser with no idle callback', () => {
+    vi.stubGlobal('requestIdleCallback', undefined);
+    vi.useFakeTimers();
+    let ran = 0;
+    onIdle(() => ran++);
+    vi.advanceTimersByTime(0);
+    expect(ran).toBe(0);
+    vi.advanceTimersByTime(1);
+    expect(ran).toBe(1);
   });
 });
