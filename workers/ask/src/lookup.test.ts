@@ -137,7 +137,7 @@ describe('stays linear on a pathological question', () => {
   });
 });
 
-it('returns at most TOP_K', () => {
+it('names at most half of TOP_K entries, leaving the rest to meaning', () => {
   const many: LookupFiles = {
     ...FILES,
     catalog: {
@@ -146,5 +146,7 @@ it('returns at most TOP_K', () => {
     },
   };
   const question = Array.from({ length: TOP_K + 5 }, (_, i) => `Toolname${i}`).join(' ');
-  expect(buildLookup(many).match(question)).toHaveLength(TOP_K);
+  const found = buildLookup(many).match(question);
+  expect(found.length).toBeGreaterThan(0);
+  expect(found.length, 'entries named').toBeLessThanOrEqual(TOP_K / 2);
 });

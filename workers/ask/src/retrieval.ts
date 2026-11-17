@@ -2,11 +2,12 @@
  * Retrieval: the entries one answer is built from.
  *
  * The entries a question names outright (lookup.ts) come first, fetched from
- * the index by id; the nearest entries by meaning fill the rest, up to TOP_K.
+ * the index by id, at most MAX_NAMED of them; the nearest entries by meaning
+ * fill the rest, up to TOP_K.
  * Every entry is read back from the index's own metadata, so the model sees the
  * text that was embedded, whichever corpus the Worker was deployed with.
  */
-import { CORPUS_RECORD_ID, EMBEDDING_DIMENSIONS, EMBEDDING_MODEL, ENTRY_NAMESPACE, TOP_K } from './settings.ts';
+import { CORPUS_RECORD_ID, EMBEDDING_DIMENSIONS, EMBEDDING_MODEL, ENTRY_NAMESPACE, MAX_NAMED, TOP_K } from './settings.ts';
 import { vectorId } from './ids.ts';
 import type { Lookup } from './lookup.ts';
 
@@ -89,7 +90,7 @@ export async function retrieve(
   signal: AbortSignal,
 ): Promise<RetrievedEntry[]> {
   const [boosted, nearest] = await Promise.all([
-    named(env.INDEX, lookup.match(question), env.ALLOWED_ORIGIN),
+    named(env.INDEX, lookup.match(question).slice(0, MAX_NAMED), env.ALLOWED_ORIGIN),
     embed(env.AI, question, signal).then((vector) =>
       env.INDEX.query(vector, { topK: TOP_K, namespace: ENTRY_NAMESPACE, returnMetadata: 'all' }),
     ),

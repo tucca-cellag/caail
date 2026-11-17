@@ -10,6 +10,13 @@
 export const TOP_K = 8;
 
 /**
+ * The most of those that can be entries the question names outright (lookup.ts).
+ * The rest are left to meaning, so a question naming many entries still gets
+ * the nearest matches.
+ */
+export const MAX_NAMED = Math.floor(TOP_K / 2);
+
+/**
  * The embedding model, for the entries and for each question alike. Changing it
  * means rebuilding the index: vectors from two models are not comparable, so the
  * corpus record stores the model it was built with and the GET reports it.

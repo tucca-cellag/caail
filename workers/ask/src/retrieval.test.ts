@@ -52,6 +52,22 @@ describe('retrieval', () => {
     expect(found.map((e) => e.id)).toEqual(['paper:9', 'paper:2', 'paper:1', 'paper:3']);
   });
 
+  // A question naming many entries must not crowd out every match by meaning.
+  it('leaves at least half the places to meaning, however many entries a question names', async () => {
+    const named = await Promise.all(Array.from({ length: TOP_K }, (_, n) => stored(entry(100 + n))));
+    const nearest = await Promise.all(Array.from({ length: TOP_K }, (_, n) => stored(entry(n))));
+    const { binding } = index(nearest, named);
+    const namedIds = named.map((v) => (v.metadata as unknown as RetrievedEntry).id);
+    const found = await retrieve('q', { AI: { run: defaultAi }, INDEX: binding, ALLOWED_ORIGIN: ORIGIN }, { match: () => namedIds }, signal);
+
+    const byName = found.filter((e) => namedIds.includes(e.id));
+    expect(found).toHaveLength(TOP_K);
+    expect(found.length - byName.length, 'entries found by meaning').toBeGreaterThanOrEqual(TOP_K / 2);
+    expect(byName.length, 'entries found by name').toBeGreaterThan(0);
+    // The named entries still come first.
+    expect(found.slice(0, byName.length)).toEqual(byName);
+  });
+
   it('skips a named entry the index does not hold', async () => {
     const { binding } = index([await stored(entry(1))]);
     const found = await retrieve('q', { AI: { run: defaultAi }, INDEX: binding, ALLOWED_ORIGIN: ORIGIN }, { match: () => ['paper:404'] }, signal);
