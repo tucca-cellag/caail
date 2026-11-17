@@ -863,8 +863,10 @@ export function unsupportedPlaceholders(named: string): string[] {
 /**
  * Entries registered against a Playwright test.
  *
- * Matched on **both** the spec file and the test title (`titleMatches`), and only when one of
- * the test's failed attempts, in `failures`, has the entry's `failure` shape.
+ * Matched on **both** the spec file and the test title (`titleMatches`), and only when every
+ * one of the test's failed attempts, in `failures`, has the entry's `failure` shape: with
+ * retries, a timeout on one attempt does not account for an assertion failing on another, as a
+ * whole-module vitest entry does not account for an assertion beside its timeouts.
  *
  * The title is required because `licenses.spec.ts` holds registered tests beside
  * unregistered ones, so a file-level match would label the unregistered ones as
@@ -889,7 +891,8 @@ export function entriesForPlaywrightTest(
       entry.suite === 'playwright' &&
       titleMatches(entry.unit, title) &&
       (normalised === entry.file || normalised.endsWith(`/${entry.file}`)) &&
-      failures.some((failure) => shapeMatches(entry.failure, failure)),
+      failures.length > 0 &&
+      failures.every((failure) => shapeMatches(entry.failure, failure)),
   );
 }
 

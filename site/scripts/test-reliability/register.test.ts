@@ -576,11 +576,12 @@ describe('entriesForPlaywrightTest', () => {
     expect(entriesForPlaywrightTest(file, CLS, [TIMED_OUT])).toEqual([]);
   });
 
-  it('matches when any one failed attempt has the shape', () => {
+  it('matches only when every failed attempt has the shape', () => {
+    // With retries, a timeout on one attempt does not account for a real assertion on another.
     const AXE = 'the license badges introduce no axe violations on /software/';
-    expect(entriesForPlaywrightTest(LICENSES, AXE, [asserted('expect(received).toEqual(expected)'), TIMED_OUT]).map((e) => e.id)).toEqual([
-      'pw-license-badges-axe',
-    ]);
+    expect(entriesForPlaywrightTest(LICENSES, AXE, [TIMED_OUT, TIMED_OUT]).map((e) => e.id)).toEqual(['pw-license-badges-axe']);
+    expect(entriesForPlaywrightTest(LICENSES, AXE, [TIMED_OUT, asserted('expect(received).toEqual(expected)')])).toEqual([]);
+    expect(entriesForPlaywrightTest(LICENSES, AXE, [asserted('expect(received).toEqual(expected)'), TIMED_OUT])).toEqual([]);
   });
 
   it('matches a templated title in its own file, at every value the loop generates', () => {
