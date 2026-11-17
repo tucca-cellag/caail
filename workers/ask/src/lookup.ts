@@ -34,7 +34,14 @@ export interface LookupFiles {
   papersIndex: { references: LookupPaperRow[] };
   datasets: {
     entries: { id: string; name: string; doi: string | null; accessions: string[] }[];
-    inventory: { id: string; name: string; accession: string | null; paperDoi: string | null; dataDoi: string | null }[];
+    inventory: {
+      id: string;
+      name: string;
+      accession: string | null;
+      paperDoi: string | null;
+      dataDoi: string | null;
+      subseries: { accession: string; id: string | null }[];
+    }[];
     onRequest: { study: string; paperDoi: string | null }[];
   };
   reports: { reports: { id: string; title: string }[] };
@@ -121,6 +128,11 @@ export function buildLookup(files: LookupFiles): Lookup {
     if (row.accession) add(accessions, normalizeAccession(row.accession), row.id);
     if (row.paperDoi) add(dois, normalizeDoi(row.paperDoi), row.id);
     if (row.dataDoi) add(dois, normalizeDoi(row.dataDoi), row.id);
+  }
+  // A SuperSeries row's SubSeries accessions find the row, after any row of the
+  // SubSeries' own, which the loop above has already put first.
+  for (const row of files.datasets.inventory) {
+    for (const member of row.subseries) add(accessions, normalizeAccession(member.accession), row.id);
   }
   for (const study of files.datasets.onRequest) {
     if (!study.paperDoi) continue;

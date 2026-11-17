@@ -24,8 +24,20 @@ const FILES: LookupFiles = {
   datasets: {
     entries: [{ id: 'ds:cattlegtex', name: 'CattleGTEx', doi: null, accessions: ['PRJNA123456'] }],
     inventory: [
-      { id: 'ds:gse169291', name: 'Spontaneous immortalization of chicken fibroblasts', accession: 'GSE169291', paperDoi: '10.1038/s43016-022-00658-w', dataDoi: null },
-      { id: 'ds:sra051669', name: 'A deposit with a versioned accession', accession: 'SRA051669.1', paperDoi: null, dataDoi: '10.5281/zenodo.42' },
+      { id: 'ds:gse169291', name: 'Spontaneous immortalization of chicken fibroblasts', accession: 'GSE169291', paperDoi: '10.1038/s43016-022-00658-w', dataDoi: null, subseries: [] },
+      { id: 'ds:sra051669', name: 'A deposit with a versioned accession', accession: 'SRA051669.1', paperDoi: null, dataDoi: '10.5281/zenodo.42', subseries: [] },
+      {
+        id: 'ds:gse158430',
+        name: 'A SuperSeries row',
+        accession: 'GSE158430',
+        paperDoi: null,
+        dataDoi: null,
+        subseries: [
+          { accession: 'GSE158414', id: null },
+          { accession: 'GSE173196', id: 'ds:gse173196' },
+        ],
+      },
+      { id: 'ds:gse173196', name: 'A SubSeries with a row of its own', accession: 'GSE173196', paperDoi: null, dataDoi: null, subseries: [] },
     ],
     onRequest: [{ study: 'miR-10167-3p targets TCF7L1 (Hu et al. 2024)', paperDoi: '10.1016/j.ygeno.2024.110903' }],
   },
@@ -44,6 +56,8 @@ describe('finds what a question names', () => {
     ['an accession, in any case', 'what is gse169291?', ['ds:gse169291']],
     ['an accession with a version suffix', 'SRA051669.1 and SRA051669.2', ['ds:sra051669']],
     ['an entry accession', 'Where is PRJNA123456 described?', ['ds:cattlegtex']],
+    ['a SubSeries accession, as its SuperSeries row', 'Which dataset holds GSE158414?', ['ds:gse158430']],
+    ['a SubSeries with a row of its own, that row first', 'Which dataset holds GSE173196?', ['ds:gse173196', 'ds:gse158430']],
     ['a name, in any case', 'how does alphafold work', ['sw:alphafold']],
     ['a name dual-listed in two files', 'Is GNPS a database?', ['sw:gnps', 'db:gnps']],
     ['a short name, as an exact word', 'Can Ax run Bayesian optimization?', ['sw:ax']],

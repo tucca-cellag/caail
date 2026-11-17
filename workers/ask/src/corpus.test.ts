@@ -138,6 +138,16 @@ describe('an inventory row says where its data are', () => {
     expect(textOf(row.id)).toContain(description);
   });
 
+  // A SuperSeries row's SubSeries are deposits of their own, named nowhere else
+  // when they have no row; the row's document names each one.
+  it('names every SubSeries accession in its SuperSeries row', () => {
+    const superseries = rows.filter((row) => row.subseries.length > 0);
+    expect(superseries.length).toBeGreaterThan(0);
+    for (const row of superseries) {
+      for (const member of row.subseries) expect(textOf(row.id), row.id).toContain(member.accession);
+    }
+  });
+
   it('calls no row a deposit for being in the inventory', () => {
     for (const row of rows) expect(textOf(row.id)).not.toMatch(/a deposit in the data inventory/);
   });
@@ -218,6 +228,14 @@ describe('the lookup and the corpus agree', () => {
 
   // A lookup id the corpus does not hold would fetch nothing from the index, and
   // a corpus entry the lookup cannot name could never be boosted.
+  it('finds a SuperSeries row by each of its SubSeries accessions', () => {
+    for (const row of api.datasets.inventory) {
+      for (const member of row.subseries) {
+        expect(lookup.match(`Which dataset holds ${member.accession}?`), `${member.accession} under ${row.id}`).toContain(row.id);
+      }
+    }
+  });
+
   it('names each entry but the taxonomy terms by its own name, and nothing the corpus lacks', () => {
     for (const entry of corpus) {
       const found = lookup.match(`Tell me about ${entry.name}.`);

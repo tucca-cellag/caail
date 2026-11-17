@@ -61,6 +61,7 @@ interface InventoryRow {
   dataDoi: string | null;
   dataUrl: string | null;
   paperDoi: string | null;
+  subseries: { accession: string }[];
   topics: TopicRef[];
 }
 
@@ -317,6 +318,7 @@ function datasetEntries(datasets: ApiFiles['datasets']): CorpusEntry[] {
         row.name,
         `Dataset (a row of the data inventory) on the ${row.page} datasets page.`,
         dataLine(row),
+        row.subseries.length > 0 && `SubSeries deposits: ${row.subseries.map((member) => member.accession).join(', ')}.`,
         facts,
         description && `Description: ${clip(description, DESCRIPTION_CHARS)}`,
         row.paperDoi && `Paper DOI: ${row.paperDoi}`,
