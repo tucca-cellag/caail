@@ -99,13 +99,15 @@ describe('register integrity', () => {
   it('every Playwright entry with a unit-as-title matches an actual test title', () => {
     // Playwright entries are matched by title (`titleMatches`) at report time, so a title
     // that drifts would silently stop matching and the register would quietly do nothing.
+    // The title has to be a `test(` call's, not merely text in the file: a renamed test
+    // whose old title survives in a comment or another title would pass a text search.
     // Checked only for entries whose file is a spec: the artifact entries point at the
     // preflight module and describe the suite rather than one named test.
     const drifted: string[] = [];
     for (const entry of REGISTER) {
       if (entry.suite !== 'playwright' || !entry.file.endsWith('.spec.ts')) continue;
       const source = readFileSync(join(SITE_ROOT, entry.file), 'utf-8');
-      if (!source.includes(entry.unit)) {
+      if (namedCalls(source, ['test'], entry.unit) === 0) {
         drifted.push(`${entry.id}: no test titled ${JSON.stringify(entry.unit)} in ${entry.file}`);
       }
     }
@@ -262,6 +264,15 @@ describe('describeCalls', () => {
     // The test's own name has to be a test, and an enclosing one a suite.
     expect(missingLevels(source, 'outer > outer', ['it', 'test'])).toEqual(['outer']);
     expect(missingLevels(source, 'a test > a test', ['it', 'test'])).toEqual(['a test']);
+  });
+
+  it('finds a Playwright test by its exact title, templated or not', () => {
+    const spec = "test('a plain title', async () => {});\n  test(`fits at ${width}px`, async () => {});";
+    expect(namedCalls(spec, ['test'], 'a plain title')).toBe(1);
+    expect(namedCalls(spec, ['test'], 'fits at ${width}px')).toBe(1);
+    // A title that is only part of another, or only in prose, is not a test of that title.
+    expect(namedCalls(spec, ['test'], 'a plain')).toBe(0);
+    expect(namedCalls('// the old title was a plain title', ['test'], 'a plain title')).toBe(0);
   });
 
   it('counts a suite() call too', () => {
