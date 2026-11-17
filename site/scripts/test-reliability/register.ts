@@ -147,11 +147,20 @@ export interface ObservedFailure {
   texts: readonly string[];
 }
 
+/** Whether an entry states several shapes rather than one. */
+function isShapeList(shapes: FailureShapes): shapes is readonly FailureShape[] {
+  return Array.isArray(shapes);
+}
+
+/** The shapes an entry's `failure` states, as a list however many it states. */
+export function shapeList(shapes: FailureShapes | undefined): readonly FailureShape[] {
+  if (shapes === undefined) return [];
+  return isShapeList(shapes) ? shapes : [shapes];
+}
+
 /** Whether `failure` has one of the shapes `shapes` describes. No shape matches nothing. */
 export function shapeMatches(shapes: FailureShapes | undefined, failure: ObservedFailure): boolean {
-  if (shapes === undefined) return false;
-  const all: readonly FailureShape[] = Array.isArray(shapes) ? shapes : [shapes as FailureShape];
-  return all.some((shape) => {
+  return shapeList(shapes).some((shape) => {
     if (shape === 'timeout') return failure.timedOut;
     if ('wait' in shape) return failure.texts.some((text) => waitedOn(text).some((locator) => shape.wait.includes(locator)));
     if ('allListedUnder' in shape) {
@@ -164,9 +173,7 @@ export function shapeMatches(shapes: FailureShapes | undefined, failure: Observe
 
 /** The strings a shape names, which `register.test.ts` requires to be found where it says. */
 export function shapeStrings(shapes: FailureShapes | undefined): string[] {
-  if (shapes === undefined) return [];
-  const all: readonly FailureShape[] = Array.isArray(shapes) ? shapes : [shapes as FailureShape];
-  return all.flatMap((shape) => {
+  return shapeList(shapes).flatMap((shape) => {
     if (shape === 'timeout') return [];
     // A locator as Playwright describes it is in no source; the selectors quoted in it are.
     if ('wait' in shape) return shape.wait.flatMap((locator) => [...locator.matchAll(/'([^']*)'/g)].map((m) => m[1]!));

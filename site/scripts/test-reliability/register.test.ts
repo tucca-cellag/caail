@@ -30,6 +30,7 @@ import {
   formatReport,
   shapeMatches,
   receivedItems,
+  shapeList,
   shapeStrings,
   titleMatches,
   waitedOn,
@@ -339,6 +340,13 @@ describe('waitedOn', () => {
     expect(shapeMatches(report, TIMED_OUT)).toBe(true);
     expect(shapeMatches(report, asserted(EXPECT))).toBe(true);
     expect(shapeMatches(report, asserted(WAIT_FOR))).toBe(false);
+  });
+
+  it('lists one shape, several, or none', () => {
+    expect(shapeList('timeout')).toEqual(['timeout']);
+    expect(shapeList({ text: ['x'] })).toEqual([{ text: ['x'] }]);
+    expect(shapeList(['timeout', { text: ['x'] }])).toEqual(['timeout', { text: ['x'] }]);
+    expect(shapeList(undefined)).toEqual([]);
   });
 
   it('names the quoted selectors of a wait shape for the integrity check', () => {
