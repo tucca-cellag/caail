@@ -129,6 +129,42 @@ describe('the plan', () => {
     expect(describePlan(plan)).toContain(settingsChangeNotice());
   });
 
+  // The plan is what a person reads to approve the requests a run sends, so its
+  // per-step counts and its totals must be one set of numbers. Each column of
+  // step counts is one of the index states the plan prices a run for.
+  describe('agrees with itself', () => {
+    const lines = describePlan(plan).split('\n');
+    const rows = lines.flatMap((line) => {
+      const match = /^\s+(\d+) \/\s+(\d+) \/\s+(\d+)  \S/.exec(line);
+      return match ? [match.slice(1, 4).map(Number)] : [];
+    });
+    const totals = lines.flatMap((line) => {
+      const match = /^Total (.+): (\d+)\.$/.exec(line);
+      return match ? [{ label: match[1], total: Number(match[2]) }] : [];
+    });
+
+    it('prints a count line for every request step and a total for each state', () => {
+      expect(rows).toHaveLength(Object.keys(requestCounts(plan, { indexExists: false, existing: 0, stale: 0 })).length);
+      expect(totals).toHaveLength(3);
+    });
+
+    it.each([
+      ['into a new index', 0, { indexExists: false, existing: 0, stale: 0 }],
+      ['rebuilding an index that holds this corpus with these settings', 1, { indexExists: true, existing: plan.entries.length + 1, stale: 0 }],
+      [
+        'rebuilding an index built with other embedding settings',
+        2,
+        { indexExists: true, existing: plan.entries.length + 1, stale: 0, settingsChanged: true },
+      ],
+    ])('sums its step counts to the total it prints %s', (label, column, state) => {
+      const printed = totals[column];
+      expect(printed.label).toBe(label);
+      const summed = rows.reduce((sum, row) => sum + row[column], 0);
+      expect(summed, `the step counts for a run ${label} sum to ${summed}, the plan says ${printed.total}`).toBe(printed.total);
+      expect(printed.total).toBe(totalRequests(requestCounts(plan, state)));
+    });
+  });
+
   it('prints the request totals it computes', () => {
     const text = describePlan(plan);
     const fresh = totalRequests(requestCounts(plan, { indexExists: false, existing: 0, stale: 0 }));
@@ -400,7 +436,7 @@ describe('the requests a run sends', () => {
     expect(rest.calls).toHaveLength(totalRequests(counts));
     expect(rest.calls.filter((call) => call.path.endsWith('/delete_by_ids'))).toHaveLength(counts.delete);
     expect(rest.calls.filter((call) => call.path.endsWith('/list'))).toHaveLength(counts.list);
-    expect(rest.calls.filter((call) => call.path.endsWith('/upsert'))).toHaveLength(counts.upsert + counts.refusingRecord);
+    expect(rest.calls.filter((call) => call.path.endsWith('/upsert'))).toHaveLength(counts.upsertEntries + counts.upsertRecord + counts.refusingRecord);
     expect(counts.delete).toBe(Math.ceil(state.stale / DELETE_BATCH));
   });
 

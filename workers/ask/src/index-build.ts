@@ -148,31 +148,94 @@ export function refusingRecord(plan: BuildPlan): IndexVector {
   return { ...corpusRecord(plan), metadata: { ...rest, rebuilding: corpusDate } };
 }
 
-/**
- * How many requests each step sends. `existing` is the vector count already in
- * the index, if any; `settingsChanged`, whether its corpus record was written
- * with other embedding settings (or could not be read).
- */
-export function requestCounts(
-  plan: BuildPlan,
-  state: { indexExists: boolean; existing: number; stale: number; settingsChanged?: boolean },
-) {
-  return {
-    getIndex: 1,
-    createIndex: state.indexExists ? 0 : 1,
-    embed: Math.ceil(plan.entries.length / EMBED_BATCH),
-    // A new index is known to be empty, so it is neither listed nor read.
-    list: state.indexExists ? Math.max(1, Math.ceil(state.existing / LIST_PAGE)) : 0,
-    readRecord: state.indexExists ? 1 : 0,
-    refusingRecord: state.indexExists && state.settingsChanged ? 1 : 0,
-    // The entries in batches, then the corpus record in a request of its own.
-    upsert: Math.ceil(plan.entries.length / UPSERT_BATCH) + 1,
-    delete: Math.ceil(state.stale / DELETE_BATCH),
-  };
+/** The index a run meets, which decides how many requests some steps send. */
+export interface IndexState {
+  indexExists: boolean;
+  /** How many vectors the index already holds. */
+  existing: number;
+  /** How many of those are for items that have left the corpus. */
+  stale: number;
+  /** Whether its corpus record was written with other embedding settings, or could not be read. */
+  settingsChanged?: boolean;
 }
 
-export function totalRequests(counts: ReturnType<typeof requestCounts>): number {
+interface RequestStep {
+  /** The request, as the plan prints it. */
+  what: (plan: BuildPlan) => string;
+  /** How many of it a run sends for this plan into an index in this state. */
+  count: (plan: BuildPlan, state: IndexState) => number;
+}
+
+/**
+ * Every request a run sends, in the order `runBuild` sends them. `requestCounts`
+ * counts from here, which the tests hold a run to, and `describePlan` prints
+ * from here, so the plan a person approves is the count a run is held to.
+ */
+const REQUEST_STEPS = {
+  getIndex: {
+    what: () => "GET the list of indexes, for this index's configuration",
+    count: () => 1,
+  },
+  embed: {
+    what: () => `POST to Workers AI, embedding up to ${EMBED_BATCH} documents each (nothing is written if one fails)`,
+    count: (plan: BuildPlan) => Math.ceil(plan.entries.length / EMBED_BATCH),
+  },
+  createIndex: {
+    what: () => 'POST creating the index, only when it does not exist and --create-index is given',
+    count: (_plan: BuildPlan, state: IndexState) => (state.indexExists ? 0 : 1),
+  },
+  // A new index is known to be empty, so it is neither listed nor read.
+  list: {
+    what: () => `GET listing the index's vector ids, ${LIST_PAGE} per request, only when it already existed`,
+    count: (_plan: BuildPlan, state: IndexState) => (state.indexExists ? Math.max(1, Math.ceil(state.existing / LIST_PAGE)) : 0),
+  },
+  readRecord: {
+    what: () => "POST reading the index's corpus record, only when it already existed",
+    count: (_plan: BuildPlan, state: IndexState) => (state.indexExists ? 1 : 0),
+  },
+  refusingRecord: {
+    what: () =>
+      'POST replacing that record with one the Worker refuses, only when it was written with other embedding settings or could not be read',
+    count: (_plan: BuildPlan, state: IndexState) => (state.indexExists && state.settingsChanged ? 1 : 0),
+  },
+  upsertEntries: {
+    what: (plan: BuildPlan) => `POST upserting the ${plan.entries.length} entries, ${UPSERT_BATCH} per request`,
+    count: (plan: BuildPlan) => Math.ceil(plan.entries.length / UPSERT_BATCH),
+  },
+  upsertRecord: {
+    what: () => 'POST upserting the corpus record, in a request of its own, once every entry was accepted',
+    count: () => 1,
+  },
+  delete: {
+    what: () => `POST deleting vectors whose item has left the corpus, ${DELETE_BATCH} per request, last`,
+    count: (_plan: BuildPlan, state: IndexState) => Math.ceil(state.stale / DELETE_BATCH),
+  },
+};
+
+type RequestStepKey = keyof typeof REQUEST_STEPS;
+
+/** How many requests each step sends, for this plan into an index in this state. */
+export function requestCounts(plan: BuildPlan, state: IndexState): Record<RequestStepKey, number> {
+  const steps = Object.entries(REQUEST_STEPS) as [RequestStepKey, RequestStep][];
+  return Object.fromEntries(steps.map(([key, step]) => [key, step.count(plan, state)])) as Record<RequestStepKey, number>;
+}
+
+export function totalRequests(counts: Record<RequestStepKey, number>): number {
   return Object.values(counts).reduce((sum, n) => sum + n, 0);
+}
+
+/**
+ * The index states a plan prices a run for: none, one holding this corpus with
+ * these settings, and one holding it embedded another way. Vectors for items
+ * that have left the corpus add list and delete requests to the last two.
+ */
+function plannedStates(plan: BuildPlan): { label: string; state: IndexState }[] {
+  const held = plan.entries.length + 1;
+  return [
+    { label: 'into a new index', state: { indexExists: false, existing: 0, stale: 0 } },
+    { label: 'rebuilding an index that holds this corpus with these settings', state: { indexExists: true, existing: held, stale: 0 } },
+    { label: 'rebuilding an index built with other embedding settings', state: { indexExists: true, existing: held, stale: 0, settingsChanged: true } },
+  ];
 }
 
 /** The order a rebuild that changes the embedding settings has to follow, and why. */
@@ -187,13 +250,17 @@ export function settingsChangeNotice(): string {
   );
 }
 
-/** The plan, for a person to approve: what is indexed, and every request a run sends. */
+/**
+ * The plan, for a person to approve: what is indexed, and every request a run
+ * sends. Each step's line and count, and each total, come from REQUEST_STEPS
+ * through `requestCounts`, so the counts on the page sum to its totals.
+ */
 export function describePlan(plan: BuildPlan): string {
   const byKind = new Map<string, number>();
   for (const { entry } of plan.entries) byKind.set(entry.kind, (byKind.get(entry.kind) ?? 0) + 1);
-  const fresh = requestCounts(plan, { indexExists: false, existing: 0, stale: 0 });
-  const rebuild = requestCounts(plan, { indexExists: true, existing: plan.entries.length + 1, stale: 0 });
-  const changed = requestCounts(plan, { indexExists: true, existing: plan.entries.length + 1, stale: 0, settingsChanged: true });
+  const priced = plannedStates(plan).map(({ label, state }) => ({ label, counts: requestCounts(plan, state) }));
+  const width = Math.max(...priced.flatMap(({ counts }) => Object.values(counts).map((n) => String(n).length)));
+  const steps = Object.entries(REQUEST_STEPS) as [RequestStepKey, RequestStep][];
   const vectors = plan.entries.length + 1;
   return [
     `Corpus date: ${plan.corpusDate}`,
@@ -201,20 +268,12 @@ export function describePlan(plan: BuildPlan): string {
     `Vectors written: ${vectors} (the documents and the corpus record)`,
     `Index: ${INDEX_NAME}, ${EMBEDDING_DIMENSIONS} dimensions, ${INDEX_METRIC}; embedding model ${EMBEDDING_MODEL}`,
     '',
-    'Requests a run sends to Cloudflare, in order:',
-    `  1 GET the list of indexes, for this index's configuration`,
-    `  ${fresh.embed} POST to Workers AI, embedding up to ${EMBED_BATCH} documents each (nothing is written if one fails)`,
-    `  1 POST to create the index, only when it does not exist and --create-index is given`,
-    `  1 or more GET listing the index's vector ids (${LIST_PAGE} per request), only when the index already existed`,
-    `  ${rebuild.readRecord} POST reading the index's corpus record, only when the index already existed`,
-    `  ${changed.refusingRecord} POST replacing that record with one the Worker refuses, only when it was written with other embedding settings or could not be read`,
-    `  ${fresh.upsert - 1} POST upserting the ${plan.entries.length} entries (${UPSERT_BATCH} per request)`,
-    `  1 POST upserting the corpus record, once every entry was accepted`,
-    `  0 or more POST deleting vectors whose item has left the corpus (${DELETE_BATCH} per request), last`,
+    `Requests a run sends to Cloudflare, in order. The ${priced.length} counts on each line are for:`,
+    ...priced.map(({ label }, n) => `  ${n + 1}. a run ${label}`),
+    ...steps.map(([key, step]) => `  ${priced.map(({ counts }) => String(counts[key]).padStart(width)).join(' / ')}  ${step.what(plan)}`),
     '',
-    `Total into a new index: ${totalRequests(fresh)}.`,
-    `Total rebuilding an index that holds this corpus with these settings: ${totalRequests(rebuild)}.`,
-    `Total rebuilding an index built with other embedding settings: ${totalRequests(changed)}.`,
+    ...priced.map(({ label, counts }) => `Total ${label}: ${totalRequests(counts)}.`),
+    `An index that also holds vectors for items that have left the corpus adds list requests (${LIST_PAGE} ids each) and delete requests (${DELETE_BATCH} each) to a rebuild.`,
     '',
     settingsChangeNotice(),
   ].join('\n');
