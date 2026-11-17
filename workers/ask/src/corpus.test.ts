@@ -86,6 +86,63 @@ describe('one document per item the API serves', () => {
   });
 });
 
+/**
+ * An inventory row's document says what CAAIL holds about its data, as the row
+ * does: a repository deposit (and where), a supplementary results table, or an
+ * embargoed deposit. Rows are chosen from the API by their status, never by id,
+ * so the checks follow the data.
+ */
+describe('an inventory row says where its data are', () => {
+  const rows = api.datasets.inventory;
+  const textOf = (id: string) => byId.get(id)?.text ?? '';
+  const dataLines = (id: string) => textOf(id).split('\n').filter((line) => line.startsWith('Data: '));
+  const first = (test: (row: (typeof rows)[number]) => boolean) => {
+    const row = rows.find(test);
+    if (!row) throw new Error('the API has no inventory row of this kind any more; point this test at another');
+    return row;
+  };
+
+  it('gives every row exactly one Data line', () => {
+    for (const row of rows) expect(dataLines(row.id), row.id).toHaveLength(1);
+  });
+
+  it('says a deposit with an accession is deposited, and names the accession', () => {
+    const row = first((r) => r.dataStatus === 'deposit' && r.accession !== null);
+    expect(dataLines(row.id)[0]).toMatch(/^Data: deposited in a repository/);
+    expect(dataLines(row.id)[0]).toContain(row.accession as string);
+  });
+
+  it('names a deposit hosted under a DOI by that DOI', () => {
+    const row = first((r) => r.dataStatus === 'deposit' && r.accession === null && r.dataDoi !== null);
+    expect(dataLines(row.id)[0]).toMatch(/^Data: deposited in a repository/);
+    expect(dataLines(row.id)[0]).toContain(row.dataDoi as string);
+  });
+
+  it('names a deposit with neither accession nor DOI by its URL', () => {
+    const row = first((r) => r.dataStatus === 'deposit' && r.accession === null && r.dataDoi === null);
+    expect(dataLines(row.id)[0]).toContain(row.dataUrl as string);
+  });
+
+  it('says a supplementary row has no repository deposit', () => {
+    const row = first((r) => r.dataStatus === 'supplementary');
+    expect(dataLines(row.id)[0]).toMatch(/supplementary files/);
+    expect(textOf(row.id)).not.toMatch(/deposited in a repository/);
+  });
+
+  it('says an unavailable row is embargoed, never that its data are deposited, and keeps what lifts the embargo', () => {
+    const row = first((r) => r.dataStatus === 'unavailable');
+    expect(dataLines(row.id)[0]).toMatch(/embargoed/);
+    expect(textOf(row.id)).not.toMatch(/deposited in a repository/);
+    // The description is where the row says what lifts the embargo, so none of it is cut.
+    const description = (row.columns.Description ?? '').replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/[`*]/g, '').replace(/\s+/g, ' ').trim();
+    expect(textOf(row.id)).toContain(description);
+  });
+
+  it('calls no row a deposit for being in the inventory', () => {
+    for (const row of rows) expect(textOf(row.id)).not.toMatch(/a deposit in the data inventory/);
+  });
+});
+
 describe('every link is a site page that names its entry', () => {
   const docsPage = (route: string) => existsSync(new URL(`../../../site/src/content/docs/${route}.mdx`, import.meta.url));
   const routeOf = (link: string) => new URL(link).pathname.replace(/^\/|\/$/g, '');

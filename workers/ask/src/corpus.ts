@@ -56,7 +56,10 @@ interface InventoryRow {
   page: string;
   name: string;
   columns: Record<string, string>;
+  dataStatus: string | null;
   accession: string | null;
+  dataDoi: string | null;
+  dataUrl: string | null;
   paperDoi: string | null;
   topics: TopicRef[];
 }
@@ -110,6 +113,11 @@ export interface CorpusEntry {
 /** The longest a summary, description or definition runs in a document. */
 const SUMMARY_CHARS = 500;
 const DEFINITION_CHARS = 700;
+/**
+ * An inventory row's description is kept longer: it is where an embargoed row
+ * says what lifts the embargo, and where secondary deposits are named.
+ */
+const DESCRIPTION_CHARS = 1_000;
 
 /**
  * The ids the dataset pages give their two non-entry sections: GitHub's slug of
@@ -236,6 +244,38 @@ function paperEntries(papers: ApiFiles['papers']): CorpusEntry[] {
   });
 }
 
+/**
+ * What an inventory row holds about its data and where they are, in the terms
+ * of the dataset pages' own Data column (Datasets/CLAUDE.md): a repository
+ * deposit, named by its accession, its DOI or its URL; a results table in the
+ * paper's supplementary files; or a deposit that exists and is embargoed. A
+ * status this does not know fails the build rather than being described as
+ * something it is not.
+ */
+function dataLine(row: InventoryRow): string {
+  switch (row.dataStatus) {
+    case 'deposit': {
+      const host = row.columns.Data ? plain(row.columns.Data) : '';
+      const at = row.accession
+        ? `accession ${row.accession}`
+        : row.dataDoi
+          ? `${host ? `${host}, ` : ''}DOI ${row.dataDoi}`
+          : row.dataUrl
+            ? `${host ? `${host}, ` : ''}${row.dataUrl}`
+            : null;
+      return `Data: deposited in a repository${at ? `, ${at}` : ''}.`;
+    }
+    case 'supplementary':
+      return "Data: a results table in the paper's supplementary files, not a repository deposit.";
+    case 'unavailable':
+      return 'Data: a repository deposit exists but is embargoed and not yet public; the description says what lifts the embargo.';
+    case null:
+      return 'Data: where the data are is not recorded.';
+    default:
+      throw new Error(`corpus: ${row.id} has data status "${row.dataStatus}", which the corpus cannot describe`);
+  }
+}
+
 const ENTRY_KIND_LABEL: Record<string, string> = {
   atlas: 'atlas',
   gem: 'genome-scale metabolic model',
@@ -257,11 +297,11 @@ function datasetEntries(datasets: ApiFiles['datasets']): CorpusEntry[] {
     ),
   }));
 
-  // Study, Paper and Data are the row's name, paper link and deposit link, carried
-  // below by name, paperDoi and accession; Description is clipped on its own line.
+  // Study, Paper and Data are the row's name, paper link and data, carried below
+  // by name, paperDoi and the Data line; Description has a line of its own.
   // An empty cell is written as a lone dash (U+2014) and is left out.
   const named = new Set(['Study', 'Paper', 'Data', 'Description']);
-  const EMPTY_CELL = '—';
+  const EMPTY_CELL = '\u2014';
   const inventory = datasets.inventory.map((row) => {
     const facts = Object.entries(row.columns)
       .filter(([label, value]) => !named.has(label) && plain(value) && plain(value) !== EMPTY_CELL)
@@ -275,10 +315,10 @@ function datasetEntries(datasets: ApiFiles['datasets']): CorpusEntry[] {
       link: itemOnPage(datasetsPage(row.page), row.id, INVENTORY_ANCHOR),
       text: lines(
         row.name,
-        `Dataset (a deposit in the data inventory) on the ${row.page} datasets page.`,
+        `Dataset (a row of the data inventory) on the ${row.page} datasets page.`,
+        dataLine(row),
         facts,
-        description && `Description: ${clip(description, SUMMARY_CHARS)}`,
-        row.accession && `Accession: ${row.accession}`,
+        description && `Description: ${clip(description, DESCRIPTION_CHARS)}`,
         row.paperDoi && `Paper DOI: ${row.paperDoi}`,
         topicsLine(row.topics),
       ),
