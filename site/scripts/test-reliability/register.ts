@@ -193,7 +193,9 @@ export interface UnreliableEntry {
    */
   anchor: string;
   /**
-   * vitest only: match these test names (`titleMatches`) rather than the whole module.
+   * vitest only: match these tests by full name (`titleMatches`) rather than the whole module.
+   * A full name is vitest's `TestCase.fullName`: the test's name after each enclosing suite's,
+   * joined by ` > `, so a test of the same name under another parent is not this one.
    *
    * Module-level matching (`wholeModule`) is right for the five slow-fixture files:
    * their failing *test* moves between runs, so naming one would be precise about the
@@ -201,8 +203,14 @@ export interface UnreliableEntry {
    * because the reporter would then label a genuine failure as known-unreliable, the
    * harm the Playwright side's title matching already exists to avoid.
    *
-   * Each name here must appear verbatim in `file`, a template as its source writes it;
-   * `register.test.ts` enforces it, so this doubles as the vitest title-drift oracle.
+   * Each ` > ` level of each full name here must be the name of a call in `file`: a
+   * `describe` or `suite` call for an enclosing suite, and an `it` or `test` call for the test itself, a template as its source writes it; `register.test.ts` enforces it, so
+   * renaming any level fails there. That proves each level still exists in the file, not that
+   * the levels still nest: moving one under a new parent changes its full name, the entry stops
+   * matching, and the failure prints as unregistered, the safe direction, with that check
+   * green. Checking the nesting would take parsing the file's suite structure, the hand-written
+   * lexing this register avoids elsewhere, or collecting the file with vitest, so it is not
+   * done.
    */
   tests?: readonly string[];
   /**
@@ -229,9 +237,16 @@ export interface UnreliableEntry {
    *
    * Matching the full name rather than the bare one means a suite of the same name under
    * another parent is not labelled, however it was made: a second `describe`, a
-   * `describe.each` row, a loop or `suite()`. Each level of each full name here must be the
-   * name of a `describe` or `suite` call in `file`; `register.test.ts` enforces it, so a
-   * renamed suite fails there rather than leaving the entry matching nothing.
+   * `describe.each` row, a loop or `suite()`.
+   *
+   * Each ` > ` level of each full name here must be the name of a call in `file`: a
+   * `describe` or `suite` call for an enclosing suite; `register.test.ts` enforces it, so
+   * renaming any level fails there. That proves each level still exists in the file, not that
+   * the levels still nest: moving one under a new parent changes its full name, the entry stops
+   * matching, and the failure prints as unregistered, the safe direction, with that check
+   * green. Checking the nesting would take parsing the file's suite structure, the hand-written
+   * lexing this register avoids elsewhere, or collecting the file with vitest, so it is not
+   * done.
    */
   suites?: readonly string[];
   /**
@@ -425,7 +440,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
     file: 'scripts/parser/agent-api.test.ts',
     unit: 'ships no relative Markdown link target in any emitted endpoint',
     anchor: 'ships no relative Markdown link target in any emitted endpoint',
-    tests: ['ships no relative Markdown link target in any emitted endpoint'],
+    tests: ['site-relative hrefs in the API > ships no relative Markdown link target in any emitted endpoint'],
     failure: 'timeout',
     shape: 'load',
     condition:
@@ -682,7 +697,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
     // Two tests in this module have nothing to do with residue, and one of them is the
     // guard against a real Slack-invite paste. Matching the module would greet that
     // leak with "this is a known artifact".
-    tests: ['appears nowhere under site/ except this module and its test'],
+    tests: ['the community Slack invite is confined to two places > appears nowhere under site/ except this module and its test'],
     // Anchored on the skip list rather than the test title, because the skip list is
     // what makes the condition true: widen it and this entry is obsolete, so the entry
     // should be forced back under review. The title is covered by `tests` above.
@@ -770,7 +785,7 @@ export function openEntries(register: readonly UnreliableEntry[] = REGISTER): Un
 
 /** What failed inside one vitest module, in the terms an entry is matched against. */
 export interface VitestFailures {
-  /** Its failed tests, by name. */
+  /** Its failed tests, by full name. */
   tests?: readonly (ObservedFailure & { name: string })[];
   /**
    * Its suites that failed with an error of their own, a hook's, by full name, each saying

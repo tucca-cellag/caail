@@ -37,13 +37,20 @@ export const FIXTURE_ENTRIES: readonly { entry: UnreliableEntry; expected: boole
   },
   { entry: entry('fixture-row-hook-timeout', { suites: ['another parent > a lone name'], failure: 'timeout' }), expected: true },
   { entry: entry('fixture-test-timeout', { tests: ['runs past its budget'], failure: 'timeout' }), expected: true },
+  { entry: entry('fixture-nested-test-timeout', { tests: ['another parent > a lone test'], failure: 'timeout' }), expected: true },
   // An assertion, by the text of what it failed with.
-  { entry: entry('fixture-assertion-by-text', { tests: ['fails an assertion'], failure: { text: ['a planted offender'] } }), expected: true },
+  {
+    entry: entry('fixture-assertion-by-text', {
+      tests: ['a suite whose test fails > fails an assertion'],
+      failure: { text: ['a planted offender'] },
+    }),
+    expected: true,
+  },
   { entry: entry('fixture-whole-module-timeouts', { wholeModule: true, failure: 'timeout' }, 'module-timeouts.fixture.ts'), expected: true },
   // Residue, read from the diff the installed vitest writes.
   {
     entry: entry('fixture-residue-only', {
-      tests: ['finds only leftovers'],
+      tests: ['a residue walk > finds only leftovers'],
       failure: { allListedUnder: ['test-results', 'playwright-report'] },
     }),
     expected: true,
@@ -51,15 +58,26 @@ export const FIXTURE_ENTRIES: readonly { entry: UnreliableEntry; expected: boole
   // A file under src/ listed beside the leftover is a failure the residue does not explain.
   {
     entry: entry('fixture-residue-beside-paste', {
-      tests: ['finds a leftover beside a real paste'],
+      tests: ['a residue walk > finds a leftover beside a real paste'],
       failure: { allListedUnder: ['test-results', 'playwright-report'] },
     }),
     expected: false,
   },
   // A real assertion failure in a test whose entry covers only its timeouts.
-  { entry: entry('fixture-assertion-as-timeout', { tests: ['fails an assertion'], failure: 'timeout' }), expected: false },
+  {
+    entry: entry('fixture-assertion-as-timeout', { tests: ['a suite whose test fails > fails an assertion'], failure: 'timeout' }),
+    expected: false,
+  },
   // An assertion whose text is not the one the entry names.
-  { entry: entry('fixture-assertion-other-text', { tests: ['fails an assertion'], failure: { text: ['another offender'] } }), expected: false },
+  {
+    entry: entry('fixture-assertion-other-text', {
+      tests: ['a suite whose test fails > fails an assertion'],
+      failure: { text: ['another offender'] },
+    }),
+    expected: false,
+  },
+  // A test of that name exists only under another parent: its timeout is not a top-level one's.
+  { entry: entry('fixture-test-same-name-elsewhere', { tests: ['a lone test'], failure: 'timeout' }), expected: false },
   // Failed with an error of its own that is not a timeout: the hook found a defect, and
   // load does not explain it.
   { entry: entry('fixture-suite-hook-throws', { suites: ['a suite whose own hook throws'], failure: 'timeout' }), expected: false },

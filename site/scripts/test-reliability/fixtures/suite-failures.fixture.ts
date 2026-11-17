@@ -58,6 +58,9 @@ describe('a parent suite', () => {
 });
 
 describe('another parent', () => {
+  // A nested test whose bare name an entry could mistake for a top-level test's.
+  it('a lone test', overrun, 10);
+
   // A nested suite made by a row rather than a literal call, whose bare name an entry
   // could mistake for a top-level suite's.
   describe.each([['a lone name']])('%s', () => {

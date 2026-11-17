@@ -43,15 +43,30 @@ import { errorText } from './playwright-reporter.js';
 const SITE_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 /**
- * How many `describe` or `suite` calls in `source` are named exactly `name`, in any quote
- * style and with any modifier (`describe.skip(`, `describe.sequential(`).
+ * How many calls of one of `fns` in `source` are named exactly `name`, in any quote style and
+ * with any modifier (`describe.skip(`, `it.concurrent(`).
  */
-function describeCalls(source: string, name: string): number {
+function namedCalls(source: string, fns: readonly string[], name: string): number {
   const literal = escapeRegExp(name);
   return ["'", '"', '`'].reduce(
     (total, quote) =>
-      total + [...source.matchAll(new RegExp(`\\b(?:describe|suite)(?:\\.\\w+)*\\(\\s*${quote}${literal}${quote}`, 'g'))].length,
+      total +
+      [...source.matchAll(new RegExp(`\\b(?:${fns.join('|')})(?:\\.\\w+)*\\(\\s*${quote}${literal}${quote}`, 'g'))].length,
     0,
+  );
+}
+
+/** How many `describe` or `suite` calls in `source` are named exactly `name`. */
+const describeCalls = (source: string, name: string) => namedCalls(source, ['describe', 'suite'], name);
+
+/**
+ * The levels of a vitest full name that are not a call of the right kind in `source`: each
+ * enclosing level must be a `describe` or `suite` call, and the last a call of `last`.
+ */
+function missingLevels(source: string, fullName: string, last: readonly string[]): string[] {
+  const levels = fullName.split(' > ');
+  return levels.filter((level, index) =>
+    index < levels.length - 1 ? describeCalls(source, level) === 0 : namedCalls(source, last, level) === 0,
   );
 }
 
@@ -115,22 +130,23 @@ describe('register integrity', () => {
     expect(refused).toEqual([]);
   });
 
-  it('every named vitest test still exists in its file', () => {
+  it('every level of every named vitest test is a call in its file', () => {
     // The vitest analogue of the Playwright title check above. Without it, renaming a
     // test that an entry narrows to leaves the entry silently matching nothing: the
     // register keeps listing it, the reporter never fires, and the failure it was
-    // written for reads as unregistered.
-    const drifted: string[] = [];
+    // written for reads as unregistered. It proves each level exists, not that the levels
+    // still nest (see `UnreliableEntry.tests`).
+    const wrong: string[] = [];
     for (const entry of REGISTER) {
       if (entry.suite !== 'vitest' || !entry.tests) continue;
       const source = readFileSync(join(SITE_ROOT, entry.file), 'utf-8');
-      for (const name of entry.tests) {
-        if (!source.includes(name)) {
-          drifted.push(`${entry.id}: no test named ${JSON.stringify(name)} in ${entry.file}`);
+      for (const fullName of entry.tests) {
+        for (const level of missingLevels(source, fullName, ['it', 'test'])) {
+          wrong.push(`${entry.id}: no call named ${JSON.stringify(level)} in ${entry.file}`);
         }
       }
     }
-    expect(drifted).toEqual([]);
+    expect(wrong).toEqual([]);
   });
 
   it('every level of every named vitest suite is a describe call in its file', () => {
@@ -138,16 +154,15 @@ describe('register integrity', () => {
     // the import of the function it tests, so finding the text proves nothing: renaming
     // the describe would leave the entry matching nothing with this check green. The
     // reporter matches a suite by its full name, so a same-named suite under another
-    // parent is not this one, and the check asks only that each level still exists.
+    // parent is not this one, and the check asks only that each level still exists: not
+    // that the levels still nest (see `UnreliableEntry.suites`).
     const wrong: string[] = [];
     for (const entry of REGISTER) {
       if (entry.suite !== 'vitest' || !entry.suites) continue;
       const source = readFileSync(join(SITE_ROOT, entry.file), 'utf-8');
       for (const fullName of entry.suites) {
-        for (const level of fullName.split(' > ')) {
-          if (describeCalls(source, level) === 0) {
-            wrong.push(`${entry.id}: no describe call named ${JSON.stringify(level)} in ${entry.file}`);
-          }
+        for (const level of missingLevels(source, fullName, ['describe', 'suite'])) {
+          wrong.push(`${entry.id}: no describe call named ${JSON.stringify(level)} in ${entry.file}`);
         }
       }
     }
@@ -238,6 +253,16 @@ describe('register integrity', () => {
 });
 
 describe('describeCalls', () => {
+  it('finds each level of a full name as a call of the right kind', () => {
+    const source = "describe('outer', () => {\n  it('a test', () => {});\n});";
+    expect(missingLevels(source, 'outer > a test', ['it', 'test'])).toEqual([]);
+    expect(missingLevels(source, 'outer > a renamed test', ['it', 'test'])).toEqual(['a renamed test']);
+    expect(missingLevels(source, 'renamed > a test', ['it', 'test'])).toEqual(['renamed']);
+    // The test's own name has to be a test, and an enclosing one a suite.
+    expect(missingLevels(source, 'outer > outer', ['it', 'test'])).toEqual(['outer']);
+    expect(missingLevels(source, 'a test > a test', ['it', 'test'])).toEqual(['a test']);
+  });
+
   it('counts a suite() call too', () => {
     expect(describeCalls("suite('a suite', () => {", 'a suite')).toBe(1);
     expect(describeCalls("testsuite('a suite', () => {", 'a suite')).toBe(0);
@@ -362,7 +387,7 @@ describe('entriesForVitestModule', () => {
 
   it('a narrowed entry matches only when one of its named tests failed in its shape', () => {
     const file = 'src/lib/community.test.ts';
-    const registered = 'appears nowhere under site/ except this module and its test';
+    const registered = 'the community Slack invite is confined to two places > appears nowhere under site/ except this module and its test';
     const listed = (...paths: string[]) => asserted(['- []', '+ [', ...paths.map((path) => `+   "${path}",`), '+ ]'].join('\n'));
     const leftover = listed('test-results/homepage-agent-x/error-context.md', 'playwright-report/index.html');
     expect(entriesForVitestModule(file, { tests: [{ name: registered, ...leftover }] }).map((e) => e.id)).toEqual([
@@ -391,7 +416,11 @@ describe('entriesForVitestModule', () => {
 
   it('a timeout entry does not match its test failing an assertion', () => {
     const file = 'scripts/parser/agent-api.test.ts';
-    const registered = 'ships no relative Markdown link target in any emitted endpoint';
+    const registered = 'site-relative hrefs in the API > ships no relative Markdown link target in any emitted endpoint';
+    // The bare name is a test of that name anywhere in the module, not this one.
+    expect(
+      entriesForVitestModule(file, { tests: [{ name: 'ships no relative Markdown link target in any emitted endpoint', ...TIMED_OUT }] }),
+    ).toEqual([]);
     expect(entriesForVitestModule(file, { tests: [{ name: registered, ...TIMED_OUT }] }).map((e) => e.id)).toEqual([
       'vitest-agent-api-link-scan',
     ]);
