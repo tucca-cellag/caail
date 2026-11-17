@@ -76,17 +76,41 @@ export function answerText(output: unknown): string | null {
   return answer || null;
 }
 
-/** A URL in the answer. Linear: a greedy class with nothing after it. */
-const URL_IN_TEXT = /https?:\/\/[^\s<>()[\]"'`]+/g;
+/** A URL in the answer, in any case. Linear: a greedy class with nothing after it. */
+const URL_IN_TEXT = /https?:\/\/[^\s<>()[\]"'`]+/gi;
 /** Stripped by a walk, not a pattern, since the answer is text a question can steer (text.ts). */
 const TRAILING_PUNCTUATION: ReadonlySet<string> = new Set('.,;:!?');
 
 /**
- * The entries an answer cites: those whose link appears in it, exactly. Each
- * link names one entry (corpus.ts), so a link maps to one id. A link the model
- * altered or made up names no entry and is not counted.
+ * What a link names, however it is written: its origin, its path, its `item`
+ * query value and its fragment, each decoded. The URL parser lowercases the
+ * scheme and host. Null for a link that does not parse or decode.
+ */
+function linkKey(link: string): string | null {
+  try {
+    const url = new URL(link);
+    return JSON.stringify([
+      url.origin,
+      decodeURIComponent(url.pathname),
+      url.searchParams.get('item'),
+      decodeURIComponent(url.hash),
+    ]);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The entries an answer cites: those whose link appears in it. Each link names
+ * one entry (corpus.ts), so a link maps to one id, and a link is compared by
+ * what it names rather than by its spelling, so a percent-encoded `?item=`
+ * still counts. A link the model altered or made up names no entry and is not
+ * counted.
  */
 export function citedEntryIds(answer: string, entries: RetrievedEntry[]): string[] {
-  const linked = new Set((answer.match(URL_IN_TEXT) ?? []).map((url) => trimTrailing(url, TRAILING_PUNCTUATION)));
-  return entries.filter((entry) => linked.has(entry.link)).map((entry) => entry.id);
+  const linked = new Set(
+    (answer.match(URL_IN_TEXT) ?? []).map((url) => linkKey(trimTrailing(url, TRAILING_PUNCTUATION))),
+  );
+  linked.delete(null);
+  return entries.filter((entry) => linked.has(linkKey(entry.link))).map((entry) => entry.id);
 }

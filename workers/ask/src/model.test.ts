@@ -81,6 +81,28 @@ describe('the cited entries', () => {
     expect(citedEntryIds(answer, ENTRIES)).toEqual([ENTRIES[0].id, ENTRIES[2].id]);
   });
 
+  // A model, or a Markdown renderer before it, may percent-encode the query or
+  // fragment, or change the case of the scheme and host. The link still names
+  // the same entry.
+  it.each([
+    ['a percent-encoded item', `[a](${ORIGIN}/papers/explorer/?item=paper%3A1)`, ['paper:1']],
+    ['an encoded item and fragment', `[a](${ORIGIN}/datasets/chicken/?item=ds%3Agse169291#complete%2Ddata%2Dinventory)`, ['ds:gse169291']],
+    ['an upper-case scheme and host', `[a](HTTPS://CAAIL.TUFTS.EDU/software/#alphafold)`, ['sw:alphafold']],
+    ['another query parameter beside the item', `[a](${ORIGIN}/papers/explorer/?utm=x&item=paper:1)`, ['paper:1']],
+  ])('count %s', (_label, answer, expected) => {
+    expect(citedEntryIds(answer, ENTRIES)).toEqual(expected);
+  });
+
+  it.each([
+    ['an encoded item naming another entry', `[a](${ORIGIN}/papers/explorer/?item=paper%3A10)`],
+    ['the item on another page', `[a](${ORIGIN}/papers/reviews/?item=paper:1)`],
+    ['the path on another host', '[a](https://caail.tufts.edu.evil.example/software/#alphafold)'],
+    ['a link that does not parse', '[a](https://caail.tufts.edu:99999/software/#alphafold)'],
+    ['a malformed escape', `[a](${ORIGIN}/papers/explorer/?item=paper%3)`],
+  ])('do not count %s', (_label, answer) => {
+    expect(citedEntryIds(answer, ENTRIES)).toEqual([]);
+  });
+
   it('do not include an entry whose link was altered, cut or made up', () => {
     const answer = [
       `[a](${ENTRIES[0].link}x)`,
