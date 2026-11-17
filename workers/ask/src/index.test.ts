@@ -749,12 +749,27 @@ describe('one half of retrieval failing', () => {
     expect(logged()).toEqual([{ error: 'nearest_retrieval_failed' }]);
   });
 
-  it('names the Workers AI code when the embedding half fails on a limit but the named half answers', async () => {
+  // The daily allocation is the account's, so the answering model would fail on
+  // it too: a 429 at once, with no model call, even though named entries were found.
+  it('answers 429 at once, calling no model, when the embedding half fails on the daily allocation', async () => {
     const spy = harness({ ai: embeddingFails(new Error('3036: daily free allocation used up')) });
     const res = await handlerWith(named).fetch(ask(QUESTION), spy.env, spy.ctx);
 
+    expect(res.status).toBe(429);
+    expect(spy.aiCalls.map((call) => call.model), 'the answering model was called after the daily allocation was used up').toEqual([EMBEDDING_MODEL]);
+    expect(spy.written).toEqual([]);
+    expect(logged()).toEqual([{ error: 'workers_ai_limit', code: 3036 }]);
+  });
+
+  // Capacity is temporary and was the embedding model's, so the named entries
+  // still go to the answering model.
+  it('still answers from the named entries when the embedding half fails on capacity, naming the code', async () => {
+    const spy = harness({ ai: embeddingFails(new Error('3040: Capacity temporarily exceeded')) });
+    const res = await handlerWith(named).fetch(ask(QUESTION), spy.env, spy.ctx);
+
     expect(res.status).toBe(200);
-    expect(logged()).toEqual([{ error: 'nearest_retrieval_failed', code: 3036 }]);
+    expect(spy.aiCalls.map((call) => call.model)).toEqual([EMBEDDING_MODEL, MODEL]);
+    expect(logged()).toEqual([{ error: 'nearest_retrieval_failed', code: 3040 }]);
   });
 
   // The search by meaning worked and found nothing: an empty index, which is

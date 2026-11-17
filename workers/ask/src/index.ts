@@ -122,7 +122,8 @@ function logFailure(error: string, code?: number): void {
  * 3040, capacity. Passed on as 429 so the widget shows its quota message rather
  * than a generic error.
  */
-const WORKERS_AI_LIMITS = new Set([3036, 3040]);
+const DAILY_ALLOCATION_USED = 3036;
+const WORKERS_AI_LIMITS = new Set([DAILY_ALLOCATION_USED, 3040]);
 
 /**
  * The body, or null once it passes `max` bytes; the rest is never read. Reading
@@ -325,9 +326,19 @@ async function answer(
     }
 
     const { entries, failed, returned } = await racing(retrieve(question, env, lookup, deadline.signal), deadline.signal);
+    const failedCode = failed ? workersAiCode(failed.error) : undefined;
+    // The daily allocation is the account's, not one model's, so once the
+    // embedding is refused on it the answering model would be refused too, one
+    // round trip later. The reader is told at once, and nothing more is spent.
+    // Capacity (3040) is not like that: it is temporary, and it was the
+    // embedding model that hit it, so the named entries still go to the model.
+    if (failedCode === DAILY_ALLOCATION_USED) {
+      logFailure('workers_ai_limit', failedCode);
+      return text('too many requests', 429, cors);
+    }
     // One half failed and the other answered: a degraded answer, not a failure,
     // but the only trace of it, since invocation logs are off.
-    if (failed) logFailure(`${failed.half}_retrieval_failed`, workersAiCode(failed.error));
+    if (failed) logFailure(`${failed.half}_retrieval_failed`, failedCode);
     if (entries.length === 0) {
       // An index that returned nothing is empty. One that returned vectors, none
       // of them an entry this deploy holds or links to the site, disagrees with
