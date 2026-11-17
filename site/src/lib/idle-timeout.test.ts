@@ -60,16 +60,36 @@ function kindOf(name: string): Kind {
 }
 
 /**
- * Whether a code-span mention on `line` can only be words, so is let through.
- *
- * In script, a line that is a comment: it starts with `//`, `/*` or a JSDoc `*`. A comment
- * trailing code on the same line is not told apart from the code, so a mention there fails,
- * loudly. In prose, a line with no ESM, JSX, expression or attribute on it: one starting with
- * `import` or `export`, or holding any of `{ } = < >`, may be code, so it does not qualify.
+ * The lines of a script that are comments, by index: a line starting with `//`, a line
+ * starting with `/*`, and every line after one until a `*\/` closes it. A line starting with a
+ * JSDoc `*` counts only inside such a block, since outside one it can be a line of a multi-line
+ * template literal. A comment trailing code on the same line is not told apart from the code,
+ * and a `/*` that does not start its line opens nothing, so a mention there fails, loudly.
  */
-function mentionsAllowed(line: string, kind: Kind): boolean {
+function commentLines(source: string): Set<number> {
+  const comments = new Set<number>();
+  let inBlock = false;
+  source.split('\n').forEach((line, index) => {
+    const text = line.trim();
+    if (inBlock) {
+      comments.add(index);
+      inBlock = !text.includes('*/');
+    } else if (text.startsWith('//')) {
+      comments.add(index);
+    } else if (text.startsWith('/*')) {
+      comments.add(index);
+      inBlock = !text.slice(2).includes('*/');
+    }
+  });
+  return comments;
+}
+
+/**
+ * Whether a prose line can only be words: one with no ESM, JSX, expression or attribute on it.
+ * A line starting with `import` or `export`, or holding any of `{ } = < >`, may be code.
+ */
+function proseLine(line: string): boolean {
   const text = line.trim();
-  if (kind === 'script') return /^(\/\/|\/\*|\*)/.test(text);
   return !/^(import|export)\b/.test(text) && !/[{}=<>]/.test(text);
 }
 
@@ -112,7 +132,11 @@ function idleWaits(
     const end = source.indexOf('\n', at);
     return source.slice(source.lastIndexOf('\n', at) + 1, end < 0 ? source.length : end);
   };
-  const inCodeSpan = (at: number) => source[at - 1] === '`' && mentionsAllowed(lineAt(at), kind);
+  const comments = kind === 'script' ? commentLines(source) : undefined;
+  // A code-span mention is let through only where it can only be words: on a comment line in
+  // script, or a prose line in Markdown.
+  const inCodeSpan = (at: number) =>
+    source[at - 1] === '`' && (comments ? comments.has(lineOf(at) - 1) : proseLine(lineAt(at)));
   const span = isHelper ? onIdleSpan(source) : undefined;
   const inOnIdle = (at: number) => span !== undefined && at > span.from && at < span.to;
   for (const { index } of source.matchAll(/client:idle/g)) {
@@ -199,14 +223,21 @@ describe('IDLE_TIMEOUT_MS (tucca-cellag/caail-planning#604)', () => {
     const none = { offences: [], bounded: 0 };
     // A comment in script, in the three ways this repo writes one.
     expect(idleWaits('      // the graph, after `client:idle` has already mounted cytoscape.')).toEqual(none);
-    expect(idleWaits(' * and therefore present but inert until `client:idle` hydration attached its')).toEqual(none);
+    expect(idleWaits('/**\n * and therefore present but inert until `client:idle` hydration attached its\n */')).toEqual(none);
     expect(idleWaits('/* as `requestIdleCallback` allows */')).toEqual(none);
+    expect(idleWaits('/*\n  a block line with no star, as `requestIdleCallback` allows\n*/')).toEqual(none);
     // A prose line of Markdown.
     expect(idleWaits('hydrates after `client:idle` runs, as `requestIdleCallback` allows', { kind: 'prose' })).toEqual(none);
   });
 
   it('flags a code-span mention where the backtick opens a template literal in code', () => {
     const offences = (source: string, kind: Kind = 'script') => idleWaits(source, { kind }).offences.length;
+    // A line of a multi-line template literal that starts with a star, outside any comment.
+    expect(offences('const html = `\n* ${`requestIdleCallback(go)`}\n`;')).toBe(1);
+    // After a comment block has closed.
+    expect(offences('/**\n * a comment\n */\n* `requestIdleCallback(go)`')).toBe(1);
+    // A /* that does not start its line opens nothing.
+    expect(offences("const glob = '**/*.md';\n* `requestIdleCallback(go)`")).toBe(1);
     expect(offences('<script set:html={`requestIdleCallback(go)`} />')).toBe(1);
     expect(offences('const run = new Function(`requestIdleCallback(go)`);')).toBe(1);
     expect(offences('hydrates after `client:idle` runs, as `requestIdleCallback` allows')).toBe(2);
