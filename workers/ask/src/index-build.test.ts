@@ -25,6 +25,7 @@ import {
 } from './index-build.ts';
 import { buildCorpus, type ApiFiles } from './corpus.ts';
 import { CORPUS_RECORD_ID, EMBEDDING_DIMENSIONS, EMBEDDING_MODEL, ENTRY_NAMESPACE, INDEX_NAME, META_NAMESPACE } from './settings.ts';
+import { ask, captureLogs, handlerWith, harness } from './test-env.ts';
 
 const apiFile = (name: string) => JSON.parse(readFileSync(new URL(`../../../site/public/api/${name}`, import.meta.url), 'utf8'));
 const api: ApiFiles = {
@@ -39,7 +40,17 @@ const plan = await planBuild(api);
 
 const vector = () => Array<number>(EMBEDDING_DIMENSIONS).fill(0.03);
 
-/** A recording CloudflareApi. `index` is what getIndex reports; `existing` is what listing returns. */
+/** A finished build's corpus record metadata, as this build would write it. */
+const builtRecord = () => ({ ...corpusRecord(plan).metadata });
+const isRecord = (v: IndexVector) => v.id === CORPUS_RECORD_ID;
+const isRealRecord = (v: IndexVector) => isRecord(v) && typeof v.metadata.corpusDate === 'string';
+
+/**
+ * A recording CloudflareApi. `index` is what getIndex reports; `existing` is what
+ * listing returns; `record` is the corpus record the index holds (a finished
+ * build's with this build's settings by default), which successful writes
+ * replace, so `stored()` is what the Worker would read after the run.
+ */
 function recordingApi(
   options: {
     index?: { dimensions: number; metric: string } | null;
@@ -47,21 +58,33 @@ function recordingApi(
     embed?: CloudflareApi['embed'];
     failUpsert?: boolean;
     failDelete?: boolean;
+    record?: Record<string, unknown> | null;
+    recordReadFails?: boolean;
+    failRecordWrite?: boolean;
   } = {},
 ) {
   const steps: string[] = [];
   const embedded: string[] = [];
   const upserted: IndexVector[][] = [];
   const deleted: string[][] = [];
+  let stored: Record<string, unknown> | null = options.record === undefined ? builtRecord() : options.record;
   const cf: CloudflareApi = {
     getIndex: async () => (steps.push('getIndex'), options.index === undefined ? null : options.index),
     createIndex: async () => void steps.push('createIndex'),
     embed: options.embed ?? (async (texts) => (steps.push('embed'), embedded.push(...texts), texts.map(vector))),
     listVectorIds: async () => (steps.push('list'), options.existing ?? []),
+    readCorpusRecord: async () => {
+      steps.push('readRecord');
+      if (options.recordReadFails) throw new Error('index build: reading the corpus record failed (HTTP 500)');
+      return stored;
+    },
     upsert: async (vectors) => {
       steps.push('upsert');
       if (options.failUpsert) throw new Error('index build: upserting vectors failed (HTTP 500)');
+      if (options.failRecordWrite && vectors.some(isRealRecord)) throw new Error('index build: upserting vectors failed (HTTP 500)');
       upserted.push(vectors);
+      const record = vectors.find(isRecord);
+      if (record) stored = { ...record.metadata };
       return `m-up-${upserted.length}`;
     },
     deleteByIds: async (ids) => {
@@ -71,7 +94,7 @@ function recordingApi(
       return `m-del-${deleted.length}`;
     },
   };
-  return { cf, steps, upserted, deleted, embedded };
+  return { cf, steps, upserted, deleted, embedded, stored: () => stored };
 }
 
 const EXISTING = { dimensions: EMBEDDING_DIMENSIONS, metric: 'cosine' };
@@ -169,6 +192,65 @@ describe('a run', () => {
     expect(steps.indexOf('delete')).toBeGreaterThan(steps.lastIndexOf('upsert'));
   });
 
+  // A rebuild with the settings the index already has keeps the plain order.
+  it('writes the entries, then the record, then deletes, when the settings are unchanged', async () => {
+    const { cf, steps, upserted } = recordingApi({ index: EXISTING, existing: [CORPUS_RECORD_ID, 'gone-1'] });
+    await runBuild(plan, cf, { createIndex: false });
+
+    const afterList = steps.slice(steps.indexOf('list') + 1);
+    expect(afterList).toEqual(['readRecord', ...Array(Math.ceil(plan.entries.length / UPSERT_BATCH) + 1).fill('upsert'), 'delete']);
+    expect(upserted.flat().filter(isRecord)).toHaveLength(1);
+  });
+
+  /**
+   * A rebuild that changes the embedding overwrites entries a Worker still on the
+   * old settings would query the old way, and the old record would tell it they
+   * match. So the old record is first replaced with one no Worker accepts, and
+   * the real record is written only once every entry was accepted.
+   */
+  const OLD_RECORD = { ...builtRecord(), corpusDate: '2026-01-01', embeddingModel: '@cf/test/older-embedding' };
+
+  it('replaces the old record with one no Worker accepts before writing entries embedded another way', async () => {
+    const { cf, upserted } = recordingApi({ index: EXISTING, existing: [CORPUS_RECORD_ID], record: OLD_RECORD });
+    await runBuild(plan, cf, { createIndex: false });
+
+    const [first, ...rest] = upserted;
+    expect(first.map((v) => v.id), 'the first write was not the refusing record alone').toEqual([CORPUS_RECORD_ID]);
+    expect(first[0].metadata.corpusDate).toBeUndefined();
+    expect(rest.at(-1)?.map((v) => v.id)).toEqual([CORPUS_RECORD_ID]);
+    expect(rest.at(-1)?.[0].metadata.corpusDate).toBe(api.index.corpusDate);
+  });
+
+  it('leaves a record the Worker refuses when the final record write fails after a model change', async () => {
+    const { cf, stored } = recordingApi({ index: EXISTING, existing: [CORPUS_RECORD_ID], record: OLD_RECORD, failRecordWrite: true });
+    await expect(runBuild(plan, cf, { createIndex: false })).rejects.toThrow(/upserting vectors failed/);
+
+    expect(stored()?.corpusDate, 'the old record still stands over entries embedded another way').toBeUndefined();
+    const logs = captureLogs();
+    try {
+      const spy = harness({ corpusRecord: { id: CORPUS_RECORD_ID, namespace: META_NAMESPACE, metadata: stored() ?? {} } });
+      expect((await handlerWith().fetch(new Request('https://ask.example/'), spy.env, spy.ctx)).status).toBe(503);
+      expect((await handlerWith().fetch(ask({ query: 'which tools predict protein structure?' }), spy.env, spy.ctx)).status).toBe(503);
+    } finally {
+      logs.restore();
+    }
+  });
+
+  it('treats a corpus record it cannot read as changed, and refuses it first', async () => {
+    const { cf, upserted } = recordingApi({ index: EXISTING, existing: [CORPUS_RECORD_ID], recordReadFails: true });
+    await runBuild(plan, cf, { createIndex: false });
+
+    expect(upserted[0].map((v) => v.id)).toEqual([CORPUS_RECORD_ID]);
+    expect(upserted[0][0].metadata.corpusDate).toBeUndefined();
+  });
+
+  it('writes no refusing record when the index holds no record, which the Worker refuses already', async () => {
+    const { cf, upserted } = recordingApi({ index: EXISTING, existing: [], record: null });
+    await runBuild(plan, cf, { createIndex: false });
+
+    expect(upserted.flat().filter(isRecord)).toHaveLength(1);
+  });
+
   it('deletes nothing and writes no corpus record when upserting the entries fails', async () => {
     const { cf, steps, upserted, deleted } = recordingApi({ index: EXISTING, existing: [CORPUS_RECORD_ID, 'gone-1'], failUpsert: true });
     await expect(runBuild(plan, cf, { createIndex: false })).rejects.toThrow(/upserting vectors failed/);
@@ -205,7 +287,16 @@ describe('a run', () => {
  * A fake of the REST endpoints the build calls. It answers as Cloudflare's
  * envelope does, records every request, and can be told to fail one step.
  */
-function fakeRest(options: { indexExists: boolean; existing?: string[]; failUpsert?: boolean; listFails?: boolean }) {
+function fakeRest(options: {
+  indexExists: boolean;
+  existing?: string[];
+  failUpsert?: boolean;
+  listFails?: boolean;
+  /** The corpus record get_by_ids returns: this build's by default, or null for none. */
+  record?: Record<string, unknown> | null;
+  /** 'unknown' answers get_by_ids in a shape the client does not recognise. */
+  recordShape?: 'documented' | 'unknown';
+}) {
   const ACCOUNT = 'acct-fixture';
   const TOKEN = 'token-fixture-do-not-leak';
   const calls: { method: string; path: string; search: string; contentType: string; authorization: string; body: string }[] = [];
@@ -249,6 +340,12 @@ function fakeRest(options: { indexExists: boolean; existing?: string[]; failUpse
       return options.failUpsert ? fail(500, 1000, 'upsert refused') : ok({ mutationId: `m${calls.length}` });
     }
     if (method === 'POST' && path === `${indexPath}/delete_by_ids`) return ok({ mutationId: `m${calls.length}` });
+    // The documented get_by_ids shape: result.vectors.
+    if (method === 'POST' && path === `${indexPath}/get_by_ids`) {
+      if (options.recordShape === 'unknown') return ok({ items: [] });
+      const record = options.record === undefined ? builtRecord() : options.record;
+      return ok({ vectors: record ? [{ id: CORPUS_RECORD_ID, namespace: META_NAMESPACE, metadata: record }] : [] });
+    }
     return fail(400, 9999, `no such fake route ${method} ${path}`);
   }) as typeof globalThis.fetch;
 
@@ -260,17 +357,23 @@ describe('the requests a run sends', () => {
     ['into a new index', { indexExists: false }, { indexExists: false, existing: 0, stale: 0 }],
     ['rebuilding an index that holds this corpus', { indexExists: true, current: true }, { indexExists: true, existing: plan.entries.length + 1, stale: 0 }],
     ['rebuilding an index with entries that have left', { indexExists: true, current: true, extra: 1_500 }, { indexExists: true, existing: plan.entries.length + 1 + 1_500, stale: 1_500 }],
+    [
+      'rebuilding an index built with other embedding settings',
+      { indexExists: true, current: true, record: { ...builtRecord(), embeddingModel: '@cf/test/older-embedding' } },
+      { indexExists: true, existing: plan.entries.length + 1, stale: 0, settingsChanged: true },
+    ],
   ])('number exactly what the plan counts, %s', async (_label, setup, state) => {
     const existing = setup.indexExists
       ? [...plan.entries.map((planned) => planned.vectorId), CORPUS_RECORD_ID, ...Array.from({ length: (setup as { extra?: number }).extra ?? 0 }, (_, i) => `gone-${i}`)]
       : [];
-    const rest = fakeRest({ indexExists: setup.indexExists, existing });
+    const rest = fakeRest({ indexExists: setup.indexExists, existing, record: (setup as { record?: Record<string, unknown> }).record });
     await runBuild(plan, rest.api, { createIndex: true });
 
     const counts = requestCounts(plan, state);
     expect(rest.calls).toHaveLength(totalRequests(counts));
     expect(rest.calls.filter((call) => call.path.endsWith('/delete_by_ids'))).toHaveLength(counts.delete);
     expect(rest.calls.filter((call) => call.path.endsWith('/list'))).toHaveLength(counts.list);
+    expect(rest.calls.filter((call) => call.path.endsWith('/upsert'))).toHaveLength(counts.upsert + counts.refusingRecord);
     expect(counts.delete).toBe(Math.ceil(state.stale / DELETE_BATCH));
   });
 
@@ -297,6 +400,13 @@ describe('the requests a run sends', () => {
 
     expect(rest.calls.some((call) => call.method === 'GET' && call.path === '/vectorize/v2/indexes')).toBe(true);
     expect(rest.calls.some((call) => call.method === 'POST' && call.path === '/vectorize/v2/indexes'), 'an existing index was created again').toBe(false);
+  });
+
+  it('refuses the old record when the corpus record read has an unknown shape', async () => {
+    const rest = fakeRest({ indexExists: true, existing: [CORPUS_RECORD_ID], recordShape: 'unknown' });
+    const result = await runBuild(plan, rest.api, { createIndex: false });
+
+    expect(result.refused).toBe(true);
   });
 
   it('creates the index when the list does not hold it', async () => {

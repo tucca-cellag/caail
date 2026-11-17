@@ -10,11 +10,20 @@
  *
  * A run fails closed. Every document is embedded and checked before anything is
  * written, so a failed embedding leaves the index as it was. The writes then go
- * in an order where any failure leaves a usable index: the entries first; then
- * the corpus record, in a write of its own, which is what the Worker checks and
- * the GET reports, so it names a build only once every entry was accepted; and
- * only then the deletes of entries that have left the corpus. A failure part way
- * leaves extra entries, never missing ones, and the old record in place.
+ * in an order where any failure leaves an index the Worker either uses correctly
+ * or refuses:
+ *   1. When the index's corpus record was written with other embedding settings,
+ *      or cannot be read, it is first replaced with a record no Worker accepts,
+ *      since the entries about to be written are embedded another way, and a
+ *      Worker still on the old settings would otherwise read the old record and
+ *      query them the old way.
+ *   2. The entries.
+ *   3. The corpus record, in a write of its own, which is what the Worker checks
+ *      and the GET reports, so it names a build only once every entry was
+ *      accepted.
+ *   4. Only then the deletes of entries that have left the corpus.
+ * A failure part way leaves extra entries, never missing ones, under either the
+ * old record (same settings) or the refusing one (changed settings).
  */
 import { buildCorpus, corpusDateOf, type ApiFiles, type CorpusEntry } from './corpus.ts';
 import { vectorId } from './ids.ts';
@@ -67,6 +76,8 @@ export interface CloudflareApi {
   embed(texts: string[]): Promise<number[][]>;
   /** Every vector id in the index, one request per LIST_PAGE ids. */
   listVectorIds(): Promise<string[]>;
+  /** The index's corpus record metadata, or null when it holds none. */
+  readCorpusRecord(): Promise<Record<string, unknown> | null>;
   /** Returns the mutation id. */
   upsert(vectors: IndexVector[]): Promise<string>;
   /** Returns the mutation id. */
@@ -118,14 +129,38 @@ export function corpusRecord(plan: BuildPlan): IndexVector {
   };
 }
 
-/** How many requests each step sends. `existing` is the vector count already in the index, if any. */
-export function requestCounts(plan: BuildPlan, state: { indexExists: boolean; existing: number; stale: number }) {
+/**
+ * A corpus record no Worker accepts: it has no corpus date, so the Worker reads
+ * it as an index not yet built. It stands while a rebuild with changed embedding
+ * settings writes its entries.
+ */
+export function refusingRecord(plan: BuildPlan): IndexVector {
+  const { corpusDate, ...rest } = corpusRecord(plan).metadata;
+  return { ...corpusRecord(plan), metadata: { ...rest, rebuilding: corpusDate } };
+}
+
+/** Whether a corpus record was written with this build's embedding settings. */
+function sameSettings(record: Record<string, unknown>): boolean {
+  return record.embeddingModel === EMBEDDING_MODEL && record.embeddingPrompts === EMBEDDING_PROMPTS;
+}
+
+/**
+ * How many requests each step sends. `existing` is the vector count already in
+ * the index, if any; `settingsChanged`, whether its corpus record was written
+ * with other embedding settings (or could not be read).
+ */
+export function requestCounts(
+  plan: BuildPlan,
+  state: { indexExists: boolean; existing: number; stale: number; settingsChanged?: boolean },
+) {
   return {
     getIndex: 1,
     createIndex: state.indexExists ? 0 : 1,
     embed: Math.ceil(plan.entries.length / EMBED_BATCH),
-    // A new index is known to be empty, so it is not listed.
+    // A new index is known to be empty, so it is neither listed nor read.
     list: state.indexExists ? Math.max(1, Math.ceil(state.existing / LIST_PAGE)) : 0,
+    readRecord: state.indexExists ? 1 : 0,
+    refusingRecord: state.indexExists && state.settingsChanged ? 1 : 0,
     // The entries in batches, then the corpus record in a request of its own.
     upsert: Math.ceil(plan.entries.length / UPSERT_BATCH) + 1,
     delete: Math.ceil(state.stale / DELETE_BATCH),
@@ -142,6 +177,7 @@ export function describePlan(plan: BuildPlan): string {
   for (const { entry } of plan.entries) byKind.set(entry.kind, (byKind.get(entry.kind) ?? 0) + 1);
   const fresh = requestCounts(plan, { indexExists: false, existing: 0, stale: 0 });
   const rebuild = requestCounts(plan, { indexExists: true, existing: plan.entries.length + 1, stale: 0 });
+  const changed = requestCounts(plan, { indexExists: true, existing: plan.entries.length + 1, stale: 0, settingsChanged: true });
   const vectors = plan.entries.length + 1;
   return [
     `Corpus date: ${plan.corpusDate}`,
@@ -154,11 +190,15 @@ export function describePlan(plan: BuildPlan): string {
     `  ${fresh.embed} POST to Workers AI, embedding up to ${EMBED_BATCH} documents each (nothing is written if one fails)`,
     `  1 POST to create the index, only when it does not exist and --create-index is given`,
     `  1 or more GET listing the index's vector ids (${LIST_PAGE} per request), only when the index already existed`,
+    `  ${rebuild.readRecord} POST reading the index's corpus record, only when the index already existed`,
+    `  ${changed.refusingRecord} POST replacing that record with one the Worker refuses, only when it was written with other embedding settings or could not be read`,
     `  ${fresh.upsert - 1} POST upserting the ${plan.entries.length} entries (${UPSERT_BATCH} per request)`,
     `  1 POST upserting the corpus record, once every entry was accepted`,
     `  0 or more POST deleting vectors whose item has left the corpus (${DELETE_BATCH} per request), last`,
     '',
-    `Total into a new index: ${totalRequests(fresh)}. Total rebuilding an index already holding this corpus: ${totalRequests(rebuild)}.`,
+    `Total into a new index: ${totalRequests(fresh)}.`,
+    `Total rebuilding an index that holds this corpus with these settings: ${totalRequests(rebuild)}.`,
+    `Total rebuilding an index built with other embedding settings: ${totalRequests(changed)}.`,
   ].join('\n');
 }
 
@@ -178,6 +218,8 @@ function checkEmbeddings(vectors: number[][], expected: number): void {
 
 export interface BuildResult {
   created: boolean;
+  /** Whether the old corpus record was replaced with a refusing one before the entries were written. */
+  refused: boolean;
   written: number;
   deleted: number;
   mutationIds: string[];
@@ -209,12 +251,26 @@ export async function runBuild(plan: BuildPlan, cf: CloudflareApi, options: { cr
   const keep = new Set([...plan.entries.map((planned) => planned.vectorId), CORPUS_RECORD_ID]);
   const stale = index ? (await cf.listVectorIds()).filter((id) => !keep.has(id)) : [];
 
+  // A record written with other settings, or one that cannot be read, is
+  // refused before entries embedded another way are written over its own. A new
+  // index, or one with no record, the Worker refuses already.
+  let refuse = false;
+  if (index) {
+    try {
+      const existing = await cf.readCorpusRecord();
+      refuse = existing !== null && !sameSettings(existing);
+    } catch {
+      refuse = true;
+    }
+  }
+
   const mutationIds: string[] = [];
+  if (refuse) mutationIds.push(await cf.upsert([refusingRecord(plan)]));
   for (const batch of chunks(vectors, UPSERT_BATCH)) mutationIds.push(await cf.upsert(batch));
   mutationIds.push(await cf.upsert([corpusRecord(plan)]));
   for (const batch of chunks(stale, DELETE_BATCH)) mutationIds.push(await cf.deleteByIds(batch));
 
-  return { created: !index, written: vectors.length + 1, deleted: stale.length, mutationIds };
+  return { created: !index, refused: refuse, written: vectors.length + 1, deleted: stale.length, mutationIds };
 }
 
 /** Rounded to float32 precision, which is what Vectorize stores, so the upload is not twice the size it needs to be. */
@@ -292,6 +348,17 @@ export function restApi(options: { accountId: string; apiToken: string; fetch?: 
       );
       if (!Array.isArray(result?.data)) throw new Error('index build: an embedding response carried no data');
       return result.data;
+    },
+
+    // The response's documented shape is `result.vectors`; a bare array is read
+    // too. Anything else throws, which the build takes as a record it cannot
+    // read, and so refuses before writing.
+    async readCorpusRecord() {
+      const result = await call<unknown>('reading the corpus record', `${indexUrl}/get_by_ids`, jsonInit('POST', { ids: [CORPUS_RECORD_ID] }));
+      const vectors = Array.isArray(result) ? result : (result as { vectors?: unknown } | null)?.vectors;
+      if (!Array.isArray(vectors)) throw new Error('index build: the corpus record read carried no vectors');
+      const record = (vectors as { id?: string; metadata?: Record<string, unknown> }[]).find((v) => v.id === CORPUS_RECORD_ID);
+      return record?.metadata ?? null;
     },
 
     async listVectorIds() {

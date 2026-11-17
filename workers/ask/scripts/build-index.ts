@@ -48,7 +48,8 @@ const result = await runBuild(plan, restApi({ accountId, apiToken }), {
   createIndex: process.argv.includes('--create-index'),
 });
 console.log(
-  `\n${result.created ? 'Created the index. ' : ''}Wrote ${result.written} vectors, deleted ${result.deleted}.` +
+  `\n${result.created ? 'Created the index. ' : ''}${result.refused ? 'Refused the old corpus record first. ' : ''}` +
+    `Wrote ${result.written} vectors, deleted ${result.deleted}.` +
     ` Mutations: ${result.mutationIds.join(', ')}.` +
     '\nVectorize applies writes asynchronously; a GET on the Worker reports the new corpus date once they land.',
 );
