@@ -18,6 +18,7 @@ import {
   queryInput,
 } from './settings.ts';
 import { vectorId } from './ids.ts';
+import { callWorkersAi } from './workers-ai.ts';
 import type { Lookup } from './lookup.ts';
 
 /**
@@ -72,7 +73,7 @@ function entryOf(vector: StoredVector): RetrievedEntry | null {
 
 /** The question's embedding, as a search query, checked for the shape the index was built with. */
 async function embed(ai: AiBinding, question: string, signal: AbortSignal): Promise<number[]> {
-  const output = (await ai.run(EMBEDDING_MODEL, { text: [queryInput(question)] }, { signal })) as { data?: unknown };
+  const output = (await callWorkersAi(ai, EMBEDDING_MODEL, { text: [queryInput(question)] }, { signal })) as { data?: unknown };
   const vector = Array.isArray(output?.data) ? output.data[0] : undefined;
   if (
     !Array.isArray(vector) ||

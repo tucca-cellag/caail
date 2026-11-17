@@ -435,6 +435,64 @@ describe('failures', () => {
     expect(logged).toEqual(expected);
   });
 
+  // A code is read only from a Workers AI call's own error, so a number in any
+  // other message is never taken for a quota.
+  it('returns 503, not 429, for an index error whose message holds 3040', async () => {
+    const spy = harness({
+      query: async () => {
+        throw new Error('vectorize query failed after 3040 ms');
+      },
+    });
+    const { status, logged } = await fails(spy, () => handlerWith().fetch(ask(PRIVATE, HEADERS), spy.env, spy.ctx));
+
+    expect(status).toBe(503);
+    expect(logged).toEqual({ error: 'upstream_failure' });
+  });
+
+  it('returns 503, not 429, for a model error that only mentions 3040 in passing', async () => {
+    const spy = harness({
+      ai: async (model, inputs, opts) => {
+        if (model === EMBEDDING_MODEL) return defaultAi(model, inputs, opts);
+        throw new Error('upstream connection reset after 3040 ms');
+      },
+    });
+    const { status, logged } = await fails(spy, () => handlerWith().fetch(ask(PRIVATE, HEADERS), spy.env, spy.ctx));
+
+    expect(status).toBe(503);
+    expect(logged).toEqual({ error: 'upstream_failure' });
+  });
+
+  it.each([
+    ['a structured code field', Object.assign(new Error('capacity'), { code: 3040 }), 3040],
+    ['a structured code as a string', Object.assign(new Error('allocation'), { code: '3036' }), 3036],
+    ['the documented capacity message alone', new Error('Capacity temporarily exceeded, please try again.'), 3040],
+    ['the documented allocation message alone', new Error('You have used up your daily free allocation of 10,000 neurons.'), 3036],
+  ])('passes a Workers AI limit given as %s on as 429', async (_label, error, code) => {
+    const spy = harness({
+      ai: async (model, inputs, opts) => {
+        if (model === EMBEDDING_MODEL) return defaultAi(model, inputs, opts);
+        throw error;
+      },
+    });
+    const { status, logged } = await fails(spy, () => handlerWith().fetch(ask(PRIVATE, HEADERS), spy.env, spy.ctx));
+
+    expect(status).toBe(429);
+    expect(logged).toEqual({ error: 'workers_ai_limit', code });
+  });
+
+  it('logs no code for a failed index fetch, whatever its message', async () => {
+    const spy = harness({
+      getByIds: async (ids) => {
+        if (ids.includes(CORPUS_RECORD_ID)) return [corpusRecordFor()];
+        throw new Error('3036 vectors could not be read');
+      },
+    });
+    const res = await handlerWith({ match: () => [ENTRIES[2].id] }).fetch(ask(QUESTION), spy.env, spy.ctx);
+
+    expect(res.status).toBe(200);
+    expect(logs.lines.map((line) => JSON.parse(line))).toEqual([{ error: 'named_retrieval_failed' }]);
+  });
+
   it('returns 503 when the index fails', async () => {
     const spy = harness({
       query: async () => {

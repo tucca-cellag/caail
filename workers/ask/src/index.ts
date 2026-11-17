@@ -39,6 +39,7 @@ import { retrieve, type AiBinding, type IndexBinding, type StoredVector } from '
 import { answerText, citedEntryIds, modelInput } from './model.ts';
 import { questionRecord, type RecordPoint } from './record.ts';
 import type { Lookup } from './lookup.ts';
+import { callWorkersAi, workersAiCode } from './workers-ai.ts';
 
 export interface Env {
   AI: AiBinding;
@@ -114,13 +115,6 @@ function json(body: unknown, status: number, cors: CorsHeaders): Response {
  */
 function logFailure(error: string, code?: number): void {
   console.error(JSON.stringify(code === undefined ? { error } : { error, code }));
-}
-
-/** The Workers AI internal code an error carries, if any (they are 3xxx and 5xxx). */
-function workersAiCode(err: unknown): number | undefined {
-  const message = err instanceof Error ? err.message : String(err);
-  const match = message.match(/\b([35]\d{3})\b/);
-  return match ? Number(match[1]) : undefined;
 }
 
 /**
@@ -280,7 +274,7 @@ async function answer(
       return text('service unavailable', 503, cors);
     }
     const output = await racing(
-      env.AI.run(env.MODEL_ID, modelInput(env.MODEL_ID, entries, question), { signal: deadline.signal }),
+      callWorkersAi(env.AI, env.MODEL_ID, modelInput(env.MODEL_ID, entries, question), { signal: deadline.signal }),
       deadline.signal,
     );
     const reply = answerText(output);
