@@ -99,6 +99,16 @@ describe('retrieval', () => {
     expect(found.map((e) => e.id), 'an entry the corpus no longer holds was offered to the model').toEqual([current.id]);
   });
 
+  // A search by meaning that works and finds nothing does not empty the
+  // result: the entries the question names are still the answer's entries.
+  it('answers from the named entries when the search by meaning finds nothing', async () => {
+    const { binding } = index([], [await stored(entry(2))]);
+    const result = await retrieve('q', { AI: { run: defaultAi }, INDEX: binding }, lookupNaming(['paper:2']), signal);
+
+    expect(result.entries.map((e) => e.id), 'the named entries were dropped').toEqual(['paper:2']);
+    expect(result.failed).toBeNull();
+  });
+
   it('skips a named entry the index does not hold', async () => {
     const { binding } = index([await stored(entry(1))]);
     const found = await entriesOf('q', { AI: { run: defaultAi }, INDEX: binding, ALLOWED_ORIGIN: ORIGIN }, lookupNaming(['paper:404']), signal);

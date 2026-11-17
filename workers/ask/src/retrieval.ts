@@ -125,9 +125,10 @@ export interface Retrieval {
  * other found. It throws only when the search by meaning failed and nothing was
  * found by name, and then with that half's error: it alone calls Workers AI, so
  * only its error can be a Workers AI limit, which the handler passes on as a
- * 429. When the search by meaning worked and found nothing, the index is empty
- * whatever the named half did, so the result is empty, not an error, and the
- * handler says so.
+ * 429. When the search by meaning worked and found nothing, the named entries,
+ * if any, are the result; with none either, the result is empty rather than an
+ * error, and the handler says whether the index was empty or held only entries
+ * this deploy does not (`returned`).
  */
 export async function retrieve(
   question: string,
