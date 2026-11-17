@@ -438,30 +438,6 @@ export const REGISTER: readonly UnreliableEntry[] = [
     status: 'open',
     tickets: ['tucca-cellag/caail-planning#604'],
   },
-  {
-    id: 'vitest-reporter-fixture-overrun',
-    suite: 'vitest',
-    file: 'scripts/test-reliability/vitest-reporter.test.ts',
-    unit: 'beforeAll of "the vitest reporter, run by the installed vitest"',
-    anchor: 'the fixture vitest ran past',
-    suites: ['the vitest reporter, run by the installed vitest'],
-    failure: { text: ['the fixture vitest ran past'] },
-    shape: 'load',
-    condition:
-      'The hook runs a second vitest on the reporter fixtures, kills it once it passes its ' +
-      'budget, and fails with "the fixture vitest ran past N ms and was killed". The run is ' +
-      'short and the budget long, so only a machine loaded far past what slows the other ' +
-      'entries should reach it. Passes with the file run alone.',
-    evidence:
-      '2026-11-16, local, under heavy memory pressure: the hook\'s run took about 0.4s in ' +
-      'every run of the file that day. The failure has been seen only planted: with the ' +
-      'budget lowered to 3s and a fixture test that hangs, the hook failed with "the fixture ' +
-      'vitest ran past 3000 ms and was killed" and left no process behind. Not yet seen at the ' +
-      'real budget.',
-    reproduce: 'pnpm --dir site test scripts/test-reliability/vitest-reporter.test.ts',
-    status: 'open',
-    tickets: ['tucca-cellag/caail-planning#604'],
-  },
 
   // -------------------------------------------------------------------------
   // Playwright: pre-hydration clicks on server-rendered island controls.
