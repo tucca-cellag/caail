@@ -18,7 +18,8 @@
  *   1. OPTIONS is answered 204; any method but GET and POST is 405.
  *   2. The rate limit, before anything else is read.
  *   3. A foreign Origin is 403.
- *   4. GET reports which corpus the index was built from (`corpusStatus`).
+ *   4. GET reports which corpus the index was built from, beside the one this
+ *      deploy bundles (`corpusStatus`).
  *   5. POST, under one deadline from here on: a body over MAX_BODY_BYTES is 413,
  *      a body that is not `{ query: string }` is 400, and so is a question
  *      outside the word limit.
@@ -33,7 +34,7 @@ import {
   builtWithTheseSettings,
 } from './settings.ts';
 import { WORD_LIMIT, wordCount } from './words.ts';
-import { bundledLookup } from './bundled-lookup.ts';
+import { bundledCorpusDate, bundledLookup } from './bundled-lookup.ts';
 import { retrieve, type AiBinding, type IndexBinding, type StoredVector } from './retrieval.ts';
 import { answerText, citedEntryIds, modelInput } from './model.ts';
 import { questionRecord, type RecordPoint } from './record.ts';
@@ -214,7 +215,8 @@ type CorpusRecordRead =
  * against EMBEDDING_MODEL and EMBEDDING_PROMPTS. A question embedded one way and
  * searched against entries embedded another finds unrelated entries and raises
  * no error, so a mismatch has to be looked for. The GET and the question path
- * both read the record here, so the live check and the questions agree.
+ * both read the record here, so the live check and the questions agree on it.
+ * The GET alone also compares the corpus dates (`corpusStatus`).
  */
 async function readCorpusRecord(env: Env, signal: AbortSignal): Promise<CorpusRecordRead> {
   let record: StoredVector | undefined;
@@ -237,12 +239,21 @@ function corpusRecordError(read: Exclude<CorpusRecordRead, { status: 'match' }>,
 }
 
 /**
- * GET: which corpus the index was built from, so a live check can compare it
- * with api/index.json. It answers 200 only for an index the questions would
- * use, and otherwise 503 naming why, so a live check never reports healthy an
+ * GET: which corpus the index was built from, beside the one this deploy
+ * bundles, so a live check can compare both with api/index.json. It answers 200
+ * only for an index the questions would use, built from the corpus this deploy
+ * holds, and otherwise 503 naming why, so a live check never reports healthy an
  * index every question refuses.
+ *
+ * The dates differ between a content change and its redeploy and rebuild, which
+ * are both done by hand. Until both land, the deployed-corpus filter drops every
+ * entry only one side holds, so the GET says so. A question is still answered
+ * (`answer`): the filter keeps that answer to entries both sides hold, so it can
+ * miss a new entry but never cite one the deploy lacks, and refusing would take
+ * Ask offline on every content change. An index embedded another way is refused
+ * by both, since it returns unrelated entries with no error.
  */
-async function corpusStatus(env: Env, cors: CorsHeaders): Promise<Response> {
+async function corpusStatus(env: Env, cors: CorsHeaders, deployedCorpusDate: string): Promise<Response> {
   const deadline = startDeadline();
   try {
     const read = await readCorpusRecord(env, deadline.signal);
@@ -252,7 +263,12 @@ async function corpusStatus(env: Env, cors: CorsHeaders): Promise<Response> {
       return json({ error }, 503, cors);
     }
     const { corpusDate, embeddingModel, documents } = read.meta;
-    return json({ corpusDate, embeddingModel, documents }, 200, cors);
+    if (corpusDate !== deployedCorpusDate) {
+      const error = 'index_corpus_date_mismatch';
+      logFailure(error);
+      return json({ error, corpusDate, bundledCorpusDate: deployedCorpusDate }, 503, cors);
+    }
+    return json({ corpusDate, bundledCorpusDate: deployedCorpusDate, embeddingModel, documents }, 200, cors);
   } finally {
     deadline.clear();
   }
@@ -363,8 +379,11 @@ async function answer(
   }
 }
 
-/** The handler, with its lookup supplied, so a test can give it one built from fixtures. */
-export function createHandler(lookup: Lookup = bundledLookup) {
+/**
+ * The handler, with its lookup and the corpus date it was bundled with
+ * supplied, so a test can give it its own.
+ */
+export function createHandler(lookup: Lookup = bundledLookup, deployedCorpusDate: string = bundledCorpusDate) {
   const instance: InstanceState = { indexMatchedAt: null };
   return {
     async fetch(request: Request, env: Env): Promise<Response> {
@@ -392,7 +411,7 @@ export function createHandler(lookup: Lookup = bundledLookup) {
       const origin = request.headers.get('Origin');
       if (origin && origin !== env.ALLOWED_ORIGIN) return text('forbidden', 403, cors);
 
-      if (request.method === 'GET') return corpusStatus(env, cors);
+      if (request.method === 'GET') return corpusStatus(env, cors, deployedCorpusDate);
       return answer(request, env, lookup, instance, cors);
     },
   };

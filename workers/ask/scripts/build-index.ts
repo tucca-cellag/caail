@@ -52,5 +52,6 @@ console.log(
   `\n${result.created ? 'Created the index. ' : ''}${result.refused ? 'Refused the old corpus record first. ' : ''}` +
     `Wrote ${result.written} vectors, deleted ${result.deleted}.` +
     ` Mutations: ${result.mutationIds.join(', ')}.` +
-    '\nVectorize applies writes asynchronously; a GET on the Worker reports the new corpus date once they land.',
+    '\nVectorize applies writes asynchronously; a GET on the Worker reports the new corpus date once they land,' +
+    ' and answers 200 once the deployed Worker bundles the same corpus.',
 );

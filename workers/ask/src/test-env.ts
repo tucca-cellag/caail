@@ -11,6 +11,7 @@ import { vi } from 'vitest';
 import { createHandler, type Env } from './index.ts';
 import { CORPUS_RECORD_ID, EMBEDDING_DIMENSIONS, EMBEDDING_MODEL, EMBEDDING_PROMPTS } from './settings.ts';
 import { vectorId } from './ids.ts';
+import { bundledCorpusDate } from './bundled-lookup.ts';
 import type { Lookup } from './lookup.ts';
 import type { RetrievedEntry, StoredVector } from './retrieval.ts';
 import type { RecordPoint } from './record.ts';
@@ -82,12 +83,15 @@ export const chatOutput = (content: string) => ({
   choices: [{ index: 0, message: { role: 'assistant', content, refusal: null }, finish_reason: 'stop', logprobs: null }],
 });
 
-/** A corpus record as the index build writes it, with any field overridden. */
+/**
+ * A corpus record as the index build writes it, built from the corpus this
+ * deploy bundles unless a field is overridden.
+ */
 export function corpusRecordFor(overrides: Record<string, unknown> = {}): StoredVector {
   return {
     id: CORPUS_RECORD_ID,
     namespace: 'meta',
-    metadata: { corpusDate: '2026-11-14', embeddingModel: EMBEDDING_MODEL, embeddingPrompts: EMBEDDING_PROMPTS, documents: 907, ...overrides },
+    metadata: { corpusDate: bundledCorpusDate, embeddingModel: EMBEDDING_MODEL, embeddingPrompts: EMBEDDING_PROMPTS, documents: 907, ...overrides },
   };
 }
 

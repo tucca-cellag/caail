@@ -6,13 +6,14 @@
  * (test-env.ts). They pin the handler's order, each way it refuses or fails,
  * and what an answered question returns.
  */
+import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import eventsWorker from '../../events/src/index.ts';
 import { CORPUS_RECORD_ID, EMBEDDING_MODEL, INDEX_RECHECK_MS, MAX_BODY_BYTES, REQUEST_DEADLINE_MS } from './settings.ts';
 import { WORD_LIMIT } from './words.ts';
 import { MAX_TOKENS, SYSTEM_PROMPT, TEMPERATURE } from './model.ts';
 import { vectorId } from './ids.ts';
-import { bundledLookup } from './bundled-lookup.ts';
+import { bundledCorpusDate, bundledLookup } from './bundled-lookup.ts';
 import datasetsFile from '../../../site/public/api/datasets.json';
 import {
   ANSWER,
@@ -49,6 +50,17 @@ describe('the bundled lookup', () => {
     const row = datasetsFile.inventory.find((r) => r.accession !== null);
     expect(typeof bundledLookup, 'the bundled lookup is built on a request').toBe('object');
     expect(bundledLookup.match(`Which dataset is ${row?.accession}?`)).toContain(row?.id);
+  });
+
+  // The GET compares this date with the index record's, which the index build
+  // takes from api/index.json, so it has to be the date of every file the
+  // lookup was built from, and of that one.
+  it('carries the corpus date of every API file it bundles, and of api/index.json', () => {
+    const corpusDateOf = (name: string) =>
+      JSON.parse(readFileSync(new URL(`../../../site/public/api/${name}`, import.meta.url), 'utf8')).corpusDate;
+    for (const name of ['catalog.json', 'papers-index.json', 'datasets.json', 'reports.json', 'taxonomy.json', 'index.json']) {
+      expect(corpusDateOf(name), name).toBe(bundledCorpusDate);
+    }
   });
 });
 
@@ -804,13 +816,46 @@ describe('one half of retrieval failing', () => {
 describe('GET: the corpus the index was built from', () => {
   const get = (headers: Record<string, string> = {}) => new Request('https://ask.example/', { headers });
 
-  it('returns the corpus record\'s date', async () => {
+  it('returns the corpus record\'s date beside the bundled one when they match', async () => {
     const spy = harness();
     const res = await handlerWith().fetch(get(), spy.env, spy.ctx);
 
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ corpusDate: '2026-11-14', embeddingModel: EMBEDDING_MODEL, documents: 907 });
+    expect(await res.json()).toEqual({
+      corpusDate: bundledCorpusDate,
+      bundledCorpusDate,
+      embeddingModel: EMBEDDING_MODEL,
+      documents: 907,
+    });
     expect(spy.aiCalls).toEqual([]);
+    expect(logs.lines).toEqual([]);
+  });
+
+  // After a content change, the index can be rebuilt before the Worker is
+  // redeployed, or the reverse. Retrieval then drops every entry only one side
+  // holds, so the live check has to see the two dates disagree.
+  it.each([
+    ['an index rebuilt from a newer corpus than the deploy bundles', '2999-01-01'],
+    ['an index older than the deploy', '1999-01-01'],
+  ])('returns 503 for %s, naming both dates', async (_label, indexDate) => {
+    const spy = harness({ corpusRecord: corpusRecordFor({ corpusDate: indexDate }) });
+    const res = await handlerWith().fetch(get(), spy.env, spy.ctx);
+
+    expect(res.status, 'the GET reported an index from another corpus as healthy').toBe(503);
+    expect(await res.json()).toEqual({ error: 'index_corpus_date_mismatch', corpusDate: indexDate, bundledCorpusDate });
+    expect(logs.lines.map((line) => JSON.parse(line))).toEqual([{ error: 'index_corpus_date_mismatch' }]);
+  });
+
+  // A question is still answered then: the deployed-corpus filter keeps the
+  // answer to entries both sides hold, and refusing would take Ask offline on
+  // every content change until the redeploy and the rebuild both land.
+  it('leaves a question answered while the dates disagree', async () => {
+    const spy = harness({ corpusRecord: corpusRecordFor({ corpusDate: '2999-01-01' }) });
+    const res = await handlerWith().fetch(ask(QUESTION), spy.env, spy.ctx);
+
+    expect(res.status, 'a corpus date disagreement took the question path offline').toBe(200);
+    expect(await res.json()).toEqual({ answer: ANSWER });
+    expect(logs.lines).toEqual([]);
   });
 
   it('is rate limited like a question', async () => {

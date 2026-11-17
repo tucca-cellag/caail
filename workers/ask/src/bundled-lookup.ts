@@ -22,3 +22,12 @@ import taxonomy from '../../../site/public/api/taxonomy.json';
 import { buildLookup, type Lookup } from './lookup.ts';
 
 export const bundledLookup: Lookup = buildLookup({ catalog, papersIndex, datasets, reports, taxonomy });
+
+/**
+ * The corpus date of the bundle, read from catalog.json. One `pnpm parse` writes
+ * every API file with the same date, and index.test.ts checks that each file
+ * bundled here carries this one, as does api/index.json, whose date the index
+ * build records. The GET reports it beside the index's, so a live check sees an
+ * index rebuilt from a corpus this deploy does not hold, or the reverse.
+ */
+export const bundledCorpusDate: string = catalog.corpusDate;
