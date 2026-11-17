@@ -182,46 +182,67 @@ function racing<T>(promise: Promise<T>, signal: AbortSignal): Promise<T> {
   });
 }
 
+/** One request's deadline: its signal aborts after REQUEST_DEADLINE_MS. Call clear() when done. */
+function startDeadline(): { signal: AbortSignal; clear: () => void } {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_DEADLINE_MS);
+  return { signal: controller.signal, clear: () => clearTimeout(timer) };
+}
+
+type CorpusRecordRead =
+  | { status: 'match'; meta: Record<string, unknown> }
+  | { status: 'mismatch' }
+  | { status: 'missing' }
+  | { status: 'failed'; error: unknown };
+
 /**
- * GET: which corpus the index was built from, read from the index's corpus
- * record, so a live check can compare it with api/index.json. The read has the
- * request deadline too.
+ * The index's corpus record, read under `signal`, and whether the index was
+ * built the way this Worker embeds a question: the record's model and prompts
+ * against EMBEDDING_MODEL and EMBEDDING_PROMPTS. A question embedded one way and
+ * searched against entries embedded another finds unrelated entries and raises
+ * no error, so a mismatch has to be looked for. The GET and the question path
+ * both read the record here, so the live check and the questions agree.
  */
-async function corpusStatus(env: Env, cors: CorsHeaders): Promise<Response> {
-  const deadline = new AbortController();
-  const timer = setTimeout(() => deadline.abort(), REQUEST_DEADLINE_MS);
+async function readCorpusRecord(env: Env, signal: AbortSignal): Promise<CorpusRecordRead> {
   let record: StoredVector | undefined;
   try {
-    [record] = await racing(env.INDEX.getByIds([CORPUS_RECORD_ID]), deadline.signal);
-  } catch {
-    logFailure(deadline.signal.aborted ? 'deadline' : 'index_unavailable');
-    return text('service unavailable', 503, cors);
-  } finally {
-    clearTimeout(timer);
+    [record] = await racing(env.INDEX.getByIds([CORPUS_RECORD_ID]), signal);
+  } catch (error) {
+    return { status: 'failed', error };
   }
   const meta = record?.metadata ?? {};
-  if (typeof meta.corpusDate !== 'string') {
-    logFailure('index_not_built');
-    return text('service unavailable', 503, cors);
-  }
-  return json(
-    { corpusDate: meta.corpusDate, embeddingModel: meta.embeddingModel, documents: meta.documents },
-    200,
-    cors,
-  );
+  if (typeof meta.corpusDate !== 'string') return { status: 'missing' };
+  if (meta.embeddingModel !== EMBEDDING_MODEL || meta.embeddingPrompts !== EMBEDDING_PROMPTS) return { status: 'mismatch' };
+  return { status: 'match', meta };
+}
+
+/** What a read that is not a match is logged and answered as. */
+function corpusRecordError(read: Exclude<CorpusRecordRead, { status: 'match' }>, signal: AbortSignal): string {
+  if (read.status === 'mismatch') return 'index_embedding_mismatch';
+  if (read.status === 'missing') return 'index_not_built';
+  return signal.aborted ? 'deadline' : 'index_unavailable';
 }
 
 /**
- * Whether the index was built the way this Worker embeds a question: its corpus
- * record's model and prompts against EMBEDDING_MODEL and EMBEDDING_PROMPTS. A
- * question embedded one way and searched against entries embedded another finds
- * unrelated entries and raises no error, so a mismatch has to be looked for.
+ * GET: which corpus the index was built from, so a live check can compare it
+ * with api/index.json. It answers 200 only for an index the questions would
+ * use, and otherwise 503 naming why, so a live check never reports healthy an
+ * index every question refuses.
  */
-async function indexBuild(env: Env): Promise<'matches' | 'mismatch' | 'not_built'> {
-  const [record] = await env.INDEX.getByIds([CORPUS_RECORD_ID]);
-  const meta = record?.metadata ?? {};
-  if (typeof meta.corpusDate !== 'string') return 'not_built';
-  return meta.embeddingModel === EMBEDDING_MODEL && meta.embeddingPrompts === EMBEDDING_PROMPTS ? 'matches' : 'mismatch';
+async function corpusStatus(env: Env, cors: CorsHeaders): Promise<Response> {
+  const deadline = startDeadline();
+  try {
+    const read = await readCorpusRecord(env, deadline.signal);
+    if (read.status !== 'match') {
+      const error = corpusRecordError(read, deadline.signal);
+      logFailure(error);
+      return json({ error }, 503, cors);
+    }
+    const { corpusDate, embeddingModel, documents } = read.meta;
+    return json({ corpusDate, embeddingModel, documents }, 200, cors);
+  } finally {
+    deadline.clear();
+  }
 }
 
 /**
@@ -244,8 +265,7 @@ async function answer(
 ): Promise<Response> {
   // Started before the body is read, so a body trickled slowly, or never
   // finished, is cut off at the deadline like everything after it.
-  const deadline = new AbortController();
-  const timer = setTimeout(() => deadline.abort(), REQUEST_DEADLINE_MS);
+  const deadline = startDeadline();
   try {
     const raw = await racing(readCapped(request, MAX_BODY_BYTES, deadline.signal), deadline.signal);
     if (raw === null) return text('payload too large', 413, cors);
@@ -256,10 +276,10 @@ async function answer(
 
     const checkedAt = instance.indexMatchedAt;
     if (checkedAt === null || Date.now() - checkedAt >= INDEX_RECHECK_MS) {
-      const build = await racing(indexBuild(env), deadline.signal);
-      if (build !== 'matches') {
+      const read = await readCorpusRecord(env, deadline.signal);
+      if (read.status !== 'match') {
         instance.indexMatchedAt = null;
-        logFailure(build === 'mismatch' ? 'index_embedding_mismatch' : 'index_not_built');
+        logFailure(corpusRecordError(read, deadline.signal));
         return text('service unavailable', 503, cors);
       }
       instance.indexMatchedAt = Date.now();
@@ -313,7 +333,7 @@ async function answer(
     logFailure('upstream_failure', code);
     return text('service unavailable', 503, cors);
   } finally {
-    clearTimeout(timer);
+    deadline.clear();
   }
 }
 

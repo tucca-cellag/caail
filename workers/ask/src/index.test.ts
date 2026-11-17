@@ -737,12 +737,40 @@ describe('GET: the corpus the index was built from', () => {
     expect(logs.lines.map((line) => JSON.parse(line))).toEqual([{ error: 'deadline' }]);
   });
 
-  it('returns 503 when the index has no corpus record', async () => {
+  it('returns 503 when the index has no corpus record, saying so', async () => {
     const spy = harness({ corpusRecord: null });
     const res = await handlerWith().fetch(get(), spy.env, spy.ctx);
 
     expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ error: 'index_not_built' });
     expect(logs.lines.map((line) => JSON.parse(line))).toEqual([{ error: 'index_not_built' }]);
+  });
+
+  // The live check compares the GET's corpus date with api/index.json, so a GET
+  // that answered 200 for an index every question refuses would report a broken
+  // service as healthy. It applies the question path's own test.
+  it.each([
+    ['another embedding model', corpusRecordFor({ embeddingModel: '@cf/test/older-embedding' })],
+    ['other embedding prompts', corpusRecordFor({ embeddingPrompts: 'none' })],
+  ])('returns 503 for an index built with %s, as a question gets, saying so', async (_label, record) => {
+    const spy = harness({ corpusRecord: record });
+    const res = await handlerWith().fetch(get(), spy.env, spy.ctx);
+
+    expect(res.status, 'the GET reported an index every question refuses as healthy').toBe(503);
+    expect(await res.json()).toEqual({ error: 'index_embedding_mismatch' });
+    expect(logs.lines.map((line) => JSON.parse(line))).toEqual([{ error: 'index_embedding_mismatch' }]);
+  });
+
+  it('returns 503 when the index read fails, saying so', async () => {
+    const spy = harness({
+      getByIds: async () => {
+        throw new Error('vectorize unavailable');
+      },
+    });
+    const res = await handlerWith().fetch(get(), spy.env, spy.ctx);
+
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ error: 'index_unavailable' });
   });
 });
 
