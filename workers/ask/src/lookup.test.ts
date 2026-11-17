@@ -192,6 +192,20 @@ describe('stays linear on a pathological question', () => {
   });
 });
 
+// Finding stops at the bound, so the ids returned must be the first ones of the
+// full ranking: identifiers before names wherever they sit in the question, and
+// longer names before shorter ones, however late they are written.
+it('returns the first MAX_NAMED_FETCHED ids of the full ranking when a question names more', () => {
+  const count = MAX_NAMED_FETCHED + 4;
+  const tools = Array.from({ length: count }, (_, i) => ({ itemId: `sw:len-${i}`, name: `Name${'x'.repeat(i)}`, doi: null }));
+  const many = buildLookup({ ...FILES, catalog: { software: tools, databases: [] } });
+  // Shortest name first, the identifiers last.
+  const question = `${tools.map((tool) => tool.name).join(' ')} 10.1038/s43016-022-00658-w PRJNA123456`;
+  const ranked = ['ds:gse169291', 'ds:cattlegtex', ...[...tools].reverse().map((tool) => tool.itemId)];
+
+  expect(many.match(question)).toEqual(ranked.slice(0, MAX_NAMED_FETCHED));
+});
+
 // The lookup bounds what one question fetches from the index; retrieval, not the
 // lookup, keeps MAX_NAMED of what the index holds (retrieval.test.ts).
 it('returns at most MAX_NAMED_FETCHED ids, however many entries a question names', () => {

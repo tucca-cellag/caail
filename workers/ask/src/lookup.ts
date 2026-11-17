@@ -222,20 +222,33 @@ export function buildLookup(files: LookupFiles): BuiltLookup {
     knows: (id: string) => known.has(id),
     nameable,
     match(question: string): string[] {
-      const found: string[] = [];
+      // Every id is taken in rank order: DOIs, then accessions, then names
+      // longest first, each in the order it is found. So nothing found after
+      // MAX_NAMED_FETCHED ids could displace one of them, and finding stops
+      // there. A Set keeps the order and answers membership at once.
+      const found = new Set<string>();
+      const full = () => found.size >= MAX_NAMED_FETCHED;
       const take = (ids: string[] | undefined) => {
-        for (const id of ids ?? []) if (!found.includes(id)) found.push(id);
+        for (const id of ids ?? []) {
+          if (full()) return;
+          found.add(id);
+        }
       };
 
-      for (const candidate of question.match(DOI_IN_TEXT) ?? []) {
+      for (const [candidate] of question.matchAll(DOI_IN_TEXT)) {
+        if (full()) return [...found];
         const doi = normalizeDoi(candidate);
         if (doi.length <= longestDoi) take(dois.get(doi));
       }
       for (const token of question.split(/[^A-Za-z0-9_.-]+/)) {
+        if (full()) return [...found];
         const accession = normalizeAccession(token);
         if (accession && accession.length <= longestAccession) take(accessions.get(accession));
       }
+      if (full()) return [...found];
 
+      // Every name is found before any is taken: a longer name later in the
+      // question ranks ahead of a shorter one earlier.
       const words = wordsOf(question);
       const hits = new Set<NameMatcher>();
       for (let i = 0; i < words.length; i++) {
@@ -248,8 +261,11 @@ export function buildLookup(files: LookupFiles): BuiltLookup {
       }
       // Longest names first, so a name that contains a shorter one ranks ahead of
       // it when both match.
-      for (const matcher of [...hits].sort((a, b) => b.rank - a.rank)) take(matcher.ids);
-      return found.slice(0, MAX_NAMED_FETCHED);
+      for (const matcher of [...hits].sort((a, b) => b.rank - a.rank)) {
+        if (full()) break;
+        take(matcher.ids);
+      }
+      return [...found];
     },
   };
 }
