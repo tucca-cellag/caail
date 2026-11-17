@@ -672,6 +672,16 @@ describe('one half of retrieval failing', () => {
     expect(logged()).toEqual([{ error: 'nearest_retrieval_failed', code: 3036 }]);
   });
 
+  // The search by meaning worked and found nothing: an empty index, which is
+  // what the log should say, after the half that failed.
+  it('logs the failed half and then index_empty when the other half worked and found nothing', async () => {
+    const spy = harness({ getByIds: fetchFails, query: async () => ({ matches: [] }) });
+    const res = await handlerWith(named).fetch(ask(QUESTION), spy.env, spy.ctx);
+
+    expect(res.status).toBe(503);
+    expect(logged()).toEqual([{ error: 'named_retrieval_failed' }, { error: 'index_empty' }]);
+  });
+
   it('is a 503 when both halves fail', async () => {
     const spy = harness({ getByIds: fetchFails, ai: embeddingFails(new Error('socket hang up')) });
     const res = await handlerWith(named).fetch(ask(QUESTION), spy.env, spy.ctx);

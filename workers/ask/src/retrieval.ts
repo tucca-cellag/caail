@@ -105,10 +105,12 @@ export interface Retrieval {
 
 /**
  * The two halves run side by side, and one failing does not throw away what the
- * other found. A failure with nothing found by the other half (both failed, or
- * the question named nothing) throws, with the nearest half's error when it
- * failed: that half alone calls Workers AI, so only its error can be a Workers
- * AI limit, which the handler passes on as a 429.
+ * other found. It throws only when the search by meaning failed and nothing was
+ * found by name, and then with that half's error: it alone calls Workers AI, so
+ * only its error can be a Workers AI limit, which the handler passes on as a
+ * 429. When the search by meaning worked and found nothing, the index is empty
+ * whatever the named half did, so the result is empty, not an error, and the
+ * handler says so.
  */
 export async function retrieve(
   question: string,
@@ -135,6 +137,6 @@ export async function retrieve(
       : boosted.status === 'rejected'
         ? { half: 'named', error: boosted.reason }
         : null;
-  if (failed && entries.length === 0) throw failed.error;
+  if (nearest.status === 'rejected' && entries.length === 0) throw nearest.reason;
   return { entries: entries.slice(0, TOP_K), failed };
 }
