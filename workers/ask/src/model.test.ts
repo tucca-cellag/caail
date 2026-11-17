@@ -103,6 +103,28 @@ describe('the cited entries', () => {
     expect(citedEntryIds(answer, ENTRIES)).toEqual([]);
   });
 
+  // A model that bolds or italicises a bare link puts the emphasis markers
+  // straight after it. They are Markdown, not part of the link.
+  describe('after Markdown emphasis', () => {
+    const scgpt = { id: 'sw:scgpt', kind: 'software', name: 'scGPT', link: `${ORIGIN}/software/#scgpt`, text: 'scGPT' };
+    const underscored = { id: 'ds:a_b', kind: 'dataset', name: 'A', link: `${ORIGIN}/datasets/cow/?item=ds:a_b#complete-data-inventory`, text: 'A' };
+
+    it.each([
+      ['bold', `See **${scgpt.link}**`],
+      ['italic', `See *${scgpt.link}*`],
+      ['underscore bold', `See __${scgpt.link}__`],
+      ['underscore italic', `See _${scgpt.link}_`],
+      ['bold, then a full stop', `See **${scgpt.link}**.`],
+    ])('count a link in %s', (_label, answer) => {
+      expect(citedEntryIds(answer, [scgpt])).toEqual(['sw:scgpt']);
+    });
+
+    it('keep an underscore that is part of the link', () => {
+      expect(citedEntryIds(`See **${underscored.link}**`, [underscored])).toEqual(['ds:a_b']);
+      expect(citedEntryIds(`See ${ORIGIN}/datasets/cow/?item=ds:a_`, [underscored])).toEqual([]);
+    });
+  });
+
   it('do not include an entry whose link was altered, cut or made up', () => {
     const answer = [
       `[a](${ENTRIES[0].link}x)`,

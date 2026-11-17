@@ -78,8 +78,13 @@ export function answerText(output: unknown): string | null {
 
 /** A URL in the answer, in any case. Linear: a greedy class with nothing after it. */
 const URL_IN_TEXT = /https?:\/\/[^\s<>()[\]"'`]+/gi;
-/** Stripped by a walk, not a pattern, since the answer is text a question can steer (text.ts). */
-const TRAILING_PUNCTUATION: ReadonlySet<string> = new Set('.,;:!?');
+/**
+ * What can follow a link without being part of it: sentence punctuation, and
+ * Markdown emphasis (`*`, `_`) round a bare link. Stripped by a walk, not a
+ * pattern, since the answer is text a question can steer (text.ts). Only the end
+ * is stripped, so an underscore inside a link is kept.
+ */
+const TRAILING_PUNCTUATION: ReadonlySet<string> = new Set('.,;:!?*_');
 
 /**
  * What a link names, however it is written: its origin, its path, its `item`
