@@ -150,7 +150,7 @@ export function describePlan(plan: BuildPlan): string {
     `Index: ${INDEX_NAME}, ${EMBEDDING_DIMENSIONS} dimensions, ${INDEX_METRIC}; embedding model ${EMBEDDING_MODEL}`,
     '',
     'Requests a run sends to Cloudflare, in order:',
-    `  1 GET the index's configuration`,
+    `  1 GET the list of indexes, for this index's configuration`,
     `  ${fresh.embed} POST to Workers AI, embedding up to ${EMBED_BATCH} documents each (nothing is written if one fails)`,
     `  1 POST to create the index, only when it does not exist and --create-index is given`,
     `  1 or more GET listing the index's vector ids (${LIST_PAGE} per request), only when the index already existed`,
@@ -238,12 +238,11 @@ export function restApi(options: { accountId: string; apiToken: string; fetch?: 
   const base = `https://api.cloudflare.com/client/v4/accounts/${options.accountId}`;
   const indexUrl = `${base}/vectorize/v2/indexes/${INDEX_NAME}`;
 
-  async function call<T>(step: string, url: string, init: RequestInit = {}, allow404 = false): Promise<T | null> {
+  async function call<T>(step: string, url: string, init: RequestInit = {}): Promise<T | null> {
     const response = await send(url, {
       ...init,
       headers: { Authorization: `Bearer ${options.apiToken}`, ...(init.headers ?? {}) },
     });
-    if (allow404 && response.status === 404) return null;
     const body = (await response.json().catch(() => ({}))) as Envelope<T>;
     if (!response.ok || body.success !== true) {
       const errors = (body.errors ?? []).map((e) => `${e.code ?? '?'} ${e.message ?? ''}`.trim()).join('; ');
@@ -259,10 +258,18 @@ export function restApi(options: { accountId: string; apiToken: string; fetch?: 
   });
 
   return {
+    // Read from the list of indexes, whose response Cloudflare documents (a
+    // `result` array of { name, config }), rather than from reading the one
+    // index, whose answer when it is missing is not documented.
     async getIndex() {
-      const result = await call<{ config?: { dimensions?: number; metric?: string } }>('reading the index', indexUrl, {}, true);
-      if (!result) return null;
-      return { dimensions: Number(result.config?.dimensions), metric: String(result.config?.metric) };
+      const result = await call<{ name?: string; config?: { dimensions?: number; metric?: string } }[]>(
+        'reading the index list',
+        `${base}/vectorize/v2/indexes`,
+      );
+      if (!Array.isArray(result)) throw new Error('index build: the index list carried no result array');
+      const ours = result.find((index) => index.name === INDEX_NAME);
+      if (!ours) return null;
+      return { dimensions: Number(ours.config?.dimensions), metric: String(ours.config?.metric) };
     },
 
     async createIndex() {

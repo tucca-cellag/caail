@@ -205,7 +205,7 @@ describe('a run', () => {
  * A fake of the REST endpoints the build calls. It answers as Cloudflare's
  * envelope does, records every request, and can be told to fail one step.
  */
-function fakeRest(options: { indexExists: boolean; existing?: string[]; failUpsert?: boolean }) {
+function fakeRest(options: { indexExists: boolean; existing?: string[]; failUpsert?: boolean; listFails?: boolean }) {
   const ACCOUNT = 'acct-fixture';
   const TOKEN = 'token-fixture-do-not-leak';
   const calls: { method: string; path: string; search: string; contentType: string; authorization: string; body: string }[] = [];
@@ -223,9 +223,15 @@ function fakeRest(options: { indexExists: boolean; existing?: string[]; failUpse
     calls.push({ method, path, search: url.search, contentType: headers.get('Content-Type') ?? '', authorization: headers.get('Authorization') ?? '', body });
 
     const indexPath = `/vectorize/v2/indexes/${INDEX_NAME}`;
-    if (method === 'GET' && path === indexPath) {
-      return options.indexExists ? ok({ name: INDEX_NAME, config: { dimensions: EMBEDDING_DIMENSIONS, metric: 'cosine' } }) : fail(404, 3000, 'index not found');
+    // The documented list of indexes, which also holds one the build must not mistake for its own.
+    if (method === 'GET' && path === '/vectorize/v2/indexes') {
+      if (options.listFails) return fail(500, 1000, 'list unavailable');
+      const ours = { name: INDEX_NAME, config: { dimensions: EMBEDDING_DIMENSIONS, metric: 'cosine' } };
+      return ok([{ name: 'another-index', config: { dimensions: 384, metric: 'euclidean' } }, ...(options.indexExists ? [ours] : [])]);
     }
+    // The single-index read, whose answer for a missing index is undocumented:
+    // the build must not depend on it, so it always answers 404 here.
+    if (method === 'GET' && path === indexPath) return fail(404, 3000, 'index not found');
     if (method === 'POST' && path === '/vectorize/v2/indexes') return ok({ name: INDEX_NAME });
     if (method === 'POST' && path === `/ai/run/${EMBEDDING_MODEL}`) {
       const { text } = JSON.parse(body) as { text: string[] };
@@ -281,6 +287,30 @@ describe('the requests a run sends', () => {
       expect(line.values).toHaveLength(EMBEDDING_DIMENSIONS);
       expect(Object.keys(line).sort()).toEqual(['id', 'metadata', 'namespace', 'values']);
     }
+  });
+
+  // Cloudflare documents the index list's response, and not what reading one
+  // missing index returns, so existence is read from the list.
+  it('reads whether the index exists from the documented index list', async () => {
+    const rest = fakeRest({ indexExists: true, existing: [CORPUS_RECORD_ID] });
+    await runBuild(plan, rest.api, { createIndex: true });
+
+    expect(rest.calls.some((call) => call.method === 'GET' && call.path === '/vectorize/v2/indexes')).toBe(true);
+    expect(rest.calls.some((call) => call.method === 'POST' && call.path === '/vectorize/v2/indexes'), 'an existing index was created again').toBe(false);
+  });
+
+  it('creates the index when the list does not hold it', async () => {
+    const rest = fakeRest({ indexExists: false });
+    await runBuild(plan, rest.api, { createIndex: true });
+
+    expect(rest.calls.filter((call) => call.method === 'POST' && call.path === '/vectorize/v2/indexes')).toHaveLength(1);
+  });
+
+  it('fails closed when the index list cannot be read, writing nothing', async () => {
+    const rest = fakeRest({ indexExists: true, listFails: true });
+    await expect(runBuild(plan, rest.api, { createIndex: true })).rejects.toThrow(/reading the index list failed/);
+
+    expect(rest.calls.filter((call) => call.method === 'POST')).toEqual([]);
   });
 
   it('creates the index with the dimensions and metric the Worker queries it with', async () => {
