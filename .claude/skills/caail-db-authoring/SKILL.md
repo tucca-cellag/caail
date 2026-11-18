@@ -5,6 +5,12 @@ description: Use when adding, editing, or removing a paper, software tool, datab
 
 # Authoring CAAIL's structured catalog via the SQLite DB
 
+> **New items are paused until CAAIL v2.** Do not add a paper, tool, database, dataset row
+> or curated dataset entry, by `db:add` or by adding a row to the NDJSON, and do not add a
+> study to a Data on request list either. While the pause holds, `db:add` refuses every
+> descriptor and writes nothing. Edits to existing items (descriptions, licences, DOIs,
+> corrections) still work through the full procedure below, and so does `db:remove`.
+
 ## Overview
 
 CAAIL's **structured catalog** — the `Papers.md` matrix + references, the `Software.md`
@@ -135,10 +141,12 @@ id; that's the point). Paper ids reuse the numeric public anchor and are **never
 ## Quick path — adding or removing one item
 
 For a straight **add** or **remove**, use the one-command helpers (they assign the frozen
-id, insert/delete correctly, run the guards, and regenerate NDJSON + Markdown):
+id, insert/delete correctly, run the guards, and regenerate NDJSON + Markdown). While new
+items are paused (the note at the top), `db:add` refuses every descriptor; `db:remove`
+works as described:
 
 ```
-pnpm --dir site db:add <descriptor.json>   # add a paper / tool / database / dataset row
+pnpm --dir site db:add <descriptor.json>   # add a paper / tool / database / dataset row (refuses while new items are paused)
 pnpm --dir site db:remove <id>             # e.g. sw:oldtool, paper:123 (paper ids retired)
 ```
 
@@ -215,7 +223,7 @@ re-tagging, corrections), use the full procedure below.
 ## CLI reference
 
 ```
-pnpm --dir site db:add <file>  # add one item from a JSON descriptor (mutate -> check -> emit)
+pnpm --dir site db:add <file>  # add one item from a JSON descriptor (mutate -> check -> emit); refuses while new items are paused
 pnpm --dir site db:remove <id> # remove one item by frozen id (paper ids retired)
 pnpm --dir site db:bootstrap   # one-time / re-import: canonical Markdown -> DB -> NDJSON
 pnpm --dir site db:build       # NDJSON -> caail.db (materialize for editing/querying)

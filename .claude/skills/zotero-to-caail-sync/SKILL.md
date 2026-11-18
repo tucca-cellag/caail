@@ -5,6 +5,12 @@ description: Use when new papers, datasets, tools, or resources have been added 
 
 # Syncing the caail Zotero library into CAAIL
 
+> **New items are paused until CAAIL v2, so this sync adds nothing while the pause holds.**
+> Steps 1 to 4 still run if you need the triage, but step 5 adds no entry to any target
+> file, the hand-written pages such as `OtherResources.md` and `Funding.md` included, and
+> `db:add` refuses every descriptor. A correction to an item already in the catalog still
+> goes through the edit flow in `caail-db-authoring`.
+
 ## Overview
 
 The caail Zotero group library (ID `6549203`) drifts ahead of this repo:
