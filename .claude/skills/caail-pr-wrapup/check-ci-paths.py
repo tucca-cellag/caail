@@ -12,7 +12,8 @@ This is the check that comment could not be.
 Hand-listing the workflows here would reproduce, one level up, the exact defect
 this script exists to catch.
 
-Five assertions, each guarding a failure this repo has actually had:
+Six assertions, each guarding a failure this repo has actually had. The first
+five are about the path filters:
 
 1. **Every pattern is a form `path_matches` can evaluate.** A set comparison
    alone would accept `**.md` or `Datasets/*.md` while `path_matches` falls
@@ -38,15 +39,20 @@ Five assertions, each guarding a failure this repo has actually had:
    adding a canonical directory means adding it there, or the guard will confirm
    an incomplete set is complete.
 
-One more assertion rides along because this script already reads `ship-pr.sh`
-and already runs in `guards.yml`, not because it is about paths:
+The sixth is not about paths. It rides along because this script already reads
+`ship-pr.sh` and already runs in `guards.yml`:
 
-6. **Every `gh` watch in `ship-pr.sh` waits at least `WATCH_FLOOR_SECONDS`**,
-   from its one `WATCH_INTERVAL_SECONDS` constant. Each refresh of a watch is an
-   API call against the account's shared core limit, and the script's watches
-   are invisible to the hook that holds a typed watch to the same floor, since
-   they run inside the script. Both once polled at 10 and 15 seconds
-   (tucca-cellag/caail-planning#855).
+6. **Every `gh` watch the skill runs, or tells a session to type, waits at least
+   `WATCH_FLOOR_SECONDS`.** In `ship-pr.sh`, `WATCH_INTERVAL_SECONDS` is assigned
+   once, at or above the floor, and each watch takes its interval from it and
+   from nowhere else. In the skill's Markdown, every interval a watch states is
+   a number at or above the floor, and a watch written as a command to type
+   states one. Each refresh of a watch is an API call against the account's
+   shared core limit, and a watch run inside the script is invisible to any hook
+   that checks the commands a session types. Both of the script's watches once
+   polled at 10 and 15 seconds (tucca-cellag/caail-planning#855). Built-in
+   fixtures check on every run that it still rejects each way past it that a
+   review has found, and still accepts the forms it should.
 
 The ship-pr.sh comparison is deliberately a set comparison of pattern strings
 rather than a glob evaluation: it asks the question that keeps going wrong
@@ -81,6 +87,25 @@ CONTENT_PATHS = ["site/**", "*.md", "ResearchAreas/**", "Methods/**", "Datasets/
 # The least a watch may wait between refreshes (assertion 6).
 WATCH_FLOOR_SECONDS = 60
 WATCH_CONSTANT = "WATCH_INTERVAL_SECONDS"
+# The one interval a watch in ship-pr.sh may give, as the word after the flag.
+WATCH_FROM_CONSTANT = f'"${WATCH_CONSTANT}"'
+# The skill's own Markdown, which tells a session which watches to type.
+SKILL_DIR = Path(__file__).resolve().parent
+SKILL_MARKDOWN = [
+    SKILL_DIR / "SKILL.md",
+    *sorted((SKILL_DIR / "reference").glob("*.md")),
+]
+
+# A gh watch: `gh run watch`, or `gh pr checks` with `--watch`. Global flags may
+# sit between `gh` and the subcommand, hence the `.*`.
+WATCH_CMD = re.compile(r"\bgh\b.*(?:\brun\s+watch\b|\bpr\s+checks\b.*--watch\b)")
+# Every form gh accepts an interval in: `--interval 60`, `--interval=60`,
+# `-i 60`, `-i=60`, `-i60`. gh takes the last one given, so each is counted.
+INTERVAL_FLAG = re.compile(r"(?<!\S)(?:--interval(?:=|\s+)|-i(?:=|\s*))(\S+)")
+# An assignment to the constant in any form bash takes one: plain, `local`,
+# `export`, `readonly`, `+=`, or the `${VAR=...}` default. A `$` in front is a
+# read of it, not an assignment.
+WATCH_ASSIGN = re.compile(rf"(?<![\w$]){WATCH_CONSTANT}(\+?=)(\S*)")
 
 # The three pattern forms ship-pr.sh's `path_matches` implements, and no others.
 SUPPORTED = (
@@ -181,36 +206,229 @@ def contains(label: str, superset: list[str], required: list[str], detail: str) 
     return False
 
 
+def code_lines(src: str) -> list[str]:
+    """A shell source's commands, one per line as bash reads them.
+
+    A trailing backslash continues a command onto the next line, so a watch
+    split across lines is read whole. Comments are dropped: a whole-line one
+    ends at its newline whatever it ends in, and a trailing one starts at a `#`
+    that opens a word (so `$#` and `${#x}` are kept).
+    """
+    out: list[str] = []
+    buf = ""
+    for line in src.splitlines():
+        if not buf and line.lstrip().startswith("#"):
+            continue
+        code = re.split(r"(?<!\S)#", line, maxsplit=1)[0]
+        if code.endswith("\\"):
+            buf += code[:-1] + " "
+            continue
+        out.append(buf + code)
+        buf = ""
+    if buf:
+        out.append(buf)
+    return out
+
+
 def watch_problems(src: str) -> list[str]:
     """What breaks assertion 6 in a ship-pr.sh source; empty when nothing does.
 
-    A watch is any uncommented line running `gh ... --watch` or `gh run watch`.
-    Each must take its interval from the constant, written exactly as
-    `--interval "$WATCH_INTERVAL_SECONDS"`, so a literal in either form
-    (`--interval 10`, `-i 10`) fails rather than slipping past a number check.
+    The constant must be assigned exactly once, as a whole number of seconds at
+    or above the floor: a second assignment, later or `local`, would override
+    the value checked here. Each watch must give exactly one interval, and that
+    interval must be `"$WATCH_INTERVAL_SECONDS"`, so a literal in any form, or a
+    second flag after the constant (gh takes the last), fails rather than
+    slipping past a number check.
     """
     problems = []
-    m = re.search(rf"^{WATCH_CONSTANT}=(\d+)\b", src, re.MULTILINE)
-    if not m:
+    code = code_lines(src)
+    assigns = [m for line in code for m in WATCH_ASSIGN.finditer(line)]
+    if not assigns:
         problems.append(f"no {WATCH_CONSTANT}=<seconds> in ship-pr.sh")
-    elif int(m.group(1)) < WATCH_FLOOR_SECONDS:
+    elif len(assigns) > 1:
+        found = ", ".join(m.group(0) for m in assigns)
         problems.append(
-            f"{WATCH_CONSTANT} is {m.group(1)}, under the {WATCH_FLOOR_SECONDS} s floor"
+            f"{WATCH_CONSTANT} is assigned {len(assigns)} times ({found}); "
+            "any but the first would override the value checked here"
         )
-    watches = [
-        line.strip()
-        for line in src.splitlines()
-        if not line.lstrip().startswith("#")
-        and re.search(r"\bgh\b.*(--watch\b|\brun watch\b)", line)
-    ]
+    else:
+        op, value = assigns[0].group(1), assigns[0].group(2).strip("'\"")
+        if op != "=" or not value.isdigit():
+            problems.append(
+                f"{WATCH_CONSTANT} is set as {assigns[0].group(0)}, "
+                "not a whole number of seconds"
+            )
+        elif int(value) < WATCH_FLOOR_SECONDS:
+            problems.append(
+                f"{WATCH_CONSTANT} is {value}, under the {WATCH_FLOOR_SECONDS} s floor"
+            )
+    watches = [line.strip() for line in code if WATCH_CMD.search(line)]
     if not watches:
         problems.append(
             "no gh watch found in ship-pr.sh, so this assertion read nothing"
         )
     for line in watches:
-        if f'--interval "${WATCH_CONSTANT}"' not in line:
-            problems.append(f"a watch not on {WATCH_CONSTANT}: {line}")
+        given = INTERVAL_FLAG.findall(line)
+        if given != [WATCH_FROM_CONSTANT]:
+            problems.append(
+                f"a watch must give one interval, {WATCH_FROM_CONSTANT}, and this one "
+                f"gives {', '.join(given) or 'none'}: {line}"
+            )
     return problems
+
+
+def markdown_watch_problems(name: str, text: str) -> list[str]:
+    """What breaks assertion 6 in the skill's Markdown; empty when nothing does.
+
+    A watch is read from inline code and from lines of fenced code. Every
+    interval it states must be a whole number at or above the floor. A watch
+    whose subcommand is followed by an argument (`gh run watch <id> ...`) is a
+    command a session is told to type, so it must state one; a bare mention
+    such as `gh run watch` or `gh pr checks --watch` need not.
+    """
+    problems = []
+    in_fence = False
+    for n, line in enumerate(text.splitlines(), 1):
+        if line.lstrip().startswith("```"):
+            in_fence = not in_fence
+            continue
+        for span in [line.strip()] if in_fence else re.findall(r"`([^`]+)`", line):
+            m = re.match(r"gh\s+(?:run\s+watch|pr\s+checks)\b(.*)", span.strip())
+            if not m or not WATCH_CMD.search(span):
+                continue
+            rest = m.group(1).split()
+            given = INTERVAL_FLAG.findall(span)
+            floor = WATCH_FLOOR_SECONDS
+            low = [v for v in given if not (v.isdigit() and int(v) >= floor)]
+            if low:
+                problems.append(
+                    f"{name}:{n}: a watch states {', '.join(low)}, not a whole number "
+                    f"at or above {WATCH_FLOOR_SECONDS}: {span}"
+                )
+            elif not given and rest and not rest[0].startswith("-"):
+                problems.append(
+                    f"{name}:{n}: a watch to type states no interval: {span}"
+                )
+    return problems
+
+
+# Assertion 6 run on sources built here rather than on the repo's own files, so
+# it is tested in both directions: a check that matched nothing, or matched too
+# loosely, would still pass on today's ship-pr.sh. Each rejected source differs
+# from the accepted one by the one change its label names, and the problem it
+# must report is named by a phrase from the message.
+GOOD_SH = """\
+WATCH_INTERVAL_SECONDS=60
+cmd_watch_checks() {
+  gh pr checks "$pr" --watch --interval "$WATCH_INTERVAL_SECONDS"
+}
+cmd_watch_deploy() {
+  # gh run watch "$id" -i 3   (a commented-out watch is not a watch)
+  gh run watch "$id" --interval "$WATCH_INTERVAL_SECONDS" --exit-status  # 3 s default
+}
+"""
+CHECKS = 'gh pr checks "$pr" --watch --interval "$WATCH_INTERVAL_SECONDS"'
+DEPLOY = 'gh run watch "$id" --interval "$WATCH_INTERVAL_SECONDS" --exit-status'
+REJECTED_SH = [
+    (
+        "the constant missing",
+        GOOD_SH.replace("WATCH_INTERVAL_SECONDS=60\n", ""),
+        "no WATCH",
+    ),
+    ("the constant under the floor", GOOD_SH.replace("=60", "=59"), "under the 60 s"),
+    ("the constant not a number", GOOD_SH.replace("=60", "=$X"), "not a whole"),
+    (
+        "a literal interval",
+        GOOD_SH.replace(CHECKS, 'gh pr checks "$pr" --watch --interval 10'),
+        "gives 10",
+    ),
+    (
+        "a short-flag literal",
+        GOOD_SH.replace(DEPLOY, 'gh run watch "$id" -i 15 --exit-status'),
+        "gives 15",
+    ),
+    (
+        "an = literal",
+        GOOD_SH.replace(DEPLOY, 'gh run watch "$id" --interval=5'),
+        "gives 5",
+    ),
+    (
+        "no interval at all",
+        GOOD_SH.replace(DEPLOY, 'gh run watch "$id" --exit-status'),
+        "gives none",
+    ),
+    (
+        "a second flag after the constant",
+        GOOD_SH.replace(DEPLOY, DEPLOY + " -i 5"),
+        '", 5',
+    ),
+    (
+        "a watch split across lines",
+        GOOD_SH.replace(CHECKS, 'gh pr checks "$pr" \\\n    --watch -i 10'),
+        "gives 10",
+    ),
+    (
+        "a later reassignment",
+        GOOD_SH + "WATCH_INTERVAL_SECONDS=10\n",
+        "assigned 2 times",
+    ),
+    (
+        "a local override",
+        GOOD_SH.replace(
+            "  gh run watch", "  local WATCH_INTERVAL_SECONDS=5\n  gh run watch", 1
+        ),
+        "assigned 2 times",
+    ),
+    ("no watch at all", "WATCH_INTERVAL_SECONDS=60\n", "no gh watch"),
+]
+GOOD_MD = """\
+Watch it with `gh run watch <id> --interval 60 --exit-status`. A bare
+`gh run watch` or `gh pr checks --watch` is a mention, not a command.
+
+```bash
+gh pr checks <pr> --watch --interval 60
+```
+"""
+REJECTED_MD = [
+    (
+        "a typed watch with no interval",
+        GOOD_MD.replace("<id> --interval 60", "<id>"),
+        "states no interval",
+    ),
+    (
+        "a typed watch under the floor",
+        GOOD_MD.replace("<id> --interval 60", "<id> --interval 15"),
+        "states 15",
+    ),
+    (
+        "a fenced watch under the floor",
+        GOOD_MD.replace("--watch --interval 60", "--watch -i 10"),
+        "states 10",
+    ),
+]
+
+
+def watch_self_test() -> list[str]:
+    """Every way assertion 6 fails to accept or reject its fixtures."""
+    failures = []
+    for label, check, good, rejected in (
+        ("ship-pr.sh", watch_problems, GOOD_SH, REJECTED_SH),
+        (
+            "Markdown",
+            lambda s: markdown_watch_problems("fixture", s),
+            GOOD_MD,
+            REJECTED_MD,
+        ),
+    ):
+        if got := check(good):
+            failures.append(f"rejects the accepted {label} fixture: {got}")
+        for case, src, phrase in rejected:
+            got = check(src)
+            if not any(phrase in p for p in got):
+                failures.append(
+                    f"{label}, {case}: expected a problem saying {phrase!r}, got {got}"
+                )
+    return failures
 
 
 def main() -> int:
@@ -299,19 +517,36 @@ def main() -> int:
     ok &= contains("docs.yml covers all canonical content", deploy, CONTENT_PATHS,
                    "canonical content not covered by docs.yml")
 
-    print(
-        f"\n=== every gh watch in ship-pr.sh waits {WATCH_FLOOR_SECONDS} s or more ==="
-    )
-    problems = watch_problems(SHIP_PR.read_text())
-    if problems:
-        print("  [FAIL] ship-pr.sh's watches")
-        for problem in problems:
-            print(f"           {problem}")
+    print("\n=== the watch check accepts and rejects its own fixtures ===")
+    failures = watch_self_test()
+    if failures:
         ok = False
+        print("  [FAIL] the check below cannot be trusted:")
+        for failure in failures:
+            print(f"           {failure}")
     else:
         print(
-            f"  [PASS] every watch reads {WATCH_CONSTANT}, "
-            f"which is at least {WATCH_FLOOR_SECONDS}"
+            f"  [PASS] {len(REJECTED_SH) + len(REJECTED_MD)} rejected, "
+            "2 accepted, as expected"
+        )
+
+    print(
+        "\n=== every gh watch the skill runs or names waits "
+        f"{WATCH_FLOOR_SECONDS} s or more ==="
+    )
+    problems = watch_problems(SHIP_PR.read_text())
+    for md in SKILL_MARKDOWN:
+        problems += markdown_watch_problems(md.name, md.read_text())
+    if problems:
+        ok = False
+        print("  [FAIL] the skill's watches")
+        for problem in problems:
+            print(f"           {problem}")
+    else:
+        print(
+            f"  [PASS] every watch in ship-pr.sh reads {WATCH_CONSTANT}, which is "
+            f"at least {WATCH_FLOOR_SECONDS}, and every one in {len(SKILL_MARKDOWN)} "
+            "Markdown files states at least that"
         )
 
     print("\nALL PASS" if ok else "\nFAILURES — see above")
