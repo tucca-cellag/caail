@@ -13,7 +13,7 @@
  */
 
 import { readFileSync } from 'node:fs';
-import { importNdjson, NDJSON_DIR, runsAsMain } from './lib.js';
+import { importNdjson, runsAsMain } from './lib.js';
 import { addItem, type ItemAdd } from './mutate.js';
 import { checkAndRegenerate, type RegeneratePaths } from './regenerate.js';
 
@@ -50,7 +50,7 @@ export function assertAddsOpen(): void {
 export function dbAdd(spec: ItemAdd, paths: RegeneratePaths = {}): { id: string; written: string[] } {
   assertAddsOpen();
 
-  const db = importNdjson(paths.ndjsonDir ?? NDJSON_DIR);
+  const db = importNdjson(paths.ndjsonDir);
   const id = addItem(db, spec);
   const written = checkAndRegenerate(db, `db:add: integrity check failed after adding ${id}`, paths);
   return { id, written };

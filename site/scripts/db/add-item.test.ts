@@ -1,5 +1,5 @@
 /**
- * add-item.test.ts — db:add while new items are paused until CAAIL v2, and the paths that
+ * add-item.test.ts: db:add while new items are paused until CAAIL v2, and the paths that
  * stay open around it.
  *
  * Every case that writes runs against fixture copies of the committed NDJSON and of the
@@ -10,7 +10,7 @@
  * the pause are held to the constant that enforces it.
  */
 
-import { afterAll, describe, it, expect } from 'vitest';
+import { afterAll, beforeAll, describe, it, expect } from 'vitest';
 import { spawnSync } from 'node:child_process';
 import { cpSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -113,13 +113,19 @@ function invalidDatasetRow(): ItemAdd {
   return { type: 'dataset', page, cells: header.map((_, i) => (i === 0 ? 'Paused test study GSE999998' : `c${i}`)) };
 }
 
-describe('db:add refuses a new item while new items are paused', () => {
+describe.runIf(NEW_ITEMS_PAUSED)('db:add refuses a new item while new items are paused', () => {
+  // One fixture for every refusal: a refusal writes nothing, so the cases cannot disturb
+  // each other, and the first one that did write would fail on the shared snapshot.
+  let paths: { ndjsonDir: string; root: string };
+  let before: Map<string, string>;
+  beforeAll(() => {
+    paths = fixture();
+    before = snapshot(paths.ndjsonDir, paths.root);
+  });
+
   it.each([...validDescriptors(), ['dataset row with invalid cells', invalidDatasetRow()] as [string, ItemAdd]])(
     'refuses a new %s and writes nothing',
     (_type, spec) => {
-      const paths = fixture();
-      const before = snapshot(paths.ndjsonDir, paths.root);
-
       let err: unknown;
       try { dbAdd(spec, paths); } catch (e) { err = e; }
 
@@ -144,7 +150,19 @@ describe('db:add refuses a new item while new items are paused', () => {
     expect(run.status).toBe(1);
     expect(run.stderr.trim(), 'db:add read the descriptor before refusing').toBe(NEW_ITEMS_PAUSED_MESSAGE);
   });
+});
 
+describe.runIf(!NEW_ITEMS_PAUSED)('db:add adds a new item once the pause is lifted', () => {
+  it.each(validDescriptors())('adds a new %s and regenerates', (_type, spec) => {
+    const paths = fixture();
+    const { id, written } = dbAdd(spec, paths);
+
+    expect(written.length).toBeGreaterThan(0);
+    expect(importNdjson(paths.ndjsonDir).prepare('SELECT 1 FROM items WHERE id = ?').get(id)).toBeDefined();
+  });
+});
+
+describe('the db CLIs run when executed, however they are named', () => {
   it('runs the CLI when the checkout is reached through a symlink, rather than exiting 0', () => {
     const link = join(mkdtempSync(join(tmpdir(), 'caail-db-link-')), 'db');
     scratch.push(dirname(link));
@@ -154,6 +172,16 @@ describe('db:add refuses a new item while new items are paused', () => {
       env: { ...process.env, NODE_OPTIONS: '--experimental-sqlite --no-warnings' },
     });
     expect(run.status, 'db:remove run through a symlink exited without running').toBe(1);
+    expect(run.stderr).toMatch(/no item 'sw:zz-no-such-item'/);
+  });
+
+  it('runs the CLI when it is named without its extension, rather than exiting 0', () => {
+    const bare = fileURLToPath(new URL('./remove-item', import.meta.url));
+    const run = spawnSync(join(SITE_ROOT, 'node_modules', '.bin', 'tsx'), [bare, 'sw:zz-no-such-item'], {
+      encoding: 'utf-8',
+      env: { ...process.env, NODE_OPTIONS: '--experimental-sqlite --no-warnings' },
+    });
+    expect(run.status, 'db:remove named without its extension exited without running').toBe(1);
     expect(run.stderr).toMatch(/no item 'sw:zz-no-such-item'/);
   });
 });
@@ -218,15 +246,15 @@ describe('the hand-written statements of the pause agree with NEW_ITEMS_PAUSED',
     '.claude/skills/zotero-to-caail-sync/SKILL.md',
     'CLAUDE.md',
   ])('%s', (file) => {
-    const text = readFileSync(join(REPO_ROOT, file), 'utf-8');
+    // Whitespace is flattened first, in both directions, since a hard-wrapped statement can
+    // break anywhere in a phrase.
+    const flat = readFileSync(join(REPO_ROOT, file), 'utf-8').replace(/\s+/g, ' ');
     if (NEW_ITEMS_PAUSED) {
-      expect(text.includes('paused until CAAIL v2'), `${file} does not say new items are paused until CAAIL v2, while db:add refuses them`).toBe(true);
+      expect(flat.includes('paused until CAAIL v2'), `${file} does not say new items are paused until CAAIL v2, while db:add refuses them`).toBe(true);
     } else {
       // Every statement of the pause, in whatever words, says items "are paused" or that
       // something waits for v2, so the lifted direction looks for those rather than for the
-      // one phrase the top note uses. Whitespace is flattened first, since a hard-wrapped
-      // statement can break between "items" and "are paused".
-      const flat = text.replace(/\s+/g, ' ');
+      // one phrase the top note uses.
       const left = [...flat.matchAll(/.{0,40}(?:items are paused|until CAAIL v2|wait for v2).{0,40}/gi)].map((m) => m[0]);
       expect(left, `${file} still states the pause after db:add stopped refusing`).toEqual([]);
     }

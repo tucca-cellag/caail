@@ -13,25 +13,37 @@
 
 import { DatabaseSync } from 'node:sqlite';
 import { readFileSync, writeFileSync, mkdirSync, existsSync, rmSync, realpathSync } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { join, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url)); // site/scripts/db
 
 /**
  * Whether the module at `moduleUrl` is the script this process was started on, so a CLI
- * module runs its `main()` only when executed and not when a test imports it. Both sides
- * are compared as real paths: the entry path in `process.argv[1]` keeps a symlink that the
- * module URL has resolved, and a plain comparison would then skip `main()` and exit 0
- * having done nothing.
+ * module runs its `main()` only when executed and not when a test imports it. A wrong
+ * "no" is the failure to avoid, since the CLI then exits 0 having done nothing, so the two
+ * paths are compared as real paths (the entry path keeps a symlink the module URL has
+ * resolved) and without their extensions (a runner may be handed `scripts/db/remove-item`
+ * and resolve the `.ts` itself).
  */
 export function runsAsMain(moduleUrl: string): boolean {
   const entry = process.argv[1];
   if (!entry) return false;
+  const stem = (p: string) => p.replace(/\.[cm]?[jt]sx?$/, '');
+  return stem(realEntry(entry)) === stem(realpathSync(fileURLToPath(moduleUrl)));
+}
+
+/**
+ * The entry's real path. An entry named without its extension does not exist as written,
+ * so for that case only (ENOENT) the directory is resolved and the name kept. Any other
+ * failure throws, rather than reading as "not main".
+ */
+function realEntry(entry: string): string {
   try {
-    return realpathSync(entry) === realpathSync(fileURLToPath(moduleUrl));
-  } catch {
-    return false;
+    return realpathSync(entry);
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err;
+    return join(realpathSync(dirname(entry)), basename(entry));
   }
 }
 /** Repo root (site/scripts/db -> site/scripts -> site -> repo). */

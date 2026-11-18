@@ -8,7 +8,7 @@
  *   e.g.  pnpm --dir site db:remove sw:oldtool
  */
 
-import { importNdjson, NDJSON_DIR, runsAsMain } from './lib.js';
+import { importNdjson, runsAsMain } from './lib.js';
 import { removeItem } from './mutate.js';
 import { checkAndRegenerate, type RegeneratePaths } from './regenerate.js';
 
@@ -17,7 +17,7 @@ import { checkAndRegenerate, type RegeneratePaths } from './regenerate.js';
  * nothing, when the id is unknown or a guard fails.
  */
 export function dbRemove(id: string, paths: RegeneratePaths = {}): string[] {
-  const db = importNdjson(paths.ndjsonDir ?? NDJSON_DIR);
+  const db = importNdjson(paths.ndjsonDir);
   removeItem(db, id);
   return checkAndRegenerate(db, `db:remove: integrity check failed after removing ${id}`, paths);
 }
