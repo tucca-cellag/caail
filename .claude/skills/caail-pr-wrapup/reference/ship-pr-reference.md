@@ -24,7 +24,7 @@ because from anywhere else local `HEAD` says nothing about this PR. Merging PR #
 B is therefore unguarded against an unpushed commit on A. Nothing checks that the rounds happened at all.
 
 **Neither guard has automated coverage.** `check-ci-paths.py` is what CI runs when this script changes,
-and it only text-scrapes the `*_PATHS` variables and their `matches_*` wrappers; it never executes
+and it only text-scrapes the `*_PATHS` variables, their `matches_*` wrappers and the watch interval; it never executes
 `assert_shippable` or the divergence block. So a refactor could silently turn either into a no-op and
 every check would stay green, on the one script whose failure mode is shipping a PR that is missing a fix.
 Until there is a harness, treat both as things to re-demonstrate by hand (per the `tucca-cellag/caail-planning#189` rule in `review-phase.md`)

@@ -32,12 +32,17 @@ DEPLOY_WORKFLOW="docs.yml"                                              # the Pa
 # Seconds between refreshes of every `gh` watch below. Each refresh is an API
 # call against the core limit every session and subagent on the account shares,
 # and a watch run from inside this script is invisible to any hook that checks
-# the commands a session types. check-ci-paths.py fails CI if this falls under
-# its WATCH_FLOOR_SECONDS, is assigned a second time, or a watch stops reading it.
-WATCH_INTERVAL_SECONDS=60
+# the commands a session types. Read-only, so a later assignment in any form
+# stops the script instead of changing it. check-ci-paths.py fails CI if this
+# falls under its WATCH_FLOOR_SECONDS or a watch does not go through gh_watch.
+readonly WATCH_INTERVAL_SECONDS=60
 
 die() { printf 'ship-pr: %s\n' "$*" >&2; exit 1; }
 note() { printf '  %s\n' "$*"; }
+
+# Every gh watch goes through here, so the interval is set in one place: it is
+# added last, and no call site gives its own (check-ci-paths.py holds both).
+gh_watch() { gh "$@" --interval "$WATCH_INTERVAL_SECONDS"; }
 
 current_branch() { git rev-parse --abbrev-ref HEAD; }
 
@@ -255,7 +260,7 @@ cmd_watch_checks() {
     return 0
   fi
   # Checks exist → block on them; non-zero propagates a failure to the caller.
-  gh pr checks "$pr" --watch --interval "$WATCH_INTERVAL_SECONDS"
+  gh_watch pr checks "$pr" --watch
 }
 
 cmd_merge() {
@@ -358,7 +363,7 @@ cmd_watch_deploy() {
   fi
   note "watching deploy run $id …"
   # --exit-status makes a failed run (e.g. the Lighthouse gate) propagate non-zero.
-  gh run watch "$id" --interval "$WATCH_INTERVAL_SECONDS" --exit-status
+  gh_watch run watch "$id" --exit-status
 }
 
 cmd_verify_live() {
