@@ -17,6 +17,7 @@
 #   ship-pr.sh watch-checks <pr>         # blocks on PR checks; 0 if none/clean, non-zero if a check fails
 #   ship-pr.sh merge <pr>               # merge + delete remote branch, with the gotcha fallback; prints SHA
 #   ship-pr.sh watch-deploy <merge-sha> # finds + watches the docs.yml run for that SHA; 0 if no deploy fires
+#   ship-pr.sh watch-run <run-id>       # watches one Actions run by id; non-zero if the run fails
 #   ship-pr.sh verify-live <route>...   # curls https://caail.tufts.edu/<route>/; non-zero if any != 200
 #
 # Everything is read-only except `push`, `open-pr`, and `merge`.
@@ -29,20 +30,17 @@ DEFAULT_BRANCH="$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name
 PAGES_BASE="https://caail.tufts.edu"                                     # CAAIL site root
 DEPLOY_WORKFLOW="docs.yml"                                              # the Pages deploy workflow
 
-# Seconds between refreshes of every `gh` watch below. Each refresh is an API
-# call against the core limit every session and subagent on the account shares,
-# and a watch run from inside this script is invisible to any hook that checks
-# the commands a session types. Read-only, so a later assignment in any form
-# stops the script instead of changing it. check-ci-paths.py fails CI if this
-# falls under its WATCH_FLOOR_SECONDS or a watch does not go through gh_watch.
-readonly WATCH_INTERVAL_SECONDS=60
-
 die() { printf 'ship-pr: %s\n' "$*" >&2; exit 1; }
 note() { printf '  %s\n' "$*"; }
 
-# Every gh watch goes through here, so the interval is set in one place: it is
-# added last, and no call site gives its own (check-ci-paths.py holds both).
-gh_watch() { gh "$@" --interval "$WATCH_INTERVAL_SECONDS"; }
+# Every gh watch goes through here, so its interval, in seconds, is set once.
+# Each refresh is an API call against the core limit every session and subagent
+# on the account shares, and a watch run inside this script is invisible to any
+# hook that checks the commands a session types. Read-only, so a later
+# definition cannot replace it. check-ci-paths.py fails CI if the interval falls
+# under its WATCH_FLOOR_SECONDS, or a watch does not go through here.
+gh_watch() { gh "$@" --interval 60; }
+readonly -f gh_watch
 
 current_branch() { git rev-parse --abbrev-ref HEAD; }
 
@@ -362,6 +360,12 @@ cmd_watch_deploy() {
     return 0
   fi
   note "watching deploy run $id …"
+  cmd_watch_run "$id"
+}
+
+cmd_watch_run() {
+  local id="${1:-}"
+  [ -n "$id" ] || die "usage: watch-run <run-id>"
   # --exit-status makes a failed run (e.g. the Lighthouse gate) propagate non-zero.
   gh_watch run watch "$id" --exit-status
 }
@@ -388,6 +392,7 @@ case "$sub" in
   watch-checks)  cmd_watch_checks "$@" ;;
   merge)         cmd_merge "$@" ;;
   watch-deploy)  cmd_watch_deploy "$@" ;;
+  watch-run)     cmd_watch_run "$@" ;;
   verify-live)   cmd_verify_live "$@" ;;
   ""|-h|--help)
     sed -n '2,30p' "$0" | sed 's/^# \{0,1\}//' ;;

@@ -11,9 +11,10 @@ carrying its own list of workflows.
 checks that every pattern is a form `path_matches` can evaluate, that `pull_request` and `push` filters
 agree **on the three workflows that have both** (`docs.yml` is push-only and exempt), and that canonical
 content reaches both `test.yml` and `docs.yml`. One check rides along that is about watches rather
-than paths: it holds the skill's `gh` watches to a floor between refreshes, in `ship-pr.sh` and in this
-skill's Markdown alike, so a watch named on a reference page without an interval turns `guards.yml` red
-(the script's docstring says why). So the predictors can no longer drift unnoticed, which
+than paths: every `gh` watch in `ship-pr.sh` goes through its `gh_watch` wrapper, held to a floor between
+refreshes, and this skill's Markdown names no `gh` watch at all, pointing at `ship-pr.sh watch-run`
+instead. So a watch written into a reference page turns `guards.yml` red (the script's docstring says
+why). So the predictors can no longer drift unnoticed, which
 they did three times. **This prose table has no such guard** — if it disagrees with the YAML, the YAML
 wins and the table is the bug.
 

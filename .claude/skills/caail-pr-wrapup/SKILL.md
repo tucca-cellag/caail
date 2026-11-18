@@ -255,8 +255,9 @@ Deploy to Pages all passed, and *that* is a successful ship.
 **When the helper reports no run, look for one yourself before going on**:
 `gh run list --workflow docs.yml --commit <merge-sha>`. The helper stops looking after a short wait and
 exits 0 either way, so its "no run" has two meanings. A run in that list is the deploy: watch it with
-`gh run watch <id> --interval 60 --exit-status`. An empty list means the diff deployed nothing only when `preflight`,
-run on the branch as it merged, also predicted no deploy. Then there is no live site to verify in step 7,
+`bash .claude/skills/caail-pr-wrapup/ship-pr.sh watch-run <id>`, which watches at the helper's own
+interval. An empty list means the diff deployed nothing only when `preflight`, run on the branch as it
+merged, also predicted no deploy. Then there is no live site to verify in step 7,
 and step 9 says so in its comment. An empty list against a predicted deploy may be a run that has not
 registered yet: wait a minute or two and look once more. If it is still empty, stop and tell the
 maintainer, because the prediction and the list disagree and step 7's `200` would be the old site
