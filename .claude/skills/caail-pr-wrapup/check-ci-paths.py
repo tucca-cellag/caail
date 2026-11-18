@@ -48,7 +48,9 @@ The sixth is not about paths. It rides along because this script already reads
    literal at or above the floor, and which is `readonly -f`, so a later
    definition cannot replace it. No watch may run directly, and no call may
    give an interval of its own or pass `--`. The skill's Markdown names no
-   watch at all: one a session needs runs as `ship-pr.sh watch-run`. Each
+   watch at all: one a session needs runs as `ship-pr.sh watch-run`. This is
+   a check of the script's text, not of what it runs: a watch whose `gh` is
+   spelled through a variable or `eval` is outside it. Each
    refresh of a watch is an API call against the account's shared core limit,
    and a watch run inside the script is invisible to any hook that checks the
    commands a session types. Both of the script's watches once polled at 10
@@ -91,7 +93,7 @@ WATCH_FLOOR_SECONDS = 60
 # ship-pr.sh's one gh watch wrapper. Its interval is a literal, checked here.
 WATCH_WRAPPER = re.compile(r'gh_watch\(\) \{ gh "\$@" --interval (\d+); \}')
 WATCH_WRAPPER_FORM = 'gh_watch() { gh "$@" --interval <seconds>; }'
-WATCH_WRAPPER_READONLY = "readonly -f gh_watch"
+WATCH_WRAPPER_READONLY = re.compile(r"readonly\s+-f\b.*\bgh_watch\b")
 # The skill's own Markdown, which tells a session what to type.
 SKILL_DIR = Path(__file__).resolve().parent
 SKILL_MARKDOWN = [
@@ -243,7 +245,10 @@ def watch_problems(src: str) -> list[str]:
     and made `readonly -f` after that, so a later definition, however written,
     cannot replace it. No line may run a gh watch directly, and no call may
     give an interval of its own, whichever of two gh would take, or pass `--`,
-    which would turn the wrapper's interval into an argument.
+    which would turn the wrapper's interval into an argument. Those last two
+    hold intent, not the floor: gh is reported to keep the last interval it is
+    given and to refuse an extra argument, either of which would make them
+    redundant, and this check relies on neither.
     """
     problems = []
     lines = [line.strip() for line in logical_lines(src)]
@@ -260,16 +265,18 @@ def watch_problems(src: str) -> list[str]:
             f"gh_watch waits {wrapper.group(1)} s, "
             f"under the {WATCH_FLOOR_SECONDS} s floor"
         )
-    readonly = [i for i, line in enumerate(lines) if line == WATCH_WRAPPER_READONLY]
+    readonly = [i for i, line in enumerate(lines) if WATCH_WRAPPER_READONLY.match(line)]
     if len(readonly) != 1 or not defs or readonly[0] < defs[0]:
         problems.append(
-            f"{WATCH_WRAPPER_READONLY} must follow the wrapper's definition, "
+            "readonly -f gh_watch must follow the wrapper's definition, "
             "once, or a later definition could replace it"
         )
     calls = [
         line
         for line in lines
-        if WRAPPER_CALL.search(line) and not WRAPPER_DEF.search(line)
+        if WRAPPER_CALL.search(line)
+        and not WRAPPER_DEF.search(line)
+        and not WATCH_WRAPPER_READONLY.match(line)
     ]
     if not calls:
         problems.append(
@@ -297,25 +304,47 @@ def markdown_watch_problems(name: str, text: str) -> list[str]:
     The skill's Markdown names no gh watch, not even with an interval: a watch a
     session needs runs as `ship-pr.sh watch-run`, so its interval is the
     wrapper's. That leaves no interval to parse, which is where every earlier
-    version of this check let a watch through. Text is read a paragraph at a
-    time, its lines joined, so a code span wrapped across lines is still seen.
+    version of this check let a watch through. Only code is read, since code is
+    what a session types and prose may use the same words: each paragraph's
+    inline code spans, its lines joined first so a span wrapped across lines is
+    read whole, and each fenced block, its continued lines joined.
     """
     problems = []
+
+    def check(n: int, code: str) -> None:
+        if m := WATCH_CMD.search(code):
+            problems.append(
+                f"{name}:{n}: names a gh watch, where the skill should point "
+                f"at ship-pr.sh watch-run: {code[m.start() :]}"
+            )
+
+    def flush_paragraph() -> None:
+        for span in re.findall(r"`([^`]+)`", " ".join(para)):
+            check(start, span)
+        para.clear()
+
     para: list[str] = []
+    fence: list[str] = []
+    in_fence = False
     start = 0
     for n, line in enumerate([*text.splitlines(), ""], 1):
-        if line.strip():
+        if line.lstrip().startswith("```"):
+            if in_fence:
+                for code in logical_lines("\n".join(fence)):
+                    check(start, code)
+                fence.clear()
+            else:
+                flush_paragraph()
+                start = n
+            in_fence = not in_fence
+        elif in_fence:
+            fence.append(line)
+        elif line.strip():
             if not para:
                 start = n
             para.append(line.strip())
-            continue
-        joined = " ".join(para)
-        if m := WATCH_CMD.search(joined):
-            problems.append(
-                f"{name}:{start}: names a gh watch, where the skill should point "
-                f"at ship-pr.sh watch-run: {joined[m.start() :]}"
-            )
-        para = []
+        else:
+            flush_paragraph()
     return problems
 
 
@@ -325,10 +354,10 @@ def markdown_watch_problems(name: str, text: str) -> list[str]:
 # from the accepted one by the one change its label names, and the problem it
 # must report is named by a phrase from the message.
 WRAPPER = 'gh_watch() { gh "$@" --interval 60; }'
+READONLY = "readonly -f gh_watch  # a trailing comment is allowed\n"
 GOOD_SH = f"""\
 {WRAPPER}
-readonly -f gh_watch
-cmd_watch_checks() {{
+{READONLY}cmd_watch_checks() {{
   gh_watch pr checks "$pr" --watch
 }}
 cmd_watch_run() {{
@@ -338,7 +367,6 @@ cmd_watch_run() {{
 """
 CHECKS = 'gh_watch pr checks "$pr" --watch'
 RUN = 'gh_watch run watch "$id" --exit-status'
-READONLY = "readonly -f gh_watch\n"
 REJECTED_SH = [
     ("the wrapper missing", GOOD_SH.replace(WRAPPER + "\n", ""), "as: nothing"),
     ("the wrapper under the floor", GOOD_SH.replace(" 60;", " 59;"), "under the 60 s"),
@@ -392,7 +420,9 @@ REJECTED_SH = [
 ]
 GOOD_MD = """\
 Watch it with `bash .claude/skills/caail-pr-wrapup/ship-pr.sh watch-run <id>`,
-once `gh run list --workflow docs.yml --commit <sha>` finds it.
+once `gh run list --workflow docs.yml --commit <sha>` finds it. Use gh to list
+runs, then run watch-run on one: `gh pr checks` returns early, and
+`ship-pr.sh watch-checks` uses --watch.
 
 ```bash
 gh pr view <pr> --json headRefOid
@@ -422,18 +452,22 @@ REJECTED_MD = [
 ]
 
 
+# (label, check, the source it must accept, the sources it must reject)
+WATCH_FIXTURES = (
+    ("ship-pr.sh", watch_problems, GOOD_SH, REJECTED_SH),
+    (
+        "Markdown",
+        lambda s: markdown_watch_problems("fixture", s),
+        GOOD_MD,
+        REJECTED_MD,
+    ),
+)
+
+
 def watch_self_test() -> list[str]:
     """Every way assertion 6 fails to accept or reject its fixtures."""
     failures = []
-    for label, check, good, rejected in (
-        ("ship-pr.sh", watch_problems, GOOD_SH, REJECTED_SH),
-        (
-            "Markdown",
-            lambda s: markdown_watch_problems("fixture", s),
-            GOOD_MD,
-            REJECTED_MD,
-        ),
-    ):
+    for label, check, good, rejected in WATCH_FIXTURES:
         if got := check(good):
             failures.append(f"rejects the accepted {label} fixture: {got}")
         for case, src, phrase in rejected:
@@ -540,8 +574,8 @@ def main() -> int:
             print(f"           {failure}")
     else:
         print(
-            f"  [PASS] {len(REJECTED_SH) + len(REJECTED_MD)} rejected, "
-            "2 accepted, as expected"
+            f"  [PASS] {sum(len(f[3]) for f in WATCH_FIXTURES)} rejected, "
+            f"{len(WATCH_FIXTURES)} accepted, as expected"
         )
 
     print(

@@ -10,12 +10,12 @@ carrying its own list of workflows.
 **Those lists are asserted against the YAML** by `check-ci-paths.py`, running in `guards.yml`. It also
 checks that every pattern is a form `path_matches` can evaluate, that `pull_request` and `push` filters
 agree **on the three workflows that have both** (`docs.yml` is push-only and exempt), and that canonical
-content reaches both `test.yml` and `docs.yml`. One check rides along that is about watches rather
-than paths: every `gh` watch in `ship-pr.sh` goes through its `gh_watch` wrapper, held to a floor between
-refreshes, and this skill's Markdown names no `gh` watch at all, pointing at `ship-pr.sh watch-run`
-instead. So a watch written into a reference page turns `guards.yml` red (the script's docstring says
-why). So the predictors can no longer drift unnoticed, which
-they did three times. **This prose table has no such guard** — if it disagrees with the YAML, the YAML
+content reaches both `test.yml` and `docs.yml`. So the predictors can no longer drift unnoticed, which
+they did three times. One more check rides along that is about watches rather than paths: every `gh`
+watch in `ship-pr.sh` goes through its `gh_watch` wrapper, held to a floor between refreshes, and this
+skill's Markdown names no `gh` watch in its code at all, pointing at `ship-pr.sh watch-run` instead. So a
+watch written into a reference page's code turns `guards.yml` red (the script's docstring says why).
+**This prose table has no such guard** — if it disagrees with the YAML, the YAML
 wins and the table is the bug.
 
 | Workflow | Trigger | Paths (snapshot) |
