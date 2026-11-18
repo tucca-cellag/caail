@@ -12,13 +12,13 @@
 
 import { afterAll, beforeAll, describe, it, expect } from 'vitest';
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, symlinkSync } from 'node:fs';
+import { cpSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { parseCatalogFile } from '../parser/catalog.js';
-import { importNdjson, exportNdjson, NDJSON_DIR, REPO_ROOT, SITE_ROOT, type Db } from './lib.js';
+import { importNdjson, exportNdjson, runsAsMain, NDJSON_DIR, REPO_ROOT, SITE_ROOT, type Db } from './lib.js';
 import { extractInventory } from './extract.js';
 import { runChecks } from './check.js';
 import { emitAll } from './emit-files.js';
@@ -163,6 +163,33 @@ describe.runIf(!NEW_ITEMS_PAUSED)('db:add adds a new item once the pause is lift
 });
 
 describe('the db CLIs run when executed, however they are named', () => {
+  /** runsAsMain for a module at `<dir>/cli.ts`, with `entry` as process.argv[1]. */
+  function asMain(entry: (dir: string) => string, siblings: string[] = []): boolean {
+    const dir = mkdtempSync(join(tmpdir(), 'caail-db-link-'));
+    scratch.push(dir);
+    for (const f of ['cli.ts', ...siblings]) writeFileSync(join(dir, f), '');
+    const saved = process.argv[1];
+    process.argv[1] = entry(dir);
+    try {
+      return runsAsMain(pathToFileURL(join(dir, 'cli.ts')).href);
+    } finally {
+      process.argv[1] = saved;
+    }
+  }
+
+  it('says main for the module itself, and for it named without its extension', () => {
+    expect(asMain((d) => join(d, 'cli.ts'))).toBe(true);
+    expect(asMain((d) => join(d, 'cli'))).toBe(true);
+  });
+
+  it('says not main, rather than throwing, for an entry that is no path at all', () => {
+    expect(asMain(() => join(tmpdir(), 'caail-no-such-dir', 'x'))).toBe(false);
+  });
+
+  it('says not main for a sibling sharing the module name with another extension', () => {
+    expect(asMain((d) => join(d, 'cli.js'), ['cli.js'])).toBe(false);
+  });
+
   it('runs the CLI when the checkout is reached through a symlink, rather than exiting 0', () => {
     const link = join(mkdtempSync(join(tmpdir(), 'caail-db-link-')), 'db');
     scratch.push(dirname(link));
