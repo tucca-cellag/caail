@@ -1,10 +1,9 @@
 /**
  * add-item.ts (db:add) — add one item to the catalog from a JSON descriptor.
  * New items are paused until CAAIL v2, and until then db:add refuses every descriptor
- * (NEW_ITEMS_PAUSED below). Otherwise it
- * rebuilds the DB from committed NDJSON, inserts the item (auto frozen-id), runs the
- * integrity guards, and — only if clean — writes the updated NDJSON + canonical
- * Markdown. Review the diff and commit Markdown + NDJSON together.
+ * (NEW_ITEMS_PAUSED below). Otherwise it rebuilds the DB from committed NDJSON, inserts
+ * the item (auto frozen-id), runs the integrity guards, and — only if clean — writes the
+ * updated NDJSON + canonical Markdown. Review the diff and commit Markdown + NDJSON together.
  *
  *   NODE_OPTIONS='--experimental-sqlite --no-warnings' pnpm --dir site db:add <descriptor.json>
  *
@@ -15,66 +14,45 @@
 
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { importNdjson, exportNdjson, NDJSON_DIR, REPO_ROOT } from './lib.js';
+import { importNdjson, NDJSON_DIR } from './lib.js';
 import { addItem, type ItemAdd } from './mutate.js';
-import { runChecks } from './check.js';
-import { emitAll } from './emit-files.js';
-
-/**
- * Where `dbAdd` reads and writes. `ndjsonDir` is the NDJSON it rebuilds the DB from and
- * exports back to; `root` is where it writes the canonical Markdown. Both default to the
- * repo, and are injectable so a test can point them at fixture copies. The integrity checks
- * read the repo either way, as `db:check` does.
- */
-export interface DbAddPaths {
-  ndjsonDir?: string;
-  root?: string;
-}
+import { checkAndRegenerate, type RegeneratePaths } from './regenerate.js';
 
 /**
  * New items are paused until CAAIL v2. Every item db:add can create is new, since `addItem`
  * mints a frozen id that no held item has (`nextFreeId` skips every id already in
- * `items.ndjson`). So while the pause holds, db:add refuses every descriptor, first, before
- * it reads the NDJSON or validates the descriptor. Held items still change through the edit
- * flow (db:build, edit, db:export, db:emit), which this does not touch, and db:remove is
- * unaffected.
+ * `items.ndjson`). So while the pause holds, db:add refuses every descriptor, first: `main`
+ * refuses before it reads the descriptor file, and `dbAdd` before it reads the NDJSON or
+ * validates the descriptor. Held items still change through the edit flow (db:build, edit,
+ * db:export, db:emit), which this does not touch, and db:remove is unaffected.
+ *
+ * Three hand-written statements of the pause (the two skills it opens and the root
+ * CLAUDE.md) are held to this constant by add-item.test.ts, so lifting it means removing
+ * them in the same change.
  */
 export const NEW_ITEMS_PAUSED = true;
 
 export const NEW_ITEMS_PAUSED_MESSAGE =
   'db:add: new items are paused until CAAIL v2, so nothing was added or written. ' +
-  'Edits to existing items still work: run db:build, change the item in the DB, then db:export and db:emit. ' +
+  'Edits to existing items still work: pnpm --dir site db:build, change the item in the DB, ' +
+  'then db:export, db:emit, db:check and db:verify (the caail-db-authoring skill has the full flow). ' +
   'db:remove still works.';
 
 /**
  * Add one item and regenerate. Returns the frozen id it assigned and the canonical files
- * it wrote. Throws, writing nothing, when a guard fails, and while new items are paused.
+ * it wrote. Throws, writing nothing, while new items are paused and when a guard fails.
  */
-export function dbAdd(spec: ItemAdd, paths: DbAddPaths = {}): { id: string; written: string[] } {
+export function dbAdd(spec: ItemAdd, paths: RegeneratePaths = {}): { id: string; written: string[] } {
   if (NEW_ITEMS_PAUSED) throw new Error(NEW_ITEMS_PAUSED_MESSAGE);
 
-  const ndjsonDir = paths.ndjsonDir ?? NDJSON_DIR;
-  const root = paths.root ?? REPO_ROOT;
-
-  const db = importNdjson(ndjsonDir);
+  const db = importNdjson(paths.ndjsonDir ?? NDJSON_DIR);
   const id = addItem(db, spec);
-
-  const bad = runChecks(db).filter((r) => !r.ok);
-  if (bad.length) {
-    throw new Error(
-      `db:add: integrity check failed after adding ${id} — nothing written:\n` +
-      bad.map((r) => `  ✗ ${r.label}: ${r.detail}`).join('\n'),
-    );
-  }
-  // Emit FIRST — it re-parses/validates and throws on a bad state (e.g. a section with no
-  // source anchor) BEFORE any file is written, so a failure can't leave the committed
-  // NDJSON out of sync with the untouched Markdown. Only export once emit has succeeded.
-  const written = emitAll(db, root);
-  exportNdjson(db, ndjsonDir);
+  const written = checkAndRegenerate(db, `db:add: integrity check failed after adding ${id}`, paths);
   return { id, written };
 }
 
 function main(): void {
+  if (NEW_ITEMS_PAUSED) { console.error(NEW_ITEMS_PAUSED_MESSAGE); process.exit(1); }
   const file = process.argv[2];
   if (!file) { console.error('usage: db:add <descriptor.json>'); process.exit(1); }
   const spec = JSON.parse(readFileSync(file, 'utf-8')) as ItemAdd;
