@@ -8,6 +8,7 @@
 | `watch-checks <pr>` | blocks on checks; 0 if none/clean, non-zero on failure | no |
 | `merge <pr>` | **when run from the PR's own branch**, refuses if local `HEAD` differs from the PR head, naming which way it diverged since the remedies are opposite. From any other branch that check cannot mean anything and is skipped, so an unpushed commit is **not** caught there. Then merges + deletes the remote branch (gotcha-handled); prints merge SHA | yes |
 | `watch-deploy <merge-sha>` | finds + watches the `docs.yml` run; **0 when it finds no run, whether or not a deploy was due** (`SKILL.md` step 6 says how to tell) | no |
+| `watch-run <run-id>` | watches one Actions run by id, at the helper's watch interval; non-zero if the run fails. What step 6 uses when it finds the deploy run by hand | no |
 | `verify-live <route>...` | curls each live route; non-zero if any ≠ 200 | no |
 
 **Step 1 has no subcommand, and nothing in CI enforces it.** The rounds are judgment, which is why they
@@ -24,7 +25,7 @@ because from anywhere else local `HEAD` says nothing about this PR. Merging PR #
 B is therefore unguarded against an unpushed commit on A. Nothing checks that the rounds happened at all.
 
 **Neither guard has automated coverage.** `check-ci-paths.py` is what CI runs when this script changes,
-and it only text-scrapes the `*_PATHS` variables and their `matches_*` wrappers; it never executes
+and it only reads text: the `*_PATHS` variables and their `matches_*` wrappers, the `gh_watch` wrapper and every watch in this script, and the code in this skill's Markdown, where naming a `gh` watch at all fails it. It never executes
 `assert_shippable` or the divergence block. So a refactor could silently turn either into a no-op and
 every check would stay green, on the one script whose failure mode is shipping a PR that is missing a fix.
 Until there is a harness, treat both as things to re-demonstrate by hand (per the `tucca-cellag/caail-planning#189` rule in `review-phase.md`)
