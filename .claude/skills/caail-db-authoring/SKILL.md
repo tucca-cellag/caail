@@ -1,6 +1,6 @@
 ---
 name: caail-db-authoring
-description: Use when adding, editing, or removing a paper, software tool, database, dataset inventory row, or curated dataset entry (atlas/GEM/reference) in CAAIL — the structured catalog is authored in an in-repo SQLite DB (issue #78) and the canonical Markdown (Papers.md, Software.md, Databases.md, and the Datasets/*.md inventory tables + curated ### entries) is generated from it. Covers the edit-DB → export → emit → check → commit workflow. The DB-era successor to hand-editing the matrix and catalog files.
+description: Use when adding, editing, or removing a paper, software tool, database, dataset inventory row, or curated dataset entry (atlas/GEM/reference) in CAAIL — the structured catalog is authored in an in-repo SQLite DB (issue #78) and the canonical Markdown (Papers.md, Software.md, Databases.md, and the Datasets/*.md inventory tables + curated ### entries) is generated from it. Covers the edit-DB → export → emit → check → commit workflow. The DB-era successor to hand-editing the matrix and catalog files. While new items are paused until CAAIL v2, adding is refused; editing and removing still work.
 ---
 
 # Authoring CAAIL's structured catalog via the SQLite DB
