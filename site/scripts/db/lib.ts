@@ -12,11 +12,28 @@
  */
 
 import { DatabaseSync } from 'node:sqlite';
-import { readFileSync, writeFileSync, mkdirSync, existsSync, rmSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, rmSync, realpathSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url)); // site/scripts/db
+
+/**
+ * Whether the module at `moduleUrl` is the script this process was started on, so a CLI
+ * module runs its `main()` only when executed and not when a test imports it. Both sides
+ * are compared as real paths: the entry path in `process.argv[1]` keeps a symlink that the
+ * module URL has resolved, and a plain comparison would then skip `main()` and exit 0
+ * having done nothing.
+ */
+export function runsAsMain(moduleUrl: string): boolean {
+  const entry = process.argv[1];
+  if (!entry) return false;
+  try {
+    return realpathSync(entry) === realpathSync(fileURLToPath(moduleUrl));
+  } catch {
+    return false;
+  }
+}
 /** Repo root (site/scripts/db -> site/scripts -> site -> repo). */
 export const REPO_ROOT = join(HERE, '..', '..', '..');
 export const SITE_ROOT = join(HERE, '..', '..');

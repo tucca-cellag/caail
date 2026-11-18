@@ -13,18 +13,18 @@
  */
 
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { importNdjson, NDJSON_DIR } from './lib.js';
+import { importNdjson, NDJSON_DIR, runsAsMain } from './lib.js';
 import { addItem, type ItemAdd } from './mutate.js';
 import { checkAndRegenerate, type RegeneratePaths } from './regenerate.js';
 
 /**
  * New items are paused until CAAIL v2. Every item db:add can create is new, since `addItem`
- * mints a frozen id that no held item has (`nextFreeId` skips every id already in
- * `items.ndjson`). So while the pause holds, db:add refuses every descriptor, first: `main`
- * refuses before it reads the descriptor file, and `dbAdd` before it reads the NDJSON or
- * validates the descriptor. Held items still change through the edit flow (db:build, edit,
- * db:export, db:emit), which this does not touch, and db:remove is unaffected.
+ * mints a frozen id no held item has: a paper gets the ref id after every held and retired
+ * one, and every other type a slug `nextFreeId` keeps clear of every id in `items`. So while
+ * the pause holds, db:add refuses every descriptor, first, through `assertAddsOpen`: `main`
+ * before it reads the descriptor file, and `dbAdd` before it reads the NDJSON or validates
+ * the descriptor. Held items still change through the edit flow (db:build, edit, db:export,
+ * db:emit), which this does not touch, and db:remove is unaffected.
  *
  * Three hand-written statements of the pause (the two skills it opens and the root
  * CLAUDE.md) are held to this constant by add-item.test.ts, so lifting it means removing
@@ -38,12 +38,17 @@ export const NEW_ITEMS_PAUSED_MESSAGE =
   'then db:export, db:emit, db:check and db:verify (the caail-db-authoring skill has the full flow). ' +
   'db:remove still works.';
 
+/** Throws the pause message while new items are paused: the one place the code reads the flag. */
+export function assertAddsOpen(): void {
+  if (NEW_ITEMS_PAUSED) throw new Error(NEW_ITEMS_PAUSED_MESSAGE);
+}
+
 /**
  * Add one item and regenerate. Returns the frozen id it assigned and the canonical files
  * it wrote. Throws, writing nothing, while new items are paused and when a guard fails.
  */
 export function dbAdd(spec: ItemAdd, paths: RegeneratePaths = {}): { id: string; written: string[] } {
-  if (NEW_ITEMS_PAUSED) throw new Error(NEW_ITEMS_PAUSED_MESSAGE);
+  assertAddsOpen();
 
   const db = importNdjson(paths.ndjsonDir ?? NDJSON_DIR);
   const id = addItem(db, spec);
@@ -52,14 +57,12 @@ export function dbAdd(spec: ItemAdd, paths: RegeneratePaths = {}): { id: string;
 }
 
 function main(): void {
-  if (NEW_ITEMS_PAUSED) { console.error(NEW_ITEMS_PAUSED_MESSAGE); process.exit(1); }
-  const file = process.argv[2];
-  if (!file) { console.error('usage: db:add <descriptor.json>'); process.exit(1); }
-  const spec = JSON.parse(readFileSync(file, 'utf-8')) as ItemAdd;
-
   let result: { id: string; written: string[] };
   try {
-    result = dbAdd(spec);
+    assertAddsOpen();
+    const file = process.argv[2];
+    if (!file) throw new Error('usage: db:add <descriptor.json>');
+    result = dbAdd(JSON.parse(readFileSync(file, 'utf-8')) as ItemAdd);
   } catch (err) {
     console.error(err instanceof Error ? err.message : String(err));
     process.exit(1);
@@ -68,4 +71,4 @@ function main(): void {
   console.log('Review the diff, then commit Markdown + NDJSON together.');
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (runsAsMain(import.meta.url)) main();

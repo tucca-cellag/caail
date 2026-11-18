@@ -8,8 +8,7 @@
  *   e.g.  pnpm --dir site db:remove sw:oldtool
  */
 
-import { fileURLToPath } from 'node:url';
-import { importNdjson, NDJSON_DIR } from './lib.js';
+import { importNdjson, NDJSON_DIR, runsAsMain } from './lib.js';
 import { removeItem } from './mutate.js';
 import { checkAndRegenerate, type RegeneratePaths } from './regenerate.js';
 
@@ -38,4 +37,4 @@ function main(): void {
   console.log('Review the diff, then commit Markdown + NDJSON together.');
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (runsAsMain(import.meta.url)) main();

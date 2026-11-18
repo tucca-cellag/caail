@@ -10,11 +10,11 @@
  * the pause are held to the constant that enforces it.
  */
 
-import { describe, it, expect } from 'vitest';
+import { afterAll, describe, it, expect } from 'vitest';
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { cpSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, relative } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { parseCatalogFile } from '../parser/catalog.js';
@@ -32,8 +32,12 @@ import { dbRemove } from './remove-item.js';
  * Markdown file (the DB-owned pages, and CLAUDE.md, CONTRIBUTING.md and Taxonomy.md, which
  * the checks read), and the two directories the checks and the emit walk.
  */
+const scratch: string[] = [];
+afterAll(() => { for (const d of scratch) rmSync(d, { recursive: true, force: true }); });
+
 function fixture(): { ndjsonDir: string; root: string } {
   const base = mkdtempSync(join(tmpdir(), 'caail-add-item-'));
+  scratch.push(base);
   const ndjsonDir = join(base, 'ndjson');
   const root = join(base, 'root');
   cpSync(NDJSON_DIR, ndjsonDir, { recursive: true });
@@ -64,6 +68,10 @@ function changed(before: Map<string, string>, after: Map<string, string>): strin
   return [...keys].filter((k) => before.get(k) !== after.get(k)).sort();
 }
 
+/** The live NDJSON, imported once and only read: descriptors are built from it. */
+let liveDb: Db | undefined;
+const live = (): Db => (liveDb ??= importNdjson());
+
 const anyGroup = (db: Db, type: 'software' | 'database') =>
   (db.prepare('SELECT grp FROM catalog WHERE item_id IN (SELECT id FROM items WHERE type=?) LIMIT 1').get(type) as { grp: string }).grp;
 const anyMethod = (db: Db) => (db.prepare('SELECT label FROM methods ORDER BY ordinal LIMIT 1').get() as { label: string }).label;
@@ -86,7 +94,7 @@ const heldTool = (db: Db) => db.prepare(
  * pause and not a validation error.
  */
 function validDescriptors(): Array<[string, ItemAdd]> {
-  const db = importNdjson();
+  const db = live();
   return [
     ['software', { type: 'software', name: 'ZzPausedTool', url: 'https://example.org/zz-paused-tool', group: anyGroup(db, 'software'), body: 'Summary: a new tool the pause refuses.' }],
     ['database', { type: 'database', name: 'ZzPausedDb', url: 'https://example.org/zz-paused-db', group: anyGroup(db, 'database'), body: 'Summary: a new database the pause refuses.' }],
@@ -99,7 +107,7 @@ function validDescriptors(): Array<[string, ItemAdd]> {
  * pause message rather than the check's, it shows the pause comes before validation.
  */
 function invalidDatasetRow(): ItemAdd {
-  const db = importNdjson();
+  const db = live();
   const page = (db.prepare('SELECT page FROM dataset_rows LIMIT 1').get() as { page: string }).page;
   const header = extractInventory(join(REPO_ROOT, 'Datasets', `${page}.md`))!.header;
   return { type: 'dataset', page, cells: header.map((_, i) => (i === 0 ? 'Paused test study GSE999998' : `c${i}`)) };
@@ -135,6 +143,18 @@ describe('db:add refuses a new item while new items are paused', () => {
     });
     expect(run.status).toBe(1);
     expect(run.stderr.trim(), 'db:add read the descriptor before refusing').toBe(NEW_ITEMS_PAUSED_MESSAGE);
+  });
+
+  it('runs the CLI when the checkout is reached through a symlink, rather than exiting 0', () => {
+    const link = join(mkdtempSync(join(tmpdir(), 'caail-db-link-')), 'db');
+    scratch.push(dirname(link));
+    symlinkSync(fileURLToPath(new URL('.', import.meta.url)), link, 'dir');
+    const run = spawnSync(join(SITE_ROOT, 'node_modules', '.bin', 'tsx'), [join(link, 'remove-item.ts'), 'sw:zz-no-such-item'], {
+      encoding: 'utf-8',
+      env: { ...process.env, NODE_OPTIONS: '--experimental-sqlite --no-warnings' },
+    });
+    expect(run.status, 'db:remove run through a symlink exited without running').toBe(1);
+    expect(run.stderr).toMatch(/no item 'sw:zz-no-such-item'/);
   });
 });
 
@@ -198,9 +218,17 @@ describe('the hand-written statements of the pause agree with NEW_ITEMS_PAUSED',
     '.claude/skills/zotero-to-caail-sync/SKILL.md',
     'CLAUDE.md',
   ])('%s', (file) => {
-    const says = readFileSync(join(REPO_ROOT, file), 'utf-8').includes('paused until CAAIL v2');
-    expect(says, NEW_ITEMS_PAUSED
-      ? `${file} does not say new items are paused until CAAIL v2, while db:add refuses them`
-      : `${file} still says new items are paused until CAAIL v2, after db:add stopped refusing them`).toBe(NEW_ITEMS_PAUSED);
+    const text = readFileSync(join(REPO_ROOT, file), 'utf-8');
+    if (NEW_ITEMS_PAUSED) {
+      expect(text.includes('paused until CAAIL v2'), `${file} does not say new items are paused until CAAIL v2, while db:add refuses them`).toBe(true);
+    } else {
+      // Every statement of the pause, in whatever words, says items "are paused" or that
+      // something waits for v2, so the lifted direction looks for those rather than for the
+      // one phrase the top note uses. Whitespace is flattened first, since a hard-wrapped
+      // statement can break between "items" and "are paused".
+      const flat = text.replace(/\s+/g, ' ');
+      const left = [...flat.matchAll(/.{0,40}(?:items are paused|until CAAIL v2|wait for v2).{0,40}/gi)].map((m) => m[0]);
+      expect(left, `${file} still states the pause after db:add stopped refusing`).toEqual([]);
+    }
   });
 });
