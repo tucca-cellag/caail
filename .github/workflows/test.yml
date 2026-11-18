@@ -50,6 +50,12 @@ on:
       - .claude/skills/matrix-classification-audit/docling_sections.py
       - .claude/skills/matrix-classification-audit/docling_sections.test.py
       - .claude/skills/matrix-classification-audit/extract_matrix_corpus.py
+      # The two skills that state the pause on new items, which
+      # site/scripts/db/add-item.test.ts holds to NEW_ITEMS_PAUSED. Without them a
+      # PR editing only one of these files runs no workflow, so its note could
+      # drift from what db:add does with nothing failing.
+      - .claude/skills/caail-db-authoring/SKILL.md
+      - .claude/skills/zotero-to-caail-sync/SKILL.md
       - .github/workflows/test.yml
       # The two ignore files, because canonical-files.test.ts now asserts they
       # agree with the code about what a private companion is (the publishing rule in CLAUDE.md).
@@ -164,6 +170,12 @@ on:
       - .claude/skills/matrix-classification-audit/docling_sections.py
       - .claude/skills/matrix-classification-audit/docling_sections.test.py
       - .claude/skills/matrix-classification-audit/extract_matrix_corpus.py
+      # The two skills that state the pause on new items, which
+      # site/scripts/db/add-item.test.ts holds to NEW_ITEMS_PAUSED. Without them a
+      # PR editing only one of these files runs no workflow, so its note could
+      # drift from what db:add does with nothing failing.
+      - .claude/skills/caail-db-authoring/SKILL.md
+      - .claude/skills/zotero-to-caail-sync/SKILL.md
       - .github/workflows/test.yml
       # The two ignore files, because canonical-files.test.ts now asserts they
       # agree with the code about what a private companion is (the publishing rule in CLAUDE.md).
