@@ -171,7 +171,9 @@ re-tagging, corrections), use the full procedure below.
    pnpm --dir site db:build      # site/db/ndjson/*.ndjson -> site/caail.db
    ```
 2. **Make the change** — in the DB (`sqlite3 site/caail.db`) or, for a one-line change, by
-   editing `site/db/ndjson/<table>.ndjson` directly and skipping to step 4.
+   editing `site/db/ndjson/<table>.ndjson` directly and skipping to step 4. While new items
+   are paused (the note at the top), only changes to held items belong here: the **Add …**
+   bullets below wait for v2, whether the insert is made in the DB or in the NDJSON.
    - **Add a paper:** insert `items('paper:N','paper','N')` + `papers(...)` with the full
      citation markdown (including the `<a id="N">N</a>` anchor) in `raw`, `code_url`/`data_url`
      if present; then insert its `matrix_cells` rows (one per method×area cell). **The matrix
