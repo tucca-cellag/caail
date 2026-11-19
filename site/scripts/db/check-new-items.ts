@@ -10,10 +10,17 @@
  *
  * Refused: an id in `items.ndjson` at HEAD that is not at `<base>`, other than a topic tag
  * (a subject label, not a catalog entry), and a DOI in `datasets_on_request.ndjson` at HEAD
- * that is not at `<base>`. A correction that splits a held item into two may add the new
- * item's id, when a commit in `<base>..HEAD` carries the trailer
- * `Splits: <new id> from <held id>` and the held id is at `<base>`. With NEW_ITEMS_PAUSED
- * false it checks nothing, so lifting the pause in add-item.ts lifts this guard too.
+ * that is not at `<base>`. Two corrections may add an id, each declared in a trailer on a
+ * commit in `<base>..HEAD`, one trailer per new id:
+ *
+ *   - a split of a held item into two, `Splits: <new id> from <held id>`, passes when the
+ *     held id is at `<base>` and still at HEAD (a split keeps the item it splits);
+ *   - a re-mint of an id CLAUDE.md sanctions repairing, `Re-mints: <new id> from <old id>`,
+ *     passes when the old id is at `<base>` and gone at HEAD (a re-mint replaces it).
+ *
+ * The other state of each is refused and points at the other trailer, so neither act can
+ * pass under the other's name. With NEW_ITEMS_PAUSED false it checks nothing, so lifting
+ * the pause in add-item.ts lifts this guard too.
  */
 
 import { execFileSync } from 'node:child_process';
@@ -22,6 +29,8 @@ import { NEW_ITEMS_PAUSED } from './add-item.js';
 
 /** The commit trailer a split names its held item in. */
 export const SPLIT_TRAILER = 'Splits';
+/** The commit trailer a re-mint names the id it replaces in. */
+export const REMINT_TRAILER = 'Re-mints';
 
 const ITEMS = 'site/db/ndjson/items.ndjson';
 const ON_REQUEST = 'site/db/ndjson/datasets_on_request.ndjson';
@@ -48,29 +57,54 @@ export function catalogKeys(itemsNdjson: string, onRequestNdjson: string): Catal
   return { itemIds: ndjsonField(itemsNdjson, 'id'), onRequestDois: ndjsonField(onRequestNdjson, 'doi') };
 }
 
+/** The values of every trailer in a change's commits that may let a new id through, by key. */
+export interface Trailers {
+  splits: string[];
+  remints: string[];
+}
+
+/**
+ * Each `<key>:` trailer value read as `<new id> from <held id>`. One that does not read that
+ * way is recorded in `problems`, naming `heldName` as the trailer's own help does.
+ */
+function declarations(key: string, heldName: string, values: string[], problems: string[]) {
+  const out: { raw: string; newId: string; heldId: string }[] = [];
+  for (const value of values) {
+    const raw = value.trim();
+    const m = raw.match(/^(\S+) from (\S+)$/);
+    if (m) out.push({ raw, newId: m[1], heldId: m[2] });
+    else problems.push(`${key}: ${raw}: not "<new id> from <${heldName}>"`);
+  }
+  return out;
+}
+
 /**
  * What `head` adds to `base` that a pull request may not add while new items are paused, one
- * line each; empty when nothing is refused. `splitTrailers` are the values of every
- * `Splits:` trailer in the range.
+ * line each; empty when nothing is refused.
  */
-export function newItemProblems(base: CatalogKeys, head: CatalogKeys, splitTrailers: string[]): string[] {
+export function newItemProblems(base: CatalogKeys, head: CatalogKeys, trailers: Trailers): string[] {
   const problems: string[] = [];
-  const splits = new Set<string>();
-  for (const raw of splitTrailers) {
-    const m = raw.trim().match(/^(\S+) from (\S+)$/);
-    if (!m) {
-      problems.push(`${SPLIT_TRAILER}: ${raw.trim()}: not "<new id> from <held id>"`);
-      continue;
-    }
-    const [, newId, heldId] = m;
+  const declared = new Set<string>();
+  for (const { raw, newId, heldId } of declarations(SPLIT_TRAILER, 'held id', trailers.splits, problems)) {
     if (!base.itemIds.has(heldId)) {
-      problems.push(`${SPLIT_TRAILER}: ${raw.trim()}: ${heldId} is not on the base, so this is not a split of a held item`);
-      continue;
+      problems.push(`${SPLIT_TRAILER}: ${raw}: ${heldId} is not on the base, so this is not a split of a held item`);
+    } else if (!head.itemIds.has(heldId)) {
+      problems.push(`${SPLIT_TRAILER}: ${raw}: ${heldId} is gone, and a split keeps the item it splits; a replaced id is named in "${REMINT_TRAILER}:"`);
+    } else {
+      declared.add(newId);
     }
-    splits.add(newId);
+  }
+  for (const { raw, newId, heldId } of declarations(REMINT_TRAILER, 'old id', trailers.remints, problems)) {
+    if (!base.itemIds.has(heldId)) {
+      problems.push(`${REMINT_TRAILER}: ${raw}: ${heldId} is not on the base, so this is not a re-mint of a held item`);
+    } else if (head.itemIds.has(heldId)) {
+      problems.push(`${REMINT_TRAILER}: ${raw}: ${heldId} is still here, and a re-mint replaces the id; a split is named in "${SPLIT_TRAILER}:"`);
+    } else {
+      declared.add(newId);
+    }
   }
   for (const id of [...head.itemIds].sort()) {
-    if (base.itemIds.has(id) || id.startsWith('topic:') || splits.has(id)) continue;
+    if (base.itemIds.has(id) || id.startsWith('topic:') || declared.has(id)) continue;
     problems.push(`${id} is a new item`);
   }
   for (const doi of [...head.onRequestDois].sort()) {
@@ -83,8 +117,10 @@ export function newItemProblems(base: CatalogKeys, head: CatalogKeys, splitTrail
 export function refusalMessage(problems: string[]): string {
   return [
     'db:check-new-items: new items are paused until CAAIL v2, so this change may not add one.',
-    'Edits to items already here, and removals, still pass. A correction that splits a held item',
-    `into two names it in a commit trailer: "${SPLIT_TRAILER}: <new id> from <held id>".`,
+    'Edits to items already here, and removals, still pass. A correction that adds an id names',
+    'what it corrects in a commit trailer, one per new id: a split of a held item into two keeps it,',
+    `"${SPLIT_TRAILER}: <new id> from <held id>"; a repair that replaces a held item's id drops the old`,
+    `one, "${REMINT_TRAILER}: <new id> from <old id>".`,
     ...problems.map((p) => `  ✗ ${p}`),
   ].join('\n');
 }
@@ -101,17 +137,24 @@ function keysAt(repo: string, ref: string): CatalogKeys {
   return catalogKeys(fileAt(repo, ref, ITEMS), fileAt(repo, ref, ON_REQUEST));
 }
 
-/**
- * The problems with `head` (HEAD by default) against `base` in the repository at `repo`,
- * reading both from their commits (never the working tree, which other CI steps regenerate)
- * and the split trailers from every commit in `base..head`.
- */
-export function checkNewItems(repo: string, base: string, head = 'HEAD'): string[] {
-  const trailers = git(repo, ['log', `--format=%(trailers:key=${SPLIT_TRAILER},valueonly,separator=%x00)%x00`, `${base}..${head}`])
+/** The values of every `<key>:` trailer on the commits in `base..head`. */
+function trailerValues(repo: string, base: string, head: string, key: string): string[] {
+  return git(repo, ['log', `--format=%(trailers:key=${key},valueonly,separator=%x00)%x00`, `${base}..${head}`])
     .split('\0')
     .map((t) => t.trim())
     .filter(Boolean);
-  return newItemProblems(keysAt(repo, base), keysAt(repo, head), trailers);
+}
+
+/**
+ * The problems with `head` (HEAD by default) against `base` in the repository at `repo`,
+ * reading both from their commits (never the working tree, which other CI steps regenerate)
+ * and the trailers from every commit in `base..head`.
+ */
+export function checkNewItems(repo: string, base: string, head = 'HEAD'): string[] {
+  return newItemProblems(keysAt(repo, base), keysAt(repo, head), {
+    splits: trailerValues(repo, base, head, SPLIT_TRAILER),
+    remints: trailerValues(repo, base, head, REMINT_TRAILER),
+  });
 }
 
 function main(): void {

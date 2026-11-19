@@ -20,7 +20,9 @@ import {
   checkNewItems,
   newItemProblems,
   refusalMessage,
+  REMINT_TRAILER,
   SPLIT_TRAILER,
+  type Trailers,
 } from './check-new-items.js';
 import { NEW_ITEMS_PAUSED } from './add-item.js';
 
@@ -29,69 +31,106 @@ const study = (doi: string) => JSON.stringify({ doi, page: 'Cow', study: 'A stud
 const keys = (ids: string[], dois: string[] = []) => catalogKeys(ids.map(item).join('\n') + '\n', dois.map(study).join('\n') + '\n');
 
 const BASE = keys(['sw:held', 'db:held', 'topic:held'], ['10.1/held']);
+const splits = (...values: string[]): Trailers => ({ splits: values, remints: [] });
+const remints = (...values: string[]): Trailers => ({ splits: [], remints: values });
+const NONE = splits();
 
 describe('newItemProblems: what a pull request may change while new items are paused', () => {
   it('refuses a new item id and names it', () => {
-    const problems = newItemProblems(BASE, keys(['sw:held', 'db:held', 'topic:held', 'sw:new-tool'], ['10.1/held']), []);
+    const problems = newItemProblems(BASE, keys(['sw:held', 'db:held', 'topic:held', 'sw:new-tool'], ['10.1/held']), NONE);
     expect(problems).toHaveLength(1);
     expect(problems[0]).toContain('sw:new-tool');
   });
 
   it('refuses a new paper, database, dataset and field report alike', () => {
     const added = ['paper:999', 'db:new', 'ds:new', 'report:new'];
-    const problems = newItemProblems(BASE, keys(['sw:held', 'db:held', 'topic:held', ...added], ['10.1/held']), []);
+    const problems = newItemProblems(BASE, keys(['sw:held', 'db:held', 'topic:held', ...added], ['10.1/held']), NONE);
     for (const id of added) expect(problems.some((p) => p.includes(id)), id).toBe(true);
   });
 
   it('refuses a new Data on request study and names its DOI', () => {
-    const problems = newItemProblems(BASE, keys(['sw:held', 'db:held', 'topic:held'], ['10.1/held', '10.2/new']), []);
+    const problems = newItemProblems(BASE, keys(['sw:held', 'db:held', 'topic:held'], ['10.1/held', '10.2/new']), NONE);
     expect(problems).toHaveLength(1);
     expect(problems[0]).toContain('10.2/new');
   });
 
   it('passes an edit, which changes no id', () => {
-    expect(newItemProblems(BASE, keys(['sw:held', 'db:held', 'topic:held'], ['10.1/held']), [])).toEqual([]);
+    expect(newItemProblems(BASE, keys(['sw:held', 'db:held', 'topic:held'], ['10.1/held']), NONE)).toEqual([]);
   });
 
   it('passes a removal', () => {
-    expect(newItemProblems(BASE, keys(['sw:held', 'topic:held'], []), [])).toEqual([]);
+    expect(newItemProblems(BASE, keys(['sw:held', 'topic:held'], []), NONE)).toEqual([]);
   });
 
   it('passes a new topic tag, which is a subject label rather than a catalog entry', () => {
-    expect(newItemProblems(BASE, keys(['sw:held', 'db:held', 'topic:held', 'topic:new-tag'], ['10.1/held']), [])).toEqual([]);
+    expect(newItemProblems(BASE, keys(['sw:held', 'db:held', 'topic:held', 'topic:new-tag'], ['10.1/held']), NONE)).toEqual([]);
   });
 
   it('passes a split that names a held item on the base', () => {
     const head = keys(['sw:held', 'db:held', 'topic:held', 'sw:held-part'], ['10.1/held']);
-    expect(newItemProblems(BASE, head, ['sw:held-part from sw:held'])).toEqual([]);
+    expect(newItemProblems(BASE, head, splits('sw:held-part from sw:held'))).toEqual([]);
   });
 
   it('refuses a split whose named item is not on the base', () => {
     const head = keys(['sw:held', 'db:held', 'topic:held', 'sw:held-part'], ['10.1/held']);
-    const problems = newItemProblems(BASE, head, ['sw:held-part from sw:never-held']);
+    const problems = newItemProblems(BASE, head, splits('sw:held-part from sw:never-held'));
     expect(problems.some((p) => p.includes('sw:never-held') && /not on the base/.test(p))).toBe(true);
     expect(problems.some((p) => p.includes('sw:held-part'))).toBe(true);
   });
 
   it('refuses a malformed split trailer', () => {
     const head = keys(['sw:held', 'db:held', 'topic:held', 'sw:held-part'], ['10.1/held']);
-    const problems = newItemProblems(BASE, head, ['sw:held-part sw:held']);
+    const problems = newItemProblems(BASE, head, splits('sw:held-part sw:held'));
     expect(problems.some((p) => p.includes('sw:held-part sw:held') && /<new id> from <held id>/.test(p))).toBe(true);
   });
 
   it('lets a split cover only the id it names', () => {
     const head = keys(['sw:held', 'db:held', 'topic:held', 'sw:held-part', 'sw:other'], ['10.1/held']);
-    const problems = newItemProblems(BASE, head, ['sw:held-part from sw:held']);
+    const problems = newItemProblems(BASE, head, splits('sw:held-part from sw:held'));
     expect(problems).toHaveLength(1);
     expect(problems[0]).toContain('sw:other');
+  });
+
+  it('refuses a split whose held item is gone at the head, since a split keeps the item it splits', () => {
+    const head = keys(['db:held', 'topic:held', 'sw:held-part'], ['10.1/held']);
+    const problems = newItemProblems(BASE, head, splits('sw:held-part from sw:held'));
+    expect(problems.some((p) => p.startsWith(`${SPLIT_TRAILER}:`) && /sw:held is gone/.test(p) && p.includes(REMINT_TRAILER))).toBe(true);
+    expect(problems).toContain('sw:held-part is a new item');
+  });
+
+  it('passes a re-mint whose old id is on the base and gone at the head', () => {
+    const head = keys(['db:held', 'topic:held', 'sw:held-renamed'], ['10.1/held']);
+    expect(newItemProblems(BASE, head, remints('sw:held-renamed from sw:held'))).toEqual([]);
+  });
+
+  it('refuses a re-mint whose old id is still at the head, since a re-mint replaces it', () => {
+    const head = keys(['sw:held', 'db:held', 'topic:held', 'sw:held-renamed'], ['10.1/held']);
+    const problems = newItemProblems(BASE, head, remints('sw:held-renamed from sw:held'));
+    expect(problems.some((p) => p.startsWith(`${REMINT_TRAILER}:`) && /sw:held is still here/.test(p) && p.includes(SPLIT_TRAILER))).toBe(true);
+    expect(problems).toContain('sw:held-renamed is a new item');
+  });
+
+  it('refuses a re-mint whose old id is not on the base', () => {
+    const head = keys(['db:held', 'topic:held', 'sw:held-renamed'], ['10.1/held']);
+    const problems = newItemProblems(BASE, head, remints('sw:held-renamed from sw:never-held'));
+    expect(problems.some((p) => p.startsWith(`${REMINT_TRAILER}:`) && /sw:never-held is not on the base/.test(p))).toBe(true);
+    expect(problems).toContain('sw:held-renamed is a new item');
+  });
+
+  it('refuses a malformed re-mint trailer', () => {
+    const head = keys(['db:held', 'topic:held', 'sw:held-renamed'], ['10.1/held']);
+    const problems = newItemProblems(BASE, head, remints('sw:held-renamed'));
+    expect(problems.some((p) => p.startsWith(`${REMINT_TRAILER}: sw:held-renamed:`) && /<new id> from <old id>/.test(p))).toBe(true);
+    expect(problems).toContain('sw:held-renamed is a new item');
   });
 });
 
 describe('refusalMessage', () => {
-  it('opens with the pause in public words and says how a split is named', () => {
+  it('opens with the pause in public words and says how a split and a re-mint are named', () => {
     const message = refusalMessage(['sw:new-tool is a new item']);
     expect(message).toMatch(/new items are paused until CAAIL v2/);
     expect(message).toContain(`${SPLIT_TRAILER}: <new id> from <held id>`);
+    expect(message).toContain(`${REMINT_TRAILER}: <new id> from <old id>`);
     expect(message).toContain('sw:new-tool is a new item');
   });
 
@@ -159,6 +198,31 @@ describe.runIf(NEW_ITEMS_PAUSED)('checkNewItems reads the base and head commits 
     const { dir, base } = repo();
     commit(dir, `split\n\n${SPLIT_TRAILER}: sw:held-part from sw:never-held`, ['sw:held', 'topic:held', 'sw:held-part'], ['10.1/held']);
     expect(checkNewItems(dir, base).some((p) => p.includes('sw:never-held'))).toBe(true);
+  });
+
+  it('passes a re-mint whose trailer names the id the change replaces', () => {
+    const { dir, base } = repo();
+    commit(dir, `re-mint a held id\n\n${REMINT_TRAILER}: sw:held-renamed from sw:held`, ['topic:held', 'sw:held-renamed'], ['10.1/held']);
+    expect(checkNewItems(dir, base)).toEqual([]);
+  });
+
+  it('refuses a re-mint whose old id is still there', () => {
+    const { dir, base } = repo();
+    commit(dir, `re-mint\n\n${REMINT_TRAILER}: sw:held-renamed from sw:held`, ['sw:held', 'topic:held', 'sw:held-renamed'], ['10.1/held']);
+    expect(checkNewItems(dir, base).some((p) => p.startsWith(`${REMINT_TRAILER}:`) && /still here/.test(p))).toBe(true);
+  });
+
+  it('reads a split and a re-mint trailer from the same commit', () => {
+    const { dir } = repo();
+    commit(dir, 'hold a second item', ['sw:held', 'sw:held-2', 'topic:held'], ['10.1/held']);
+    const base = git(dir, 'rev-parse', 'HEAD');
+    commit(
+      dir,
+      `split one held item and re-mint another\n\n${SPLIT_TRAILER}: sw:held-part from sw:held\n${REMINT_TRAILER}: sw:held-2-renamed from sw:held-2`,
+      ['sw:held', 'sw:held-part', 'sw:held-2-renamed', 'topic:held'],
+      ['10.1/held'],
+    );
+    expect(checkNewItems(dir, base)).toEqual([]);
   });
 
   it('reads a trailer from any commit in the range, not only the last', () => {

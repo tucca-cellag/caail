@@ -11,8 +11,11 @@ description: Use when adding, editing, or removing a paper, software tool, datab
 > descriptor and writes nothing. Edits to existing items (descriptions, licences, DOIs,
 > corrections) still work through the full procedure below, and so does `db:remove`.
 > CI refuses a pull request that adds an item or a Data on request study by any route
-> (`db:check-new-items` in `lint-papers.yml`). A correction that splits a held item into two
-> names the held item in a commit trailer, `Splits: <new id> from <held id>`, one per new id.
+> (`db:check-new-items` in `lint-papers.yml`). A correction that adds an id declares it in a
+> commit trailer, one per new id: a split of a held item into two, which keeps the held item,
+> as `Splits: <new id> from <held id>`; a re-mint of an id that `CLAUDE.md` sanctions
+> repairing, which drops the old id, as `Re-mints: <new id> from <old id>`. Each is refused
+> in the other's state, so name the act the change makes.
 
 ## Overview
 
