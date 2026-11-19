@@ -1,0 +1,191 @@
+/**
+ * check-new-items.test.ts: the CI guard that refuses a pull request adding a new item by any
+ * route while new items are paused until CAAIL v2.
+ *
+ * Two layers, each in both directions. The decision (`newItemProblems`) is tested on id sets:
+ * an added id or Data on request study is refused, while an edit, a removal, a new topic tag
+ * and a split naming a held item pass. The git layer (`checkNewItems`) is tested against a
+ * throwaway repository with real base and head commits, so the trailer and the file reads are
+ * exercised as CI runs them, and nothing here touches this repository.
+ */
+
+import { afterAll, describe, expect, it } from 'vitest';
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import {
+  catalogKeys,
+  checkNewItems,
+  newItemProblems,
+  refusalMessage,
+  SPLIT_TRAILER,
+} from './check-new-items.js';
+import { NEW_ITEMS_PAUSED } from './add-item.js';
+
+const item = (id: string) => JSON.stringify({ id, type: id.startsWith('topic:') ? 'topic' : 'software', slug: id.split(':')[1] });
+const study = (doi: string) => JSON.stringify({ doi, page: 'Cow', study: 'A study', statement: 'On request.', ordinal: 0 });
+const keys = (ids: string[], dois: string[] = []) => catalogKeys(ids.map(item).join('\n') + '\n', dois.map(study).join('\n') + '\n');
+
+const BASE = keys(['sw:held', 'db:held', 'topic:held'], ['10.1/held']);
+
+describe('newItemProblems: what a pull request may change while new items are paused', () => {
+  it('refuses a new item id and names it', () => {
+    const problems = newItemProblems(BASE, keys(['sw:held', 'db:held', 'topic:held', 'sw:new-tool'], ['10.1/held']), []);
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toContain('sw:new-tool');
+  });
+
+  it('refuses a new paper, database, dataset and field report alike', () => {
+    const added = ['paper:999', 'db:new', 'ds:new', 'report:new'];
+    const problems = newItemProblems(BASE, keys(['sw:held', 'db:held', 'topic:held', ...added], ['10.1/held']), []);
+    for (const id of added) expect(problems.some((p) => p.includes(id)), id).toBe(true);
+  });
+
+  it('refuses a new Data on request study and names its DOI', () => {
+    const problems = newItemProblems(BASE, keys(['sw:held', 'db:held', 'topic:held'], ['10.1/held', '10.2/new']), []);
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toContain('10.2/new');
+  });
+
+  it('passes an edit, which changes no id', () => {
+    expect(newItemProblems(BASE, keys(['sw:held', 'db:held', 'topic:held'], ['10.1/held']), [])).toEqual([]);
+  });
+
+  it('passes a removal', () => {
+    expect(newItemProblems(BASE, keys(['sw:held', 'topic:held'], []), [])).toEqual([]);
+  });
+
+  it('passes a new topic tag, which is a subject label rather than a catalog entry', () => {
+    expect(newItemProblems(BASE, keys(['sw:held', 'db:held', 'topic:held', 'topic:new-tag'], ['10.1/held']), [])).toEqual([]);
+  });
+
+  it('passes a split that names a held item on the base', () => {
+    const head = keys(['sw:held', 'db:held', 'topic:held', 'sw:held-part'], ['10.1/held']);
+    expect(newItemProblems(BASE, head, ['sw:held-part from sw:held'])).toEqual([]);
+  });
+
+  it('refuses a split whose named item is not on the base', () => {
+    const head = keys(['sw:held', 'db:held', 'topic:held', 'sw:held-part'], ['10.1/held']);
+    const problems = newItemProblems(BASE, head, ['sw:held-part from sw:never-held']);
+    expect(problems.some((p) => p.includes('sw:never-held') && /not on the base/.test(p))).toBe(true);
+    expect(problems.some((p) => p.includes('sw:held-part'))).toBe(true);
+  });
+
+  it('refuses a malformed split trailer', () => {
+    const head = keys(['sw:held', 'db:held', 'topic:held', 'sw:held-part'], ['10.1/held']);
+    const problems = newItemProblems(BASE, head, ['sw:held-part sw:held']);
+    expect(problems.some((p) => p.includes('sw:held-part sw:held') && /<new id> from <held id>/.test(p))).toBe(true);
+  });
+
+  it('lets a split cover only the id it names', () => {
+    const head = keys(['sw:held', 'db:held', 'topic:held', 'sw:held-part', 'sw:other'], ['10.1/held']);
+    const problems = newItemProblems(BASE, head, ['sw:held-part from sw:held']);
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toContain('sw:other');
+  });
+});
+
+describe('refusalMessage', () => {
+  it('opens with the pause in public words and says how a split is named', () => {
+    const message = refusalMessage(['sw:new-tool is a new item']);
+    expect(message).toMatch(/new items are paused until CAAIL v2/);
+    expect(message).toContain(`${SPLIT_TRAILER}: <new id> from <held id>`);
+    expect(message).toContain('sw:new-tool is a new item');
+  });
+
+  it('names no system outside this repository', () => {
+    expect(refusalMessage(['x'])).not.toMatch(/https?:\/\//);
+  });
+});
+
+describe.runIf(NEW_ITEMS_PAUSED)('checkNewItems reads the base and head commits of a real repository', () => {
+  const scratch: string[] = [];
+  afterAll(() => { for (const d of scratch) rmSync(d, { recursive: true, force: true }); });
+
+  const git = (repo: string, ...args: string[]) =>
+    execFileSync('git', ['-C', repo, '-c', 'user.name=test', '-c', 'user.email=test@example.invalid', '-c', 'commit.gpgsign=false', ...args], { encoding: 'utf-8' }).trim();
+
+  /** A repository whose base commit holds two items and one Data on request study. */
+  function repo(): { dir: string; base: string } {
+    const dir = mkdtempSync(join(tmpdir(), 'caail-new-items-'));
+    scratch.push(dir);
+    git(dir, 'init', '-q');
+    mkdirSync(join(dir, 'site', 'db', 'ndjson'), { recursive: true });
+    write(dir, ['sw:held', 'topic:held'], ['10.1/held']);
+    git(dir, 'add', '-A');
+    git(dir, 'commit', '-q', '-m', 'base');
+    return { dir, base: git(dir, 'rev-parse', 'HEAD') };
+  }
+
+  function write(dir: string, ids: string[], dois: string[]): void {
+    writeFileSync(join(dir, 'site', 'db', 'ndjson', 'items.ndjson'), ids.map(item).join('\n') + '\n');
+    writeFileSync(join(dir, 'site', 'db', 'ndjson', 'datasets_on_request.ndjson'), dois.map(study).join('\n') + '\n');
+  }
+
+  function commit(dir: string, message: string, ids: string[], dois: string[]): void {
+    write(dir, ids, dois);
+    git(dir, 'add', '-A');
+    // --allow-empty: a trailer-only commit, or an edit elsewhere, may leave these files as they were.
+    git(dir, 'commit', '-q', '--allow-empty', '-m', message);
+  }
+
+  it('refuses an item added by hand to the NDJSON', () => {
+    const { dir, base } = repo();
+    commit(dir, 'add a row by hand', ['sw:held', 'topic:held', 'sw:new-tool'], ['10.1/held']);
+    expect(checkNewItems(dir, base).some((p) => p.includes('sw:new-tool'))).toBe(true);
+  });
+
+  it('refuses a Data on request study added by hand', () => {
+    const { dir, base } = repo();
+    commit(dir, 'add a study', ['sw:held', 'topic:held'], ['10.1/held', '10.2/new']);
+    expect(checkNewItems(dir, base).some((p) => p.includes('10.2/new'))).toBe(true);
+  });
+
+  it('passes an edit and a removal', () => {
+    const { dir, base } = repo();
+    commit(dir, 'remove an item', ['topic:held'], ['10.1/held']);
+    expect(checkNewItems(dir, base)).toEqual([]);
+  });
+
+  it('passes a split whose trailer names a held item on the base', () => {
+    const { dir, base } = repo();
+    commit(dir, `split a held item\n\n${SPLIT_TRAILER}: sw:held-part from sw:held`, ['sw:held', 'topic:held', 'sw:held-part'], ['10.1/held']);
+    expect(checkNewItems(dir, base)).toEqual([]);
+  });
+
+  it('refuses a split whose trailer names an item that is not on the base', () => {
+    const { dir, base } = repo();
+    commit(dir, `split\n\n${SPLIT_TRAILER}: sw:held-part from sw:never-held`, ['sw:held', 'topic:held', 'sw:held-part'], ['10.1/held']);
+    expect(checkNewItems(dir, base).some((p) => p.includes('sw:never-held'))).toBe(true);
+  });
+
+  it('reads a trailer from any commit in the range, not only the last', () => {
+    const { dir, base } = repo();
+    commit(dir, `split\n\n${SPLIT_TRAILER}: sw:held-part from sw:held`, ['sw:held', 'topic:held', 'sw:held-part'], ['10.1/held']);
+    commit(dir, 'an unrelated edit', ['sw:held', 'topic:held', 'sw:held-part'], ['10.1/held']);
+    expect(checkNewItems(dir, base)).toEqual([]);
+  });
+
+  it('reads a file the base does not have yet as empty, rather than failing', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'caail-new-items-'));
+    scratch.push(dir);
+    git(dir, 'init', '-q');
+    mkdirSync(join(dir, 'site', 'db', 'ndjson'), { recursive: true });
+    writeFileSync(join(dir, 'site', 'db', 'ndjson', 'items.ndjson'), item('sw:held') + '\n');
+    git(dir, 'add', '-A');
+    git(dir, 'commit', '-q', '-m', 'base, before any Data on request list');
+    const base = git(dir, 'rev-parse', 'HEAD');
+    commit(dir, 'first Data on request study', ['sw:held'], ['10.2/new']);
+    expect(checkNewItems(dir, base)).toEqual(['the Data on request study 10.2/new is new']);
+  });
+
+  it('does not count a trailer from before the base', () => {
+    const { dir } = repo();
+    commit(dir, `split\n\n${SPLIT_TRAILER}: sw:held-part from sw:held`, ['sw:held', 'topic:held'], ['10.1/held']);
+    const base = git(dir, 'rev-parse', 'HEAD');
+    commit(dir, 'add the part later', ['sw:held', 'topic:held', 'sw:held-part'], ['10.1/held']);
+    expect(checkNewItems(dir, base).some((p) => p.includes('sw:held-part'))).toBe(true);
+  });
+});
