@@ -322,10 +322,10 @@ describe('the hand-written statements of the pause agree with NEW_ITEMS_PAUSED',
     if (NEW_ITEMS_PAUSED) {
       expect(flat.includes('paused until CAAIL v2'), `${file} does not say new items are paused until CAAIL v2, while db:add refuses them`).toBe(true);
     } else {
-      // Every statement of the pause, in whatever words, says items "are paused" or that
-      // something waits for v2, so the lifted direction looks for those rather than for the
-      // one phrase the top note uses.
-      const left = [...flat.matchAll(/.{0,40}(?:items are paused|until CAAIL v2|wait for v2).{0,40}/gi)].map((m) => m[0]);
+      // Every statement of the pause, in whatever words, names a pause ("are paused", "while
+      // the pause holds") or says something waits for v2, so the lifted direction looks for
+      // any of those rather than for the one phrase the top note uses.
+      const left = [...flat.matchAll(/.{0,40}(?:\bpause[ds]?\b|until CAAIL v2|wait for v2).{0,40}/gi)].map((m) => m[0]);
       expect(left, `${file} still states the pause after db:add stopped refusing`).toEqual([]);
     }
   });
