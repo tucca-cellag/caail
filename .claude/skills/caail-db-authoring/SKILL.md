@@ -10,6 +10,9 @@ description: Use when adding, editing, or removing a paper, software tool, datab
 > study to a Data on request list either. While the pause holds, `db:add` refuses every
 > descriptor and writes nothing. Edits to existing items (descriptions, licences, DOIs,
 > corrections) still work through the full procedure below, and so does `db:remove`.
+> CI refuses a pull request that adds an item or a Data on request study by any route
+> (`db:check-new-items` in `lint-papers.yml`). A correction that splits a held item into two
+> names the held item in a commit trailer, `Splits: <new id> from <held id>`, one per new id.
 
 ## Overview
 
