@@ -393,7 +393,10 @@ non-catalog canonical files (`OtherResources.md`, `ReferenceWorks.md`, `AwesomeL
     `api/topics.json` — so it is a curator decision, not a refactor to make in passing.
 - **Authoring-time only.** The DB is not in the deploy build: `pnpm build` still parses the committed
   Markdown into `data/*.json`. A plain add/remove is one command — `db:add <descriptor.json>` /
-  `db:remove <id>` (auto frozen-id, guards, regenerate); the full edit flow is `db:build` → edit →
+  `db:remove <id>` (auto frozen-id, guards, regenerate). `db:add` refuses every descriptor while
+  `NEW_ITEMS_PAUSED` in `site/scripts/db/add-item.ts` is true. While it does, add nothing new by any
+  other route either: the edit flow below is then for changes to held items, and the refusal message
+  and the `caail-db-authoring` skill say why. The full edit flow is `db:build` → edit →
   `db:export` → `db:emit` → `db:check` / `db:verify`. Either way, commit **Markdown + NDJSON together**.
   The **`caail-db-authoring`** skill owns this workflow; use it whenever adding/editing a paper, tool,
   database, or dataset row.

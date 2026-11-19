@@ -1,8 +1,9 @@
 /**
  * add-item.ts (db:add) — add one item to the catalog from a JSON descriptor.
- * Rebuilds the DB from committed NDJSON, inserts the item (auto frozen-id), runs the
- * integrity guards, and — only if clean — writes the updated NDJSON + canonical
- * Markdown. Review the diff and commit Markdown + NDJSON together.
+ * New items are paused until CAAIL v2, and until then db:add refuses every descriptor
+ * (NEW_ITEMS_PAUSED below). Otherwise it rebuilds the DB from committed NDJSON, inserts
+ * the item (auto frozen-id), runs the integrity guards, and — only if clean — writes the
+ * updated NDJSON + canonical Markdown. Review the diff and commit Markdown + NDJSON together.
  *
  *   NODE_OPTIONS='--experimental-sqlite --no-warnings' pnpm --dir site db:add <descriptor.json>
  *
@@ -12,32 +13,61 @@
  */
 
 import { readFileSync } from 'node:fs';
-import { importNdjson, exportNdjson } from './lib.js';
+import { exitOnRefusal, importNdjson, RefusalError, runsAsMain } from './lib.js';
 import { addItem, type ItemAdd } from './mutate.js';
-import { runChecks } from './check.js';
-import { emitAll } from './emit-files.js';
+import { checkAndRegenerate, type RegeneratePaths } from './regenerate.js';
+
+/**
+ * New items are paused until CAAIL v2. Every item db:add can create is new, since `addItem`
+ * mints a frozen id no held item has: a paper gets the ref id after every held and retired
+ * one, and every other type a slug `nextFreeId` keeps clear of every id in `items`. So while
+ * the pause holds, db:add refuses every descriptor, first, through `assertAddsOpen`: `main`
+ * before it reads the descriptor file, and `dbAdd` before it reads the NDJSON or validates
+ * the descriptor. Held items still change through the edit flow (db:build, edit, db:export,
+ * db:emit), which this does not touch, and db:remove is unaffected.
+ *
+ * The two hand-written statements of the pause, the notes opening the caail-db-authoring
+ * and zotero-to-caail-sync skills, are held to this constant by add-item.test.ts, so lifting
+ * it means removing them in the same change.
+ */
+export const NEW_ITEMS_PAUSED = true;
+
+export const NEW_ITEMS_PAUSED_MESSAGE =
+  'db:add: new items are paused until CAAIL v2, so nothing was added or written. ' +
+  'Edits to existing items still work: pnpm --dir site db:build, change the item in the DB, ' +
+  'then db:export, db:emit, db:check and db:verify (the caail-db-authoring skill has the full flow). ' +
+  'db:remove still works.';
+
+/** Throws the pause message while new items are paused: the one place the code reads the flag. */
+export function assertAddsOpen(): void {
+  if (NEW_ITEMS_PAUSED) throw new RefusalError(NEW_ITEMS_PAUSED_MESSAGE);
+}
+
+/**
+ * Add one item and regenerate. Returns the frozen id it assigned and the canonical files
+ * it wrote. Throws, writing nothing, while new items are paused and when a guard fails.
+ */
+export function dbAdd(spec: ItemAdd, paths: RegeneratePaths = {}): { id: string; written: string[] } {
+  assertAddsOpen();
+
+  const db = importNdjson(paths.ndjsonDir);
+  const id = addItem(db, spec);
+  const written = checkAndRegenerate(db, `db:add: integrity check failed after adding ${id}`, paths);
+  return { id, written };
+}
 
 function main(): void {
-  const file = process.argv[2];
-  if (!file) { console.error('usage: db:add <descriptor.json>'); process.exit(1); }
-  const spec = JSON.parse(readFileSync(file, 'utf-8')) as ItemAdd;
-
-  const db = importNdjson();
-  const id = addItem(db, spec);
-
-  const bad = runChecks(db).filter((r) => !r.ok);
-  if (bad.length) {
-    console.error(`db:add: integrity check failed after adding ${id} — nothing written:`);
-    for (const r of bad) console.error(`  ✗ ${r.label}: ${r.detail}`);
-    process.exit(1);
+  let result: { id: string; written: string[] };
+  try {
+    assertAddsOpen();
+    const file = process.argv[2];
+    if (!file) throw new RefusalError('usage: db:add <descriptor.json>');
+    result = dbAdd(JSON.parse(readFileSync(file, 'utf-8')) as ItemAdd);
+  } catch (err) {
+    exitOnRefusal(err);
   }
-  // Emit FIRST — it re-parses/validates and throws on a bad state (e.g. a section with no
-  // source anchor) BEFORE any file is written, so a failure can't leave the committed
-  // NDJSON out of sync with the untouched Markdown. Only export once emit has succeeded.
-  const written = emitAll(db);
-  exportNdjson(db);
-  console.log(`Added ${id}. Regenerated ${written.length} canonical files + NDJSON.`);
+  console.log(`Added ${result.id}. Regenerated ${result.written.length} canonical files + NDJSON.`);
   console.log('Review the diff, then commit Markdown + NDJSON together.');
 }
 
-main();
+if (runsAsMain(import.meta.url)) main();

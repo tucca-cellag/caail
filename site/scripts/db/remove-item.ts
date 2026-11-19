@@ -8,30 +8,31 @@
  *   e.g.  pnpm --dir site db:remove sw:oldtool
  */
 
-import { importNdjson, exportNdjson } from './lib.js';
+import { exitOnRefusal, importNdjson, RefusalError, runsAsMain } from './lib.js';
 import { removeItem } from './mutate.js';
-import { runChecks } from './check.js';
-import { emitAll } from './emit-files.js';
+import { checkAndRegenerate, type RegeneratePaths } from './regenerate.js';
+
+/**
+ * Remove one item and regenerate. Returns the canonical files written. Throws, writing
+ * nothing, when the id is unknown or a guard fails.
+ */
+export function dbRemove(id: string, paths: RegeneratePaths = {}): string[] {
+  const db = importNdjson(paths.ndjsonDir);
+  removeItem(db, id);
+  return checkAndRegenerate(db, `db:remove: integrity check failed after removing ${id}`, paths);
+}
 
 function main(): void {
   const id = process.argv[2];
-  if (!id) { console.error('usage: db:remove <id>   (e.g. sw:oldtool, paper:123)'); process.exit(1); }
-
-  const db = importNdjson();
-  removeItem(db, id);
-
-  const bad = runChecks(db).filter((r) => !r.ok);
-  if (bad.length) {
-    console.error(`db:remove: integrity check failed after removing ${id} — nothing written:`);
-    for (const r of bad) console.error(`  ✗ ${r.label}: ${r.detail}`);
-    process.exit(1);
+  let written: string[];
+  try {
+    if (!id) throw new RefusalError('usage: db:remove <id>   (e.g. sw:oldtool, paper:123)');
+    written = dbRemove(id);
+  } catch (err) {
+    exitOnRefusal(err);
   }
-  // Emit first (throws before writing anything on a bad state), then export — so a
-  // failure can't leave the committed NDJSON out of sync with the untouched Markdown.
-  const written = emitAll(db);
-  exportNdjson(db);
   console.log(`Removed ${id}. Regenerated ${written.length} canonical files + NDJSON.`);
   console.log('Review the diff, then commit Markdown + NDJSON together.');
 }
 
-main();
+if (runsAsMain(import.meta.url)) main();

@@ -12,11 +12,65 @@
  */
 
 import { DatabaseSync } from 'node:sqlite';
-import { readFileSync, writeFileSync, mkdirSync, existsSync, rmSync } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, rmSync, realpathSync } from 'node:fs';
+import { join, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url)); // site/scripts/db
+
+/**
+ * Whether the module at `moduleUrl` is the script this process was started on, so a CLI
+ * module runs its `main()` only when executed and not when a test imports it. A wrong "no"
+ * makes the CLI exit 0 having done nothing, so an entry that exists is compared by real path
+ * (it keeps a symlink the module URL has resolved). An entry that does not exist as written
+ * may be the module named without its extension, or with one it does not have, which a
+ * runner resolves itself (tsx given `scripts/db/remove-item`, or `scripts/db/remove-item.js`
+ * by the ESM convention), so only then are both extensions ignored. An entry that resolves
+ * neither way cannot be this module, and the answer is "not main" rather than an error
+ * thrown while the module is imported.
+ */
+export function runsAsMain(moduleUrl: string): boolean {
+  const entry = process.argv[1];
+  if (!entry) return false;
+  const modulePath = realpathSync(fileURLToPath(moduleUrl));
+  try {
+    return realpathSync(entry) === modulePath;
+  } catch {
+    // Not there as written: compare it with the module by name, extensions aside.
+  }
+  const stem = (path: string) => path.replace(/\.[cm]?[jt]sx?$/, '');
+  try {
+    return join(realpathSync(dirname(entry)), stem(basename(entry))) === stem(modulePath);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * A db command declining to act, with a message that says everything its user needs. Thrown
+ * for the pause on new items, a CLI's usage error, a check `checkAndRegenerate` fails, and
+ * every refusal in mutate.ts (an unknown id, topic, area or method, among others). A CLI's
+ * `main()` prints it alone (`exitOnRefusal`). Any other error prints with its stack, as every
+ * error did before the CLIs caught anything: a bug, and also the refusals thrown outside
+ * those places, such as the emit's (`refuseStrayInventory`) and the NDJSON import's.
+ */
+export class RefusalError extends Error {
+  override name = 'RefusalError';
+}
+
+/**
+ * The catch block of a db CLI's `main()`: prints a `RefusalError`'s message alone and exits 1,
+ * and rethrows anything else, so an unexpected failure (a TypeError in the emit, say) reaches
+ * the terminal with its stack.
+ */
+export function exitOnRefusal(err: unknown): never {
+  if (err instanceof RefusalError) {
+    console.error(err.message);
+    process.exit(1);
+  }
+  throw err;
+}
+
 /** Repo root (site/scripts/db -> site/scripts -> site -> repo). */
 export const REPO_ROOT = join(HERE, '..', '..', '..');
 export const SITE_ROOT = join(HERE, '..', '..');

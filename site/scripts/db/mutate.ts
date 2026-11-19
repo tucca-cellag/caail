@@ -6,10 +6,12 @@
  * software/database -> items + catalog; dataset -> items + dataset_rows), plus optional
  * topic tags. `removeItem` deletes an item and all its dependent rows (a paper's id is
  * retired, never reused — matrix + external bookmarks depend on it). Pure DB mutation;
- * the db:add / db:remove CLIs wrap these with export + emit + check.
+ * the db:add / db:remove CLIs follow these with `checkAndRegenerate` (regenerate.ts), which
+ * checks, emits, then exports. Every error thrown here on purpose is a `RefusalError`, which
+ * those CLIs print by its message alone.
  */
 
-import { frozenSlug, ACCESSION, type Db } from './lib.js';
+import { frozenSlug, ACCESSION, RefusalError, type Db } from './lib.js';
 import { INVENTORY_PAGES } from '../parser/datasets.js';
 
 /**
@@ -62,7 +64,7 @@ function tagTopics(db: Db, itemId: string, topics: string[] = []): void {
   for (const slug of topics) {
     const tid = `topic:${slug}`;
     const exists = db.prepare('SELECT 1 FROM topics WHERE item_id=?').get(tid);
-    if (!exists) throw new Error(`addItem: unknown topic '${slug}'. Add it first, or use an existing topic slug.`);
+    if (!exists) throw new RefusalError(`addItem: unknown topic '${slug}'. Add it first, or use an existing topic slug.`);
     tag.run(itemId, tid);
   }
 }
@@ -73,7 +75,7 @@ function areaKey(db: Db, area: string): string {
   if (byKey) return byKey.key;
   const byLabel = db.prepare('SELECT key FROM areas WHERE label=?').get(area) as { key: string } | undefined;
   if (byLabel) return byLabel.key;
-  throw new Error(`addItem: no matrix area '${area}'. Existing columns are authored in Taxonomy.md + Papers.md.`);
+  throw new RefusalError(`addItem: no matrix area '${area}'. Existing columns are authored in Taxonomy.md + Papers.md.`);
 }
 
 /**
@@ -108,7 +110,7 @@ function addItemImpl(db: Db, spec: ItemAdd): string {
     const section = spec.section ?? 'References';
     const known = new Set((db.prepare('SELECT DISTINCT section FROM papers').all() as { section: string }[]).map((r) => r.section));
     if (!known.has(section)) {
-      throw new Error(`addItem: section '${section}' has no citation in Papers.md to attach to. Add its '## ${section}' heading + a first reference to Papers.md and re-bootstrap, or use a populated section.`);
+      throw new RefusalError(`addItem: section '${section}' has no citation in Papers.md to attach to. Add its '## ${section}' heading + a first reference to Papers.md and re-bootstrap, or use a populated section.`);
     }
     // Max over live papers AND retired ids, so a removed ref_id is never handed out again.
     const refId = nextInt(db, 'SELECT MAX(m) m FROM (SELECT MAX(ref_id) m FROM papers UNION ALL SELECT MAX(ref_id) m FROM retired_paper_ids)');
@@ -133,7 +135,7 @@ function addItemImpl(db: Db, spec: ItemAdd): string {
     const insCell = db.prepare('INSERT INTO matrix_cells(method,area_key,ref_id,label,ordinal) VALUES(?,?,?,?,?)');
     for (const c of spec.cells ?? []) {
       const method = db.prepare('SELECT label FROM methods WHERE label=?').get(c.method) as { label: string } | undefined;
-      if (!method) throw new Error(`addItem: no matrix method '${c.method}'. Rows are authored in Taxonomy.md + Papers.md.`);
+      if (!method) throw new RefusalError(`addItem: no matrix method '${c.method}'. Rows are authored in Taxonomy.md + Papers.md.`);
       insCell.run(c.method, areaKey(db, c.area), refId, spec.label, nextInt(db, 'SELECT MAX(ordinal) m FROM matrix_cells'));
     }
     tagTopics(db, id, spec.topics);
@@ -159,10 +161,10 @@ function addItemImpl(db: Db, spec: ItemAdd): string {
   // into; a typo'd or reference/benchmark page would be persisted to NDJSON and then
   // silently never emitted to any Markdown file, so reject it up front.
   if (!INVENTORY_PAGES.includes(spec.page)) {
-    throw new Error(`addItem: '${spec.page}' is not an inventory dataset page. Valid pages: ${INVENTORY_PAGES.join(', ')}.`);
+    throw new RefusalError(`addItem: '${spec.page}' is not an inventory dataset page. Valid pages: ${INVENTORY_PAGES.join(', ')}.`);
   }
   if (!spec.cells?.length) {
-    throw new Error('addItem: a dataset row needs at least one cell (the inventory-table row values).');
+    throw new RefusalError('addItem: a dataset row needs at least one cell (the inventory-table row values).');
   }
   const joined = spec.cells.join(' ');
   const acc = joined.match(ACCESSION)?.[0];
@@ -178,14 +180,14 @@ function addItemImpl(db: Db, spec: ItemAdd): string {
 /** Delete an item and its dependent rows (paper ids are retired, never reused). */
 export function removeItem(db: Db, id: string): void {
   const item = db.prepare('SELECT type FROM items WHERE id=?').get(id) as { type: string } | undefined;
-  if (!item) throw new Error(`removeItem: no item '${id}'`);
+  if (!item) throw new RefusalError(`removeItem: no item '${id}'`);
   // A theme with child fine-tags can't be deleted without orphaning them (topics.theme_slug
   // FK has no cascade) — refuse with a clear message rather than a raw FK error / partial state.
   if (item.type === 'topic') {
     const slug = (db.prepare('SELECT slug FROM topics WHERE item_id=?').get(id) as { slug: string } | undefined)?.slug;
     const children = slug ? (db.prepare('SELECT slug FROM topics WHERE theme_slug=?').all(slug) as { slug: string }[]) : [];
     if (children.length) {
-      throw new Error(`removeItem: theme '${id}' has ${children.length} child fine-tag(s) (${children.map((c) => c.slug).join(', ')}); remove or reassign them first.`);
+      throw new RefusalError(`removeItem: theme '${id}' has ${children.length} child fine-tag(s) (${children.map((c) => c.slug).join(', ')}); remove or reassign them first.`);
     }
   }
   // All deletes for one item are atomic — a mid-sequence failure rolls back rather than
