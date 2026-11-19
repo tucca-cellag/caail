@@ -10,9 +10,9 @@
  *   NODE_OPTIONS='--experimental-sqlite --no-warnings' pnpm --dir site db:check-new-items <base>
  *
  * Refused: an id in `items.ndjson` at HEAD that is not at `<base>`, other than a topic tag
- * (a subject label, not a catalog entry; an item's kind is read from its `type`, which the
- * schema does not tie to its id's prefix), and a DOI in `datasets_on_request.ndjson` at HEAD
- * that is not at `<base>`. Two corrections may add a key, each declared in a trailer on a
+ * (a subject label, not a catalog entry; an item's kind is read from its `type` as well as
+ * its id's prefix, which db:check requires to agree), and a DOI in `datasets_on_request.ndjson`
+ * at HEAD that is not at `<base>`, read whatever its case in a trailer. Two corrections may add a key, each declared in a trailer on a
  * commit in `<base>..HEAD`, one trailer per new key, and each held key named once (a value
  * repeated word for word counts once). Neither names a paper id, as the new or the held one:
  *
@@ -81,6 +81,11 @@ export interface Trailers {
   remints: string[];
 }
 
+/** Whether a trailer key is a DOI (a Data on request study's) rather than an item id. */
+const isDoiKey = (key: string) => key.startsWith('10.');
+/** A DOI is case-insensitive and stored bare and lowercase, so a trailer's is read lowercased. */
+const asStored = (key: string) => (isDoiKey(key) ? key.toLowerCase() : key);
+
 /**
  * Each `<key>:` trailer value read as `<new id> from <held id>`. One that does not read that
  * way is recorded in `problems`, naming `heldName` as the trailer's own help does. A value
@@ -90,7 +95,7 @@ function declarations(key: string, heldName: string, values: string[], problems:
   const out: { raw: string; newId: string; heldId: string }[] = [];
   for (const raw of new Set(values.map((v) => v.trim()))) {
     const m = raw.match(/^(\S+) from (\S+)$/);
-    if (m) out.push({ raw, newId: m[1], heldId: m[2] });
+    if (m) out.push({ raw, newId: asStored(m[1]), heldId: asStored(m[2]) });
     else problems.push(`${key}: ${raw}: not "<new id> from <${heldName}>"`);
   }
   return out;
@@ -120,10 +125,10 @@ export function newItemProblems(base: CatalogKeys, head: CatalogKeys, trailers: 
   // Neither trailer names a paper id, new or held: every new paper is a new reference, and
   // a bad paper id is retired rather than re-minted (CLAUDE.md). Nor does either name a
   // topic tag as what it corrects: a topic is a subject label, so it holds no entry. Kind is
-  // read from each item's `type` as well as its prefix, since the schema ties neither to the
-  // other: a new id's type at the head, a held id's at the base.
+  // read from each item's `type` as well as its prefix, a new id's type at the head and a held
+  // id's at the base. db:check requires the two to agree and refuses a mismatch later in the
+  // same CI job; reading both keeps this guard right when it runs on its own.
   const isPaper = (id: string, keys: CatalogKeys) => id.startsWith('paper:') || keys.itemTypes.get(id) === 'paper';
-  const isDoiKey = (key: string) => key.startsWith('10.');
   const topicHeld = (key: string, raw: string, held: string): boolean => {
     if (!held.startsWith('topic:') && base.itemTypes.get(held) !== 'topic') return false;
     problems.push(`${key}: ${raw}: ${held} is a topic tag, not a catalog entry, so there is nothing to split or re-mint`);

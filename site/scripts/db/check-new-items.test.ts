@@ -229,6 +229,20 @@ describe('newItemProblems: what a pull request may change while new items are pa
     const head = keys(['sw:held', 'db:held', 'topic:held', 'sw:new'], []);
     expect(newItemProblems(BASE, head, remints('sw:new from 10.1/held'))).toContain('sw:new is a new item');
   });
+
+  it('reads a DOI in a re-mint trailer whatever its case, since a DOI is case-insensitive and stored lowercase', () => {
+    const base = keys(['sw:held'], ['10.1002/bit.7019']);
+    const head = keys(['sw:held'], ['10.1002/bit.70190']);
+    expect(newItemProblems(base, head, remints('10.1002/BIT.70190 from 10.1002/BIT.7019'))).toEqual([]);
+    expect(newItemProblems(base, head, remints('10.1002/BIT.70190 from 10.1002/bit.7019'))).toEqual([]);
+  });
+
+  it('counts one DOI named in two cases as one held key', () => {
+    const base = keys(['sw:held'], ['10.1/held']);
+    const head = keys(['sw:held'], ['10.1/a', '10.1/b']);
+    const problems = newItemProblems(base, head, remints('10.1/a from 10.1/held', '10.1/b from 10.1/HELD'));
+    expect(problems.some((p) => /10\.1\/held is named by more than one trailer/.test(p))).toBe(true);
+  });
 });
 
 describe('refusalMessage', () => {
@@ -268,6 +282,27 @@ describe('the hand-written statements of the trailers agree with the guard', () 
     const workflow = flat('.github/workflows/lint-papers.yml');
     expect(workflow).toContain(`"${SPLIT_TRAILER}:"`);
     expect(workflow).toContain(`"${REMINT_TRAILER}:"`);
+  });
+
+  it("CONTRIBUTING.md's list of what CI refuses is every item type but a topic, in the schema's order", () => {
+    // The guard refuses every new item whose type is not `topic`, so the list a contributor
+    // reads is the schema's type CHECK less `topic`. A type added there without a word here
+    // fails this test, rather than leaving CONTRIBUTING.md understating what CI refuses.
+    const words: Record<string, string> = {
+      paper: 'papers',
+      software: 'software',
+      database: 'databases',
+      dataset: 'datasets',
+      report: 'field reports',
+    };
+    const schema = readFileSync(join(REPO_ROOT, 'site', 'db', 'schema.sql'), 'utf-8');
+    const check = schema.match(/type\s+TEXT NOT NULL CHECK \(type IN \(([^)]*)\)\)/);
+    expect(check, "schema.sql's items.type CHECK").not.toBeNull();
+    const types = [...check![1].matchAll(/'([^']+)'/g)].map((m) => m[1]).filter((t) => t !== 'topic');
+    for (const type of types) {
+      expect(words[type], `no word for item type "${type}": add it here and to CONTRIBUTING.md's list`).toBeDefined();
+    }
+    expect(flat('CONTRIBUTING.md')).toContain(`(${types.map((t) => words[t]).join(', ')})`);
   });
 });
 
