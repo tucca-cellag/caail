@@ -102,7 +102,11 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: lint-papers-${{ github.ref }}
+  # One group per pull request, so a new push cancels the stale run. A push to main gets a
+  # group of its own commit instead: the new-item guard compares each push with the one
+  # before it, so a push whose run was cancelled, or replaced while pending (which a shared
+  # group does even without cancel-in-progress), would have its commits checked by nothing.
+  group: lint-papers-${{ github.event_name == 'push' && github.sha || github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -175,8 +179,10 @@ jobs:
 
       # While new items are paused until CAAIL v2 (NEW_ITEMS_PAUSED in
       # site/scripts/db/add-item.ts), refuse a change that adds an item id or a
-      # Data on request study by any route, compared with the tree it adds to: the
-      # merge commit's first parent on a pull request, the previous tip on a push.
+      # Data on request study to the NDJSON, however it got there, compared with the
+      # tree it adds to: the merge commit's first parent on a pull request, the
+      # previous tip on a push. (An entry added to the Markdown alone fails the sync
+      # guard below instead.)
       # A correction that adds an id declares it in a commit trailer, "Splits:"
       # for a split of a held item, "Re-mints:" for a repaired id (see
       # check-new-items.ts). The base goes through env rather than into the script.

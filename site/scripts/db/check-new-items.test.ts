@@ -123,6 +123,41 @@ describe('newItemProblems: what a pull request may change while new items are pa
     expect(problems.some((p) => p.startsWith(`${REMINT_TRAILER}: sw:held-renamed:`) && /<new id> from <old id>/.test(p))).toBe(true);
     expect(problems).toContain('sw:held-renamed is a new item');
   });
+
+  it('lets each held item be named once, so one trailer target cannot let many new ids through', () => {
+    const head = keys(['sw:held', 'db:held', 'topic:held', 'sw:held-part', 'paper:400'], ['10.1/held']);
+    const problems = newItemProblems(BASE, head, splits('sw:held-part from sw:held', 'paper:400 from sw:held'));
+    expect(problems.some((p) => p.startsWith(`${SPLIT_TRAILER}: paper:400 from sw:held:`) && /more than one trailer/.test(p))).toBe(true);
+    expect(problems).toContain('paper:400 is a new item');
+    expect(problems).not.toContain('sw:held-part is a new item');
+  });
+
+  it('refuses a re-mint to or from a paper id, since a paper id is retired rather than re-minted', () => {
+    const base = keys(['paper:5', 'sw:held', 'topic:held']);
+    const fromPaper = newItemProblems(base, keys(['paper:349', 'sw:held', 'topic:held']), remints('paper:349 from paper:5'));
+    expect(fromPaper.some((p) => p.startsWith(`${REMINT_TRAILER}: paper:349 from paper:5:`) && /paper id/.test(p))).toBe(true);
+    expect(fromPaper).toContain('paper:349 is a new item');
+    const toPaper = newItemProblems(base, keys(['paper:5', 'paper:349', 'topic:held']), remints('paper:349 from sw:held'));
+    expect(toPaper.some((p) => p.startsWith(`${REMINT_TRAILER}: paper:349 from sw:held:`) && /paper id/.test(p))).toBe(true);
+    expect(toPaper).toContain('paper:349 is a new item');
+  });
+
+  it('passes a re-mint that corrects a Data on request study\'s DOI', () => {
+    const head = keys(['sw:held', 'db:held', 'topic:held'], ['10.1/held-corrected']);
+    expect(newItemProblems(BASE, head, remints('10.1/held-corrected from 10.1/held'))).toEqual([]);
+  });
+
+  it('refuses a DOI re-mint whose old DOI is still listed', () => {
+    const head = keys(['sw:held', 'db:held', 'topic:held'], ['10.1/held', '10.2/new']);
+    const problems = newItemProblems(BASE, head, remints('10.2/new from 10.1/held'));
+    expect(problems.some((p) => p.startsWith(`${REMINT_TRAILER}:`) && /10\.1\/held is still here/.test(p))).toBe(true);
+    expect(problems).toContain('the Data on request study 10.2/new is new');
+  });
+
+  it('does not let a DOI re-mint cover a new item id', () => {
+    const head = keys(['sw:held', 'db:held', 'topic:held', 'sw:new'], []);
+    expect(newItemProblems(BASE, head, remints('sw:new from 10.1/held'))).toContain('sw:new is a new item');
+  });
 });
 
 describe('refusalMessage', () => {
@@ -210,6 +245,12 @@ describe.runIf(NEW_ITEMS_PAUSED)('checkNewItems reads the base and head commits 
     const { dir, base } = repo();
     commit(dir, `re-mint\n\n${REMINT_TRAILER}: sw:held-renamed from sw:held`, ['sw:held', 'topic:held', 'sw:held-renamed'], ['10.1/held']);
     expect(checkNewItems(dir, base).some((p) => p.startsWith(`${REMINT_TRAILER}:`) && /still here/.test(p))).toBe(true);
+  });
+
+  it('reads a trailer value folded onto a second line as one value', () => {
+    const { dir, base } = repo();
+    commit(dir, `re-mint a held id\n\n${REMINT_TRAILER}: sw:held-renamed from\n sw:held`, ['topic:held', 'sw:held-renamed'], ['10.1/held']);
+    expect(checkNewItems(dir, base)).toEqual([]);
   });
 
   it('reads a split and a re-mint trailer from the same commit', () => {
