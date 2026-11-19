@@ -8,7 +8,7 @@
  *   e.g.  pnpm --dir site db:remove sw:oldtool
  */
 
-import { exitOnRefusal, importNdjson, runsAsMain } from './lib.js';
+import { exitOnRefusal, importNdjson, RefusalError, runsAsMain } from './lib.js';
 import { removeItem } from './mutate.js';
 import { checkAndRegenerate, type RegeneratePaths } from './regenerate.js';
 
@@ -24,10 +24,9 @@ export function dbRemove(id: string, paths: RegeneratePaths = {}): string[] {
 
 function main(): void {
   const id = process.argv[2];
-  if (!id) { console.error('usage: db:remove <id>   (e.g. sw:oldtool, paper:123)'); process.exit(1); }
-
   let written: string[];
   try {
+    if (!id) throw new RefusalError('usage: db:remove <id>   (e.g. sw:oldtool, paper:123)');
     written = dbRemove(id);
   } catch (err) {
     exitOnRefusal(err);

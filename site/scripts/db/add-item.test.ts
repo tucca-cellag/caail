@@ -224,6 +224,15 @@ describe('the db CLIs run when executed, however they are named', () => {
   it.each(['remove-item', 'remove-item.js'])('runs the CLI when it is named %s, rather than exiting 0', (name) => {
     expectRefusal(fileURLToPath(new URL(`./${name}`, import.meta.url)), `named ${name}`);
   });
+
+  it('prints db:remove\'s usage error alone when it is given no id', () => {
+    const run = spawnSync(join(SITE_ROOT, 'node_modules', '.bin', 'tsx'), [fileURLToPath(new URL('./remove-item.ts', import.meta.url))], {
+      encoding: 'utf-8',
+      env: { ...process.env, NODE_OPTIONS: '--experimental-sqlite --no-warnings' },
+    });
+    expect(run.status).toBe(1);
+    expect(run.stderr.trim()).toBe('usage: db:remove <id>   (e.g. sw:oldtool, paper:123)');
+  });
 });
 
 describe('a db CLI prints a refusal alone and lets a bug keep its stack', () => {
