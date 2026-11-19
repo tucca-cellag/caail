@@ -277,8 +277,18 @@ describe('refusalMessage', () => {
     expect(refusalMessage(['x']).replace(/\s+/g, ' ')).toMatch(/Neither trailer adds a new item: suggest one through an issue instead/);
   });
 
-  it('names no system outside this repository', () => {
-    expect(refusalMessage(['x'])).not.toMatch(/https?:\/\//);
+  it('names no system outside this repository: its fixed text is pinned, so any word added to it is read in review', () => {
+    expect(refusalMessage([])).toBe(
+      [
+        'db:check-new-items: new items are paused until CAAIL v2, so this change may not add one.',
+        'Edits to items already here, and removals, still pass. A correction that adds an id names',
+        'what it corrects in a commit trailer, one per new id: a split of a held item into two keeps it,',
+        '"Splits: <new id> from <held id>"; a repair that replaces a held item\'s id (never a',
+        'paper\'s), or a Data on request study\'s DOI, drops the old one, "Re-mints: <new id> from <old id>".',
+        'A trailer goes in the last paragraph of a commit message, the only place git reads one.',
+        'Neither trailer adds a new item: suggest one through an issue instead.',
+      ].join('\n'),
+    );
   });
 });
 
