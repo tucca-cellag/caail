@@ -13,7 +13,7 @@
  */
 
 import { readFileSync } from 'node:fs';
-import { importNdjson, runsAsMain } from './lib.js';
+import { exitOnRefusal, importNdjson, RefusalError, runsAsMain } from './lib.js';
 import { addItem, type ItemAdd } from './mutate.js';
 import { checkAndRegenerate, type RegeneratePaths } from './regenerate.js';
 
@@ -40,7 +40,7 @@ export const NEW_ITEMS_PAUSED_MESSAGE =
 
 /** Throws the pause message while new items are paused: the one place the code reads the flag. */
 export function assertAddsOpen(): void {
-  if (NEW_ITEMS_PAUSED) throw new Error(NEW_ITEMS_PAUSED_MESSAGE);
+  if (NEW_ITEMS_PAUSED) throw new RefusalError(NEW_ITEMS_PAUSED_MESSAGE);
 }
 
 /**
@@ -61,11 +61,10 @@ function main(): void {
   try {
     assertAddsOpen();
     const file = process.argv[2];
-    if (!file) throw new Error('usage: db:add <descriptor.json>');
+    if (!file) throw new RefusalError('usage: db:add <descriptor.json>');
     result = dbAdd(JSON.parse(readFileSync(file, 'utf-8')) as ItemAdd);
   } catch (err) {
-    console.error(err instanceof Error ? err.message : String(err));
-    process.exit(1);
+    exitOnRefusal(err);
   }
   console.log(`Added ${result.id}. Regenerated ${result.written.length} canonical files + NDJSON.`);
   console.log('Review the diff, then commit Markdown + NDJSON together.');

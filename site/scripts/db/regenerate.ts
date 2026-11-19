@@ -8,7 +8,7 @@
  * guard reports the mismatch in the meantime.
  */
 
-import { exportNdjson, type Db } from './lib.js';
+import { exportNdjson, RefusalError, type Db } from './lib.js';
 import { runChecks } from './check.js';
 import { emitAll } from './emit-files.js';
 
@@ -30,7 +30,7 @@ export interface RegeneratePaths {
 export function checkAndRegenerate(db: Db, failure: string, paths: RegeneratePaths = {}): string[] {
   const bad = runChecks(db, paths.root).filter((r) => !r.ok);
   if (bad.length) {
-    throw new Error(`${failure} — nothing written:\n${bad.map((r) => `  ✗ ${r.label}: ${r.detail}`).join('\n')}`);
+    throw new RefusalError(`${failure} — nothing written:\n${bad.map((r) => `  ✗ ${r.label}: ${r.detail}`).join('\n')}`);
   }
   const written = emitAll(db, paths.root);
   exportNdjson(db, paths.ndjsonDir);

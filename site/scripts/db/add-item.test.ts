@@ -10,7 +10,7 @@
  * the pause are held to the constant that enforces it.
  */
 
-import { afterAll, beforeAll, describe, it, expect } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, it, expect, vi } from 'vitest';
 import { spawnSync } from 'node:child_process';
 import { cpSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -18,7 +18,7 @@ import { dirname, join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { parseCatalogFile } from '../parser/catalog.js';
-import { importNdjson, exportNdjson, runsAsMain, NDJSON_DIR, REPO_ROOT, SITE_ROOT, type Db } from './lib.js';
+import { importNdjson, exportNdjson, exitOnRefusal, runsAsMain, RefusalError, NDJSON_DIR, REPO_ROOT, SITE_ROOT, type Db } from './lib.js';
 import { extractInventory } from './extract.js';
 import { runChecks } from './check.js';
 import { emitAll } from './emit-files.js';
@@ -196,26 +196,55 @@ describe('the db CLIs run when executed, however they are named', () => {
     expect(asMain((d) => join(d, 'cli.js'))).toBe(true);
   });
 
+  /**
+   * The id the spawned db:remove is asked to remove. These runs use the real CLI, which reads
+   * and writes the live NDJSON and repo, so the id must be one no item can carry: `slugify`
+   * lowercases and turns spaces into hyphens, so no minted id holds a capital or a space, and
+   * the CLI can only refuse it.
+   */
+  const NO_SUCH_ID = 'sw:NO SUCH ITEM';
+
+  /** Runs db:remove at `cli` on NO_SUCH_ID, and checks it ran and refused by message alone. */
+  function expectRefusal(cli: string, how: string): void {
+    const run = spawnSync(join(SITE_ROOT, 'node_modules', '.bin', 'tsx'), [cli, NO_SUCH_ID], {
+      encoding: 'utf-8',
+      env: { ...process.env, NODE_OPTIONS: '--experimental-sqlite --no-warnings' },
+    });
+    expect(run.status, `db:remove ${how} exited without running`).toBe(1);
+    expect(run.stderr.trim(), 'db:remove printed more than its refusal').toBe(`removeItem: no item '${NO_SUCH_ID}'`);
+  }
+
   it('runs the CLI when the checkout is reached through a symlink, rather than exiting 0', () => {
     const link = join(mkdtempSync(join(tmpdir(), 'caail-db-link-')), 'db');
     scratch.push(dirname(link));
     symlinkSync(fileURLToPath(new URL('.', import.meta.url)), link, 'dir');
-    const run = spawnSync(join(SITE_ROOT, 'node_modules', '.bin', 'tsx'), [join(link, 'remove-item.ts'), 'sw:zz-no-such-item'], {
-      encoding: 'utf-8',
-      env: { ...process.env, NODE_OPTIONS: '--experimental-sqlite --no-warnings' },
-    });
-    expect(run.status, 'db:remove run through a symlink exited without running').toBe(1);
-    expect(run.stderr).toMatch(/no item 'sw:zz-no-such-item'/);
+    expectRefusal(join(link, 'remove-item.ts'), 'run through a symlink');
   });
 
-  it('runs the CLI when it is named without its extension, rather than exiting 0', () => {
-    const bare = fileURLToPath(new URL('./remove-item', import.meta.url));
-    const run = spawnSync(join(SITE_ROOT, 'node_modules', '.bin', 'tsx'), [bare, 'sw:zz-no-such-item'], {
-      encoding: 'utf-8',
-      env: { ...process.env, NODE_OPTIONS: '--experimental-sqlite --no-warnings' },
-    });
-    expect(run.status, 'db:remove named without its extension exited without running').toBe(1);
-    expect(run.stderr).toMatch(/no item 'sw:zz-no-such-item'/);
+  it.each(['remove-item', 'remove-item.js'])('runs the CLI when it is named %s, rather than exiting 0', (name) => {
+    expectRefusal(fileURLToPath(new URL(`./${name}`, import.meta.url)), `named ${name}`);
+  });
+});
+
+describe('a db CLI prints a refusal alone and lets a bug keep its stack', () => {
+  afterEach(() => { vi.restoreAllMocks(); });
+
+  it('prints a RefusalError by its message and exits 1', () => {
+    const printed = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(process, 'exit').mockImplementation(((code?: number) => { throw new Error(`exit ${code}`); }) as never);
+
+    expect(() => exitOnRefusal(new RefusalError('db:remove: refused'))).toThrow('exit 1');
+    expect(printed.mock.calls).toEqual([['db:remove: refused']]);
+  });
+
+  it('rethrows any other error, printing nothing and not exiting', () => {
+    const printed = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const exit = vi.spyOn(process, 'exit').mockImplementation(((code?: number) => { throw new Error(`exit ${code}`); }) as never);
+    const bug = new TypeError("Cannot read properties of undefined (reading 'rel')");
+
+    expect(() => exitOnRefusal(bug)).toThrow(bug);
+    expect(printed).not.toHaveBeenCalled();
+    expect(exit).not.toHaveBeenCalled();
   });
 });
 

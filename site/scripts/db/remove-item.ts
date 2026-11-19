@@ -8,7 +8,7 @@
  *   e.g.  pnpm --dir site db:remove sw:oldtool
  */
 
-import { importNdjson, runsAsMain } from './lib.js';
+import { exitOnRefusal, importNdjson, runsAsMain } from './lib.js';
 import { removeItem } from './mutate.js';
 import { checkAndRegenerate, type RegeneratePaths } from './regenerate.js';
 
@@ -30,8 +30,7 @@ function main(): void {
   try {
     written = dbRemove(id);
   } catch (err) {
-    console.error(err instanceof Error ? err.message : String(err));
-    process.exit(1);
+    exitOnRefusal(err);
   }
   console.log(`Removed ${id}. Regenerated ${written.length} canonical files + NDJSON.`);
   console.log('Review the diff, then commit Markdown + NDJSON together.');

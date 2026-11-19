@@ -45,6 +45,30 @@ export function runsAsMain(moduleUrl: string): boolean {
     return false;
   }
 }
+
+/**
+ * A db command declining to act, with a message that says everything its user needs: the
+ * pause on new items, a usage error, a failed integrity check, an id or descriptor the DB
+ * cannot take. A CLI's `main()` prints the message alone (`exitOnRefusal`); any other error
+ * is a bug and keeps its stack.
+ */
+export class RefusalError extends Error {
+  override name = 'RefusalError';
+}
+
+/**
+ * The catch block of a db CLI's `main()`: prints a `RefusalError`'s message alone and exits 1,
+ * and rethrows anything else, so an unexpected failure (a TypeError in the emit, say) reaches
+ * the terminal with its stack.
+ */
+export function exitOnRefusal(err: unknown): never {
+  if (err instanceof RefusalError) {
+    console.error(err.message);
+    process.exit(1);
+  }
+  throw err;
+}
+
 /** Repo root (site/scripts/db -> site/scripts -> site -> repo). */
 export const REPO_ROOT = join(HERE, '..', '..', '..');
 export const SITE_ROOT = join(HERE, '..', '..');
