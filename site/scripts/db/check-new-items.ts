@@ -10,7 +10,8 @@
  *   NODE_OPTIONS='--experimental-sqlite --no-warnings' pnpm --dir site db:check-new-items <base>
  *
  * Refused: an id in `items.ndjson` at HEAD that is not at `<base>`, other than a topic tag
- * (a subject label, not a catalog entry), and a DOI in `datasets_on_request.ndjson` at HEAD
+ * (a subject label, not a catalog entry; an item's kind is read from its `type`, which the
+ * schema does not tie to its id's prefix), and a DOI in `datasets_on_request.ndjson` at HEAD
  * that is not at `<base>`. Two corrections may add a key, each declared in a trailer on a
  * commit in `<base>..HEAD`, one trailer per new key, and each held key named once (a value
  * repeated word for word counts once). Neither names a paper id, as the new or the held one:
@@ -47,23 +48,31 @@ const ON_REQUEST = ndjsonPath('datasets_on_request');
 /** The keys that say whether a catalog entry is new: item ids, and Data on request DOIs. */
 export interface CatalogKeys {
   itemIds: Set<string>;
+  /** Each item's `type`. The schema does not tie it to the id's prefix, so kind is read here. */
+  itemTypes: Map<string, string>;
   onRequestDois: Set<string>;
 }
 
-function ndjsonField(text: string, field: string): Set<string> {
-  const out = new Set<string>();
+/** Each row's `fields`, all required strings, in file order. */
+function ndjsonRows(text: string, fields: string[]): string[][] {
+  const out: string[][] = [];
   for (const line of text.split('\n')) {
     if (!line.trim()) continue;
-    const value = (JSON.parse(line) as Record<string, unknown>)[field];
-    if (typeof value !== 'string') throw new Error(`a row has no string "${field}": ${line}`);
-    out.add(value);
+    const row = JSON.parse(line) as Record<string, unknown>;
+    out.push(fields.map((field) => {
+      const value = row[field];
+      if (typeof value !== 'string') throw new Error(`a row has no string "${field}": ${line}`);
+      return value;
+    }));
   }
   return out;
 }
 
 /** The catalog keys held in an `items.ndjson` and a `datasets_on_request.ndjson`. */
 export function catalogKeys(itemsNdjson: string, onRequestNdjson: string): CatalogKeys {
-  return { itemIds: ndjsonField(itemsNdjson, 'id'), onRequestDois: ndjsonField(onRequestNdjson, 'doi') };
+  const itemTypes = new Map(ndjsonRows(itemsNdjson, ['id', 'type']).map(([id, type]) => [id, type] as const));
+  const onRequestDois = new Set(ndjsonRows(onRequestNdjson, ['doi']).map(([doi]) => doi));
+  return { itemIds: new Set(itemTypes.keys()), itemTypes, onRequestDois };
 }
 
 /** The values of every trailer in a change's commits that may let a new id through, by key. */
@@ -110,15 +119,19 @@ export function newItemProblems(base: CatalogKeys, head: CatalogKeys, trailers: 
 
   // Neither trailer names a paper id, new or held: every new paper is a new reference, and
   // a bad paper id is retired rather than re-minted (CLAUDE.md). Nor does either name a
-  // topic tag as what it corrects: a topic is a subject label, so it holds no entry.
+  // topic tag as what it corrects: a topic is a subject label, so it holds no entry. Kind is
+  // read from each item's `type` as well as its prefix, since the schema ties neither to the
+  // other: a new id's type at the head, a held id's at the base.
+  const isPaper = (id: string, keys: CatalogKeys) => id.startsWith('paper:') || keys.itemTypes.get(id) === 'paper';
+  const isDoiKey = (key: string) => key.startsWith('10.');
   const topicHeld = (key: string, raw: string, held: string): boolean => {
-    if (!held.startsWith('topic:')) return false;
+    if (!held.startsWith('topic:') && base.itemTypes.get(held) !== 'topic') return false;
     problems.push(`${key}: ${raw}: ${held} is a topic tag, not a catalog entry, so there is nothing to split or re-mint`);
     return true;
   };
   for (const { raw, newId, heldId } of declarations(SPLIT_TRAILER, 'held id', trailers.splits, problems)) {
     if (topicHeld(SPLIT_TRAILER, raw, heldId)) continue;
-    if (newId.startsWith('paper:') || heldId.startsWith('paper:')) {
+    if (isPaper(newId, head) || isPaper(heldId, base)) {
       problems.push(`${SPLIT_TRAILER}: ${raw}: a paper id is never split; each new paper is a new reference`);
     } else if (base.onRequestDois.has(heldId)) {
       problems.push(`${SPLIT_TRAILER}: ${raw}: a Data on request study is not split; a corrected DOI is named in "${REMINT_TRAILER}:"`);
@@ -136,8 +149,10 @@ export function newItemProblems(base: CatalogKeys, head: CatalogKeys, trailers: 
   for (const { raw, newId, heldId } of declarations(REMINT_TRAILER, 'old id', trailers.remints, problems)) {
     if (topicHeld(REMINT_TRAILER, raw, heldId)) continue;
     const isDoi = base.onRequestDois.has(heldId);
-    if (newId.startsWith('paper:') || heldId.startsWith('paper:')) {
+    if (isPaper(newId, head) || isPaper(heldId, base)) {
       problems.push(`${REMINT_TRAILER}: ${raw}: a paper id is never re-minted; a bad one is retired`);
+    } else if (isDoiKey(newId) !== isDoiKey(heldId)) {
+      problems.push(`${REMINT_TRAILER}: ${raw}: a re-mint keeps the same kind of key, an item id for an item id or a DOI for a DOI`);
     } else if (!isDoi && !base.itemIds.has(heldId)) {
       problems.push(`${REMINT_TRAILER}: ${raw}: ${heldId} is not on the base, so this is not a re-mint of a held item`);
     } else if (isDoi ? head.onRequestDois.has(heldId) : head.itemIds.has(heldId)) {
@@ -148,7 +163,7 @@ export function newItemProblems(base: CatalogKeys, head: CatalogKeys, trailers: 
   }
 
   for (const id of [...head.itemIds].sort()) {
-    if (base.itemIds.has(id) || id.startsWith('topic:') || newIds.has(id)) continue;
+    if (base.itemIds.has(id) || head.itemTypes.get(id) === 'topic' || newIds.has(id)) continue;
     problems.push(`${id} is a new item`);
   }
   for (const doi of [...head.onRequestDois].sort()) {
@@ -187,15 +202,17 @@ function fileAt(repo: string, ref: string, path: string, side: 'base' | 'head'):
 
 /** The catalog keys at `ref`, refusing a file that does not parse and naming it and the ref. */
 function keysAt(repo: string, ref: string, side: 'base' | 'head'): CatalogKeys {
-  const read = (path: string, field: string): Set<string> => {
+  const parsed = (path: string, parse: (text: string) => CatalogKeys): CatalogKeys => {
     const text = fileAt(repo, ref, path, side);
     try {
-      return ndjsonField(text, field);
+      return parse(text);
     } catch (err) {
       throw new RefusalError(`db:check-new-items: ${path} at ${ref} is not valid NDJSON: ${(err as Error).message}`);
     }
   };
-  return { itemIds: read(ITEMS, 'id'), onRequestDois: read(ON_REQUEST, 'doi') };
+  const items = parsed(ITEMS, (text) => catalogKeys(text, ''));
+  const onRequest = parsed(ON_REQUEST, (text) => catalogKeys('', text));
+  return { itemIds: items.itemIds, itemTypes: items.itemTypes, onRequestDois: onRequest.onRequestDois };
 }
 
 /** Refuses a ref that is not a commit in the clone, naming it, rather than letting git throw. */

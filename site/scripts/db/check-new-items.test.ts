@@ -27,9 +27,16 @@ import {
 import { NEW_ITEMS_PAUSED } from './add-item.js';
 import { REPO_ROOT } from './lib.js';
 
-const item = (id: string) => JSON.stringify({ id, type: id.startsWith('topic:') ? 'topic' : 'software', slug: id.split(':')[1] });
+// An item's type defaults from its id prefix; a [id, type] pair sets it, so a test can give an
+// id whose prefix and type disagree, which the schema allows and the guard must read by type.
+type Entry = string | [id: string, type: string];
+const defaultType = (id: string) => (id.startsWith('topic:') ? 'topic' : id.startsWith('paper:') ? 'paper' : 'software');
+const item = (entry: Entry) => {
+  const [id, type] = typeof entry === 'string' ? [entry, defaultType(entry)] : entry;
+  return JSON.stringify({ id, type, slug: id.split(':')[1] });
+};
 const study = (doi: string) => JSON.stringify({ doi, page: 'Cow', study: 'A study', statement: 'On request.', ordinal: 0 });
-const keys = (ids: string[], dois: string[] = []) => catalogKeys(ids.map(item).join('\n') + '\n', dois.map(study).join('\n') + '\n');
+const keys = (ids: Entry[], dois: string[] = []) => catalogKeys(ids.map(item).join('\n') + '\n', dois.map(study).join('\n') + '\n');
 
 const BASE = keys(['sw:held', 'db:held', 'topic:held'], ['10.1/held']);
 const splits = (...values: string[]): Trailers => ({ splits: values, remints: [] });
@@ -148,6 +155,30 @@ describe('newItemProblems: what a pull request may change while new items are pa
     const problems = newItemProblems(BASE, head, splits('paper:400 from sw:held'));
     expect(problems.some((p) => p.startsWith(`${SPLIT_TRAILER}: paper:400 from sw:held:`) && /paper id/.test(p))).toBe(true);
     expect(problems).toContain('paper:400 is a new item');
+  });
+
+  it('exempts a topic by its type, not its id prefix', () => {
+    const head = keys(['sw:held', 'db:held', 'topic:held', ['topic:newtool', 'software']], ['10.1/held']);
+    expect(newItemProblems(BASE, head, NONE)).toContain('topic:newtool is a new item');
+  });
+
+  it('reads a paper by its type, so a split cannot mint one under another prefix', () => {
+    const head = keys(['sw:held', 'db:held', 'topic:held', ['sw:fake', 'paper']], ['10.1/held']);
+    const problems = newItemProblems(BASE, head, splits('sw:fake from sw:held'));
+    expect(problems.some((p) => p.startsWith(`${SPLIT_TRAILER}: sw:fake from sw:held:`) && /paper id/.test(p))).toBe(true);
+    expect(problems).toContain('sw:fake is a new item');
+  });
+
+  it('reads a held topic by its type, so a trailer cannot name one under another prefix', () => {
+    const base = keys(['sw:held', ['db:tagish', 'topic']]);
+    const problems = newItemProblems(base, keys(['sw:held', ['db:tagish', 'topic'], 'sw:new']), splits('sw:new from db:tagish'));
+    expect(problems.some((p) => p.startsWith(`${SPLIT_TRAILER}: sw:new from db:tagish:`) && /topic tag/.test(p))).toBe(true);
+  });
+
+  it('refuses a re-mint whose new and old keys are different kinds, saying so', () => {
+    const head = keys(['sw:held', 'db:held', 'topic:held', 'sw:new'], []);
+    const problems = newItemProblems(BASE, head, remints('sw:new from 10.1/held'));
+    expect(problems.some((p) => p.startsWith(`${REMINT_TRAILER}: sw:new from 10.1/held:`) && /same kind/.test(p))).toBe(true);
   });
 
   it('refuses a split of a paper, since a paper id is never split', () => {
