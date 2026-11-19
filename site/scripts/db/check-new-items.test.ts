@@ -150,6 +150,22 @@ describe('newItemProblems: what a pull request may change while new items are pa
     expect(problems).toContain('paper:400 is a new item');
   });
 
+  it('refuses a split of a paper, since a paper id is never split', () => {
+    const base = keys(['paper:12', 'sw:held', 'topic:held']);
+    const problems = newItemProblems(base, keys(['paper:12', 'sw:held', 'topic:held', 'db:new']), splits('db:new from paper:12'));
+    expect(problems.some((p) => p.startsWith(`${SPLIT_TRAILER}: db:new from paper:12:`) && /paper id/.test(p))).toBe(true);
+    expect(problems).toContain('db:new is a new item');
+  });
+
+  it('tells a split naming a Data on request DOI that a corrected DOI is a re-mint, not that it is missing', () => {
+    const head = keys(['sw:held', 'db:held', 'topic:held'], ['10.1/held', '10.2/new']);
+    const problems = newItemProblems(BASE, head, splits('10.2/new from 10.1/held'));
+    const line = problems.find((p) => p.startsWith(`${SPLIT_TRAILER}: 10.2/new from 10.1/held:`));
+    expect(line).toBeDefined();
+    expect(line).toContain(`"${REMINT_TRAILER}:"`);
+    expect(line).not.toMatch(/not on the base/);
+  });
+
   it('refuses a topic tag as the held item, since a topic is not a catalog entry', () => {
     const splitHead = keys(['sw:held', 'db:held', 'topic:held', 'sw:new'], ['10.1/held']);
     const split = newItemProblems(BASE, splitHead, splits('sw:new from topic:held'));

@@ -13,7 +13,7 @@
  * (a subject label, not a catalog entry), and a DOI in `datasets_on_request.ndjson` at HEAD
  * that is not at `<base>`. Two corrections may add a key, each declared in a trailer on a
  * commit in `<base>..HEAD`, one trailer per new key, and each held key named once (a value
- * repeated word for word counts once). Neither mints a paper id:
+ * repeated word for word counts once). Neither names a paper id, as the new or the held one:
  *
  *   - a split of a held item into two, `Splits: <new id> from <held id>`, passes when the
  *     held id is at `<base>` and still at HEAD (a split keeps the item it splits);
@@ -108,7 +108,7 @@ export function newItemProblems(base: CatalogKeys, head: CatalogKeys, trailers: 
     return false;
   };
 
-  // Neither trailer mints a paper id: every new paper is a new reference in the matrix, and
+  // Neither trailer names a paper id, new or held: every new paper is a new reference, and
   // a bad paper id is retired rather than re-minted (CLAUDE.md). Nor does either name a
   // topic tag as what it corrects: a topic is a subject label, so it holds no entry.
   const topicHeld = (key: string, raw: string, held: string): boolean => {
@@ -118,8 +118,10 @@ export function newItemProblems(base: CatalogKeys, head: CatalogKeys, trailers: 
   };
   for (const { raw, newId, heldId } of declarations(SPLIT_TRAILER, 'held id', trailers.splits, problems)) {
     if (topicHeld(SPLIT_TRAILER, raw, heldId)) continue;
-    if (newId.startsWith('paper:')) {
-      problems.push(`${SPLIT_TRAILER}: ${raw}: a split never mints a paper id; each new paper is a new reference`);
+    if (newId.startsWith('paper:') || heldId.startsWith('paper:')) {
+      problems.push(`${SPLIT_TRAILER}: ${raw}: a paper id is never split; each new paper is a new reference`);
+    } else if (base.onRequestDois.has(heldId)) {
+      problems.push(`${SPLIT_TRAILER}: ${raw}: a Data on request study is not split; a corrected DOI is named in "${REMINT_TRAILER}:"`);
     } else if (!base.itemIds.has(heldId)) {
       problems.push(`${SPLIT_TRAILER}: ${raw}: ${heldId} is not on the base, so this is not a split of a held item`);
     } else if (!head.itemIds.has(heldId)) {
