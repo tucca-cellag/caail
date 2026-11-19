@@ -49,6 +49,11 @@ on:
       # it. Same class as the Taxonomy.md comment above.
       - plugin-contribute/**
       - .github/ISSUE_TEMPLATE/**
+      # this workflow itself, since the new-item guard's logic lives in it (its base,
+      # continue-on-error, the result step). Without it a PR that changes only that
+      # logic never runs it, and a base that comes out empty skips the guard on every
+      # later run with only a notice.
+      - .github/workflows/lint-papers.yml
   push:
     branches:
       - main
@@ -99,10 +104,19 @@ on:
       # it. Same class as the Taxonomy.md comment above.
       - plugin-contribute/**
       - .github/ISSUE_TEMPLATE/**
+      # this workflow itself, since the new-item guard's logic lives in it (its base,
+      # continue-on-error, the result step). Without it a PR that changes only that
+      # logic never runs it, and a base that comes out empty skips the guard on every
+      # later run with only a notice.
+      - .github/workflows/lint-papers.yml
   workflow_dispatch:
 
 concurrency:
-  group: lint-papers-${{ github.ref }}
+  # One group per pull request, so a new push cancels the stale run. A push to main gets a
+  # group of its own commit instead: the new-item guard compares each push with the one
+  # before it, so a push whose run was cancelled, or replaced while pending (which a shared
+  # group does even without cancel-in-progress), would have its commits checked by nothing.
+  group: lint-papers-${{ github.event_name == 'push' && github.sha || github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -137,6 +151,31 @@ jobs:
 
       - name: Install dependencies
         run: pnpm --dir site install --frozen-lockfile
+
+      # While new items are paused until CAAIL v2 (NEW_ITEMS_PAUSED in
+      # site/scripts/db/add-item.ts), refuse a change that adds an item id or a
+      # Data on request study to the NDJSON, however it got there, compared with the
+      # tree it adds to: the merge commit's first parent on a pull request, the
+      # previous tip on a push. (An entry added to the Markdown alone fails the sync
+      # guard below instead.)
+      # A correction that adds an id declares it in a commit trailer, "Splits:"
+      # for a split of a held item, "Re-mints:" for a repaired id (see
+      # check-new-items.ts). The base goes through env rather than into the script.
+      # It runs straight after install, before every other check, so a failure in one
+      # of them cannot skip it on a push to main, whose next run compares only with
+      # this push's tip. continue-on-error lets those checks still run after a refusal;
+      # the job's last step fails it on the refusal instead.
+      - name: New-item guard
+        id: new-item-guard
+        continue-on-error: true
+        env:
+          BASE: ${{ github.event_name == 'pull_request' && 'HEAD^1' || github.event.before }}
+        run: |
+          if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+            echo "::notice::No base commit to compare against, so the new-item guard did not run."
+            exit 0
+          fi
+          pnpm --dir site db:check-new-items "$BASE"
 
       - name: Run Papers.md lint
         run: pnpm --dir site lint:papers
@@ -184,3 +223,9 @@ jobs:
           pnpm --dir site parse
           git diff --exit-code -- site/public/api site/public/setup.md site/public/llms.txt \
             || { echo "::error::Committed site/public/api, site/public/setup.md or site/public/llms.txt is out of sync with the corpus. Run 'pnpm --dir site parse' and commit the result."; exit 1; }
+
+      - name: New-item guard result
+        if: ${{ !cancelled() && steps.new-item-guard.outcome == 'failure' }}
+        run: |
+          echo "::error::The new-item guard refused this change. Its step log, near the top of this job, names each new item."
+          exit 1

@@ -56,6 +56,11 @@ on:
       # drift from what db:add does with nothing failing.
       - .claude/skills/caail-db-authoring/SKILL.md
       - .claude/skills/zotero-to-caail-sync/SKILL.md
+      # lint-papers.yml, whose new-item guard step comment
+      # site/scripts/db/check-new-items.test.ts holds to the trailer names. Without
+      # it a PR editing only that comment runs no test, and the next site PR goes
+      # red for it.
+      - .github/workflows/lint-papers.yml
       - .github/workflows/test.yml
       # The two ignore files, because canonical-files.test.ts now asserts they
       # agree with the code about what a private companion is (the publishing rule in CLAUDE.md).
@@ -176,6 +181,11 @@ on:
       # drift from what db:add does with nothing failing.
       - .claude/skills/caail-db-authoring/SKILL.md
       - .claude/skills/zotero-to-caail-sync/SKILL.md
+      # lint-papers.yml, whose new-item guard step comment
+      # site/scripts/db/check-new-items.test.ts holds to the trailer names. Without
+      # it a PR editing only that comment runs no test, and the next site PR goes
+      # red for it.
+      - .github/workflows/lint-papers.yml
       - .github/workflows/test.yml
       # The two ignore files, because canonical-files.test.ts now asserts they
       # agree with the code about what a private companion is (the publishing rule in CLAUDE.md).

@@ -38,6 +38,8 @@ It's a separate install from the `caail` query plugin, so you can take either on
 
 Faster to merge, and you get authorship credit in the Git history. Branch from `main` (e.g. `feat/papers-cosenza-2024`, `docs/add-bioprocess-section`), apply the change directly, and open the PR back against `main`. The format guides below tell you exactly what to edit.
 
+While new items are paused until CAAIL v2, suggest a new resource through an issue (Option 1) rather than a pull request; a pull request that adds a new entry to the structured catalog (papers, software, databases, datasets, field reports) fails a CI check. A pull request that corrects an entry already here is still welcome.
+
 ## Adding a paper to `Papers.md`
 
 > **How the structured catalog is maintained.** The matrix + references in `Papers.md`, the

@@ -19,6 +19,7 @@
     "db:remove": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/remove-item.ts",
     "db:verify": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/verify.ts",
     "db:check": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/check.ts",
+    "db:check-new-items": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/check-new-items.ts",
     "db:fetch-licenses": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/fetch-licenses.ts",
     "test": "NODE_OPTIONS='--experimental-sqlite --no-warnings' vitest run",
     "bench:fixtures": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/test-reliability/bench-fixtures.ts",

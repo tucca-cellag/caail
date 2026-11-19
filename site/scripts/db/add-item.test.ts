@@ -315,6 +315,7 @@ describe('the hand-written statements of the pause agree with NEW_ITEMS_PAUSED',
   it.each([
     '.claude/skills/caail-db-authoring/SKILL.md',
     '.claude/skills/zotero-to-caail-sync/SKILL.md',
+    'CONTRIBUTING.md',
   ])('%s', (file) => {
     // Whitespace is flattened first, in both directions, since a hard-wrapped statement can
     // break anywhere in a phrase.
