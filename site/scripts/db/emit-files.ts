@@ -21,14 +21,16 @@ import { extractInventory, extractDatasetEntries, extractOnRequest, refuseStrayI
  * Write every DB-owned canonical file from `db`. Returns the repo-relative paths.
  * `root` defaults to the repo root; it's injectable so tests can run against a fixture
  * dir. Each emit computes its string (and throws on a bad state) BEFORE its `writeFileSync`,
- * and Papers.md is emitted first — so a failure writes nothing, which is why the db:add /
- * db:remove CLIs call emitAll BEFORE exportNdjson (a throw can't desync NDJSON vs Markdown).
+ * and Papers.md is emitted first — so a failure writes nothing, which is why
+ * `checkAndRegenerate` (regenerate.ts, the db:add / db:remove tail) calls emitAll BEFORE
+ * exportNdjson (a throw can't desync NDJSON vs Markdown).
  */
 export function emitAll(db: Db, root: string = REPO_ROOT): string[] {
   // Compute EVERY file's content first — any emitter that throws (a bad state) aborts here,
   // before a single write — then write them all. So a failure genuinely leaves nothing on
-  // disk (not just when the failing emitter happens to run first), which is why the db:add /
-  // db:remove CLIs run emitAll before exportNdjson: a throw can't desync NDJSON vs Markdown.
+  // disk (not just when the failing emitter happens to run first), which is why
+  // `checkAndRegenerate` (regenerate.ts) runs emitAll before exportNdjson: a throw can't
+  // desync NDJSON vs Markdown.
   // A Data on request section on a page that carries none (Benchmarks, which is emitted
   // below, or an unlisted page) stops the emit rather than being deleted with no word, and so
   // does an inventory table on a page outside INVENTORY_PAGES, whose rows the emit would drop.

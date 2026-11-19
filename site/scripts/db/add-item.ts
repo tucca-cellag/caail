@@ -26,9 +26,9 @@ import { checkAndRegenerate, type RegeneratePaths } from './regenerate.js';
  * the descriptor. Held items still change through the edit flow (db:build, edit, db:export,
  * db:emit), which this does not touch, and db:remove is unaffected.
  *
- * Three hand-written statements of the pause (the two skills it opens and the root
- * CLAUDE.md) are held to this constant by add-item.test.ts, so lifting it means removing
- * them in the same change.
+ * The two hand-written statements of the pause, the notes opening the caail-db-authoring
+ * and zotero-to-caail-sync skills, are held to this constant by add-item.test.ts, so lifting
+ * it means removing them in the same change.
  */
 export const NEW_ITEMS_PAUSED = true;
 
