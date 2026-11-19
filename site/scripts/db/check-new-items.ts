@@ -10,11 +10,12 @@
  *   NODE_OPTIONS='--experimental-sqlite --no-warnings' pnpm --dir site db:check-new-items <base>
  *
  * Refused: an id in `items.ndjson` at HEAD that is not at `<base>`, other than a topic tag
- * (a subject label, not a catalog entry; an item's kind is read from its `type` as well as
- * its id's prefix, which db:check requires to agree), and a DOI in `datasets_on_request.ndjson`
- * at HEAD that is not at `<base>`, read whatever its case in a trailer. Two corrections may add a key, each declared in a trailer on a
- * commit in `<base>..HEAD`, one trailer per new key, and each held key named once (a value
- * repeated word for word counts once). Neither names a paper id, as the new or the held one:
+ * (a subject label, not a catalog entry, exempt only when its prefix and its `type` both say
+ * topic, which db:check requires to agree), and a DOI in `datasets_on_request.ndjson`
+ * at HEAD that is not at `<base>`, read whatever its case in a trailer. Two corrections may
+ * add a key, each declared in a trailer on a commit in `<base>..HEAD`, one trailer per new
+ * key, and each held key named once (a repeated value counts once, a DOI compared in any
+ * case). Neither names a paper id, as the new or the held one:
  *
  *   - a split of a held item into two, `Splits: <new id> from <held id>`, passes when the
  *     held id is at `<base>` and still at HEAD (a split keeps the item it splits);
@@ -89,14 +90,22 @@ const asStored = (key: string) => (isDoiKey(key) ? key.toLowerCase() : key);
 /**
  * Each `<key>:` trailer value read as `<new id> from <held id>`. One that does not read that
  * way is recorded in `problems`, naming `heldName` as the trailer's own help does. A value
- * repeated word for word (a cherry-picked or re-applied commit) is one declaration.
+ * repeated (a cherry-picked or re-applied commit) is one declaration, compared after a DOI is
+ * lowercased, so the same re-mint written in two cases counts once.
  */
 function declarations(key: string, heldName: string, values: string[], problems: string[]) {
   const out: { raw: string; newId: string; heldId: string }[] = [];
+  const seen = new Set<string>();
   for (const raw of new Set(values.map((v) => v.trim()))) {
     const m = raw.match(/^(\S+) from (\S+)$/);
-    if (m) out.push({ raw, newId: asStored(m[1]), heldId: asStored(m[2]) });
-    else problems.push(`${key}: ${raw}: not "<new id> from <${heldName}>"`);
+    if (!m) {
+      problems.push(`${key}: ${raw}: not "<new id> from <${heldName}>"`);
+      continue;
+    }
+    const [newId, heldId] = [asStored(m[1]), asStored(m[2])];
+    if (seen.has(`${newId} from ${heldId}`)) continue;
+    seen.add(`${newId} from ${heldId}`);
+    out.push({ raw, newId, heldId });
   }
   return out;
 }
@@ -127,7 +136,8 @@ export function newItemProblems(base: CatalogKeys, head: CatalogKeys, trailers: 
   // topic tag as what it corrects: a topic is a subject label, so it holds no entry. Kind is
   // read from each item's `type` as well as its prefix, a new id's type at the head and a held
   // id's at the base. db:check requires the two to agree and refuses a mismatch later in the
-  // same CI job; reading both keeps this guard right when it runs on its own.
+  // same CI job. This guard refuses on either and exempts a topic only on both, which keeps it
+  // right when it runs on its own.
   const isPaper = (id: string, keys: CatalogKeys) => id.startsWith('paper:') || keys.itemTypes.get(id) === 'paper';
   const topicHeld = (key: string, raw: string, held: string): boolean => {
     if (!held.startsWith('topic:') && base.itemTypes.get(held) !== 'topic') return false;
@@ -167,8 +177,11 @@ export function newItemProblems(base: CatalogKeys, head: CatalogKeys, trailers: 
     }
   }
 
+  // A new topic tag passes only when its prefix and its type both say topic, since either one
+  // alone can be set on an id to carry a new entry through.
+  const isNewTopic = (id: string) => id.startsWith('topic:') && head.itemTypes.get(id) === 'topic';
   for (const id of [...head.itemIds].sort()) {
-    if (base.itemIds.has(id) || head.itemTypes.get(id) === 'topic' || newIds.has(id)) continue;
+    if (base.itemIds.has(id) || isNewTopic(id) || newIds.has(id)) continue;
     problems.push(`${id} is a new item`);
   }
   for (const doi of [...head.onRequestDois].sort()) {

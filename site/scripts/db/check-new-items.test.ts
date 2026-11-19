@@ -28,7 +28,8 @@ import { NEW_ITEMS_PAUSED } from './add-item.js';
 import { REPO_ROOT } from './lib.js';
 
 // An item's type defaults from its id prefix; a [id, type] pair sets it, so a test can give an
-// id whose prefix and type disagree, which the schema allows and the guard must read by type.
+// id whose prefix and type disagree, which schema.sql allows (db:check refuses it later in the
+// same CI job) and which the guard must read right on its own.
 type Entry = string | [id: string, type: string];
 const defaultType = (id: string) => (id.startsWith('topic:') ? 'topic' : id.startsWith('paper:') ? 'paper' : 'software');
 const item = (entry: Entry) => {
@@ -235,6 +236,20 @@ describe('newItemProblems: what a pull request may change while new items are pa
     const head = keys(['sw:held'], ['10.1002/bit.70190']);
     expect(newItemProblems(base, head, remints('10.1002/BIT.70190 from 10.1002/BIT.7019'))).toEqual([]);
     expect(newItemProblems(base, head, remints('10.1002/BIT.70190 from 10.1002/bit.7019'))).toEqual([]);
+  });
+
+  it('counts one re-mint written in two cases (a re-typed cherry-pick) as one declaration', () => {
+    const base = keys(['sw:held'], ['10.1002/bit.7019']);
+    const head = keys(['sw:held'], ['10.1002/bit.70190']);
+    const trailers = remints('10.1002/BIT.70190 from 10.1002/bit.7019', '10.1002/bit.70190 from 10.1002/bit.7019');
+    expect(newItemProblems(base, head, trailers)).toEqual([]);
+  });
+
+  it('exempts a topic only when its prefix and its type both say topic, so neither alone lets an item through', () => {
+    const typedTopic = keys(['sw:held', 'db:held', 'topic:held', ['sw:new-tool', 'topic']], ['10.1/held']);
+    expect(newItemProblems(BASE, typedTopic, NONE)).toContain('sw:new-tool is a new item');
+    const realTopic = keys(['sw:held', 'db:held', 'topic:held', ['topic:new-tag', 'topic']], ['10.1/held']);
+    expect(newItemProblems(BASE, realTopic, NONE)).toEqual([]);
   });
 
   it('counts one DOI named in two cases as one held key', () => {

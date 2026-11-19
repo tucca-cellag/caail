@@ -49,6 +49,11 @@ on:
       # it. Same class as the Taxonomy.md comment above.
       - plugin-contribute/**
       - .github/ISSUE_TEMPLATE/**
+      # this workflow itself, since the new-item guard's logic lives in it (its base,
+      # continue-on-error, the result step). Without it a PR that changes only that
+      # logic never runs it, and a base that comes out empty skips the guard on every
+      # later run with only a notice.
+      - .github/workflows/lint-papers.yml
   push:
     branches:
       - main
@@ -99,6 +104,11 @@ on:
       # it. Same class as the Taxonomy.md comment above.
       - plugin-contribute/**
       - .github/ISSUE_TEMPLATE/**
+      # this workflow itself, since the new-item guard's logic lives in it (its base,
+      # continue-on-error, the result step). Without it a PR that changes only that
+      # logic never runs it, and a base that comes out empty skips the guard on every
+      # later run with only a notice.
+      - .github/workflows/lint-papers.yml
   workflow_dispatch:
 
 concurrency:
@@ -215,7 +225,7 @@ jobs:
             || { echo "::error::Committed site/public/api, site/public/setup.md or site/public/llms.txt is out of sync with the corpus. Run 'pnpm --dir site parse' and commit the result."; exit 1; }
 
       - name: New-item guard result
-        if: steps.new-item-guard.outcome == 'failure'
+        if: ${{ !cancelled() && steps.new-item-guard.outcome == 'failure' }}
         run: |
           echo "::error::The new-item guard refused this change. Its step log, near the top of this job, names each new item."
           exit 1
