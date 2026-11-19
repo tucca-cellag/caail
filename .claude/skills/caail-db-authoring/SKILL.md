@@ -18,8 +18,9 @@ description: Use when adding, editing, or removing a paper, software tool, datab
 > repairing, or of a Data on request study's DOI, which drops the old one, as
 > `Re-mints: <new id> from <old id>`. Each is refused in the other's state, so name the act
 > the change makes. Each held item may be named once, and neither trailer mints a paper id
-> or adds a new item. Merge such a branch with a merge commit or by rebase: a squash
-> rewrites the trailer away and `main` goes red.
+> or adds a new item. Merge such a branch with a merge commit or by rebase: a squash can
+> rewrite the trailer away, and the push run on `main` then fails once, after the id has
+> already landed.
 
 ## Overview
 

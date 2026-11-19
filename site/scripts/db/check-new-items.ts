@@ -22,9 +22,11 @@
  *     repairing and a corrected Data on request DOI.
  *
  * The other state of each is refused and points at the other trailer, so neither act can
- * pass under the other's name. The trailers must survive the merge: a squash rewrites them
- * away, and the push run on main then refuses the key. With NEW_ITEMS_PAUSED false it
- * checks nothing, so lifting the pause in add-item.ts lifts this guard too.
+ * pass under the other's name. Git reads a trailer only from a commit message's last
+ * paragraph, and the trailers must survive the merge: a squash can rewrite them away, and
+ * the push run on main then refuses the key once, after it has landed. With
+ * NEW_ITEMS_PAUSED false it checks nothing, so lifting the pause in add-item.ts lifts this
+ * guard too.
  */
 
 import { execFileSync } from 'node:child_process';
@@ -94,8 +96,9 @@ export function newItemProblems(base: CatalogKeys, head: CatalogKeys, trailers: 
   const newIds = new Set<string>(); // item ids a trailer lets through
   const newDois = new Set<string>(); // Data on request DOIs a trailer lets through
   const named = new Set<string>(); // held keys a valid trailer has already named
-  // Each held item is split or re-minted once, into one new key, so a single held item
-  // cannot be named again and again to let any number of new ones through.
+  // Within one change, each held item is split or re-minted once, into one new key, so a
+  // single held item cannot be named again and again in it. (Across changes nothing counts
+  // earlier uses; a reviewer reads each trailer on its own pull request.)
   const firstNaming = (key: string, raw: string, held: string): boolean => {
     if (!named.has(held)) {
       named.add(held);
@@ -106,8 +109,15 @@ export function newItemProblems(base: CatalogKeys, head: CatalogKeys, trailers: 
   };
 
   // Neither trailer mints a paper id: every new paper is a new reference in the matrix, and
-  // a bad paper id is retired rather than re-minted (CLAUDE.md).
+  // a bad paper id is retired rather than re-minted (CLAUDE.md). Nor does either name a
+  // topic tag as what it corrects: a topic is a subject label, so it holds no entry.
+  const topicHeld = (key: string, raw: string, held: string): boolean => {
+    if (!held.startsWith('topic:')) return false;
+    problems.push(`${key}: ${raw}: ${held} is a topic tag, not a catalog entry, so there is nothing to split or re-mint`);
+    return true;
+  };
   for (const { raw, newId, heldId } of declarations(SPLIT_TRAILER, 'held id', trailers.splits, problems)) {
+    if (topicHeld(SPLIT_TRAILER, raw, heldId)) continue;
     if (newId.startsWith('paper:')) {
       problems.push(`${SPLIT_TRAILER}: ${raw}: a split never mints a paper id; each new paper is a new reference`);
     } else if (!base.itemIds.has(heldId)) {
@@ -122,6 +132,7 @@ export function newItemProblems(base: CatalogKeys, head: CatalogKeys, trailers: 
   // id (whose type may change, as a move between pages does), or the DOI that keys a Data
   // on request study with another DOI. Never a paper id, on either side.
   for (const { raw, newId, heldId } of declarations(REMINT_TRAILER, 'old id', trailers.remints, problems)) {
+    if (topicHeld(REMINT_TRAILER, raw, heldId)) continue;
     const isDoi = base.onRequestDois.has(heldId);
     if (newId.startsWith('paper:') || heldId.startsWith('paper:')) {
       problems.push(`${REMINT_TRAILER}: ${raw}: a paper id is never re-minted; a bad one is retired`);
@@ -153,6 +164,7 @@ export function refusalMessage(problems: string[]): string {
     'what it corrects in a commit trailer, one per new id: a split of a held item into two keeps it,',
     `"${SPLIT_TRAILER}: <new id> from <held id>"; a repair that replaces a held item's id (never a`,
     `paper's), or a Data on request study's DOI, drops the old one, "${REMINT_TRAILER}: <new id> from <old id>".`,
+    'A trailer goes in the last paragraph of a commit message, the only place git reads one.',
     'Neither trailer adds a new item: suggest one through an issue instead.',
     ...problems.map((p) => `  ✗ ${p}`),
   ].join('\n');
@@ -171,8 +183,17 @@ function fileAt(repo: string, ref: string, path: string, side: 'base' | 'head'):
   throw new RefusalError(`db:check-new-items: ${path} is not at ${ref}, so there is no catalog to check; if it moved, move this guard's path with it.`);
 }
 
+/** The catalog keys at `ref`, refusing a file that does not parse and naming it and the ref. */
 function keysAt(repo: string, ref: string, side: 'base' | 'head'): CatalogKeys {
-  return catalogKeys(fileAt(repo, ref, ITEMS, side), fileAt(repo, ref, ON_REQUEST, side));
+  const read = (path: string, field: string): Set<string> => {
+    const text = fileAt(repo, ref, path, side);
+    try {
+      return ndjsonField(text, field);
+    } catch (err) {
+      throw new RefusalError(`db:check-new-items: ${path} at ${ref} is not valid NDJSON: ${(err as Error).message}`);
+    }
+  };
+  return { itemIds: read(ITEMS, 'id'), onRequestDois: read(ON_REQUEST, 'doi') };
 }
 
 /** Refuses a ref that is not a commit in the clone, naming it, rather than letting git throw. */

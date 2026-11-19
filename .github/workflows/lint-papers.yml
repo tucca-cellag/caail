@@ -142,6 +142,28 @@ jobs:
       - name: Install dependencies
         run: pnpm --dir site install --frozen-lockfile
 
+      # While new items are paused until CAAIL v2 (NEW_ITEMS_PAUSED in
+      # site/scripts/db/add-item.ts), refuse a change that adds an item id or a
+      # Data on request study to the NDJSON, however it got there, compared with the
+      # tree it adds to: the merge commit's first parent on a pull request, the
+      # previous tip on a push. (An entry added to the Markdown alone fails the sync
+      # guard below instead.)
+      # A correction that adds an id declares it in a commit trailer, "Splits:"
+      # for a split of a held item, "Re-mints:" for a repaired id (see
+      # check-new-items.ts). The base goes through env rather than into the script.
+      # It runs straight after install, before every other check, so a failure in one
+      # of them cannot skip it on a push to main, whose next run compares only with
+      # this push's tip.
+      - name: New-item guard
+        env:
+          BASE: ${{ github.event_name == 'pull_request' && 'HEAD^1' || github.event.before }}
+        run: |
+          if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+            echo "::notice::No base commit to compare against, so the new-item guard did not run."
+            exit 0
+          fi
+          pnpm --dir site db:check-new-items "$BASE"
+
       - name: Run Papers.md lint
         run: pnpm --dir site lint:papers
 
@@ -176,25 +198,6 @@ jobs:
         run: |
           pnpm --dir site db:check
           pnpm --dir site db:verify
-
-      # While new items are paused until CAAIL v2 (NEW_ITEMS_PAUSED in
-      # site/scripts/db/add-item.ts), refuse a change that adds an item id or a
-      # Data on request study to the NDJSON, however it got there, compared with the
-      # tree it adds to: the merge commit's first parent on a pull request, the
-      # previous tip on a push. (An entry added to the Markdown alone fails the sync
-      # guard below instead.)
-      # A correction that adds an id declares it in a commit trailer, "Splits:"
-      # for a split of a held item, "Re-mints:" for a repaired id (see
-      # check-new-items.ts). The base goes through env rather than into the script.
-      - name: New-item guard
-        env:
-          BASE: ${{ github.event_name == 'pull_request' && 'HEAD^1' || github.event.before }}
-        run: |
-          if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
-            echo "::notice::No base commit to compare against, so the new-item guard did not run."
-            exit 0
-          fi
-          pnpm --dir site db:check-new-items "$BASE"
 
       - name: DB ↔ Markdown sync guard
         run: |

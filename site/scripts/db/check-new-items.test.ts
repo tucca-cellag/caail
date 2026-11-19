@@ -150,6 +150,17 @@ describe('newItemProblems: what a pull request may change while new items are pa
     expect(problems).toContain('paper:400 is a new item');
   });
 
+  it('refuses a topic tag as the held item, since a topic is not a catalog entry', () => {
+    const splitHead = keys(['sw:held', 'db:held', 'topic:held', 'sw:new'], ['10.1/held']);
+    const split = newItemProblems(BASE, splitHead, splits('sw:new from topic:held'));
+    expect(split.some((p) => p.startsWith(`${SPLIT_TRAILER}: sw:new from topic:held:`) && /topic tag/.test(p))).toBe(true);
+    expect(split).toContain('sw:new is a new item');
+    const remintHead = keys(['sw:held', 'db:held', 'sw:new'], ['10.1/held']);
+    const remint = newItemProblems(BASE, remintHead, remints('sw:new from topic:held'));
+    expect(remint.some((p) => p.startsWith(`${REMINT_TRAILER}: sw:new from topic:held:`) && /topic tag/.test(p))).toBe(true);
+    expect(remint).toContain('sw:new is a new item');
+  });
+
   it('counts a trailer repeated word for word (a cherry-picked commit) once', () => {
     const head = keys(['sw:held', 'db:held', 'topic:held', 'sw:held-part'], ['10.1/held']);
     expect(newItemProblems(BASE, head, splits('sw:held-part from sw:held', 'sw:held-part from sw:held'))).toEqual([]);
@@ -180,6 +191,10 @@ describe('refusalMessage', () => {
     expect(message).toContain(`${SPLIT_TRAILER}: <new id> from <held id>`);
     expect(message).toContain(`${REMINT_TRAILER}: <new id> from <old id>`);
     expect(message).toContain('sw:new-tool is a new item');
+  });
+
+  it('says a trailer goes in the commit message\'s last paragraph, the only place git reads one', () => {
+    expect(refusalMessage(['x']).replace(/\s+/g, ' ')).toMatch(/last paragraph of a commit message/);
   });
 
   it('says neither trailer is a way to add a new item', () => {
@@ -313,6 +328,13 @@ describe.runIf(NEW_ITEMS_PAUSED)('checkNewItems reads the base and head commits 
     git(dir, 'rm', '-q', 'site/db/ndjson/datasets_on_request.ndjson');
     git(dir, 'commit', '-q', '-m', 'move the Data on request file away');
     expect(() => checkNewItems(dir, base)).toThrow(/datasets_on_request\.ndjson is not at HEAD/);
+  });
+
+  it('names the file and the commit when a row is not valid JSON, rather than failing with a stack trace', () => {
+    const { dir, base } = repo();
+    writeFileSync(join(dir, 'site', 'db', 'ndjson', 'items.ndjson'), item('sw:held') + '\n<<<<<<< HEAD\n');
+    git(dir, 'commit', '-q', '-am', 'leave a conflict marker');
+    expect(() => checkNewItems(dir, base)).toThrow(/site\/db\/ndjson\/items\.ndjson at HEAD is not valid NDJSON/);
   });
 
   it('names a base that is not a commit in the clone, rather than failing with a stack trace', () => {
