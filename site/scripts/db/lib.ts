@@ -47,10 +47,12 @@ export function runsAsMain(moduleUrl: string): boolean {
 }
 
 /**
- * A db command declining to act, with a message that says everything its user needs: the
- * pause on new items, a usage error, a failed integrity check, an id or descriptor the DB
- * cannot take. A CLI's `main()` prints the message alone (`exitOnRefusal`); any other error
- * is a bug and keeps its stack.
+ * A db command declining to act, with a message that says everything its user needs. Thrown
+ * for the pause on new items, a CLI's usage error, a check `checkAndRegenerate` fails, and
+ * every refusal in mutate.ts (an unknown id, topic, area or method, among others). A CLI's
+ * `main()` prints it alone (`exitOnRefusal`). Any other error prints with its stack, as every
+ * error did before the CLIs caught anything: a bug, and also the refusals thrown outside
+ * those places, such as the emit's (`refuseStrayInventory`) and the NDJSON import's.
  */
 export class RefusalError extends Error {
   override name = 'RefusalError';
