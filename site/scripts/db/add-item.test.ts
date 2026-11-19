@@ -190,6 +190,12 @@ describe('the db CLIs run when executed, however they are named', () => {
     expect(asMain((d) => join(d, 'cli.js'), ['cli.js'])).toBe(false);
   });
 
+  it('says main for the module named with the .js extension it does not have', () => {
+    // tsx resolves `cli.js` to `cli.ts` (the ESM convention), so an entry naming a .js
+    // file that is not there is this module.
+    expect(asMain((d) => join(d, 'cli.js'))).toBe(true);
+  });
+
   it('runs the CLI when the checkout is reached through a symlink, rather than exiting 0', () => {
     const link = join(mkdtempSync(join(tmpdir(), 'caail-db-link-')), 'db');
     scratch.push(dirname(link));

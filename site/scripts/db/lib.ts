@@ -23,8 +23,9 @@ const HERE = dirname(fileURLToPath(import.meta.url)); // site/scripts/db
  * module runs its `main()` only when executed and not when a test imports it. A wrong "no"
  * makes the CLI exit 0 having done nothing, so an entry that exists is compared by real path
  * (it keeps a symlink the module URL has resolved). An entry that does not exist as written
- * may be the module named without its extension, which a runner resolves itself (tsx given
- * `scripts/db/remove-item`), so only then is the extension ignored. An entry that resolves
+ * may be the module named without its extension, or with one it does not have, which a
+ * runner resolves itself (tsx given `scripts/db/remove-item`, or `scripts/db/remove-item.js`
+ * by the ESM convention), so only then are both extensions ignored. An entry that resolves
  * neither way cannot be this module, and the answer is "not main" rather than an error
  * thrown while the module is imported.
  */
@@ -35,10 +36,11 @@ export function runsAsMain(moduleUrl: string): boolean {
   try {
     return realpathSync(entry) === modulePath;
   } catch {
-    // Not there as written: try it as the module's name without its extension.
+    // Not there as written: compare it with the module by name, extensions aside.
   }
+  const stem = (path: string) => path.replace(/\.[cm]?[jt]sx?$/, '');
   try {
-    return join(realpathSync(dirname(entry)), basename(entry)) === modulePath.replace(/\.[cm]?[jt]sx?$/, '');
+    return join(realpathSync(dirname(entry)), stem(basename(entry))) === stem(modulePath);
   } catch {
     return false;
   }
