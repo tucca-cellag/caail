@@ -10,14 +10,16 @@ description: Use when adding, editing, or removing a paper, software tool, datab
 > study to a Data on request list either. While the pause holds, `db:add` refuses every
 > descriptor and writes nothing. Edits to existing items (descriptions, licences, DOIs,
 > corrections) still work through the full procedure below, and so does `db:remove`.
-> CI refuses a pull request that adds an item or a Data on request study by any route
-> (`db:check-new-items` in `lint-papers.yml`). A correction that adds an id declares it in a
-> commit trailer, one per new id: a split of a held item into two, which keeps the held item,
-> as `Splits: <new id> from <held id>`; a re-mint of an id that `CLAUDE.md` sanctions
-> repairing (never a paper id), or of a Data on request study's DOI, which drops the old
-> one, as `Re-mints: <new id> from <old id>`. Each is refused in the other's state, so name
-> the act the change makes, and each held item may be named once. Merge such a branch with
-> a merge commit or by rebase: a squash rewrites the trailer away and `main` goes red.
+> CI refuses a pull request that adds an item or a Data on request study to the NDJSON,
+> however it got there (`db:check-new-items` in `lint-papers.yml`; an entry added to the
+> Markdown alone fails the sync guard instead). A correction that adds an id declares it in
+> a commit trailer, one per new id: a split of a held item into two, which keeps the held
+> item, as `Splits: <new id> from <held id>`; a re-mint of an id that `CLAUDE.md` sanctions
+> repairing, or of a Data on request study's DOI, which drops the old one, as
+> `Re-mints: <new id> from <old id>`. Each is refused in the other's state, so name the act
+> the change makes. Each held item may be named once, and neither trailer mints a paper id
+> or adds a new item. Merge such a branch with a merge commit or by rebase: a squash
+> rewrites the trailer away and `main` goes red.
 
 ## Overview
 

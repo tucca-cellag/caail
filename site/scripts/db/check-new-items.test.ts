@@ -1,6 +1,6 @@
 /**
- * check-new-items.test.ts: the CI guard that refuses a pull request adding a new item by any
- * route while new items are paused until CAAIL v2.
+ * check-new-items.test.ts: the CI guard that refuses a pull request adding a new item to the
+ * NDJSON, however it got there, while new items are paused until CAAIL v2.
  *
  * Two layers, each in both directions. The decision (`newItemProblems`) is tested on id sets:
  * an added id or Data on request study is refused, while an edit, a removal, a new topic tag
@@ -11,7 +11,7 @@
 
 import { afterAll, describe, expect, it } from 'vitest';
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -25,6 +25,7 @@ import {
   type Trailers,
 } from './check-new-items.js';
 import { NEW_ITEMS_PAUSED } from './add-item.js';
+import { REPO_ROOT } from './lib.js';
 
 const item = (id: string) => JSON.stringify({ id, type: id.startsWith('topic:') ? 'topic' : 'software', slug: id.split(':')[1] });
 const study = (doi: string) => JSON.stringify({ doi, page: 'Cow', study: 'A study', statement: 'On request.', ordinal: 0 });
@@ -125,10 +126,10 @@ describe('newItemProblems: what a pull request may change while new items are pa
   });
 
   it('lets each held item be named once, so one trailer target cannot let many new ids through', () => {
-    const head = keys(['sw:held', 'db:held', 'topic:held', 'sw:held-part', 'paper:400'], ['10.1/held']);
-    const problems = newItemProblems(BASE, head, splits('sw:held-part from sw:held', 'paper:400 from sw:held'));
-    expect(problems.some((p) => p.startsWith(`${SPLIT_TRAILER}: paper:400 from sw:held:`) && /more than one trailer/.test(p))).toBe(true);
-    expect(problems).toContain('paper:400 is a new item');
+    const head = keys(['sw:held', 'db:held', 'topic:held', 'sw:held-part', 'db:another'], ['10.1/held']);
+    const problems = newItemProblems(BASE, head, splits('sw:held-part from sw:held', 'db:another from sw:held'));
+    expect(problems.some((p) => p.startsWith(`${SPLIT_TRAILER}: db:another from sw:held:`) && /more than one trailer/.test(p))).toBe(true);
+    expect(problems).toContain('db:another is a new item');
     expect(problems).not.toContain('sw:held-part is a new item');
   });
 
@@ -140,6 +141,18 @@ describe('newItemProblems: what a pull request may change while new items are pa
     const toPaper = newItemProblems(base, keys(['paper:5', 'paper:349', 'topic:held']), remints('paper:349 from sw:held'));
     expect(toPaper.some((p) => p.startsWith(`${REMINT_TRAILER}: paper:349 from sw:held:`) && /paper id/.test(p))).toBe(true);
     expect(toPaper).toContain('paper:349 is a new item');
+  });
+
+  it('refuses a split that mints a paper id, since every new paper is a new reference', () => {
+    const head = keys(['sw:held', 'db:held', 'topic:held', 'paper:400'], ['10.1/held']);
+    const problems = newItemProblems(BASE, head, splits('paper:400 from sw:held'));
+    expect(problems.some((p) => p.startsWith(`${SPLIT_TRAILER}: paper:400 from sw:held:`) && /paper id/.test(p))).toBe(true);
+    expect(problems).toContain('paper:400 is a new item');
+  });
+
+  it('counts a trailer repeated word for word (a cherry-picked commit) once', () => {
+    const head = keys(['sw:held', 'db:held', 'topic:held', 'sw:held-part'], ['10.1/held']);
+    expect(newItemProblems(BASE, head, splits('sw:held-part from sw:held', 'sw:held-part from sw:held'))).toEqual([]);
   });
 
   it('passes a re-mint that corrects a Data on request study\'s DOI', () => {
@@ -169,8 +182,30 @@ describe('refusalMessage', () => {
     expect(message).toContain('sw:new-tool is a new item');
   });
 
+  it('says neither trailer is a way to add a new item', () => {
+    expect(refusalMessage(['x']).replace(/\s+/g, ' ')).toMatch(/Neither trailer adds a new item: suggest one through an issue instead/);
+  });
+
   it('names no system outside this repository', () => {
     expect(refusalMessage(['x'])).not.toMatch(/https?:\/\//);
+  });
+});
+
+describe('the hand-written statements of the trailers agree with the guard', () => {
+  // The trailer names are typed out where a person reads them; a renamed constant would
+  // otherwise leave the docs telling an author to write a trailer the guard ignores.
+  const flat = (file: string) => readFileSync(join(REPO_ROOT, file), 'utf-8').replace(/\s+/g, ' ');
+
+  it('the caail-db-authoring note gives both trailers in their full form', () => {
+    const note = flat('.claude/skills/caail-db-authoring/SKILL.md');
+    expect(note).toContain(`${SPLIT_TRAILER}: <new id> from <held id>`);
+    expect(note).toContain(`${REMINT_TRAILER}: <new id> from <old id>`);
+  });
+
+  it('the lint-papers.yml step comment names both trailers', () => {
+    const workflow = flat('.github/workflows/lint-papers.yml');
+    expect(workflow).toContain(`"${SPLIT_TRAILER}:"`);
+    expect(workflow).toContain(`"${REMINT_TRAILER}:"`);
   });
 });
 
@@ -264,6 +299,25 @@ describe.runIf(NEW_ITEMS_PAUSED)('checkNewItems reads the base and head commits 
       ['10.1/held'],
     );
     expect(checkNewItems(dir, base)).toEqual([]);
+  });
+
+  it('refuses a head that lacks the items file, rather than reading it as empty', () => {
+    const { dir, base } = repo();
+    git(dir, 'rm', '-q', 'site/db/ndjson/items.ndjson');
+    git(dir, 'commit', '-q', '-m', 'move the items file away');
+    expect(() => checkNewItems(dir, base)).toThrow(/site\/db\/ndjson\/items\.ndjson is not at HEAD/);
+  });
+
+  it('refuses a head that lacks the Data on request file', () => {
+    const { dir, base } = repo();
+    git(dir, 'rm', '-q', 'site/db/ndjson/datasets_on_request.ndjson');
+    git(dir, 'commit', '-q', '-m', 'move the Data on request file away');
+    expect(() => checkNewItems(dir, base)).toThrow(/datasets_on_request\.ndjson is not at HEAD/);
+  });
+
+  it('names a base that is not a commit in the clone, rather than failing with a stack trace', () => {
+    const { dir } = repo();
+    expect(() => checkNewItems(dir, '0123456789abcdef0123456789abcdef01234567')).toThrow(/0123456789abcdef0123456789abcdef01234567 is not a commit/);
   });
 
   it('reads a trailer from any commit in the range, not only the last', () => {

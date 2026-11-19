@@ -12,13 +12,14 @@
  * Refused: an id in `items.ndjson` at HEAD that is not at `<base>`, other than a topic tag
  * (a subject label, not a catalog entry), and a DOI in `datasets_on_request.ndjson` at HEAD
  * that is not at `<base>`. Two corrections may add a key, each declared in a trailer on a
- * commit in `<base>..HEAD`, one trailer per new key, and each held key named once:
+ * commit in `<base>..HEAD`, one trailer per new key, and each held key named once (a value
+ * repeated word for word counts once). Neither mints a paper id:
  *
  *   - a split of a held item into two, `Splits: <new id> from <held id>`, passes when the
  *     held id is at `<base>` and still at HEAD (a split keeps the item it splits);
  *   - a re-mint, `Re-mints: <new id> from <old id>`, passes when the old key is at `<base>`
  *     and gone at HEAD (a re-mint replaces it). It covers an id CLAUDE.md sanctions
- *     repairing, never a paper id, and a corrected Data on request DOI.
+ *     repairing and a corrected Data on request DOI.
  *
  * The other state of each is refused and points at the other trailer, so neither act can
  * pass under the other's name. The trailers must survive the merge: a squash rewrites them
@@ -27,7 +28,8 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { exitOnRefusal, REPO_ROOT, RefusalError, runsAsMain } from './lib.js';
+import { join, relative, sep } from 'node:path';
+import { exitOnRefusal, NDJSON_DIR, REPO_ROOT, RefusalError, runsAsMain } from './lib.js';
 import { NEW_ITEMS_PAUSED } from './add-item.js';
 
 /** The commit trailer a split names its held item in. */
@@ -35,8 +37,10 @@ export const SPLIT_TRAILER = 'Splits';
 /** The commit trailer a re-mint names the id it replaces in. */
 export const REMINT_TRAILER = 'Re-mints';
 
-const ITEMS = 'site/db/ndjson/items.ndjson';
-const ON_REQUEST = 'site/db/ndjson/datasets_on_request.ndjson';
+/** A table's NDJSON path relative to the repository root, as git names it, from NDJSON_DIR. */
+const ndjsonPath = (table: string) => relative(REPO_ROOT, join(NDJSON_DIR, `${table}.ndjson`)).split(sep).join('/');
+const ITEMS = ndjsonPath('items');
+const ON_REQUEST = ndjsonPath('datasets_on_request');
 
 /** The keys that say whether a catalog entry is new: item ids, and Data on request DOIs. */
 export interface CatalogKeys {
@@ -68,12 +72,12 @@ export interface Trailers {
 
 /**
  * Each `<key>:` trailer value read as `<new id> from <held id>`. One that does not read that
- * way is recorded in `problems`, naming `heldName` as the trailer's own help does.
+ * way is recorded in `problems`, naming `heldName` as the trailer's own help does. A value
+ * repeated word for word (a cherry-picked or re-applied commit) is one declaration.
  */
 function declarations(key: string, heldName: string, values: string[], problems: string[]) {
   const out: { raw: string; newId: string; heldId: string }[] = [];
-  for (const value of values) {
-    const raw = value.trim();
+  for (const raw of new Set(values.map((v) => v.trim()))) {
     const m = raw.match(/^(\S+) from (\S+)$/);
     if (m) out.push({ raw, newId: m[1], heldId: m[2] });
     else problems.push(`${key}: ${raw}: not "<new id> from <${heldName}>"`);
@@ -101,8 +105,12 @@ export function newItemProblems(base: CatalogKeys, head: CatalogKeys, trailers: 
     return false;
   };
 
+  // Neither trailer mints a paper id: every new paper is a new reference in the matrix, and
+  // a bad paper id is retired rather than re-minted (CLAUDE.md).
   for (const { raw, newId, heldId } of declarations(SPLIT_TRAILER, 'held id', trailers.splits, problems)) {
-    if (!base.itemIds.has(heldId)) {
+    if (newId.startsWith('paper:')) {
+      problems.push(`${SPLIT_TRAILER}: ${raw}: a split never mints a paper id; each new paper is a new reference`);
+    } else if (!base.itemIds.has(heldId)) {
       problems.push(`${SPLIT_TRAILER}: ${raw}: ${heldId} is not on the base, so this is not a split of a held item`);
     } else if (!head.itemIds.has(heldId)) {
       problems.push(`${SPLIT_TRAILER}: ${raw}: ${heldId} is gone, and a split keeps the item it splits; a replaced id is named in "${REMINT_TRAILER}:"`);
@@ -110,9 +118,9 @@ export function newItemProblems(base: CatalogKeys, head: CatalogKeys, trailers: 
       newIds.add(newId);
     }
   }
-  // A re-mint replaces a held key with a new one in the same table: an item id, or the DOI
-  // that keys a Data on request study. A paper id is never re-minted (CLAUDE.md: a bad one
-  // is retired), on either side.
+  // A re-mint replaces a held key with a new key of the same kind: an item id with an item
+  // id (whose type may change, as a move between pages does), or the DOI that keys a Data
+  // on request study with another DOI. Never a paper id, on either side.
   for (const { raw, newId, heldId } of declarations(REMINT_TRAILER, 'old id', trailers.remints, problems)) {
     const isDoi = base.onRequestDois.has(heldId);
     if (newId.startsWith('paper:') || heldId.startsWith('paper:')) {
@@ -145,20 +153,35 @@ export function refusalMessage(problems: string[]): string {
     'what it corrects in a commit trailer, one per new id: a split of a held item into two keeps it,',
     `"${SPLIT_TRAILER}: <new id> from <held id>"; a repair that replaces a held item's id (never a`,
     `paper's), or a Data on request study's DOI, drops the old one, "${REMINT_TRAILER}: <new id> from <old id>".`,
+    'Neither trailer adds a new item: suggest one through an issue instead.',
     ...problems.map((p) => `  ✗ ${p}`),
   ].join('\n');
 }
 
 const git = (repo: string, args: string[]) => execFileSync('git', ['-C', repo, ...args], { encoding: 'utf-8' });
 
-/** A file's text at `ref`, or '' when `ref` does not have it (a base older than the file). */
-function fileAt(repo: string, ref: string, path: string): string {
-  if (!git(repo, ['ls-tree', '--name-only', ref, '--', path]).trim()) return '';
-  return git(repo, ['show', `${ref}:${path}`]);
+/**
+ * A file's text at `ref`. A base without it reads as '' (a base older than the file); a head
+ * without it is refused, since db:export writes every table even when it is empty, so a
+ * missing file means the catalog moved and reading it as empty would pass every new item.
+ */
+function fileAt(repo: string, ref: string, path: string, side: 'base' | 'head'): string {
+  if (git(repo, ['ls-tree', '--name-only', ref, '--', path]).trim()) return git(repo, ['show', `${ref}:${path}`]);
+  if (side === 'base') return '';
+  throw new RefusalError(`db:check-new-items: ${path} is not at ${ref}, so there is no catalog to check; if it moved, move this guard's path with it.`);
 }
 
-function keysAt(repo: string, ref: string): CatalogKeys {
-  return catalogKeys(fileAt(repo, ref, ITEMS), fileAt(repo, ref, ON_REQUEST));
+function keysAt(repo: string, ref: string, side: 'base' | 'head'): CatalogKeys {
+  return catalogKeys(fileAt(repo, ref, ITEMS, side), fileAt(repo, ref, ON_REQUEST, side));
+}
+
+/** Refuses a ref that is not a commit in the clone, naming it, rather than letting git throw. */
+function assertCommit(repo: string, ref: string): void {
+  try {
+    git(repo, ['rev-parse', '--verify', '--quiet', `${ref}^{commit}`]);
+  } catch {
+    throw new RefusalError(`db:check-new-items: ${ref} is not a commit in this clone, so there is nothing to compare against.`);
+  }
 }
 
 /** The values of every `<key>:` trailer on the commits in `base..head`. */
@@ -176,7 +199,9 @@ function trailerValues(repo: string, base: string, head: string, key: string): s
  * and the trailers from every commit in `base..head`.
  */
 export function checkNewItems(repo: string, base: string, head = 'HEAD'): string[] {
-  return newItemProblems(keysAt(repo, base), keysAt(repo, head), {
+  assertCommit(repo, base);
+  assertCommit(repo, head);
+  return newItemProblems(keysAt(repo, base, 'base'), keysAt(repo, head, 'head'), {
     splits: trailerValues(repo, base, head, SPLIT_TRAILER),
     remints: trailerValues(repo, base, head, REMINT_TRAILER),
   });
