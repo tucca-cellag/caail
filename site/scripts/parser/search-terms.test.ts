@@ -88,6 +88,12 @@ describe('buildSearchTerms (sha256)', () => {
     }
   });
 
+  it('moves when a term moves from one list to another, its text unchanged', () => {
+    const path = variant((t) => { t.fieldCore.push(t.methodGeneric.shift()); });
+    expect(served.sha256).toMatch(HEX64);
+    expect(buildSearchTerms(taxonomy, path).sha256).not.toBe(served.sha256);
+  });
+
   it('holds still when only the order of terms or labels changes', () => {
     // Order carries no meaning in the vocabulary, so a curator alphabetising a list must not
     // read to consumers as a new vocabulary.

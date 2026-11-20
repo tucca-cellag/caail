@@ -32,11 +32,9 @@
  *
  * ## The core field list and how the lists compose
  *
- * `fieldCore` holds the terms that name cellular agriculture itself, so a passage that uses
- * one qualifies for collection on that term alone, where the axes need an area term and a
- * method term together. That rule decides what a consumer collects (never what CAAIL indexes,
- * which a curator decides), so it is written in the `contract` rather than left in each
- * consumer's code. Core terms key off no Taxonomy.md heading, so the
+ * `fieldCore` holds the terms that name cellular agriculture itself. How it composes with the
+ * axes decides what a consumer collects, so the rule is written once, in the `contract`, rather
+ * than left in each consumer's code or restated here. Core terms key off no Taxonomy.md heading, so the
  * list has no coverage check: it gets the form and repeat checks every list gets, and the
  * schema refuses it empty.
  *
@@ -222,8 +220,8 @@ export function buildSearchTerms(
   }
   if (sections.length > 0) throw new Error(`search-terms: ${path} ${sections.join('\nIt also ')}`);
   // The hash takes the whole parsed file, every member the block serves but itself, in
-  // canonical form, so it moves whenever the stored text of a term, a label or the contract
-  // changes, and never for order alone.
+  // canonical form, so it moves whenever the contents of any list, a label or the contract
+  // change, and never for order alone.
   const sha256 = createHash('sha256').update(canonicalJson(terms)).digest('hex');
   // Every term now passed SEARCH_TERM_FORM above, so this cannot fail; it types the result
   // as the served shape, whose pattern openapi.json publishes.

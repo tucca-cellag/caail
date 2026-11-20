@@ -916,8 +916,7 @@ const ServedTermListSchema = z.array(z.string().regex(SEARCH_TERM_FORM));
  *   most classical-ML abstracts are written. A generic term that is also in a method's list
  *   labels that method too; the rest label no row.
  * - `fieldCore` holds the terms that name cellular agriculture itself ("cultivated meat"). The
- *   contract says how it composes with the axes: a core term alone qualifies a passage for
- *   collection, where the axes need an area term and a method term together.
+ *   contract says how it composes with the axes.
  * - `sha256` identifies the vocabulary, derived by buildSearchTerms from every other member, so
  *   a consumer can record which vocabulary produced each collection run. It is never stored in
  *   the file, which is why SearchTermsFileSchema has no such key.
