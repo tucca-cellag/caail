@@ -30,9 +30,28 @@
  * none, and every check stays green. So `buildSearchTerms` asserts the key sets equal the
  * live axes exactly, in both directions, and fails the build naming the difference.
  *
+ * ## The core field list and how the lists compose
+ *
+ * `fieldCore` holds the terms that name cellular agriculture itself, so a passage that uses
+ * one is cell-ag work on that term alone, where the axes need an area term and a method term
+ * together. That rule decides what a consumer collects, so it is written in the `contract`
+ * rather than left in each consumer's code. Core terms key off no Taxonomy.md heading, so the
+ * list has no coverage check: it gets the form and repeat checks every list gets, and the
+ * schema refuses it empty.
+ *
+ * ## Why the vocabulary carries a hash
+ *
+ * Consumers pin the vocabulary they query with and record, per collection run, which one
+ * produced it, because a term added to a query list later leaves a gap in everything collected
+ * before it, and nothing shows where. `sha256` gives them one identifier to record. It is
+ * computed over the whole loaded file rather than a list of member names, so a member added
+ * later is covered without anyone remembering to add it; `corpusDate` cannot serve, since this
+ * file is not part of the corpus it dates.
+ *
  * No disk writes; generate-data.ts passes the result to the agent API.
  */
 
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
@@ -148,6 +167,7 @@ export function buildSearchTerms(
   }
 
   const lists: Array<[where: string, list: string[]]> = [
+    ['fieldCore', terms.fieldCore],
     ['methodGeneric', terms.methodGeneric],
     ...Object.entries(terms.areas).map(([l, v]) => [`areas["${l}"]`, v] as [string, string[]]),
     ...Object.entries(terms.methods).map(([l, v]) => [`methods["${l}"]`, v] as [string, string[]]),
@@ -182,9 +202,12 @@ export function buildSearchTerms(
     );
   }
   if (sections.length > 0) throw new Error(`search-terms: ${path} ${sections.join('\nIt also ')}`);
+  // The hash takes the whole parsed file, every member the block serves but itself, so it
+  // moves whenever any of them changes and at no other time.
+  const sha256 = createHash('sha256').update(JSON.stringify(terms)).digest('hex');
   // Every term now passed SEARCH_TERM_FORM above, so this cannot fail; it types the result
   // as the served shape, whose pattern openapi.json publishes.
-  return SearchTermsSchema.parse(terms);
+  return SearchTermsSchema.parse({ ...terms, sha256 });
 }
 
 /**

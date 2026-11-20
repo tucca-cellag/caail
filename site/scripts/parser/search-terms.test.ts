@@ -1,12 +1,14 @@
 /**
  * search-terms.test.ts: tests for the curated search vocabulary loader.
  *
- * Two suites:
+ * Three suites:
  *   (A) the committed search-terms.json against the real Taxonomy.md: every live area and
  *       method has exactly one entry (the same guard the build enforces, pinned here so a
- *       drift is caught by `pnpm test` too), and the contract's plural rules equal the
- *       loader's, in both directions;
- *   (B) the failure modes, each built by mutating a copy of the committed file, so the
+ *       drift is caught by `pnpm test` too), the contract's plural rules equal the
+ *       loader's, in both directions, and the core field list is served and named;
+ *   (B) the served `sha256`, in both directions: it moves when any member changes, and holds
+ *       still for the same content in another layout or beside reworded definitions;
+ *   (C) the failure modes, each built by mutating a copy of the committed file, so the
  *       check is shown firing on the defect it guards rather than trusted to.
  */
 
@@ -47,6 +49,58 @@ describe('buildSearchTerms (committed file)', () => {
     const clause = /regular plural: ([^.]+)\./.exec(terms.contract);
     expect(clause, 'contract names its plural rules after "regular plural:"').not.toBeNull();
     expect(clause![1].split(', ').sort()).toEqual(PLURAL_RULES.map((r) => r.name).sort());
+  });
+
+  it('serves a core field list, and its contract names it, so a consumer can find how it composes', () => {
+    expect(terms.fieldCore.length).toBeGreaterThan(0);
+    expect(terms.contract).toContain('fieldCore');
+  });
+});
+
+describe('buildSearchTerms (sha256)', () => {
+  const served = buildSearchTerms(taxonomy);
+  // Asserted again in each equality test, so none passes on two missing hashes.
+  const HEX64 = /^[0-9a-f]{64}$/;
+
+  it('is 64 lowercase hex characters, derived rather than stored in the file', () => {
+    expect(served.sha256).toMatch(HEX64);
+    expect(committed).not.toHaveProperty('sha256');
+  });
+
+  it('follows the content, not the file layout', () => {
+    // variant() writes the copy unindented, so its bytes differ from the committed file's.
+    expect(served.sha256).toMatch(HEX64);
+    expect(buildSearchTerms(taxonomy, variant(() => {})).sha256).toBe(served.sha256);
+  });
+
+  it('moves when any member of the block changes, whichever member it is', () => {
+    // Every served member but sha256 comes from the file, so mutating each file member in
+    // turn covers the whole block, including any member added after this test was written.
+    expect(Object.keys(committed).sort()).toEqual(Object.keys(served).filter((k) => k !== 'sha256').sort());
+    for (const key of Object.keys(committed)) {
+      const path = variant((t) => {
+        const member = t[key];
+        if (typeof member === 'string') t[key] = `${member} Changed.`;
+        else if (Array.isArray(member)) member.push('zzz unused term');
+        else member[Object.keys(member)[0]].push('zzz unused term');
+      });
+      expect(buildSearchTerms(taxonomy, path).sha256, `a change to ${key}`).not.toBe(served.sha256);
+    }
+  });
+
+  it('does not move when only the taxonomy definitions change', () => {
+    const reworded = structuredClone(taxonomy);
+    for (const label of Object.keys(reworded.definitions)) reworded.definitions[label] = 'Reworded.';
+    for (const axis of Object.values(reworded.axes)) {
+      for (const label of Object.keys(axis)) axis[label] = 'Reworded.';
+    }
+    expect(served.sha256).toMatch(HEX64);
+    expect(buildSearchTerms(reworded).sha256).toBe(served.sha256);
+  });
+
+  it('rejects a sha256 written into the file, since the build derives it', () => {
+    const path = variant((t) => { t.sha256 = served.sha256; });
+    expect(() => buildSearchTerms(taxonomy, path)).toThrow(/unrecognized_keys|sha256/i);
   });
 });
 
@@ -137,6 +191,20 @@ describe('buildSearchTerms (failure modes)', () => {
     expect(() => buildSearchTerms(taxonomy, emptyMethod)).toThrow(/too_small|at least 1/i);
     const emptyArea = variant((t) => { t.areas[firstArea] = []; });
     expect(() => buildSearchTerms(taxonomy, emptyArea)).not.toThrow();
+  });
+
+  it('rejects a file with no fieldCore list, or an empty one', () => {
+    const absent = variant((t) => { delete t.fieldCore; });
+    expect(() => buildSearchTerms(taxonomy, absent)).toThrow(/fieldCore: .*\(invalid_type\)/);
+    const empty = variant((t) => { t.fieldCore = []; });
+    expect(() => buildSearchTerms(taxonomy, empty)).toThrow(/fieldCore: .*\(too_small\)/);
+  });
+
+  it('checks fieldCore terms for form and for repeats as a consumer reads them', () => {
+    const path = variant((t) => { t.fieldCore.push('Cultivated Pork', `${t.fieldCore[0]}s`); });
+    const run = () => buildSearchTerms(taxonomy, path);
+    expect(run).toThrow('fieldCore: not lowercase ASCII words joined by single spaces or hyphens: "Cultivated Pork"');
+    expect(run).toThrow(`fieldCore: repeated "${committed.fieldCore[0]}s"`);
   });
 
   it('rejects an unknown top-level key rather than shipping it', () => {

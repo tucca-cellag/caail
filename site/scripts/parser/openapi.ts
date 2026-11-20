@@ -227,8 +227,12 @@ export const API_ENDPOINTS: readonly ApiEndpointSpec[] = [
       'labels it used to carry now live under `axes.theme`, so resolve a theme there. ' +
       '`searchTerms` holds the curated search vocabulary: `areas` and `methods` keyed by the ' +
       'same labels as `axes`, `methodGeneric` for text that applies some AI method (a generic term ' +
-      'also listed under a method labels that method too), ' +
-      'and a `contract` saying how to match the terms. An empty area list is deliberate: term ' +
+      'also listed under a method labels that method too), `fieldCore` for terms that name ' +
+      'cellular agriculture itself, a `contract` saying how to match the terms and how the lists ' +
+      'compose (a `fieldCore` term alone marks a passage as cell-ag work; otherwise it takes an ' +
+      'area term and a method or `methodGeneric` term together), and `sha256`, which identifies ' +
+      'the vocabulary: it changes whenever any other part of `searchTerms` does, so record it with ' +
+      'each collection run and compare it only for equality. An empty area list is deliberate: term ' +
       'matching never assigns that area, and a curator assigns it to work found through method terms.',
   },
 ];
