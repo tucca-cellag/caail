@@ -33,9 +33,10 @@
  * ## The core field list and how the lists compose
  *
  * `fieldCore` holds the terms that name cellular agriculture itself, so a passage that uses
- * one is cell-ag work on that term alone, where the axes need an area term and a method term
- * together. That rule decides what a consumer collects, so it is written in the `contract`
- * rather than left in each consumer's code. Core terms key off no Taxonomy.md heading, so the
+ * one qualifies for collection on that term alone, where the axes need an area term and a
+ * method term together. That rule decides what a consumer collects (never what CAAIL indexes,
+ * which a curator decides), so it is written in the `contract` rather than left in each
+ * consumer's code. Core terms key off no Taxonomy.md heading, so the
  * list has no coverage check: it gets the form and repeat checks every list gets, and the
  * schema refuses it empty.
  *
