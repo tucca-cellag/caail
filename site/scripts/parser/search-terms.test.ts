@@ -95,7 +95,7 @@ describe('buildSearchTerms (sha256)', () => {
       t.fieldCore.reverse();
       t.methodGeneric.reverse();
       t.areas = Object.fromEntries(Object.entries(t.areas).reverse().map(([k, v]) => [k, [...(v as string[])].reverse()]));
-      t.methods = Object.fromEntries(Object.entries(t.methods).reverse());
+      t.methods = Object.fromEntries(Object.entries(t.methods).reverse().map(([k, v]) => [k, [...(v as string[])].reverse()]));
     });
     expect(served.sha256).toMatch(HEX64);
     expect(buildSearchTerms(taxonomy, path).sha256).toBe(served.sha256);
@@ -113,7 +113,7 @@ describe('buildSearchTerms (sha256)', () => {
 
   it('rejects a sha256 written into the file, since the build derives it', () => {
     const path = variant((t) => { t.sha256 = served.sha256; });
-    expect(() => buildSearchTerms(taxonomy, path)).toThrow(/unrecognized_keys|sha256/i);
+    expect(() => buildSearchTerms(taxonomy, path)).toThrow(/\(root\): .*"sha256".*\(unrecognized_keys\)/);
   });
 });
 
