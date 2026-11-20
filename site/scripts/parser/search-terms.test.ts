@@ -7,7 +7,7 @@
  *       drift is caught by `pnpm test` too), the contract's plural rules equal the
  *       loader's, in both directions, and the core field list is served and named;
  *   (B) the served `sha256`, in both directions: it moves when any member changes, and holds
- *       still for the same content in another layout or beside reworded definitions;
+ *       still for the same content in another layout or order, or beside reworded definitions;
  *   (C) the failure modes, each built by mutating a copy of the committed file, so the
  *       check is shown firing on the defect it guards rather than trusted to.
  */
@@ -86,6 +86,19 @@ describe('buildSearchTerms (sha256)', () => {
       });
       expect(buildSearchTerms(taxonomy, path).sha256, `a change to ${key}`).not.toBe(served.sha256);
     }
+  });
+
+  it('holds still when only the order of terms or labels changes', () => {
+    // Order carries no meaning in the vocabulary, so a curator alphabetising a list must not
+    // read to consumers as a new vocabulary.
+    const path = variant((t) => {
+      t.fieldCore.reverse();
+      t.methodGeneric.reverse();
+      t.areas = Object.fromEntries(Object.entries(t.areas).reverse().map(([k, v]) => [k, [...(v as string[])].reverse()]));
+      t.methods = Object.fromEntries(Object.entries(t.methods).reverse());
+    });
+    expect(served.sha256).toMatch(HEX64);
+    expect(buildSearchTerms(taxonomy, path).sha256).toBe(served.sha256);
   });
 
   it('does not move when only the taxonomy definitions change', () => {

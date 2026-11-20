@@ -45,8 +45,9 @@
  * produced it, because a term added to a query list later leaves a gap in everything collected
  * before it, and nothing shows where. `sha256` gives them one identifier to record. It is
  * computed over the whole loaded file rather than a list of member names, so a member added
- * later is covered without anyone remembering to add it; `corpusDate` cannot serve, since this
- * file is not part of the corpus it dates.
+ * later is covered without anyone remembering to add it, and over a canonical form with keys
+ * and lists sorted, so reordering terms or schema fields never reads as a new vocabulary.
+ * `corpusDate` cannot serve, since this file is not part of the corpus it dates.
  *
  * No disk writes; generate-data.ts passes the result to the agent API.
  */
@@ -102,6 +103,23 @@ function showPath(path: ReadonlyArray<PropertyKey>): string {
   if (path.length === 0) return '(root)';
   const [head, ...rest] = path;
   return String(head) + rest.map((p) => (typeof p === 'number' ? `[${p}]` : `[${JSON.stringify(String(p))}]`)).join('');
+}
+
+/**
+ * JSON with every object's keys sorted and every array's elements sorted, so two values that
+ * differ only in order serialize alike. Order carries no meaning in the vocabulary (terms
+ * produce labels, not counts, and there is no longest-match rule), so the hash must not see it.
+ */
+function canonicalJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).sort().join(',')}]`;
+  if (value !== null && typeof value === 'object') {
+    const obj = value as Record<string, unknown>;
+    const fields = Object.keys(obj)
+      .sort()
+      .map((k) => `${JSON.stringify(k)}:${canonicalJson(obj[k])}`);
+    return `{${fields.join(',')}}`;
+  }
+  return JSON.stringify(value);
 }
 
 /** A word's regular plurals under PLURAL_RULES. */
@@ -202,9 +220,10 @@ export function buildSearchTerms(
     );
   }
   if (sections.length > 0) throw new Error(`search-terms: ${path} ${sections.join('\nIt also ')}`);
-  // The hash takes the whole parsed file, every member the block serves but itself, so it
-  // moves whenever any of them changes and at no other time.
-  const sha256 = createHash('sha256').update(JSON.stringify(terms)).digest('hex');
+  // The hash takes the whole parsed file, every member the block serves but itself, in
+  // canonical form, so it moves whenever a term, a label or the contract changes and never
+  // for order alone.
+  const sha256 = createHash('sha256').update(canonicalJson(terms)).digest('hex');
   // Every term now passed SEARCH_TERM_FORM above, so this cannot fail; it types the result
   // as the served shape, whose pattern openapi.json publishes.
   return SearchTermsSchema.parse({ ...terms, sha256 });
