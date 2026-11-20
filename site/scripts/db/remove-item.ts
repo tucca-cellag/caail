@@ -2,7 +2,7 @@
  * remove-item.ts (db:remove) — remove one item by its frozen id. Rebuilds the DB
  * from committed NDJSON, deletes the item and its dependent rows (a paper's id is
  * retired, never reused), runs the integrity guards, and — only if clean — writes
- * the updated NDJSON + canonical Markdown. Commit Markdown + NDJSON together.
+ * the updated NDJSON + canonical Markdown and stamps the NDJSON. Commit them together.
  *
  *   NODE_OPTIONS='--experimental-sqlite --no-warnings' pnpm --dir site db:remove <id>
  *   e.g.  pnpm --dir site db:remove sw:oldtool
@@ -31,8 +31,11 @@ function main(): void {
   } catch (err) {
     exitOnRefusal(err);
   }
-  console.log(`Removed ${id}. Regenerated ${written.length} canonical files + NDJSON.`);
-  console.log('Review the diff, then commit Markdown + NDJSON together.');
+  console.log(`Removed ${id}. Regenerated ${written.length} canonical files + NDJSON, and stamped it.`);
+  console.log(
+    'Review the diff, run pnpm --dir site parse, then commit the Markdown, the NDJSON, ' +
+      'site/db/corpus-stamp.json and what parse changed under site/public/ together.',
+  );
 }
 
 if (runsAsMain(import.meta.url)) main();

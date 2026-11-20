@@ -7,12 +7,13 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { writeFileSync, mkdtempSync, mkdirSync, readFileSync } from 'node:fs';
+import { cpSync, writeFileSync, mkdtempSync, mkdirSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { openDb, importNdjson, REPO_ROOT, ACCESSION_SOURCE, type Db } from './lib.js';
-import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkAxisBijection, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, checkRowTagParity, checkFineTagSeedDrift, checkInventoryCells, INVENTORY_CELLS_LABEL, INVENTORY_CELLS_SHOWN, checkInventoryPages, INVENTORY_PAGES_LABEL, checkEntryRowTwins, ENTRY_ROW_TWINS_LABEL, ZENODO_TWO_WAYS_LABEL, checkZenodoTypes, ZENODO_TYPES_LABEL, checkAccessions, ACCESSIONS_LABEL, ACCESSION_FAMILIES, checkDataLinks, DATA_LINKS_LABEL, runChecks } from './check.js';
+import { openDb, importNdjson, NDJSON_DIR, REPO_ROOT, ACCESSION_SOURCE, type Db } from './lib.js';
+import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkAxisBijection, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, checkRowTagParity, checkFineTagSeedDrift, checkInventoryCells, INVENTORY_CELLS_LABEL, INVENTORY_CELLS_SHOWN, checkInventoryPages, INVENTORY_PAGES_LABEL, checkEntryRowTwins, ENTRY_ROW_TWINS_LABEL, ZENODO_TWO_WAYS_LABEL, checkZenodoTypes, ZENODO_TYPES_LABEL, checkAccessions, ACCESSIONS_LABEL, ACCESSION_FAMILIES, checkDataLinks, DATA_LINKS_LABEL, runChecks, checkCorpusStamp, CORPUS_STAMP_LABEL, runDbCheck } from './check.js';
+import { stampPathFor } from './corpus-stamp.js';
 import { NON_DEPOSIT_LABELS, parseRowCells, readInventoryHeader, STATUS_WORDS, SUPPLEMENT_PREFIX } from '../parser/dataset-inventory.js';
 import { THEME_SLUGS, FINE_TAGS } from './seed.js';
 import { loadZenodoTypes } from '../parser/doi-relation.js';
@@ -1526,10 +1527,54 @@ describe('checkDataLinks (tucca-cellag/caail-planning#752)', () => {
   });
 });
 
-describe('runChecks on the real corpus', () => {
-  it('passes every guard', () => {
-    const results = runChecks(importNdjson());
+describe('checkCorpusStamp (tucca-cellag/caail-planning#655)', () => {
+  /** A copy of the committed NDJSON and its stamp, in the layout the stamp expects. */
+  function stamped(): string {
+    const dir = join(mkdtempSync(join(tmpdir(), 'caail-check-stamp-')), 'ndjson');
+    cpSync(NDJSON_DIR, dir, { recursive: true });
+    cpSync(stampPathFor(NDJSON_DIR), stampPathFor(dir));
+    return dir;
+  }
+  const result = (dir: string) => checkCorpusStamp(dir).find((r) => r.label === CORPUS_STAMP_LABEL)!;
+
+  it('passes on the committed NDJSON and a copy of it', () => {
+    expect(result(NDJSON_DIR).ok).toBe(true);
+    expect(result(stamped()).ok).toBe(true);
+  });
+
+  it('fails once any NDJSON byte changes after the stamp, naming db:stamp', () => {
+    const dir = stamped();
+    writeFileSync(join(dir, 'aliases.ndjson'), `${readFileSync(join(dir, 'aliases.ndjson'), 'utf-8')}\n`);
+    const r = result(dir);
+    expect(r.ok).toBe(false);
+    expect(r.detail).toMatch(/changed after it was stamped/);
+    expect(r.detail).toContain('pnpm --dir site db:stamp');
+  });
+
+  it('fails when the stamp is missing or unreadable', () => {
+    const missing = join(mkdtempSync(join(tmpdir(), 'caail-check-stamp-')), 'ndjson');
+    cpSync(NDJSON_DIR, missing, { recursive: true });
+    expect(result(missing).detail).toMatch(/does not exist/);
+    const garbled = stamped();
+    writeFileSync(stampPathFor(garbled), '<<<<<<< HEAD\n');
+    expect(result(garbled).ok).toBe(false);
+  });
+
+  it('reports an NDJSON directory it cannot read as a failed check rather than throwing', () => {
+    const nowhere = join(mkdtempSync(join(tmpdir(), 'caail-check-stamp-')), 'ndjson');
+    const r = result(nowhere);
+    expect(r.ok).toBe(false);
+    expect(r.detail).toMatch(/could not be read/);
+    expect(r.detail).not.toContain('db:stamp');
+  });
+});
+
+describe('db:check on the real corpus', () => {
+  it('passes every guard, the corpus stamp included', () => {
+    const results = runDbCheck(importNdjson());
     const failed = results.filter((r) => !r.ok);
     expect(failed, failed.map((r) => `${r.label}: ${r.detail}`).join('; ')).toEqual([]);
+    expect(results.map((r) => r.label)).toContain(CORPUS_STAMP_LABEL);
+    expect(results.length).toBe(runChecks(importNdjson()).length + 1);
   });
 });

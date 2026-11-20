@@ -9,6 +9,8 @@
 
 import { z } from 'zod';
 
+import { CORPUS_DATE_FORMAT } from './corpus-date-format.js';
+
 /**
  * The `Papers.md` section whose entries are primary research and participate in the matrix.
  *
@@ -1006,8 +1008,11 @@ export type CorrectionFormData = z.infer<typeof CorrectionFormSchema>;
  * Everything here is GET of a static file: no request bodies, no parameters, no auth.
  */
 
-/** Stamped onto every response so staleness is visible without a HEAD request. */
-const CorpusDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+/**
+ * Stamped onto every response so staleness is visible without a HEAD request. The form is
+ * `CORPUS_DATE_FORMAT`'s, imported rather than typed again.
+ */
+const CorpusDateSchema = z.string().regex(CORPUS_DATE_FORMAT);
 
 /** One method×area cell, including the empty ones papers.json cannot express. */
 export const ApiMatrixCellSchema = z.object({

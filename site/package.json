@@ -15,6 +15,8 @@
     "db:export": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/export-ndjson.ts",
     "db:reseed-axes": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/reseed-axes.ts",
     "db:emit": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/emit-files.ts",
+    "db:stamp": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/stamp.ts",
+    "db:check-stamp-order": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/check-stamp-order.ts",
     "db:add": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/add-item.ts",
     "db:remove": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/remove-item.ts",
     "db:verify": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/verify.ts",

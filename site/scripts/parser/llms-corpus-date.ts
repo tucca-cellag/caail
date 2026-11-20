@@ -1,14 +1,21 @@
 /**
- * llms-corpus-date.ts: the corpus date both llmstxt.org files carry, the day CAAIL's catalog data
- * last changed, or the build date in a checkout with no git history
- * (tucca-cellag/caail-planning#289).
+ * llms-corpus-date.ts: the corpus date both llmstxt.org files carry, the date stamped on the newest
+ * version of CAAIL's catalog data (tucca-cellag/caail-planning#289).
  *
- * The date is `readCorpusDate`'s, the one every file under `public/api/` already carries, and it
- * is never typed. It dates the catalog data, not the file: it moves only when `site/db/ndjson`
- * changes (with no git history to read, `readCorpusDate` falls back to the build date, and the
- * note says so), while both files hold prose that changes without it. So two copies with the same date
- * can still differ, and a matching date does not show that a copy is current. The note says so,
- * and tells a reader of any copy to fetch the canonical one instead of comparing dates.
+ * The date is `readCorpusDate`'s, the one every file under `public/api/` already carries, read
+ * from the corpus stamp (`site/db/corpus-stamp.json`, tucca-cellag/caail-planning#655), and it is
+ * never typed here. It dates the catalog data, not the file: it moves only when the stamp does
+ * (`corpus-stamp.ts` says when that is), while both files hold prose that changes without it. So
+ * two copies with
+ * the same date can still differ, and a matching date does not show that a copy is current. The
+ * note says so, and tells a reader of any copy to fetch the canonical one instead of comparing dates.
+ *
+ * "Stamped on the newest version", not "last changed" or "made": a version is dated when it is
+ * stamped, which can be days before it reaches main, so a reader would take "last changed" as the
+ * day the live data changed; and a re-stamp after a merge or a revert dates the version it
+ * produces, not the day any one change was made. "Usually earlier" rather than "earlier": CI lets
+ * a stamp through dated up to a day ahead (`latestStampDate` in `check-stamp-order.ts`), for a clock
+ * a little fast near midnight. The note says so in the reader's words.
  *
  * The two files reach the date differently because they are made differently:
  *
@@ -49,8 +56,8 @@ export function corpusDateNote(date: string, file: LlmsFile): string {
     throw new Error(`llms corpus date: "${date}" is not a YYYY-MM-DD date`);
   }
   return (
-    `${CORPUS_DATE_PREFIX} ${date}, the day CAAIL's catalog data last changed ` +
-    "(the agent API's corpusDate; a checkout with no git history uses the build date instead). " +
+    `${CORPUS_DATE_PREFIX} ${date}, the date stamped on the newest version of CAAIL's catalog data ` +
+    "(the agent API's corpusDate), which can differ from the day that version went live (usually earlier). " +
     `The canonical copy of this file is ${SITE_URL}${file}. ` +
     'Its prose can change without moving that date, so a copy read anywhere else may be out of date ' +
     'even when the dates match: fetch the canonical copy before relying on it.'

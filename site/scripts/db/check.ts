@@ -31,12 +31,15 @@
  *  - curated entries' own deposit links: keys resolve, values are http(s) links to a deposit
  *    rather than a paper or a family accession, the column matches dataset-data-links.json
  *    (checkDataLinks).
+ *  - the corpus stamp: site/db/corpus-stamp.json parses and records the hash of the NDJSON
+ *    on disk (checkCorpusStamp, run by db:check beside the DB guards, through runDbCheck).
  */
 
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { importNdjson, ACCESSION_EXACT, ACCESSION_SOURCE, idAccession, REPO_ROOT, SITE_ROOT, type Db } from './lib.js';
+import { importNdjson, ACCESSION_EXACT, ACCESSION_SOURCE, idAccession, NDJSON_DIR, REPO_ROOT, SITE_ROOT, type Db } from './lib.js';
+import { inspectStamp, ndjsonDirOf, STAMP_FILE, stampProblemMessage } from './corpus-stamp.js';
 import { THEME_SLUGS, THEMES, FINE_TAGS, pageOrdinals, DATASET_ACCESSIONS_PATH, DATASET_DATA_LINKS_PATH } from './seed.js';
 import { ON_REQUEST_PAGES } from '../parser/datasets.js';
 import { strayInventoryTables } from './extract.js';
@@ -1539,9 +1542,34 @@ export function runChecks(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
     ...checkSeries(db), ...checkFineTagSeedDrift(db), ...checkRowTagParity(db)];
 }
 
+export const CORPUS_STAMP_LABEL = `corpus stamp: ${STAMP_FILE} records the hash of the NDJSON it dates`;
+
+/**
+ * The corpus stamp (corpus-stamp.ts, tucca-cellag/caail-planning#655): it parses and its hash
+ * matches the NDJSON in `ndjsonDir`, so the date every API file and llms.txt carry belongs to
+ * this corpus. A merge of two corpus changes conflicts on the stamp, and either side of that
+ * conflict usually fails here until a re-stamp. Not always: when one side's NDJSON contains the
+ * other's, that side's stamp still matches and passes, and so does a stamp a revert or cherry-pick
+ * restores. A date those leave going backwards is caught by `db:check-stamp-order` in CI, not here.
+ *
+ * It sits beside `runChecks` rather than in it. `runChecks` also runs inside db:add and db:remove
+ * against the DB they are about to write, before the NDJSON on disk has changed, and in tests
+ * against fixture roots; this reads the NDJSON files on disk.
+ */
+export function checkCorpusStamp(ndjsonDir: string = NDJSON_DIR): CheckResult[] {
+  const found = inspectStamp(ndjsonDir);
+  return [ok(CORPUS_STAMP_LABEL, found.problem === null,
+    found.actual === null ? stampProblemMessage(found) : `${stampProblemMessage(found)}, then commit the stamp with it.`)];
+}
+
+/** Everything db:check runs: every guard on the DB, then the stamp on the NDJSON it was built from. */
+export function runDbCheck(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
+  return [...runChecks(db, repoRoot), ...checkCorpusStamp(ndjsonDirOf(repoRoot))];
+}
+
 function main(): void {
   console.log('CAAIL DB integrity + drift check');
-  const results = runChecks(importNdjson());
+  const results = runDbCheck(importNdjson());
   for (const r of results) console.log(`  ${r.ok ? '✓' : '✗'} ${r.label}${r.detail && !r.ok ? `\n      ${r.detail}` : ''}`);
   const failures = results.filter((r) => !r.ok).length;
   console.log(`\n${failures === 0 ? '✓ all checks passed' : `✗ ${failures} check(s) FAILED`}`);

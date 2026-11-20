@@ -11,7 +11,8 @@ import { join } from 'node:path';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { buildPapersModel } from '../parser/papers.js';
-import { openDb, exportNdjson, REPO_ROOT, NDJSON_DIR, type Db } from './lib.js';
+import { openDb, exportNdjson, exitOnRefusal, REPO_ROOT, NDJSON_DIR, type Db } from './lib.js';
+import { describeStamp, stampAfterWriting } from './corpus-stamp.js';
 import { extractCatalogEntries, extractReports } from './extract.js';
 import { seedPapers, seedCatalog, seedReports, seedDatasets, seedOnRequest, seedTopics, seedLicenses, seedDois, seedRelatedDois, seedAccessions, seedDataLinks, seedSubseries } from './seed.js';
 
@@ -227,6 +228,13 @@ export function main(): void {
   console.log(`  data links    ${dataLinkSummary.rows} curated-entry data-link sets (tucca-cellag/caail-planning#752)`);
   console.log(`  subseries     ${subseriesSummary.rows} SuperSeries member sets (tucca-cellag/caail-planning#226)`);
   console.log(`  -> NDJSON written to ${NDJSON_DIR}`);
+  try {
+    console.log(`  ${describeStamp(stampAfterWriting(NDJSON_DIR, 'db:bootstrap wrote the NDJSON'))}`);
+    console.log('  Then run pnpm --dir site parse, and commit the NDJSON, the stamp and what parse changed under site/public/.');
+    console.log('  To undo a run made only as a check, restore site/db/ndjson and site/db/corpus-stamp.json together.');
+  } catch (err) {
+    exitOnRefusal(err);
+  }
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) main();
