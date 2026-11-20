@@ -221,8 +221,8 @@ export function buildSearchTerms(
   }
   if (sections.length > 0) throw new Error(`search-terms: ${path} ${sections.join('\nIt also ')}`);
   // The hash takes the whole parsed file, every member the block serves but itself, in
-  // canonical form, so it moves whenever a term, a label or the contract changes and never
-  // for order alone.
+  // canonical form, so it moves whenever the stored text of a term, a label or the contract
+  // changes, and never for order alone.
   const sha256 = createHash('sha256').update(canonicalJson(terms)).digest('hex');
   // Every term now passed SEARCH_TERM_FORM above, so this cannot fail; it types the result
   // as the served shape, whose pattern openapi.json publishes.
