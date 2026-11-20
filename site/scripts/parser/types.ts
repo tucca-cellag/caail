@@ -895,6 +895,7 @@ export const SearchTermsFileSchema = z
     areas: z.record(z.string(), z.array(z.string())),
     methods: z.record(z.string(), z.array(z.string()).min(1)),
     methodGeneric: z.array(z.string()).min(1),
+    fieldCore: z.array(z.string()).min(1),
   })
   .strict();
 
@@ -914,6 +915,11 @@ const ServedTermListSchema = z.array(z.string().regex(SEARCH_TERM_FORM));
  * - `methodGeneric` marks work as applying SOME AI method ("machine learning"), which is how
  *   most classical-ML abstracts are written. A generic term that is also in a method's list
  *   labels that method too; the rest label no row.
+ * - `fieldCore` holds the terms that name cellular agriculture itself ("cultivated meat"). The
+ *   contract says how it composes with the axes.
+ * - `sha256` identifies the vocabulary, derived by buildSearchTerms from every other member, so
+ *   a consumer can record which vocabulary produced each collection run. It is never stored in
+ *   the file, which is why SearchTermsFileSchema has no such key.
  */
 export const SearchTermsSchema = z
   .object({
@@ -921,6 +927,8 @@ export const SearchTermsSchema = z
     areas: z.record(z.string(), ServedTermListSchema),
     methods: z.record(z.string(), ServedTermListSchema.min(1)),
     methodGeneric: ServedTermListSchema.min(1),
+    fieldCore: ServedTermListSchema.min(1),
+    sha256: z.string().regex(/^[0-9a-f]{64}$/),
   })
   .strict();
 export type SearchTerms = z.infer<typeof SearchTermsSchema>;

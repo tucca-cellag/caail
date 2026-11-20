@@ -1,5 +1,5 @@
 {
-  "contract": "Terms are lowercase ASCII words joined by single spaces or hyphens, stored in singular form. Irregular plurals are not derived, so any that matter (media, mycelia) are listed as their own terms, as are closed and hyphenated spellings of one word (pretrained, pre-trained). To match: NFKC-normalize the text, remove default-ignorable characters such as soft hyphens and zero-width spaces, fold case, fold every Unicode dash to a hyphen, treat a hyphen and any run of whitespace as the same, and match whole words, allowing each word its regular plural: +s, +es, y to ies, is to es, ix to ices. Terms produce labels, not counts: a passage labels an area or method once, however many of its terms match, and there is no longest-match rule. A term may appear under several areas or methods, and a match labels every one. An area with an empty list is never assigned by term matching: its work is found through method terms alone, and a curator assigns the area. methodGeneric marks text as applying some AI method; a generic term that is also in a method's list labels that method too.",
+  "contract": "Terms are lowercase ASCII words joined by single spaces or hyphens, stored in singular form. Irregular plurals are not derived, so any that matter (media, mycelia) are listed as their own terms, as are closed and hyphenated spellings of one word (pretrained, pre-trained). To match: NFKC-normalize the text, remove default-ignorable characters such as soft hyphens and zero-width spaces, fold case, fold every Unicode dash to a hyphen, treat a hyphen and any run of whitespace as the same, and match whole words, allowing each word its regular plural: +s, +es, y to ies, is to es, ix to ices. Terms produce labels, not counts: a passage labels an area or method once, however many of its terms match, and there is no longest-match rule. A term may appear under several areas or methods, and a match labels every one. An area with an empty list is never assigned by term matching: its work is found through method terms alone, and a curator assigns the area. methodGeneric marks text as applying some AI method; a generic term that is also in a method's list labels that method too. fieldCore holds terms that name cellular agriculture itself. A term labels nothing by being in fieldCore; the other lists label whatever their terms match, as usual. A passage qualifies, meaning a search should collect it, when it matches a fieldCore term, or an area term together with a method or methodGeneric term. A passage that matches method or methodGeneric terms alone does not qualify but is a candidate for a curator, which is how an area with an empty list gets its work; any other passage is neither. Matching never decides what CAAIL indexes: a curator does. sha256 identifies this vocabulary, this contract included: it changes whenever the contents of any list, a label or this contract change, and never for order alone, so record it with each collection run and compare it only for equality.",
   "areas": {
     "Media Optimization": [
       "culture medium",
@@ -548,5 +548,15 @@
     "ai agent",
     "agentic",
     "neural net"
+  ],
+  "fieldCore": [
+    "cultivated meat",
+    "cultured meat",
+    "cellular agriculture",
+    "cell-based meat",
+    "precision fermentation",
+    "cultivated seafood",
+    "cultivated fat",
+    "lab-grown meat"
   ]
 }
