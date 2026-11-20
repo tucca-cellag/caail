@@ -3,8 +3,9 @@
  * `emitAll` is the reusable core (used by db:emit, db:add, db:remove); the CLI
  * rebuilds the DB from committed NDJSON and calls it. This is the authoring
  * "regenerate" step (and the cutover step): after editing the DB, refresh the
- * Markdown, then commit the NDJSON + Markdown diff together. The CI sync guard runs
- * db:emit and asserts `git diff` is empty (committed Markdown must match the DB).
+ * Markdown, then commit the NDJSON + Markdown diff together, with the corpus stamp the
+ * CLI refreshes. The CI sync guard runs db:emit and asserts `git diff` is empty
+ * (committed Markdown must match the DB).
  *
  *   NODE_OPTIONS='--experimental-sqlite --no-warnings' pnpm --dir site db:emit
  */
@@ -13,7 +14,8 @@ import { writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { INVENTORY_PAGES, REFERENCE_PAGES, BENCHMARKS_PAGE } from '../parser/datasets.js';
-import { importNdjson, REPO_ROOT, type Db } from './lib.js';
+import { exitOnRefusal, importNdjson, NDJSON_DIR, REPO_ROOT, type Db } from './lib.js';
+import { describeStamp, stampAfterWriting } from './corpus-stamp.js';
 import { emitPapersFile, emitCatalogFile, emitDatasetPage, emitReportsFile } from './emit.js';
 import { extractInventory, extractDatasetEntries, extractOnRequest, refuseStrayInventory, refuseUnlistedOnRequest } from './extract.js';
 
@@ -76,10 +78,20 @@ export function isDbOwnedDatasetPage(db: Db, src: string, page: string): boolean
     || extractOnRequest(src) !== null;
 }
 
+/**
+ * The CLI also stamps the NDJSON (corpus-stamp.ts) after the emit, since db:emit is the last step
+ * of every edit flow, a hand edit to the NDJSON included. `emitAll` itself does not: tests call it
+ * on fixtures, and the stamp is about the NDJSON, not the Markdown.
+ */
 function main(): void {
   const written = emitAll(importNdjson());
   console.log(`db:emit wrote ${written.length} canonical files from the DB:`);
   for (const f of written) console.log(`  ${f}`);
+  try {
+    console.log(`db:emit ${describeStamp(stampAfterWriting(NDJSON_DIR, 'db:emit wrote the canonical Markdown'))}`);
+  } catch (err) {
+    exitOnRefusal(err);
+  }
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) main();

@@ -617,9 +617,8 @@ const isMain =
 if (isMain) {
   try {
     // Read once and passed to every file that carries it, so the agent API, llms-full.txt and
-    // llms.txt cannot disagree within one parse (a commit landing mid-parse would otherwise give
-    // them different dates, as would a run spanning midnight UTC where the date falls back to the
-    // clock).
+    // llms.txt cannot disagree within one parse (a re-stamp landing mid-parse would otherwise give
+    // them different dates).
     const corpusDate = readCorpusDate(REPO_ROOT);
     const {
       counts,

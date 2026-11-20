@@ -27,7 +27,8 @@
  */
 
 import { fileURLToPath } from 'node:url';
-import { importNdjson, exportNdjson, NDJSON_DIR, type Db } from './lib.js';
+import { importNdjson, exportNdjson, exitOnRefusal, NDJSON_DIR, type Db } from './lib.js';
+import { describeStamp, stampAfterWriting } from './corpus-stamp.js';
 import { seedLicenses, seedDois, seedRelatedDois, seedAccessions, seedDataLinks, seedSubseries } from './seed.js';
 
 export interface ReseedSummary {
@@ -80,8 +81,16 @@ function main(): void {
   console.log(
     `  Only the side-axis columns change (license, doi, related_dois on catalog + ` +
       `dataset_entries; accessions and data_links on dataset_entries; subseries on dataset_rows); topics + ordinals are left intact. ` +
-      `Review the diff and commit the NDJSON with its input file(s).`,
+      `Review the diff, run pnpm --dir site parse, and commit the NDJSON with its input file(s), the corpus ` +
+        `stamp and what parse changed under site/public/.`,
   );
+  // The reseed changes the NDJSON without a db:emit after it (these columns are not in the
+  // Markdown), so it stamps here (corpus-stamp.ts).
+  try {
+    console.log(`db:reseed-axes ${describeStamp(stampAfterWriting(NDJSON_DIR, 'db:reseed-axes wrote the NDJSON'))}`);
+  } catch (err) {
+    exitOnRefusal(err);
+  }
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) main();

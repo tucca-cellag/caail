@@ -129,12 +129,10 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          # Full history: the agent-API sync guard below regenerates corpusDate from
-          # `git log -- site/db/ndjson`, and in a depth-1 clone that returns the TIP
-          # commit's date (the graft root "touches" every path) rather than the real
-          # last-touch date. It is well-formed, so nothing catches it, and the guard
-          # then diffs a wrong date against the committed one. docs.yml and test.yml
-          # already set this for the same reason.
+          # Full history: the new-item and corpus-stamp order guards below compare with
+          # the commit before this one (HEAD^1 on a pull request, github.event.before on
+          # a push), which a depth-1 clone does not have. The agent-API sync guard no
+          # longer needs it: corpusDate comes from site/db/corpus-stamp.json, not git.
           fetch-depth: 0
 
       - uses: pnpm/action-setup@v6
@@ -176,6 +174,24 @@ jobs:
             exit 0
           fi
           pnpm --dir site db:check-new-items "$BASE"
+
+      # Keep the corpus date from going back on main (tucca-cellag/caail-planning#655; the rules and
+      # their few exceptions are in check-stamp-order.ts's header). Among them, refuse a change
+      # whose site/db/corpus-stamp.json is dated earlier than the tree it lands on. A revert of a
+      # corpus commit does that, since it restores the earlier stamp with the earlier NDJSON and
+      # db:check then passes it. Same base as the new-item guard, through env, and the same
+      # continue-on-error, for the same reason; the job's last step fails it on a refusal.
+      - name: Corpus-stamp order guard
+        id: stamp-order-guard
+        continue-on-error: true
+        env:
+          BASE: ${{ github.event_name == 'pull_request' && 'HEAD^1' || github.event.before }}
+        run: |
+          if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+            echo "::notice::No base commit to compare against, so the corpus-stamp order guard did not run."
+            exit 0
+          fi
+          pnpm --dir site db:check-stamp-order "$BASE"
 
       - name: Run Papers.md lint
         run: pnpm --dir site lint:papers
@@ -228,4 +244,10 @@ jobs:
         if: ${{ !cancelled() && steps.new-item-guard.outcome == 'failure' }}
         run: |
           echo "::error::The new-item guard refused this change. Its step log, near the top of this job, names each new item."
+          exit 1
+
+      - name: Corpus-stamp order guard result
+        if: ${{ !cancelled() && steps.stamp-order-guard.outcome == 'failure' }}
+        run: |
+          echo "::error::The corpus-stamp order guard refused this change. Its step log, near the top of this job, says why."
           exit 1

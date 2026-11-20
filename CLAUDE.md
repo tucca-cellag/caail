@@ -397,9 +397,13 @@ non-catalog canonical files (`OtherResources.md`, `ReferenceWorks.md`, `AwesomeL
   `NEW_ITEMS_PAUSED` in `site/scripts/db/add-item.ts` is true. While it does, add nothing new by any
   other route either: the edit flow below is then for changes to held items, and the refusal message
   and the `caail-db-authoring` skill say why. The full edit flow is `db:build` → edit →
-  `db:export` → `db:emit` → `db:check` / `db:verify`. Either way, commit **Markdown + NDJSON together**.
+  `db:export` → `db:emit` → `db:check` / `db:verify`. Either way, commit **Markdown + NDJSON +
+  `site/db/corpus-stamp.json` together**.
   The **`caail-db-authoring`** skill owns this workflow; use it whenever adding/editing a paper, tool,
   database, or dataset row.
+- **The corpus date is a stamp, not git history:** `site/db/corpus-stamp.json`, committed with the
+  NDJSON it hashes, and refused by `pnpm parse` and `db:check` once stale. When it is refreshed, and
+  what to do after a merge or a revert: the `caail-db-authoring` skill; why: `corpus-stamp.ts`.
 - **Guards.** A PreToolUse hook (`.claude/hooks/block-generated-edits.py`) blocks direct edits to the
   generated structured content (prose edits still allowed). `db:check` enforces id/referential integrity,
   matrix↔reference reachability, and the #81 column-list drift check; `db:verify` proves the emitted

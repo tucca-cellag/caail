@@ -12,7 +12,7 @@
 
 import { afterAll, afterEach, beforeAll, describe, it, expect, vi } from 'vitest';
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -24,6 +24,7 @@ import { runChecks } from './check.js';
 import { emitAll } from './emit-files.js';
 import { addItem, type ItemAdd } from './mutate.js';
 import { checkAndRegenerate } from './regenerate.js';
+import { inspectStamp, stampPathFor } from './corpus-stamp.js';
 import { dbAdd, NEW_ITEMS_PAUSED, NEW_ITEMS_PAUSED_MESSAGE } from './add-item.js';
 import { dbRemove } from './remove-item.js';
 
@@ -278,6 +279,7 @@ describe('the check-emit-export tail the pause will be lifted onto', () => {
     expect(() => checkAndRegenerate(db, `db:add: integrity check failed after adding ${id}`, paths))
       .toThrow(/integrity check failed after adding ds:gse999998 — nothing written:\n {2}✗ dataset_rows/);
     expect(changed(before, snapshot(paths.ndjsonDir, paths.root))).toEqual([]);
+    expect(existsSync(stampPathFor(paths.ndjsonDir)), 'a refused change stamped the NDJSON').toBe(false);
   });
 });
 
@@ -307,6 +309,21 @@ describe('changes to held items stay open while new items are paused', () => {
 
     expect(written).toContain('Software.md');
     expect(importNdjson(paths.ndjsonDir).prepare('SELECT 1 FROM items WHERE id = ?').get(held.id)).toBeUndefined();
+    expect(parseCatalogFile(join(paths.root, 'Software.md'), 'Software.md').some((e) => e.url === held.url)).toBe(false);
+    // The tail stamps what it exported, so the tree is ready to commit and parse dates it
+    // (tucca-cellag/caail-planning#655). The stamp lands beside the fixture's NDJSON, not the repo's.
+    expect(inspectStamp(paths.ndjsonDir).problem).toBeNull();
+    expect(stampPathFor(paths.ndjsonDir).startsWith(tmpdir())).toBe(true);
+  });
+
+  it('db:remove says what it already wrote when the stamp cannot be written, and names db:stamp', () => {
+    const paths = fixture();
+    const held = heldTool(importNdjson(paths.ndjsonDir));
+    mkdirSync(stampPathFor(paths.ndjsonDir));
+
+    expect(() => dbRemove(held.id, paths)).toThrow(
+      /Markdown \(\d+ files\) and the NDJSON were written, but the corpus stamp was not: .*could not be written.*db:stamp/s,
+    );
     expect(parseCatalogFile(join(paths.root, 'Software.md'), 'Software.md').some((e) => e.url === held.url)).toBe(false);
   });
 });

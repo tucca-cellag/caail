@@ -3,7 +3,7 @@
  * New items are paused until CAAIL v2, and until then db:add refuses every descriptor
  * (NEW_ITEMS_PAUSED below). Otherwise it rebuilds the DB from committed NDJSON, inserts
  * the item (auto frozen-id), runs the integrity guards, and — only if clean — writes the
- * updated NDJSON + canonical Markdown. Review the diff and commit Markdown + NDJSON together.
+ * updated NDJSON + canonical Markdown and stamps the NDJSON. Review the diff and commit them together.
  *
  *   NODE_OPTIONS='--experimental-sqlite --no-warnings' pnpm --dir site db:add <descriptor.json>
  *
@@ -68,8 +68,11 @@ function main(): void {
   } catch (err) {
     exitOnRefusal(err);
   }
-  console.log(`Added ${result.id}. Regenerated ${result.written.length} canonical files + NDJSON.`);
-  console.log('Review the diff, then commit Markdown + NDJSON together.');
+  console.log(`Added ${result.id}. Regenerated ${result.written.length} canonical files + NDJSON, and stamped it.`);
+  console.log(
+    'Review the diff, run pnpm --dir site parse, then commit the Markdown, the NDJSON, ' +
+      'site/db/corpus-stamp.json and what parse changed under site/public/ together.',
+  );
 }
 
 if (runsAsMain(import.meta.url)) main();

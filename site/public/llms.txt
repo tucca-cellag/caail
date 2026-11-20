@@ -2,7 +2,7 @@
 
 > A curated, openly-licensed library at the intersection of cellular agriculture and artificial intelligence: papers and preprints (an AI-method × research-area matrix), software tools, databases, per-species datasets, talks, and field resources. A project of the Tufts University Center for Cellular Agriculture (TUCCA); content is MIT-licensed.
 
-Corpus date: 2026-11-14, the day CAAIL's catalog data last changed (the agent API's corpusDate; a checkout with no git history uses the build date instead). The canonical copy of this file is https://caail.tufts.edu/llms.txt. Its prose can change without moving that date, so a copy read anywhere else may be out of date even when the dates match: fetch the canonical copy before relying on it.
+Corpus date: 2026-11-14, the date stamped on the newest version of CAAIL's catalog data (the agent API's corpusDate), which can differ from the day that version went live (usually earlier). The canonical copy of this file is https://caail.tufts.edu/llms.txt. Its prose can change without moving that date, so a copy read anywhere else may be out of date even when the dates match: fetch the canonical copy before relying on it.
 
 Status: beta. The inventory, topic tags and per-item metadata are solid, and each AI-method × research-area placement is a substantive claim about what the paper did. A placement is proposed by a language-model agent reading the paper's methods section, checked by a separate reviewer agent, and entered by a human maintainer; older placements are being re-verified against full texts. Where one is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. Full method: https://caail.tufts.edu/curation/
 

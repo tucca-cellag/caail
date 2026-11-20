@@ -10,7 +10,6 @@
 
 import { describe, it, expect } from 'vitest';
 
-import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -46,6 +45,9 @@ import {
 import { buildApiTaxonomy } from './search-terms.js';
 import { buildReportsModel } from './reports.js';
 import { extractInventory } from '../db/extract.js';
+import { ndjsonDirOf, readStampedDate, stampCorpus } from '../db/corpus-stamp.js';
+import { latestStampDate } from '../db/check-stamp-order.js';
+import { NDJSON_DIR } from '../db/lib.js';
 import { curatedEntryCount } from './datasets.js';
 
 const papers = buildPapersModel();
@@ -259,54 +261,32 @@ describe('buildAgentApi', () => {
     const b = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports });
     expect(JSON.stringify(a)).toBe(JSON.stringify(b));
 
-    // Asserting the date differs from today would be flaky: a commit to the NDJSON
-    // today makes them legitimately equal. The real properties are that it comes from
-    // git and is never in the future.
+    // Asserting the date differs from today would be flaky: a stamp made today makes them
+    // legitimately equal. The real properties are that it comes from the corpus stamp and
+    // is not in the future by more than the order guard allows, read from the guard's own
+    // rule: a stricter one here would fail a stamp the guard let onto main.
     const d = (a[0]!.body as { corpusDate: string }).corpusDate;
     expect(d).toBe(readCorpusDate(REPO_ROOT));
-    expect(d <= new Date().toISOString().slice(0, 10)).toBe(true);
+    expect(d).toBe(readStampedDate(NDJSON_DIR));
+    expect(d <= latestStampDate(new Date().toISOString().slice(0, 10))).toBe(true);
   });
 
-  it('refuses to derive a date from a shallow clone rather than inventing one', () => {
-    // A depth-1 clone's grafted root has no parent, so `git log -- <path>` reports any
-    // path present in that tree as touched and returns the TIP commit's date. It is
-    // well-formed, so a format check passes it, and the committed output would then
-    // disagree with CI's. Verified against a real shallow clone rather than a mock.
-    // A two-commit synthetic repo, NOT a clone of CAAIL. Cloning the real repo tested
-    // nothing extra and pushed CI from 2 minutes to 13, because --depth 1 over file://
-    // forces a full object transfer of the whole history.
-    const tmp = mkdtempSync(join(tmpdir(), 'caail-shallow-'));
-    const origin = join(tmp, 'origin');
-    const clone = join(tmp, 'shallow');
-    const git = (cwd: string, args: string[]) =>
-      execFileSync('git', ['-C', cwd, ...args], { stdio: ['ignore', 'ignore', 'ignore'] });
+  it('dates its output from the corpus stamp with no git at all, and refuses a stale stamp', () => {
+    // The date used to come from `git log -- site/db/ndjson`, which a shallow clone answered
+    // wrongly and a tarball not at all. The stamp is a file, so a directory that is not a git
+    // repository dates its output the same way (tucca-cellag/caail-planning#655).
+    const root = mkdtempSync(join(tmpdir(), 'caail-no-git-'));
     try {
-      mkdirSync(join(origin, 'site', 'db', 'ndjson'), { recursive: true });
-      execFileSync('git', ['init', '-q', origin], { stdio: 'ignore' });
-      git(origin, ['config', 'user.email', 't@t']);
-      git(origin, ['config', 'user.name', 't']);
-      writeFileSync(join(origin, 'site', 'db', 'ndjson', 'x.ndjson'), '{}\n');
-      git(origin, ['add', '-A']);
-      git(origin, ['commit', '-q', '-m', 'touches the watched path']);
-      // a later commit that does NOT touch it: in a shallow clone this becomes the
-      // graft root and git wrongly reports its date as the last touch.
-      writeFileSync(join(origin, 'unrelated.txt'), 'x\n');
-      git(origin, ['add', '-A']);
-      git(origin, ['commit', '-q', '-m', 'unrelated']);
-      execFileSync('git', ['clone', '-q', '--depth', '1', `file://${origin}`, clone], {
-        stdio: ['ignore', 'ignore', 'ignore'],
-      });
+      const dir = ndjsonDirOf(root);
+      mkdirSync(dir, { recursive: true });
+      writeFileSync(join(dir, 'items.ndjson'), '{}\n');
+      stampCorpus(dir, new Date('2026-11-14T12:00:00Z'));
+      expect(readCorpusDate(root)).toBe('2026-11-14');
 
-      expect(
-        execFileSync('git', ['-C', clone, 'rev-parse', '--is-shallow-repository'], {
-          encoding: 'utf-8',
-        }).trim(),
-      ).toBe('true');
-      expect(() => readCorpusDate(clone)).toThrow(/shallow clone/i);
-      // and the full original resolves fine, so the throw is about shallowness
-      expect(readCorpusDate(origin)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      writeFileSync(join(dir, 'items.ndjson'), '{"edited":true}\n');
+      expect(() => readCorpusDate(root)).toThrow(/changed after it was stamped.*db:stamp/);
     } finally {
-      rmSync(tmp, { recursive: true, force: true });
+      rmSync(root, { recursive: true, force: true });
     }
   });
 

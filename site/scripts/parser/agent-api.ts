@@ -35,7 +35,7 @@ import { MATRIX_SECTION } from './types.js';
 import type { Catalog, CatalogEntry, DatasetInventory, DatasetInventoryRow, DoiRelation, OnRequestStudy, PapersData } from './types.js';
 import { isUnderBase, RETIRED_BASES, SITE_BASE, SITE_URL } from '../../src/content/site-config.ts';
 import { CATALOG_SOURCES } from './catalog.js';
-import { CORPUS_DATE_FORMAT } from './corpus-date-format.js';
+import { ndjsonDirOf, readStampedDate } from '../db/corpus-stamp.js';
 import { dedicatedLink, GITHUB_BLOB_BASE } from '../dedicated-links.ts';
 import { HAS_SCHEME, repoRelativePath, resolveCaailHref } from '../remark/rewrite-caail-links.ts';
 import { htmlLinkAttrs, markdownLinkTargets, scanHtml, type LinkTarget } from './link-targets.js';
@@ -326,7 +326,7 @@ function trackedFiles(): { files: Set<string>; dirs: Set<string> } | null {
  * committed (untracked and not ignored), compared exactly: a file that exists only locally
  * because it is gitignored or generated, or that differs in case, is not on GitHub, so a
  * blob URL for it is a 404. Where git is unavailable (a tarball export), the working tree
- * stands in, as `readCorpusDate` falls back too.
+ * stands in.
  */
 function isTracked(repoRel: string): boolean {
   const listed = trackedFiles();
@@ -471,46 +471,28 @@ export interface AgentApiInputs {
 }
 
 /**
- * The date the CORPUS last changed, read from git, not the date this build ran.
+ * The corpus date: the day the newest change to the catalog data was stamped, read from
+ * `site/db/corpus-stamp.json` (corpus-stamp.ts, tucca-cellag/caail-planning#655), not the
+ * date this build ran.
  *
  * Using `new Date()` here would be both less true and actively broken: the emitted files
  * are committed, and CI re-runs the parse to check they are in sync, so a build on any
- * later day would produce a one-line diff and fail the guard for no reason. Deriving from
- * the last commit that touched the NDJSON makes the output a pure function of the repo
- * state, and makes the field mean what an agent reading it would assume it means.
+ * later day would produce a one-line diff and fail the guard for no reason. It used to be
+ * the committer date of the last commit touching the NDJSON, which made each catalog commit
+ * its own input (a parse before the commit read the previous one's date) and let a rebase
+ * move it. The stamp is committed with the NDJSON it dates, so a parse before the commit
+ * already reads the new date, and only a re-stamp moves it: after a change to the NDJSON,
+ * or a deliberate `db:stamp --redate` after a revert.
  *
- * Falls back to today only when git is unavailable (a tarball export, say), which is not
- * the CI case.
+ * Throws when the stamp is missing, malformed or no longer matches the NDJSON, naming the
+ * command that stamps it, so no output can carry a date belonging to another corpus. That is
+ * deliberate even where it bites hardest: `pnpm build` runs the parse, so a stale stamp that
+ * got past `lint-papers.yml`'s `db:check` onto main fails the Pages deploy until it is
+ * re-stamped, rather than publishing a wrong date. It reads no git history, so a shallow
+ * clone or a tarball export dates its output the same way.
  */
 export function readCorpusDate(repoRoot: string): string {
-  const git = (args: string[]): string =>
-    execFileSync('git', ['-C', repoRoot, ...args], {
-      encoding: 'utf-8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-      env: { ...process.env, TZ: 'UTC' },
-    }).trim();
-
-  try {
-    // A shallow clone silently produces a WRONG date rather than no date: its grafted
-    // root commit has no parent, so `git log -- <path>` treats any path present in that
-    // tree as touched and returns the tip commit's date. That is well-formed, so no
-    // format check catches it, and the committed output would then disagree with CI.
-    // Refuse rather than emit a plausible lie; workflows set fetch-depth: 0.
-    if (git(['rev-parse', '--is-shallow-repository']) === 'true') {
-      throw new Error(
-        'agent-api: cannot derive corpusDate from a shallow clone — it would silently ' +
-          'return the tip commit date. Check out with fetch-depth: 0.',
-      );
-    }
-    // --date=format-local with TZ=UTC normalises across contributors' timezones; %cs
-    // alone is the committer's local date and can read a day ahead of UTC.
-    const out = git(['log', '-1', '--date=format-local:%Y-%m-%d', '--format=%cd', '--', 'site/db/ndjson']);
-    if (CORPUS_DATE_FORMAT.test(out)) return out;
-  } catch (err) {
-    if (err instanceof Error && err.message.startsWith('agent-api:')) throw err;
-    /* git unavailable (tarball export): fall through to the clock */
-  }
-  return new Date().toISOString().slice(0, 10);
+  return readStampedDate(ndjsonDirOf(repoRoot));
 }
 
 /** One emitted endpoint: the path under api/ and its already-serialisable body. */

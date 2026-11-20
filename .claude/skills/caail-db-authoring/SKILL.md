@@ -170,7 +170,8 @@ Descriptor examples (see `ItemAdd` in `site/scripts/db/mutate.ts`):
   "cells": [{ "method": "Deep Learning", "area": "Media Optimization" }], "topics": ["media-optimization"] }
 ```
 
-Then **review the diff and commit Markdown + NDJSON together**. The method/area/topic must
+Then **review the diff and commit the Markdown, the NDJSON and `site/db/corpus-stamp.json`
+together** (both helpers re-stamp the NDJSON they write). The method/area/topic must
 already exist (adding a new matrix row/column is a deliberate act — define it in `Taxonomy.md`
 + `Papers.md` first). For anything beyond a plain add/remove (editing an existing entry,
 re-tagging, corrections), use the full procedure below.
@@ -206,15 +207,21 @@ re-tagging, corrections), use the full procedure below.
    ```
    pnpm --dir site db:emit       # NDJSON -> Papers.md / Software.md / Databases.md / Datasets/*.md
    ```
+   `db:emit` also re-stamps the NDJSON: `site/db/corpus-stamp.json` holds the corpus date the
+   agent API and `llms.txt` carry, with a hash of the NDJSON, and is rewritten, dated today
+   (UTC), whenever that hash no longer matches.
 5. **Gate before commit** (all must pass):
    ```
-   pnpm --dir site db:check      # id/RI integrity + matrix↔ref reachability + #81 column drift
+   pnpm --dir site db:check      # id/RI integrity + matrix↔ref reachability + #81 column drift + corpus stamp
    pnpm --dir site db:verify     # round-trip: emitted Markdown re-parses to identical models
    pnpm --dir site lint:papers   # matrix↔reference integrity on the emitted Papers.md
    pnpm --dir site test          # parser vitest suite
-   pnpm --dir site parse         # regenerate data/*.json; asserts tallies + taxonomy coverage
+   pnpm --dir site parse         # regenerate data/*.json + the agent API + llms.txt, dated by the stamp
    ```
-6. **Review the judgment**, then **commit Markdown + NDJSON together** in one commit
+   `parse` reads the stamp in the working tree, so running it before the commit is right: commit
+   what it changes under `site/public/api/`, `site/public/setup.md` and `site/public/llms.txt`.
+6. **Review the judgment**, then **commit the Markdown, the NDJSON, the stamp and the regenerated
+   API together** in one commit
    (`git diff -- Papers.md site/db/ndjson` should be internally consistent). Conventional
    scopes: `papers`, `software`, `databases`, `data`/`datasets`. No AI attribution in CAAIL
    commits/PRs.
@@ -226,6 +233,8 @@ re-tagging, corrections), use the full procedure below.
 | Hand-editing `Papers.md` / `Software.md` / `Databases.md` structured content | It's DB-owned — clobbered by the next `db:emit` and fails the CI sync guard. Edit the DB. (The PreToolUse hook blocks it; prose-only edits are still allowed.) |
 | Committing NDJSON without running `db:emit` | The CI sync guard (`git diff --exit-code`) fails: committed Markdown must equal the emit output. |
 | Committing Markdown and NDJSON in separate commits | They move together — NDJSON is the source, Markdown is derived from it. |
+| Changing the NDJSON and leaving the corpus stamp behind | `pnpm parse` and `db:check` refuse a stamp whose hash no longer matches, naming `db:stamp`. Since `pnpm build` runs `parse`, a stale stamp that reached main would fail the Pages deploy until re-stamped, deliberately, rather than publish a date belonging to another corpus. Every db command that writes the NDJSON re-stamps when it finishes, and so does `db:emit`; after a hand edit with no emit, run `db:stamp`. Merging main into a branch when both changed the corpus conflicts on the stamp, and on the API files and `llms.txt` that carry its date: take either side of each, run `db:stamp --redate`, which dates the merged corpus today even when one side's stamp still matches (as it can when that side's NDJSON contains the other's), then `pnpm --dir site parse`, and commit all of them. The one exception: when the merged NDJSON is identical to main's, restore main's stamp (`git checkout origin/main -- site/db/corpus-stamp.json`) instead of re-dating, since the same corpus keeps its stamp and the order guard refuses it under another date. |
+| Reverting a corpus commit | The revert restores the earlier stamp along with the earlier NDJSON, so the hash matches and `db:check` passes, but the corpus date goes back to the day that earlier state was stamped. `lint-papers.yml`'s corpus-stamp order guard (`db:check-stamp-order`) refuses most such reverts, and a stamp dated in the future; what exactly it refuses is in `check-stamp-order.ts`'s header, deliberately not restated here. Re-date a revert whether or not it would be refused: `db:stamp --redate`, which dates it today, then `pnpm --dir site parse`, and commit both with the revert. The exception is a revert that leaves the NDJSON identical to main's, such as a branch undoing its own corpus commit before it merges: restore main's stamp (`git checkout origin/main -- site/db/corpus-stamp.json`) instead. The same command repairs a future-dated stamp. |
 | Editing `caail.db` but forgetting `db:export` | The `.db` is gitignored; only the NDJSON is tracked. Export or the change is lost. |
 | Renumbering / reusing a `paper:N` id | Frozen and permanent (matrix links + external bookmarks). New paper = `max(ref_id)+1`; a removed paper's id is retired, not reused. |
 | Adding a reference without a matrix cell (or a cell without the reference) | Same-commit rule; `db:check` reachability + `lint:papers` catch it. |
@@ -242,8 +251,9 @@ pnpm --dir site db:bootstrap   # one-time / re-import: canonical Markdown -> DB 
 pnpm --dir site db:build       # NDJSON -> caail.db (materialize for editing/querying)
 pnpm --dir site db:export      # caail.db -> NDJSON (after editing the DB)
 pnpm --dir site db:reseed-axes # fold license/DOI from *-manual.json into NDJSON (safe; topics/ordinals intact)
-pnpm --dir site db:emit        # NDJSON -> canonical Markdown (regenerate)
-pnpm --dir site db:check       # integrity + drift guards (incl. license provenance)
+pnpm --dir site db:emit        # NDJSON -> canonical Markdown (regenerate), then re-stamp the NDJSON
+pnpm --dir site db:stamp       # re-stamp site/db/corpus-stamp.json alone (after a hand edit or a merge; --redate after a revert)
+pnpm --dir site db:check       # integrity + drift guards (incl. license provenance and the corpus stamp)
 pnpm --dir site db:verify      # round-trip fidelity oracle (re-parse == identical model)
 pnpm --dir site db:fetch-licenses  # OPT-IN, networked: refresh the GitHub-SPDX license cache
 ```

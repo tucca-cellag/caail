@@ -64,8 +64,9 @@ reason = (
     "To change structured content: edit the DB, then regenerate —\n"
     "  1. `pnpm --dir site db:build`   (materialize caail.db from NDJSON)\n"
     "  2. edit caail.db  (or the relevant site/db/ndjson/*.ndjson)\n"
-    "  3. `pnpm --dir site db:export && pnpm --dir site db:emit`\n"
-    "  4. `pnpm --dir site db:check && pnpm --dir site db:verify`, then commit MD + NDJSON together.\n"
+    "  3. `pnpm --dir site db:export && pnpm --dir site db:emit`  (both re-stamp site/db/corpus-stamp.json)\n"
+    "  4. `pnpm --dir site db:check && pnpm --dir site db:verify && pnpm --dir site parse`, then commit "
+    "the Markdown, the NDJSON, site/db/corpus-stamp.json and what parse changed under site/public/ together.\n"
     "See the caail-db-authoring skill. (Prose-only edits to these files are allowed; "
     "this fired because the change touches structured markup.)"
 )
