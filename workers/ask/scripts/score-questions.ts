@@ -21,13 +21,15 @@
  * nothing in the Worker's dataset.
  *
  * Stops at the first Workers AI limit (3036, the daily allocation; 3040,
- * capacity) or HTTP 429, and writes what it has.
+ * capacity) or HTTP 429, and at the first question no candidate can answer.
+ * The output file is rewritten after every question, so a run cut short keeps
+ * what it reached.
  *
  * Runs under Node's own type stripping, so it imports only files that need no
  * build step.
  */
-import { accessSync, constants, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { buildCorpus, corpusDateOf, type ApiFiles } from '../src/corpus.ts';
 import { buildLookup } from '../src/lookup.ts';
 import { answerText, modelInput } from '../src/model.ts';
@@ -105,16 +107,19 @@ if (!outPath || outPath.startsWith('--') || !accountId || !apiToken) {
   console.error('\n--send needs --out <file>, and CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN in the environment. Nothing was sent.');
   process.exit(1);
 }
-// The answers are written once, at the end, so a path that cannot be written
-// would lose every one of them after the allocation was spent. Check it first.
+// pnpm --dir runs this from workers/ask, so a relative --out is resolved where
+// the command was typed (INIT_CWD), not inside the repo. The file is written
+// now, before anything is sent, and again after every question, so a path that
+// cannot be written fails first and a run cut short keeps what it reached.
+const outFile = resolve(process.env.INIT_CWD ?? process.cwd(), outPath);
 try {
-  accessSync(dirname(resolve(outPath)), constants.W_OK);
-} catch {
-  console.error(`\n--out ${outPath}: its directory does not exist or cannot be written. Nothing was sent.`);
+  writeFileSync(outFile, '');
+} catch (err) {
+  console.error(`\n--out ${outFile}: cannot be written (${(err as Error).message}). Nothing was sent.`);
   process.exit(1);
 }
 
-/** Between Workers AI calls: one run is sequential and well inside the documented per-minute limits. */
+/** Before every Workers AI call, each question's embedding included: one run is sequential and well inside the documented per-minute limits. */
 const SPACING_MS = 1_000;
 /** A hung call is given up on after this; it is not the Worker's deadline, which each answer is timed against. */
 const CALL_TIMEOUT_MS = 120_000;
@@ -191,11 +196,13 @@ function restBindings(account: string, token: string): { AI: AiBinding; INDEX: I
 
 const env = restBindings(accountId, apiToken);
 /**
- * Where a run stops. The Worker answers 429 only when the embedding hits the
- * daily allocation (3036); on capacity (3040) it answers from the named entries
- * alone. A run stops on either, and on any HTTP 429, which is more often than
- * the Worker gives up: a run cut short is re-run whole, where answers scored on
- * degraded retrieval would not be the ones a reader normally gets.
+ * Where a run stops on a limit. The Worker answers 429 only when the embedding
+ * hits the daily allocation (3036); on capacity (3040) it answers from the named
+ * entries alone. A run stops on either, and on any HTTP 429, which is more often
+ * than the Worker gives up: once the account is at a limit, the rest of the run
+ * would meet it too. A half that fails for any other reason leaves the answer
+ * scored on what the other half found, as the Worker serves it, and the run
+ * reports how many questions that happened to.
  */
 const LIMITS = new Set([3036, 3040]);
 const statusOf = (err: unknown) => (err as { status?: number } | null)?.status;
@@ -241,7 +248,34 @@ const results: QuestionRecord[] = [];
 let stoppedAt: string | null = null;
 const startedAt = new Date().toISOString();
 
+/**
+ * Every question in the set is tallied, reached or not: one never reached, or
+ * one whose call failed or came back empty, is a null (see tally). The deadline
+ * is reported and is not part of the bar: each answer is timed over REST from
+ * this machine, which is not how long the same call takes inside the Worker.
+ */
+function summary() {
+  const byId = new Map(results.map((r) => [r.id, r]));
+  const tallies = CANDIDATES.map((model) => ({
+    ...tally(model, set.questions.map((q) => byId.get(q.id)?.answers[model]?.score ?? null)),
+    overDeadline: results.filter((r) => r.answers[model]?.answer != null && !r.answers[model].withinDeadline).length,
+  }));
+  return {
+    retrievalMisses: results.filter((r) => !r.retrieved).length,
+    degradedRetrieval: results.filter((r) => r.retrievalFailed !== null).length,
+    tallies,
+  };
+}
+
+function save() {
+  writeFileSync(
+    outFile,
+    `${JSON.stringify({ corpusDate, indexCorpusDate: meta.corpusDate, startedAt, stoppedAt, candidates: CANDIDATES, ...summary(), questions: results }, null, 2)}\n`,
+  );
+}
+
 run: for (const q of set.questions) {
+  await pause(SPACING_MS);
   const t0 = Date.now();
   let retrieval: Awaited<ReturnType<typeof retrieve>> | undefined;
   let retrievalError: unknown;
@@ -254,13 +288,14 @@ run: for (const q of set.questions) {
     stoppedAt = `${q.id}, retrieval: a search returned the corpus record, so the REST search was not confined to the entries' namespace and no retrieval in this run is the Worker's`;
     break;
   }
+  // A question no candidate can answer means no candidate can pass any more, so
+  // the run stops there rather than spend the rest of the allocation.
   if (retrieval === undefined) {
-    if (isLimit(retrievalError)) {
-      stoppedAt = `${q.id}, retrieval: ${errorLine(retrievalError)}`;
-      break;
+    if (!isLimit(retrievalError)) {
+      results.push({ ...q, entries: [], retrieved: false, retrievalFailed: errorLine(retrievalError), retrievalMs: Date.now() - t0, answers: {} });
     }
-    results.push({ ...q, entries: [], retrieved: false, retrievalFailed: errorLine(retrievalError), retrievalMs: Date.now() - t0, answers: {} });
-    continue;
+    stoppedAt = `${q.id}, retrieval: ${errorLine(retrievalError)}`;
+    break;
   }
   // The embedding half can hit a limit while the named half still answers, and
   // retrieve() then returns rather than throws. LIMITS says why a run stops here.
@@ -280,10 +315,10 @@ run: for (const q of set.questions) {
   };
   results.push(row);
   // With no entries the Worker answers 503 and calls no model, so nothing is
-  // sent and no candidate is credited with an answer here either.
+  // sent, no candidate can answer this question, and the run stops here.
   if (retrieval.entries.length === 0) {
-    console.log(`${q.id}: no entries in ${retrievalMs} ms; the Worker would answer 503`);
-    continue;
+    stoppedAt = `${q.id}, retrieval: no entries, so the Worker would answer 503 and no candidate can pass`;
+    break;
   }
   for (const model of CANDIDATES) {
     await pause(SPACING_MS);
@@ -311,35 +346,21 @@ run: for (const q of set.questions) {
     }
   }
   console.log(`${q.id}: ${retrieval.entries.length} entries in ${retrievalMs} ms`);
+  save();
 }
 
-// Every question in the set is tallied, reached or not. An answer counts only if
-// the Worker would have delivered it: one that missed the deadline, like a
-// question never reached, failed or given no entries, is a null (see tally).
-const byId = new Map(results.map((r) => [r.id, r]));
-const tallies = CANDIDATES.map((model) => {
-  const scores = set.questions.map((q) => {
-    const answer = byId.get(q.id)?.answers[model];
-    return answer?.withinDeadline ? answer.score : null;
-  });
-  return {
-    ...tally(model, scores),
-    overDeadline: results.filter((r) => r.answers[model]?.answer != null && !r.answers[model].withinDeadline).length,
-  };
-});
-const retrievalMisses = results.filter((r) => !r.retrieved).length;
-
-writeFileSync(
-  outPath,
-  `${JSON.stringify({ corpusDate, indexCorpusDate: meta.corpusDate, startedAt, stoppedAt, candidates: CANDIDATES, retrievalMisses, tallies, questions: results }, null, 2)}\n`,
-);
-console.log(`\n${stoppedAt ? `Stopped early at ${stoppedAt}.\n` : ''}Wrote ${results.length} of ${set.questions.length} questions to ${outPath}.`);
+save();
+const { retrievalMisses, degradedRetrieval, tallies } = summary();
+console.log(`\n${stoppedAt ? `Stopped early at ${stoppedAt}.\n` : ''}Wrote ${results.length} of ${set.questions.length} questions to ${outFile}.`);
 console.log(`Retrieval supplied no right entry for ${retrievalMisses} of the ${results.length} questions reached; those misses are not the models'.`);
+if (degradedRetrieval > 0) {
+  console.log(`On ${degradedRetrieval} of them one half of retrieval failed, and the answers were scored on the other half, as the Worker serves them.`);
+}
 for (const t of tallies) {
   console.log(
-    `${t.model}: answered ${t.answered}/${t.questions}, right entry ${t.rightEntry}/${t.questions}, no outside link ${t.noOutsideLinks}/${t.questions}, ` +
-      `over the ${REQUEST_DEADLINE_MS} ms deadline ${t.overDeadline}` +
-      `${t.meetsMechanicalBar ? '; meets the mechanical bar' : ''}.`,
+    `${t.model}: answered ${t.answered}/${t.questions}, right entry ${t.rightEntry}/${t.questions}, no outside link ${t.noOutsideLinks}/${t.questions}` +
+      `${t.meetsMechanicalBar ? '; meets the mechanical bar' : ''}. ` +
+      `Over the ${REQUEST_DEADLINE_MS} ms deadline: ${t.overDeadline}, timed over REST from here, so not part of the bar.`,
   );
 }
 console.log('\nRead each answer against its entries before taking a candidate: no outside link is not the same as staying inside them.');

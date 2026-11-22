@@ -190,7 +190,7 @@ export function requestPlan(questions: Question[], namesAnEntry: (question: stri
 export interface CandidateTally {
   model: string;
   questions: number;
-  /** Questions with an answer the Worker would have delivered. */
+  /** Questions this candidate answered (a non-null score). */
   answered: number;
   rightEntry: number;
   noOutsideLinks: number;
@@ -200,11 +200,11 @@ export interface CandidateTally {
 
 /**
  * One candidate's totals over the whole set. `scores` holds one entry for every
- * question in the set, null where the question has no answer the Worker would
- * have delivered: retrieval failed, the call failed or came back empty, the
- * answer missed the deadline, or the run stopped first. A null counts as wrong,
- * and the bar is met only when every question was answered, so a run that
- * reached few questions cannot pass on the ones it reached.
+ * question in the set, null where the question has no answer: retrieval failed
+ * or gave no entries, the call failed or came back empty, or the run stopped
+ * first. A null counts as wrong, and the bar is met only when every question was
+ * answered, so a run that reached few questions cannot pass on the ones it
+ * reached.
  */
 export function tally(model: string, scores: (AnswerScore | null)[]): CandidateTally {
   const answered = scores.filter((s) => s !== null);
