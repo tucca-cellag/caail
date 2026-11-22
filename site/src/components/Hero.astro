@@ -101,8 +101,8 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
         </p>
         <p class="visually-hidden">{statSentence}</p>
         {/* The reader's control over the typing and the caret (WCAG 2.2.2), which otherwise
-            run without end. It has its own row so it can never widen the column the reserve
-            sizes. Served `data-pending`, which keeps its row but hides it (and takes it out of
+            run without end. It has its own row, so its width never adds to the caption's
+            in a row that cannot wrap. Served `data-pending`, which keeps its row but hides it (and takes it out of
             the tab order and the accessibility tree), and enabled by the script only when it
             starts the loop (and removed when the loop will not start): so the page does not
             shift when it appears, and no reader is offered a control over nothing. Under
