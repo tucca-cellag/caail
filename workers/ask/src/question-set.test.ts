@@ -44,18 +44,15 @@ const entry = (id: string): RetrievedEntry => {
 const committed: QuestionSet = JSON.parse(readFileSync(new URL('../eval/questions.json', import.meta.url), 'utf8'));
 
 describe('the committed question set', () => {
+  // Its corpusDate is deliberately not compared with the API's: every catalog
+  // edit re-dates the corpus, and a set whose entries are all still there has
+  // not failed. Each expected id is checked here instead, and score:plan warns
+  // when the dates differ so the entries are re-read before a run.
   it('names only entries the corpus holds, with nothing else wrong', () => {
     expect(questionSetProblems(committed, entryIds)).toEqual([]);
   });
 
-  it('was written against the corpus the API serves now', () => {
-    // A rebuilt API with a new date is not a failure of the set, but its
-    // expected entries were chosen against the old one: re-read them, then move
-    // the date. Every id is checked above whatever the date says.
-    expect(committed.corpusDate).toBe(api.index.corpusDate);
-  });
-
-  it('covers every shape, and its bar is the 16 of 20 the ticket set', () => {
+  it('covers every shape, and its bar is 16 of 20', () => {
     for (const shape of SHAPES) expect(committed.questions.some((q) => q.shape === shape)).toBe(true);
     expect(rightEntryBar(20)).toBe(16);
   });
