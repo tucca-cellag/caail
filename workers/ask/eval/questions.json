@@ -1,0 +1,126 @@
+{
+  "about": "Ask CAAIL's fixed question set: questions with a known answer in the corpus, each with the entries a correct answer must cite. mustCite is a list of groups; an answer is right when it cites at least one entry of every group. src/question-set.ts reads it, src/question-set.test.ts checks every id against the corpus built from site/public/api/, and scripts/score-questions.ts scores answers to it.",
+  "corpusDate": "2026-11-14",
+  "questions": [
+    {
+      "id": "tool-serum-free-media",
+      "shape": "tool",
+      "question": "Which database can I search for commercially available serum-free media?",
+      "mustCite": [["db:fcs-free-database"]]
+    },
+    {
+      "id": "tool-cell-segmentation",
+      "shape": "tool",
+      "question": "What software can I use to segment cells and nuclei in microscopy images of my cultures?",
+      "mustCite": [["sw:cellpose", "sw:stardist", "sw:cellprofiler"]]
+    },
+    {
+      "id": "tool-gem-from-genome",
+      "shape": "tool",
+      "question": "Is there a tool that builds a genome-scale metabolic model automatically from a genome sequence?",
+      "mustCite": [["sw:carveme", "sw:gapseq"]]
+    },
+    {
+      "id": "tool-cultivated-meat-approvals",
+      "shape": "tool",
+      "question": "Where can I check which countries have approved cultivated meat for sale?",
+      "mustCite": [["db:gfi-where-cultivated-meat-can-be-sold"]]
+    },
+    {
+      "id": "tool-beef-metabolites",
+      "shape": "tool",
+      "question": "Is there a database of the metabolites found in beef cattle?",
+      "mustCite": [["db:bovine-metabolome-database-bmdb"]]
+    },
+    {
+      "id": "dataset-goat-muscle-single-cell",
+      "shape": "dataset",
+      "question": "Is there single-cell data on goat skeletal muscle development?",
+      "mustCite": [["ds:prjca049754"]]
+    },
+    {
+      "id": "dataset-turkey-satellite-cells",
+      "shape": "dataset",
+      "question": "What datasets are there on turkey satellite cells?",
+      "mustCite": [["ds:prjna1280141", "ds:prjna1196520", "ds:prjna842679"]]
+    },
+    {
+      "id": "dataset-spoiled-beef-images",
+      "shape": "dataset",
+      "question": "Is there an image dataset for telling fresh beef from spoiled beef?",
+      "mustCite": [["ds:meatscan-an-image"]]
+    },
+    {
+      "id": "dataset-salmon-metabolic-model",
+      "shape": "dataset",
+      "question": "Is there a genome-scale metabolic model of Atlantic salmon?",
+      "mustCite": [["ds:salarecon-salmo-salar-atlantic-salmon"]]
+    },
+    {
+      "id": "dataset-mud-crab-claw",
+      "shape": "dataset",
+      "question": "Which dataset covers mud crab claw muscle?",
+      "mustCite": [["ds:prjna389966"]]
+    },
+    {
+      "id": "method-rl-cell-engineering",
+      "shape": "method-area",
+      "question": "Has reinforcement learning been applied to cellular engineering?",
+      "mustCite": [["paper:165", "paper:120"]]
+    },
+    {
+      "id": "method-gan-sensory",
+      "shape": "method-area",
+      "question": "Has anyone used a GAN or VAE for sensory prediction?",
+      "mustCite": [["paper:11"]]
+    },
+    {
+      "id": "method-ga-scaffolding",
+      "shape": "method-area",
+      "question": "Have genetic algorithms been used to design scaffolds or tissue moulds?",
+      "mustCite": [["paper:34"]]
+    },
+    {
+      "id": "method-svm-media",
+      "shape": "method-area",
+      "question": "Has a support vector machine been used to optimize culture media?",
+      "mustCite": [["paper:21"]]
+    },
+    {
+      "id": "method-hybrid-bioprocess",
+      "shape": "method-area",
+      "question": "Have hybrid mechanistic and machine-learning models been used for bioprocess scale-up?",
+      "mustCite": [["paper:205", "paper:255"]]
+    },
+    {
+      "id": "term-hybrid-models",
+      "shape": "term",
+      "question": "What does CAAIL mean by Hybrid Mechanistic-ML Models?",
+      "mustCite": [["term:hybrid-mechanistic-ml-models"]]
+    },
+    {
+      "id": "term-scaffolding",
+      "shape": "term",
+      "question": "What counts as Scaffolding in CAAIL's matrix?",
+      "mustCite": [["term:scaffolding"]]
+    },
+    {
+      "id": "term-ai-tooling",
+      "shape": "term",
+      "question": "Where does CAAIL file a general-purpose AI tool that has not yet been applied to a cell-ag problem?",
+      "mustCite": [["term:ai-tooling--methodology"]]
+    },
+    {
+      "id": "term-chemometrics",
+      "shape": "term",
+      "question": "What does CAAIL mean by chemometrics?",
+      "mustCite": [["term:chemometrics"]]
+    },
+    {
+      "id": "term-food-safety",
+      "shape": "term",
+      "question": "What does CAAIL count as food safety prediction?",
+      "mustCite": [["term:food-safety-prediction"]]
+    }
+  ]
+}
