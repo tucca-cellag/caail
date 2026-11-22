@@ -8,16 +8,38 @@ import CaailChatWidget from './CaailChatWidget';
 import { CHAT_ENABLED } from '../lib/chat-config';
 import { IDLE_TIMEOUT_MS } from '../lib/idle-timeout';
 import { COMMUNITY_PATH } from '../lib/community';
+import {
+  ACCESSIBILITY_POLICY_URL,
+  ACCESSIBILITY_UNIT,
+  ACCESSIBILITY_CONTACT,
+  OUTSIDE_LINK_LEAD,
+  OUTSIDE_LINK_SENTENCE,
+  TUFTS_PRIVACY_URL,
+  NON_DISCRIMINATION_URL,
+  COPYRIGHT_HOLDER,
+  copyrightYear,
+} from '../lib/tufts-statements';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 <div class="caail-footer">
   <span class="caail-foot-brand"><TuccaLockup width={150} /></span>
   <span><a href={`${base}/cite/`}>Cite</a> · <a href={`${base}${COMMUNITY_PATH}`}>Community</a> · <a href={`${base}/privacy/`}>Privacy</a> · Content licensed MIT · <a href="https://github.com/tucca-cellag/caail">canonical source on GitHub</a> · <a href="https://github.com/tucca-cellag/caail/issues" rel="noopener">Get help</a></span>
 </div>
-<p class="caail-foot-disclaimer">
-  Linked external resources are independent of TUCCA and Tufts University and
-  remain under their own licenses.
-</p>
+{/* What every Tufts page carries, worded as Tufts' pages give it (src/lib/tufts-statements.ts). */}
+<div class="caail-statements">
+  <p>
+    The {ACCESSIBILITY_UNIT} is committed to making its digital environment accessible to all
+    users, and welcomes comments or suggestions on access improvements. Please send comments or
+    suggestions on accessibility to <a href={`mailto:${ACCESSIBILITY_CONTACT}`}>{ACCESSIBILITY_CONTACT}</a>.
+    <a href={ACCESSIBILITY_POLICY_URL}>Tufts Digital Accessibility Policy</a>
+  </p>
+  <p>
+    {OUTSIDE_LINK_LEAD} “{OUTSIDE_LINK_SENTENCE}” Linked resources remain under their own licenses.
+  </p>
+  <p>
+    © {copyrightYear()} {COPYRIGHT_HOLDER} · <a href={TUFTS_PRIVACY_URL}>Tufts Privacy Statement</a> · <a href={NON_DISCRIMINATION_URL}>Non-Discrimination Statement</a>
+  </p>
+</div>
 <Default><slot /></Default>
 <NavCollapse />
 <DataTableViews />
@@ -28,6 +50,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <style>
   .caail-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem; font-size: .72rem; color: var(--caail-muted); border-top: 1px solid var(--caail-border); padding-top: .8rem; margin-top: 1rem; }
   .caail-foot-brand { display: inline-flex; align-items: center; }
-  .caail-footer a { color: var(--caail-link); }
-  .caail-foot-disclaimer { margin: .5rem 0 0; font-size: .68rem; line-height: 1.4; color: var(--caail-muted); }
+  .caail-footer a, .caail-statements a { color: var(--caail-link); }
+  .caail-statements { font-size: var(--caail-fs-xs); line-height: 1.5; color: var(--caail-muted); }
+  .caail-statements p { margin: .4rem 0 0; }
 </style>
