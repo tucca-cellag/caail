@@ -72,6 +72,10 @@ export function questionSetProblems(set: QuestionSet, entryIds: ReadonlySet<stri
   if (!Array.isArray(set.questions) || set.questions.length === 0) return [...problems, 'no questions'];
   const seen = new Set<string>();
   for (const [n, q] of set.questions.entries()) {
+    if (typeof q !== 'object' || q === null || Array.isArray(q)) {
+      problems.push(`question ${n + 1}: not an object`);
+      continue;
+    }
     const at = `question ${n + 1} (${q.id ?? 'no id'})`;
     if (typeof q.id !== 'string' || q.id === '') problems.push(`${at}: no id`);
     else if (seen.has(q.id)) problems.push(`${at}: id used twice`);
@@ -92,7 +96,7 @@ export function questionSetProblems(set: QuestionSet, entryIds: ReadonlySet<stri
     }
   }
   for (const shape of SHAPES) {
-    if (!set.questions.some((q) => q.shape === shape)) problems.push(`no question of shape ${shape}`);
+    if (!set.questions.some((q) => q?.shape === shape)) problems.push(`no question of shape ${shape}`);
   }
   return problems;
 }

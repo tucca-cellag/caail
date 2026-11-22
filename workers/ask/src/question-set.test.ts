@@ -82,6 +82,7 @@ describe('questionSetProblems rejects', () => {
     ['a question over the word limit', setOf({ ...good, question: 'word '.repeat(WORD_LIMIT + 1) }), /word limit/],
     ['a corpus date that is not a date', { ...setOf(good), corpusDate: 'today' }, /corpusDate/],
     ['a missing shape', { corpusDate: '2026-11-14', questions: [good] }, /no question of shape dataset/],
+    ['an entry that is not an object, reported rather than thrown', { ...setOf(good), questions: [...setOf(good).questions, null as never] }, /question 5: not an object/],
   ])('%s', (_, set, problem) => {
     expect(questionSetProblems(set, entryIds).join('\n')).toMatch(problem);
   });
