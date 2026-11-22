@@ -51,9 +51,12 @@ describe('the committed question set', () => {
     expect(questionSetProblems(committed, entryIds)).toEqual([]);
   });
 
-  it('covers every shape, and its bar is 16 of 20', () => {
+  it('covers every shape, and its bar is 16 of its 20 questions', () => {
     for (const shape of SHAPES) expect(committed.questions.some((q) => q.shape === shape)).toBe(true);
-    expect(rightEntryBar(20)).toBe(16);
+    // Read from the committed set, so a set that grows or shrinks fails here and
+    // this name is corrected with it.
+    expect(committed.questions).toHaveLength(20);
+    expect(rightEntryBar(committed.questions.length)).toBe(16);
   });
 });
 
