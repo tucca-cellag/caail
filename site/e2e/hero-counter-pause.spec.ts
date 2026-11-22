@@ -87,23 +87,27 @@ test('no control is offered when nothing moves: reduced motion, or no script', a
   await ctx.close();
 });
 
-test('turning reduced motion on after load stops the counter, and the control returns offering Play', async ({ page }) => {
-  // The script reads the preference at load, while CSS removes the control the moment it
-  // changes: the loop has to stop with it, or the counter types on with no way to stop it.
+test('turning reduced motion on after load pauses the counter and keeps its control, and focus on it', async ({ page }) => {
+  // The script reads the preference at load. A reader who asks for less motion later gets
+  // the loop paused, and the control they may be focused on stays where it is.
   await page.clock.install();
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.goto('./');
-  await expect(page.locator(BUTTON)).toBeVisible();
+  const button = page.locator(BUTTON);
+  await expect(button).toBeVisible();
   expect((await textsOver(page, 5000)).size, 'the counter never moved, so stopping it shows nothing').toBeGreaterThan(1);
 
+  await button.focus();
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await expect(page.locator(BUTTON)).toBeHidden();
-  expect([...(await textsOver(page, 8000))], 'the counter kept typing after its control was removed').toHaveLength(1);
+  await expect(button, 'the control vanished when reduced motion came on').toBeVisible();
+  await expect(button, 'focus left the control when reduced motion came on').toBeFocused();
+  await expect(button).toHaveAccessibleName('Play the counter');
+  expect([...(await textsOver(page, 8000))], 'the counter kept typing after reduced motion came on').toHaveLength(1);
   expect(await caretStill(page), 'the caret still blinks under reduced motion').toBe(true);
 
   // Turning it off again leaves the pause standing until the reader presses Play.
   await page.emulateMedia({ reducedMotion: 'no-preference' });
-  await expect(page.locator(BUTTON)).toHaveAccessibleName('Play the counter');
+  await expect(button).toHaveAccessibleName('Play the counter');
   expect([...(await textsOver(page, 4000))], 'turning reduced motion off restarted the counter by itself').toHaveLength(1);
 });
 

@@ -105,8 +105,8 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
             sizes. Served `data-pending`, which keeps its row but hides it (and takes it out of
             the tab order and the accessibility tree), and enabled by the script only when it
             starts the loop: so the page does not shift when it appears, and no reader is
-            offered a control over nothing. Under reduced motion CSS removes it at first paint,
-            and a reader who turns reduced motion on later gets the loop paused with it.
+            offered a control over nothing. Under reduced motion CSS removes it at first paint;
+            a reader who turns reduced motion on later keeps it, with the loop paused.
             Its name says what it acts on, since the counter itself is hidden from AT. */}
         <a class="tick-cap" href={`${base}/by-the-numbers/`}>Counted at build time <span aria-hidden="true">→</span></a>
         <button type="button" class="tick-pause" data-pending>
@@ -395,7 +395,9 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
   /* At least 24px each way, WCAG 2.5.8's target size. */
   .tick-pause { display: inline-flex; align-items: center; gap: .3rem; min-height: 24px; min-width: 24px; margin: .3rem 0 0; padding: 0 .35rem; font: inherit; font-size: var(--caail-fs-xs); color: var(--caail-muted); background: none; border: 0; border-radius: 4px; cursor: pointer; }
   .tick-pause[data-pending] { visibility: hidden; }
-  @media (prefers-reduced-motion: reduce) { .tick-pause { display: none; } }
+  /* Pending only: once offered, the control stays, so a reader who turns reduced motion
+     on mid-page keeps it (and keeps focus on it). */
+  @media (prefers-reduced-motion: reduce) { .tick-pause[data-pending] { display: none; } }
   .tick-pause:hover, .tick-pause:focus-visible { color: var(--caail-link); }
   .tick-pause:focus-visible { outline: 2px solid var(--caail-link); outline-offset: 1px; }
   .tick-pause-ic { display: inline-flex; }
@@ -606,9 +608,9 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
         delete button.dataset.pending;
       }
       // `still` was read once, above. A reader who turns reduced motion on after load
-      // loses the control at once (CSS), so the loop has to stop with it, or the counter
-      // types on with nothing to pause it. Turning it off again leaves the pause standing,
-      // and the control comes back offering Play.
+      // has asked for less motion, so the loop pauses; the control stays (its CSS hide
+      // applies only before it is offered) and offers Play. Turning reduced motion off
+      // again leaves the pause standing until the reader presses Play.
       still.addEventListener('change', () => {
         if (still.matches && !paused) setPaused(true);
       });
