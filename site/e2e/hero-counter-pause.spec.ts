@@ -63,7 +63,7 @@ test('the pause control stops the typing and the caret, and play resumes them', 
   expect((await textsOver(page, 5000)).size, 'play did not resume the counter').toBeGreaterThan(1);
 });
 
-test('no control is offered when nothing moves: reduced motion, or no script', async ({ page, request }) => {
+test('no control is offered when nothing moves: reduced motion, or no script', async ({ page, request, browser, baseURL }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('./');
   expect(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
@@ -72,6 +72,19 @@ test('no control is offered when nothing moves: reduced motion, or no script', a
   // Served HTML, as a reader with JavaScript off gets it: the button is there but pending.
   const html = await (await request.get('./')).text();
   expect(html).toMatch(/<button[^>]*class="[^"]*tick-pause[^"]*"[^>]*\sdata-pending[\s>]/);
+
+  // And with the script off nothing moves: the caret neither shows nor blinks, since
+  // there is no control to stop it.
+  const ctx = await browser.newContext({ baseURL, javaScriptEnabled: false, reducedMotion: 'no-preference' });
+  const noScript = await ctx.newPage();
+  await noScript.goto('./');
+  await expect(noScript.locator(BUTTON)).toBeHidden();
+  const caret = await noScript.locator('.hero .tick .tick-caret').evaluate((el) => {
+    const s = getComputedStyle(el);
+    return { visibility: s.visibility, animation: s.animationName };
+  });
+  expect(caret, 'with no script the caret shows or blinks, and nothing can stop it').toEqual({ visibility: 'hidden', animation: 'none' });
+  await ctx.close();
 });
 
 test('turning reduced motion on after load stops the counter, and the control returns offering Play', async ({ page }) => {

@@ -370,12 +370,16 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
   .tick-l { font-size: var(--caail-fs-lg); font-weight: 600; color: var(--caail-ink); }
 
   /* Caret. A drawn block rather than a "|" glyph, so it keeps its weight at any font
-     and sits on the same baseline as the number it trails. */
+     and sits on the same baseline as the number it trails. It shows and blinks only once
+     the script has started the loop (`data-live`): with no script there is no control
+     to stop it, and nothing for it to promise (WCAG 2.2.2). Hidden rather than removed,
+     so its arrival moves nothing. */
   .tick-caret {
     display: inline-block; width: 2px; height: 1.6rem; margin-left: -.25rem;
     background: var(--caail-link);
-    animation: tick-blink 1.06s step-end infinite;
+    visibility: hidden;
   }
+  .tick[data-live] .tick-caret { visibility: visible; animation: tick-blink 1.06s step-end infinite; }
   @keyframes tick-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
   /* Counted at build time, linking to where that can be checked. The claim and the
@@ -608,6 +612,7 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
       still.addEventListener('change', () => {
         if (still.matches && !paused) setPaused(true);
       });
+      tick.dataset.live = '';
       start();
     }
   }
