@@ -126,6 +126,18 @@ describe('scoreAnswer', () => {
     expect(score.outsideLinks).toContain('https://www.cellpose.org');
   });
 
+  it('flags a link with no scheme, which reading http(s) URLs alone would miss', () => {
+    const answer = `[Cellpose](${cellpose.link}) or [its site](www.cellpose.org); see www.example.org/x. Also [this](../software/).`;
+    const score = scoreAnswer(segmentation, entries, answer);
+    expect(score.rightEntry).toBe(true);
+    expect(score.outsideLinks).toEqual(['www.cellpose.org', '../software/', 'www.example.org/x']);
+  });
+
+  it('does not count an entry link as outside, or a www inside an https link twice', () => {
+    expect(scoreAnswer(segmentation, entries, `[Cellpose](${cellpose.link})`).outsideLinks).toEqual([]);
+    expect(scoreAnswer(segmentation, entries, 'see https://www.cellpose.org').outsideLinks).toEqual(['https://www.cellpose.org']);
+  });
+
   it('flags a link to a real entry the answer was not given', () => {
     const notSupplied = entry('sw:cellprofiler');
     const score = scoreAnswer(segmentation, entries, `[CellProfiler](${notSupplied.link})`);
