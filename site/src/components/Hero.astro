@@ -104,9 +104,10 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
             run without end. It has its own row so it can never widen the column the reserve
             sizes. Served `data-pending`, which keeps its row but hides it (and takes it out of
             the tab order and the accessibility tree), and enabled by the script only when it
-            starts the loop: so the page does not shift when it appears, and no reader is
-            offered a control over nothing. Under reduced motion CSS removes it at first paint;
-            a reader who turns reduced motion on later keeps it, with the loop paused.
+            starts the loop (and removed when the loop will not start): so the page does not
+            shift when it appears, and no reader is offered a control over nothing. Under
+            reduced motion CSS removes it at first paint; a reader who turns reduced motion on
+            later keeps it, with the loop paused.
             Its name says what it acts on, since the counter itself is hidden from AT. */}
         <a class="tick-cap" href={`${base}/by-the-numbers/`}>Counted at build time <span aria-hidden="true">→</span></a>
         <button type="button" class="tick-pause" data-pending>
@@ -618,4 +619,8 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
       start();
     }
   }
+  // The loop did not start on this page view (reduced motion at load, or nothing to
+  // rotate), so nothing here will ever move: drop the control. Left pending, a later
+  // change of preference would open its reserved row and shift the hero for nothing.
+  if (!tick?.hasAttribute('data-live')) document.querySelector('.hero .tick-pause')?.remove();
 </script>

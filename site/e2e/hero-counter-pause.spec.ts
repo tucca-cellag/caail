@@ -87,6 +87,19 @@ test('no control is offered when nothing moves: reduced motion, or no script', a
   await ctx.close();
 });
 
+test('turning reduced motion off after loading with it on moves nothing', async ({ page }) => {
+  // The loop never starts on this page view, so no control will ever appear: its
+  // reserved row must not open when the preference changes.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('./');
+  const col = page.locator('.hero .tick-col');
+  const before = await col.evaluate((el) => el.getBoundingClientRect().height);
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await expect(page.locator(BUTTON)).toBeHidden();
+  const after = await col.evaluate((el) => el.getBoundingClientRect().height);
+  expect(after, `the counter column grew from ${before}px to ${after}px when reduced motion was turned off`).toBe(before);
+});
+
 test('turning reduced motion on after load pauses the counter and keeps its control, and focus on it', async ({ page }) => {
   // The script reads the preference at load. A reader who asks for less motion later gets
   // the loop paused, and the control they may be focused on stays where it is.
