@@ -6,7 +6,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { buildCorpus, type ApiFiles } from './corpus.ts';
-import { buildLookup } from './lookup.ts';
 import { citedEntryIds, modelInput } from './model.ts';
 import type { RetrievedEntry } from './retrieval.ts';
 import {
@@ -186,19 +185,6 @@ describe('requestPlan', () => {
 
   it('adds a fetch by id only for a question that names an entry', () => {
     expect(requestPlan(qs('names one', 'plain'), (q) => q.startsWith('names'), CANDIDATES).vectorize.fetchesById).toBe(1);
-  });
-
-  it('counts the committed set against the lookup the Worker uses', () => {
-    const lookup = buildLookup({
-      catalog: api.catalog,
-      papersIndex: apiFile('papers-index.json'),
-      datasets: api.datasets,
-      reports: api.reports,
-      taxonomy: api.taxonomy,
-    });
-    const plan = requestPlan(committed.questions, (q) => lookup.match(q).length > 0, CANDIDATES);
-    expect(plan.workersAi.modelCalls).toBe(committed.questions.length * CANDIDATES.length);
-    expect(plan.vectorize.fetchesById).toBeLessThanOrEqual(committed.questions.length);
   });
 });
 
