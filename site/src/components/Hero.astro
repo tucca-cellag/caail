@@ -101,17 +101,17 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
         </p>
         <p class="visually-hidden">{statSentence}</p>
         {/* The reader's control over the typing and the caret (WCAG 2.2.2), which otherwise
-            run without end. Served `hidden` and shown by the script only when it starts the
-            loop, so no reader is offered a control over nothing: not with JS off, and not
-            under reduced motion, where nothing moves. Its name says what it acts on, since
-            the counter it controls is hidden from assistive tech. */}
-        <div class="tick-foot">
-          <a class="tick-cap" href={`${base}/by-the-numbers/`}>Counted at build time <span aria-hidden="true">→</span></a>
-          <button type="button" class="tick-pause" hidden>
-            <span class="tick-pause-ic" aria-hidden="true"><Icon name="lucide:pause" class="ic-pause" /><Icon name="lucide:play" class="ic-play" /></span>
-            <span class="tick-pause-label">Pause</span><span class="visually-hidden"> the counter</span>
-          </button>
-        </div>
+            run without end. It has its own row so it can never widen the column the reserve
+            sizes. Served `data-pending`, which keeps its row but hides it (and takes it out of
+            the tab order and the accessibility tree), and enabled by the script only when it
+            starts the loop: so the page does not shift when it appears, and no reader is
+            offered a control over nothing. Under reduced motion CSS removes it at first paint.
+            Its name says what it acts on, since the counter itself is hidden from AT. */}
+        <a class="tick-cap" href={`${base}/by-the-numbers/`}>Counted at build time <span aria-hidden="true">→</span></a>
+        <button type="button" class="tick-pause" data-pending>
+          <span class="tick-pause-ic" aria-hidden="true"><Icon name="lucide:pause" class="ic-pause" /><Icon name="lucide:play" class="ic-play" /></span>
+          <span class="tick-pause-label">Pause</span><span class="visually-hidden"> the counter</span>
+        </button>
       </div>
 
       {/* The three ways in, in the space the counter leaves empty.
@@ -387,13 +387,10 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
   .tick-cap:hover, .tick-cap:focus-visible { color: var(--caail-link); }
   @media (prefers-reduced-motion: reduce) { .tick-cap { transition: none; } }
 
-  /* The caption and the pause control share the row under the counter, and wrap rather
-     than widen the column when the text is large. */
-  .tick-foot { display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--caail-space-4); }
-  /* At least 24px each way, WCAG 2.5.8's target size. `[hidden]` is restated because
-     `display: inline-flex` would otherwise override the attribute. */
+  /* At least 24px each way, WCAG 2.5.8's target size. */
   .tick-pause { display: inline-flex; align-items: center; gap: .3rem; min-height: 24px; min-width: 24px; margin: .3rem 0 0; padding: 0 .35rem; font: inherit; font-size: var(--caail-fs-xs); color: var(--caail-muted); background: none; border: 0; border-radius: 4px; cursor: pointer; }
-  .tick-pause[hidden] { display: none; }
+  .tick-pause[data-pending] { visibility: hidden; }
+  @media (prefers-reduced-motion: reduce) { .tick-pause { display: none; } }
   .tick-pause:hover, .tick-pause:focus-visible { color: var(--caail-link); }
   .tick-pause:focus-visible { outline: 2px solid var(--caail-link); outline-offset: 1px; }
   .tick-pause-ic { display: inline-flex; }
@@ -443,7 +440,8 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
      own row beneath. */
   .tick-col { display: grid; grid-template-columns: max-content; }
   .tick, .tick-reserve { grid-area: 1 / 1; }
-  .tick-foot { grid-row: 2; }
+  .tick-cap { grid-row: 2; }
+  .tick-pause { grid-row: 3; justify-self: start; }
   .tick-reserve { display: grid; margin: 0; visibility: hidden; pointer-events: none; }
   .tick-ghost { grid-area: 1 / 1; display: flex; align-items: baseline; gap: .5rem; white-space: nowrap; }
 
@@ -599,7 +597,7 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
           label.textContent = paused ? 'Play' : 'Pause';
           start();
         });
-        button.hidden = false;
+        delete button.dataset.pending;
       }
       start();
     }

@@ -69,7 +69,23 @@ test('no control is offered when nothing moves: reduced motion, or no script', a
   expect(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
   await expect(page.locator(BUTTON)).toBeHidden();
 
-  // Served HTML, as a reader with JavaScript off gets it: the button is there but hidden.
+  // Served HTML, as a reader with JavaScript off gets it: the button is there but pending.
   const html = await (await request.get('./')).text();
-  expect(html).toMatch(/<button[^>]*class="[^"]*tick-pause[^"]*"[^>]*\shidden[\s>]/);
+  expect(html).toMatch(/<button[^>]*class="[^"]*tick-pause[^"]*"[^>]*\sdata-pending[\s>]/);
+});
+
+test('enabling the control moves nothing: its row is reserved before the script runs', async ({ browser, baseURL }) => {
+  // The script enables the button after first paint, so a row that appeared then would
+  // shift the hero and everything below it. Measured with the script off and on.
+  const heights: number[] = [];
+  for (const javaScriptEnabled of [false, true]) {
+    const ctx = await browser.newContext({ baseURL, javaScriptEnabled, reducedMotion: 'no-preference' });
+    const page = await ctx.newPage();
+    await page.goto('./');
+    if (javaScriptEnabled) await expect(page.locator(BUTTON)).toBeVisible();
+    else await expect(page.locator(BUTTON)).toBeHidden();
+    heights.push(await page.locator('.hero .tick-col').evaluate((el) => el.getBoundingClientRect().height));
+    await ctx.close();
+  }
+  expect(heights[1], `the counter column is ${heights[0]}px tall before the script and ${heights[1]}px after`).toBe(heights[0]);
 });
