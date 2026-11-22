@@ -28,7 +28,7 @@
  * Runs under Node's own type stripping, so it imports only files that need no
  * build step.
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { closeSync, openSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { buildCorpus, corpusDateOf, type ApiFiles } from '../src/corpus.ts';
 import { buildLookup } from '../src/lookup.ts';
@@ -108,14 +108,15 @@ if (!outPath || outPath.startsWith('--') || !accountId || !apiToken) {
   process.exit(1);
 }
 // pnpm --dir runs this from workers/ask, so a relative --out is resolved where
-// the command was typed (INIT_CWD), not inside the repo. The file is written
-// now, before anything is sent, and again after every question, so a path that
-// cannot be written fails first and a run cut short keeps what it reached.
+// the command was typed (INIT_CWD), not inside the repo. The file is created
+// now, before anything is sent, and must not exist yet, so an earlier run's
+// results are never overwritten; it is rewritten after every question, so a
+// run cut short keeps what it reached.
 const outFile = resolve(process.env.INIT_CWD ?? process.cwd(), outPath);
 try {
-  writeFileSync(outFile, '');
+  closeSync(openSync(outFile, 'wx'));
 } catch (err) {
-  console.error(`\n--out ${outFile}: cannot be written (${(err as Error).message}). Nothing was sent.`);
+  console.error(`\n--out ${outFile}: cannot be created, or already exists (${(err as Error).message}). Name a new file. Nothing was sent.`);
   process.exit(1);
 }
 
