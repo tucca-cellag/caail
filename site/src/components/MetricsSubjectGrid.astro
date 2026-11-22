@@ -96,9 +96,11 @@ const level = (n: number) => {
   .md-cell { display: block; min-width: 3.1rem; padding: .3rem .2rem; border-radius: 5px; text-align: center; font-family: var(--caail-font-mono); font-weight: 700; color: var(--caail-ink); text-decoration: none; }
   .md-cell[data-level='1'] { background: var(--caail-density-1); }
   .md-cell[data-level='2'] { background: var(--caail-density-2); }
-  /* Dark fills flip to white text, matching PapersExplorer's matrix rule. */
-  .md-cell[data-level='3'] { background: var(--caail-density-3); color: #fff; }
-  .md-cell[data-level='4'] { background: var(--caail-density-4); color: #fff; }
+  /* The top two steps take the page colour as text: white on their dark fills in light
+     mode, and the dark page colour in dark mode, where the ramp inverts and those fills
+     turn light. White there measured 3.65:1 and 2.00:1. */
+  .md-cell[data-level='3'] { background: var(--caail-density-3); color: var(--caail-bg); }
+  .md-cell[data-level='4'] { background: var(--caail-density-4); color: var(--caail-bg); }
   a.md-cell:hover, a.md-cell:focus-visible { outline: 2px solid var(--caail-primary); outline-offset: 1px; }
   .md-cell.zero { color: var(--caail-muted); font-weight: 400; background: var(--caail-density-0); }
   @media (max-width: 34rem) { .md-grid { font-size: .68rem; } .md-cell { min-width: 2.4rem; } }
