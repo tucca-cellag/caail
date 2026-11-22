@@ -23,6 +23,7 @@ Two layers with different rules: **chrome** (brand identity) and **data encoding
 | `--caail-bg` | `#FFFFFF` | page background |
 | `--caail-surface` | `#F3F6FA` | cards, ribbons |
 | `--caail-border` | `#E0E7EE` | hairlines |
+| `--caail-control-edge` | `#78818C` | the edge of a text box or select, 3:1 or more against the page in both themes |
 | `--caail-ink` | `#131E37` | body text |
 | `--caail-muted` | `#5C646F` | secondary text |
 | `--caail-primary` | `#002E6D` | Tufts Dark Blue (PMS 294): headings, solid buttons, wordmark |

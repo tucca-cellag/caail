@@ -4,8 +4,8 @@
 .sl-container:has(.cb) { max-width: none; }
 
 .cb-controls { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: .6rem; }
-.cb-search { flex: 1; min-width: 220px; padding: .5rem .7rem; border: 1px solid var(--caail-border); border-radius: 8px; font: inherit; background: var(--caail-bg); color: var(--caail-ink); }
-.cb-select { padding: .5rem .7rem; border: 1px solid var(--caail-border); border-radius: 8px; font: inherit; background: var(--caail-bg); color: var(--caail-ink); max-width: 100%; }
+.cb-search { flex: 1; min-width: 220px; padding: .5rem .7rem; border: 1px solid var(--caail-control-edge); border-radius: 8px; font: inherit; background: var(--caail-bg); color: var(--caail-ink); }
+.cb-select { padding: .5rem .7rem; border: 1px solid var(--caail-control-edge); border-radius: 8px; font: inherit; background: var(--caail-bg); color: var(--caail-ink); max-width: 100%; }
 .cb-search:focus-visible, .cb-select:focus-visible { outline: 2px solid var(--caail-link); outline-offset: 1px; }
 
 .cb-count { font-size: .72rem; color: var(--caail-muted); margin: 0 0 1rem; }

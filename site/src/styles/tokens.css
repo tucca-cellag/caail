@@ -35,6 +35,11 @@
   --caail-bg: oklch(100% 0 0);                 /* #FFFFFF */
   --caail-surface: oklch(97.2% 0.006 250);     /* #F3F6FA */
   --caail-border: oklch(92.5% 0.012 250);      /* #E0E7EE */
+  /* The edge of a text box or select, whose border is its only boundary: WCAG 1.4.11
+     asks 3:1 against what is around it, which --caail-border (1.25:1) is not. This is
+     3.94:1 on --caail-bg and 3.64:1 on --caail-surface; the dark value below is
+     3.78:1 and 3.42:1. e2e/control-edges.spec.ts measures the rendered controls. */
+  --caail-control-edge: oklch(60% 0.02 255);   /* #78818C */
   --caail-ink: oklch(24% 0.05 264);            /* #131E37 */
   --caail-muted: oklch(50% 0.02 255);          /* #5C646F */
   --caail-primary: oklch(31.7% 0.119 258.4);   /* #002E6D Tufts Dark Blue */
@@ -178,6 +183,7 @@
   --caail-bg: oklch(17% 0.03 264);             /* #090F1C */
   --caail-surface: oklch(22% 0.03 264);
   --caail-border: oklch(30% 0.03 264);
+  --caail-control-edge: oklch(54% 0.03 264);   /* #666F81 */
   --caail-ink: oklch(93% 0.02 255);            /* #DFE9F5 */
   --caail-muted: oklch(72% 0.02 255);
   --caail-primary: oklch(72% 0.10 256);        /* lighter navy for dark bg */

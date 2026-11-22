@@ -6,8 +6,8 @@
 .sl-container:has(.px) { max-width: none; }
 
 .px-controls { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: .6rem; }
-.px-search { flex: 1; min-width: 220px; padding: .5rem .7rem; border: 1px solid var(--caail-border); border-radius: 8px; font: inherit; }
-.px-select { padding: .5rem .7rem; border: 1px solid var(--caail-border); border-radius: 8px; font: inherit; }
+.px-search { flex: 1; min-width: 220px; padding: .5rem .7rem; border: 1px solid var(--caail-control-edge); border-radius: 8px; font: inherit; background: var(--caail-bg); color: var(--caail-ink); }
+.px-select { padding: .5rem .7rem; border: 1px solid var(--caail-control-edge); border-radius: 8px; font: inherit; background: var(--caail-bg); color: var(--caail-ink); }
 .px-legend { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: .8rem; }
 .px-lchip { display: inline-flex; align-items: center; gap: .35rem; font-size: .68rem; font-weight: 600; border: 1px solid var(--caail-border); border-radius: 999px; padding: .2rem .5rem; }
 .px-sw { width: .62rem; height: .62rem; border-radius: 3px; display: inline-block; }

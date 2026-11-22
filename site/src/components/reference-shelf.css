@@ -1,6 +1,6 @@
 .rs { max-width: 62rem; }
 .rs-controls { margin: 0 0 1.25rem; }
-.rs-search { width: 100%; max-width: 26rem; padding: .5rem .7rem; font-size: .85rem; border: 1px solid var(--caail-border); border-radius: 8px; background: var(--caail-bg); color: var(--caail-ink); }
+.rs-search { width: 100%; max-width: 26rem; padding: .5rem .7rem; font-size: .85rem; border: 1px solid var(--caail-control-edge); border-radius: 8px; background: var(--caail-bg); color: var(--caail-ink); }
 
 .rs-group { margin: 0 0 2rem; }
 .rs-ghead { display: flex; align-items: baseline; gap: .6rem; border-bottom: 2px solid var(--caail-border); padding-bottom: .35rem; margin-bottom: .5rem; }
