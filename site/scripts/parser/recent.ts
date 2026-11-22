@@ -13,6 +13,9 @@
  * Conventional-Commit subject starts with an addition verb, so reorg/relabel
  * commits stay out of a list titled "Recently *added*".
  *
+ * No research area is given. One could only be guessed from the commit subject, and the
+ * keyword guess this once made was wrong for most of the list (tucca-cellag/caail-planning#887).
+ *
  * Reads git history; never mutates the canonical files.
  */
 
@@ -63,33 +66,6 @@ const ADDITION_VERBS: readonly string[] = [
 ];
 
 /**
- * Ordered keyword → research-area map. The area dot is the one field git can't
- * ground, so it's a best-effort match against the title; first hit wins, and
- * anything unmatched falls back to `tooling` (the neutral "general method/tool"
- * column). Keep the method/cell-biology cues before the generic tooling cues.
- *
- * There is deliberately no benchmark row: a benchmark takes the area it measures,
- * so a domain cue in the same title should win, and a domain-less benchmark reaches
- * `tooling` via the fallback anyway. Adding "benchmark"/"eval" to the `tooling` entry
- * would be dead weight — it is the last entry, so those titles already land there.
- */
-const AREA_KEYWORDS: ReadonlyArray<readonly [RecentEntry['area'], readonly string[]]> = [
-  ['sensory', ['burger', 'flavor', 'flavour', 'aroma', 'taste', 'sensory', 'mass spec', 'metabolom', 'volatile']],
-  ['bioprocess', ['bioreactor', 'bioprocess', 'scale-up', 'scale up', 'perfusion', 'microcarrier']],
-  ['scaffolding', ['scaffold', 'biomaterial', 'hydrogel']],
-  ['media', ['media', 'medium', 'growth factor', 'serum']],
-  ['cell', ['knockout', 'crispr', 'satellite cell', 'differentiation', 'atlas', 'single-cell', 'scrna', 'rna-seq', 'cell line', 'cell-line', 'lineage', 'transcriptom']],
-  // `metabolom` is deliberately NOT here: it belongs to `sensory` above and stays there,
-  // because measuring metabolites to predict an eating-quality attribute is a sensory
-  // result, while this area is for modelling the metabolic network. That is the same
-  // boundary Taxonomy.md draws between the two columns, so the shadowing is correct
-  // rather than a collision to work around.
-  ['metabolic', ['genome-scale', 'genome scale', 'metabolic model', 'metabolic network', 'strain design', 'sbml', 'gem']],
-  ['foodsafety', ['allergen', 'allergenic', 'immunogenic', 'food safety', 'ige', 'toxicity']],
-  ['tooling', ['agent', 'mcp', 'llm', 'foundation model', 'framework', 'tool', 'docs', 'pipeline']],
-];
-
-/**
  * Run a git command rooted at `repoRoot`, returning trimmed stdout. stderr is
  * discarded so the guarded failure path (no repo / shallow clone) stays silent.
  */
@@ -100,69 +76,12 @@ function git(repoRoot: string, args: string[]): string {
   }).trim();
 }
 
-/** First keyword match wins; unmatched titles default to `tooling`. */
-/**
- * Short stems that are also the start of unrelated common words, so they must match a
- * WHOLE word rather than a prefix: `gem` begins "Gemini" and "Gemma", `ige` begins "iGEM".
- * Both are realistic commit subjects here and each would paint a wrong area dot.
- *
- * `seed.ts` spells the same two concepts `\bgem\b` and `\bige\b` in its allergenicity
- * tag, so this keeps the two classifiers agreeing rather than inventing a second rule.
- *
- * `flux` was a third and has been REMOVED from the keyword list instead, because anchoring
- * cannot help it: metabolic flux and Flux the image model are the same word, not a stem
- * inside a longer one, and this repo plausibly commits about both. A boundary rule
- * separates a stem from a word it begins; nothing lexical separates two homonyms. The
- * remaining metabolic cues are specific enough to carry the area without it.
- */
-const WHOLE_WORD_ONLY = new Set(['gem', 'ige']);
-
-/**
- * True when `kw` occurs in `haystack` at a word boundary.
- *
- * The trailing edge is asserted only for `WHOLE_WORD_ONLY` stems. Everything else is a
- * prefix match, because a keyword has to match its own inflections: `allergen` must match
- * "allergenicity" and `metabolic model` must match "metabolic modeling", which is most of
- * why these entries are stems in the first place.
- *
- * Both of the obvious uniform rules are wrong and both were tried. Matching a bare
- * substring tagged "The AI4CM Hub and the Food Intelligence Lab" as `foodsafety`, because
- * "intelligence" contains "ige". Anchoring every keyword at both edges then silently sent
- * "Three allergenicity predictors" and "Metabolic Modeling and Food Safety Prediction
- * columns" to the `tooling` fallback. The rule has to vary per keyword because the
- * keywords do: some are stems and some are words that other words begin with.
- *
- * The keyword is escaped, so a future entry containing regex punctuation stays literal.
- */
-function wordMatch(haystack: string, kw: string): boolean {
-  const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const tail = WHOLE_WORD_ONLY.has(kw) ? '([^a-z0-9]|$)' : '';
-  return new RegExp(`(^|[^a-z0-9])${escaped}${tail}`, 'i').test(haystack);
-}
-
-export function classifyArea(title: string): RecentEntry['area'] {
-  const haystack = title.toLowerCase();
-  for (const [area, keywords] of AREA_KEYWORDS) {
-    // Whole-word match, NOT `includes`. A bare substring test tagged "The AI4CM Hub and
-    // the Food Intelligence Lab" as `foodsafety`, because "intelligence" contains "ige";
-    // "gem" is likewise inside "management" and "engagement". Short keywords are the
-    // useful ones here (titles are commit subjects, so they are terse), which makes
-    // substring matching actively wrong rather than merely loose. `seed.ts` already
-    // spells the same concept `\bige\b` in its allergenicity tag.
-    //
-    // Keywords may contain spaces and hyphens, so the boundary is asserted by hand
-    // rather than with \b, which does not fire next to a hyphen.
-    if (keywords.some((kw) => wordMatch(haystack, kw))) return area;
-  }
-  return 'tooling';
-}
-
 /**
  * Turn a Conventional-Commit subject into a card entry, or null if it isn't an
  * addition to a catalogued content file.
  *
  * `feat(papers): add Tac et al. 2026 burger paper (#236)`
- *   → { kind: 'Paper', title: 'Tac et al. 2026 burger paper', area: 'sensory' }
+ *   → { kind: 'Paper', title: 'Tac et al. 2026 burger paper' }
  */
 export function parseSubject(date: string, subject: string): RecentEntry | null {
   // type(scope): rest  — scope required (it carries the kind).
@@ -186,7 +105,7 @@ export function parseSubject(date: string, subject: string): RecentEntry | null 
   title = title.charAt(0).toUpperCase() + title.slice(1);
   title = TITLE_OVERRIDES[title] ?? title;
 
-  return { date, kind, title, area: classifyArea(title) };
+  return { date, kind, title };
 }
 
 /**

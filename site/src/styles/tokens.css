@@ -128,7 +128,7 @@
          rather than on the node. That is ordinary practice for a graph and is accepted
          here, but note the legend is `aria-hidden`, so the colour channel carries nothing
          for a screen reader either way;
-       * the "Recently added" dot had NEITHER, and now carries an accessible name.
+       * the "Recently added" list had an area dot with NEITHER, and no longer shows one.
 
      If a new surface shows an area colour with no label and no legend, either label it or
      use the card's floor; do not extend this exemption to it.
