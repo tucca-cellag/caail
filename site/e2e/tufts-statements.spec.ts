@@ -25,6 +25,8 @@ for (const route of ROUTES) {
     const text = (await footer.innerText()).replace(/\s+/g, ' ');
 
     expect(text).toContain(ACCESSIBILITY_STATEMENT);
+    // The policy link reads as a sentence of its own, not a fragment after the contact.
+    expect(text).toContain(`${ACCESSIBILITY_STATEMENT} See the Tufts Digital Accessibility Policy.`);
     await expect(footer.locator('a[href="mailto:cellag@tufts.edu"]')).toHaveCount(1);
     await expect(footer.getByRole('link', { name: 'Tufts Digital Accessibility Policy' })).toHaveAttribute(
       'href',
