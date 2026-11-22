@@ -78,8 +78,10 @@ interface Props {
 
 const { width = 168, class: className, textName = false } = Astro.props;
 const height = Math.round((width * blkbl.height) / blkbl.width);
-// Tufts' clear space, the T's cap height at this size, carried as the link's own padding
-// so no placement can set text or a rule inside it (src/lib/tucca-lockup.ts).
+// Tufts' clear space, the T's cap height at this size, carried as the link's own margin
+// so no placement can set text or a rule inside it (src/lib/tucca-lockup.ts). Margin, not
+// padding: the space keeps neighbours away without becoming part of the link, so a click
+// on blank space beside the mark goes nowhere and the focus ring hugs the mark.
 const clear = lockupClearSpace(height).toFixed(2);
 const style = `--tl-w:${width}px;--tl-h:${height}px;--tl-clear:${clear}px;--tl-light:url("${blkbl.src}");--tl-dark:url("${white.src}")`;
 
@@ -121,7 +123,7 @@ const style = `--tl-w:${width}px;--tl-h:${height}px;--tl-clear:${clear}px;--tl-l
     display: inline-block;
     line-height: 0;
     border-radius: 4px;
-    padding: var(--tl-clear);
+    margin: var(--tl-clear);
   }
   /* Present in the DOM for text extraction, absent from layout and from the
      accessibility tree (the anchor's aria-label already names this). */

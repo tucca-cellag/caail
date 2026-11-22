@@ -64,6 +64,15 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       );
       expect(found.clear, 'the clear space measured as nothing').toBeGreaterThan(10);
       expect(found.out, `within ${found.clear}px of the lockup`).toEqual([]);
+
+      // The clear space sits outside the link: blank space beside the mark is not a link
+      // to the Tufts site, and the focus ring draws around the mark, not around nothing.
+      const reach = await lockup.evaluate((a) => {
+        const link = a.getBoundingClientRect();
+        const mark = a.querySelector('.tl-mark')!.getBoundingClientRect();
+        return Math.max(mark.left - link.left, link.right - mark.right, mark.top - link.top, link.bottom - mark.bottom);
+      });
+      expect(reach, `the link reaches ${reach}px past the mark`).toBeLessThan(1);
     });
   }
 }

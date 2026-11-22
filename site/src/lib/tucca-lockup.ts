@@ -7,7 +7,7 @@
  * (brand.tufts.edu/guidelines/logos and /lockups, read 2026-11-22).
  *
  * The official PNGs are cropped to the artwork, so none of that space is in the file:
- * `TuccaLockup.astro` adds it as padding, and the e2e suite checks nothing intrudes.
+ * `TuccaLockup.astro` adds it as margin, and the e2e suite checks nothing intrudes.
  */
 
 /** The official lockup's pixel height (`cca-horiz-*.png` are 1093 x 169). */
