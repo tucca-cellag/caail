@@ -148,7 +148,9 @@ export function scoreAnswer(question: Question, entries: RetrievedEntry[], answe
 }
 
 /**
- * Every request one scoring run sends, by service. Retrieval does not depend on
+ * The most requests one scoring run sends, by service. Fewer go out when a run
+ * stops early, or when retrieval gives a question no entries, since the Worker
+ * then answers 503 without calling a model. Retrieval does not depend on
  * the model, so it runs once per question and its entries go to every
  * candidate: one embedding and one search by meaning per question, plus one
  * fetch by id for each question that names an entry outright (the lookup is
@@ -175,21 +177,36 @@ export function requestPlan(questions: Question[], namesAnEntry: (question: stri
 export interface CandidateTally {
   model: string;
   questions: number;
+  /** Questions with an answer the Worker would have delivered. */
+  answered: number;
   rightEntry: number;
   noOutsideLinks: number;
   /** Whether the mechanical half of the bar is met; the reading of each answer is the other half. */
   meetsMechanicalBar: boolean;
 }
 
-/** One candidate's totals over the set. */
-export function tally(model: string, scores: AnswerScore[]): CandidateTally {
-  const rightEntry = scores.filter((s) => s.rightEntry).length;
-  const noOutsideLinks = scores.filter((s) => s.outsideLinks.length === 0).length;
+/**
+ * One candidate's totals over the whole set. `scores` holds one entry for every
+ * question in the set, null where the question has no answer the Worker would
+ * have delivered: retrieval failed, the call failed or came back empty, the
+ * answer missed the deadline, or the run stopped first. A null counts as wrong,
+ * and the bar is met only when every question was answered, so a run that
+ * reached few questions cannot pass on the ones it reached.
+ */
+export function tally(model: string, scores: (AnswerScore | null)[]): CandidateTally {
+  const answered = scores.filter((s) => s !== null);
+  const rightEntry = answered.filter((s) => s.rightEntry).length;
+  const noOutsideLinks = answered.filter((s) => s.outsideLinks.length === 0).length;
   return {
     model,
     questions: scores.length,
+    answered: answered.length,
     rightEntry,
     noOutsideLinks,
-    meetsMechanicalBar: rightEntry >= rightEntryBar(scores.length) && noOutsideLinks === scores.length,
+    meetsMechanicalBar:
+      scores.length > 0 &&
+      answered.length === scores.length &&
+      rightEntry >= rightEntryBar(scores.length) &&
+      noOutsideLinks === scores.length,
   };
 }

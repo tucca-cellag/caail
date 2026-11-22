@@ -26,7 +26,8 @@
  * Runs under Node's own type stripping, so it imports only files that need no
  * build step.
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { accessSync, constants, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
 import { buildCorpus, corpusDateOf, type ApiFiles } from '../src/corpus.ts';
 import { buildLookup } from '../src/lookup.ts';
 import { answerText, modelInput } from '../src/model.ts';
@@ -84,7 +85,7 @@ console.log(
     `Question set: ${plan.questions} questions, corpus ${corpusDate}; candidates, cheapest first: ${CANDIDATES.join(', ')}.`,
     `Bar: the right entry on at least ${rightEntryBar(plan.questions)} of ${plan.questions}, and no outside link on any.`,
     '',
-    `Requests a run sends: ${plan.total}.`,
+    `Requests a run sends, at most: ${plan.total}.`,
     `  Workers AI: ${plan.workersAi.total} = ${plan.workersAi.embeddings} question embeddings + ${plan.workersAi.modelCalls} model calls (${plan.questions} x ${plan.candidates}).`,
     `  Vectorize:  ${plan.vectorize.total} = ${plan.vectorize.corpusRecordReads} corpus-record read + ${plan.vectorize.searches} searches + ${plan.vectorize.fetchesById} fetches by id (questions that name an entry).`,
     `  Each model call asks for at most ${modelInput(CANDIDATES[0], [], '').max_tokens} output tokens.`,
@@ -100,10 +101,25 @@ const outAt = process.argv.indexOf('--out');
 const outPath = outAt > 0 ? process.argv[outAt + 1] : undefined;
 const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
 const apiToken = process.env.CLOUDFLARE_API_TOKEN;
-if (!outPath || !accountId || !apiToken) {
+if (!outPath || outPath.startsWith('--') || !accountId || !apiToken) {
   console.error('\n--send needs --out <file>, and CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN in the environment. Nothing was sent.');
   process.exit(1);
 }
+// The answers are written once, at the end, so a path that cannot be written
+// would lose every one of them after the allocation was spent. Check it first.
+try {
+  accessSync(dirname(resolve(outPath)), constants.W_OK);
+} catch {
+  console.error(`\n--out ${outPath}: its directory does not exist or cannot be written. Nothing was sent.`);
+  process.exit(1);
+}
+
+/** Between Workers AI calls: one run is sequential and well inside the documented per-minute limits. */
+const SPACING_MS = 1_000;
+/** A hung call is given up on after this; it is not the Worker's deadline, which each answer is timed against. */
+const CALL_TIMEOUT_MS = 120_000;
+/** Set when a search returns the corpus record; see INDEX.query below. */
+let namespaceIgnored = false;
 
 /**
  * The Worker's two bindings over Cloudflare's REST endpoints. An error names the
@@ -115,7 +131,9 @@ function restBindings(account: string, token: string): { AI: AiBinding; INDEX: I
   const base = `https://api.cloudflare.com/client/v4/accounts/${account}`;
   const indexUrl = `${base}/vectorize/v2/indexes/${INDEX_NAME}`;
 
-  async function post(step: string, url: string, body: unknown, signal?: AbortSignal): Promise<unknown> {
+  // Every call is given up on after CALL_TIMEOUT_MS, Vectorize's included, which
+  // retrieve() passes no signal to.
+  async function post(step: string, url: string, body: unknown, signal: AbortSignal = AbortSignal.timeout(CALL_TIMEOUT_MS)): Promise<unknown> {
     const response = await fetch(url, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -155,8 +173,11 @@ function restBindings(account: string, token: string): { AI: AiBinding; INDEX: I
         // The REST reference does not list `namespace` for a query, as the
         // binding does. The corpus record is the one vector outside the entries'
         // namespace, so finding it here means the search was not confined to
-        // them, and the retrieval scored would not be the Worker's.
+        // them, and the retrieval scored would not be the Worker's. retrieve()
+        // runs this under Promise.allSettled, so the throw alone would become
+        // one half's failure; the flag is what stops the run.
         if (matches.some((match) => match.id === CORPUS_RECORD_ID)) {
+          namespaceIgnored = true;
           throw new Error('the search returned the corpus record, so its namespace was not applied');
         }
         return { matches };
@@ -169,6 +190,13 @@ function restBindings(account: string, token: string): { AI: AiBinding; INDEX: I
 }
 
 const env = restBindings(accountId, apiToken);
+/**
+ * Where a run stops. The Worker answers 429 only when the embedding hits the
+ * daily allocation (3036); on capacity (3040) it answers from the named entries
+ * alone. A run stops on either, and on any HTTP 429, which is more often than
+ * the Worker gives up: a run cut short is re-run whole, where answers scored on
+ * degraded retrieval would not be the ones a reader normally gets.
+ */
 const LIMITS = new Set([3036, 3040]);
 const statusOf = (err: unknown) => (err as { status?: number } | null)?.status;
 const isLimit = (err: unknown) =>
@@ -177,10 +205,6 @@ const isLimit = (err: unknown) =>
   (err instanceof Error && statusOf(err.cause) === 429);
 const errorLine = (err: unknown) => (err instanceof Error ? (err.cause instanceof Error ? err.cause.message : err.message) : String(err));
 const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-/** Between Workers AI calls: one run is sequential and well inside the documented per-minute limits. */
-const SPACING_MS = 1_000;
-/** A hung call is given up on after this; it is not the Worker's deadline, which each answer is timed against. */
-const CALL_TIMEOUT_MS = 120_000;
 
 const record = await env.INDEX.getByIds([CORPUS_RECORD_ID]);
 const meta = record.find((vector) => vector.id === CORPUS_RECORD_ID)?.metadata ?? {};
@@ -206,6 +230,8 @@ interface QuestionRecord {
   question: string;
   mustCite: string[][];
   entries: { id: string; name: string }[];
+  /** Retrieval supplied an entry of every mustCite group, so a right answer was possible. */
+  retrieved: boolean;
   retrievalFailed: string | null;
   retrievalMs: number;
   answers: Record<string, AnswerRecord>;
@@ -217,33 +243,48 @@ const startedAt = new Date().toISOString();
 
 run: for (const q of set.questions) {
   const t0 = Date.now();
-  let retrieval: Awaited<ReturnType<typeof retrieve>>;
+  let retrieval: Awaited<ReturnType<typeof retrieve>> | undefined;
+  let retrievalError: unknown;
   try {
     retrieval = await retrieve(q.question, env, lookup, AbortSignal.timeout(CALL_TIMEOUT_MS));
   } catch (err) {
-    if (isLimit(err)) {
-      stoppedAt = `${q.id}, retrieval: ${errorLine(err)}`;
+    retrievalError = err;
+  }
+  if (namespaceIgnored) {
+    stoppedAt = `${q.id}, retrieval: a search returned the corpus record, so the REST search was not confined to the entries' namespace and no retrieval in this run is the Worker's`;
+    break;
+  }
+  if (retrieval === undefined) {
+    if (isLimit(retrievalError)) {
+      stoppedAt = `${q.id}, retrieval: ${errorLine(retrievalError)}`;
       break;
     }
-    results.push({ ...q, entries: [], retrievalFailed: errorLine(err), retrievalMs: Date.now() - t0, answers: {} });
+    results.push({ ...q, entries: [], retrieved: false, retrievalFailed: errorLine(retrievalError), retrievalMs: Date.now() - t0, answers: {} });
     continue;
   }
   // The embedding half can hit a limit while the named half still answers, and
-  // retrieve() then returns rather than throws. The Worker stops there on the
-  // daily allocation, and so does this.
+  // retrieve() then returns rather than throws. LIMITS says why a run stops here.
   if (retrieval.failed && isLimit(retrieval.failed.error)) {
     stoppedAt = `${q.id}, retrieval: ${errorLine(retrieval.failed.error)}`;
     break;
   }
   const retrievalMs = Date.now() - t0;
+  const supplied = new Set(retrieval.entries.map((e) => e.id));
   const row: QuestionRecord = {
     ...q,
     entries: retrieval.entries.map((e) => ({ id: e.id, name: e.name })),
+    retrieved: q.mustCite.every((group) => group.some((id) => supplied.has(id))),
     retrievalFailed: retrieval.failed ? `${retrieval.failed.half}: ${errorLine(retrieval.failed.error)}` : null,
     retrievalMs,
     answers: {},
   };
   results.push(row);
+  // With no entries the Worker answers 503 and calls no model, so nothing is
+  // sent and no candidate is credited with an answer here either.
+  if (retrieval.entries.length === 0) {
+    console.log(`${q.id}: no entries in ${retrievalMs} ms; the Worker would answer 503`);
+    continue;
+  }
   for (const model of CANDIDATES) {
     await pause(SPACING_MS);
     const t1 = Date.now();
@@ -272,25 +313,32 @@ run: for (const q of set.questions) {
   console.log(`${q.id}: ${retrieval.entries.length} entries in ${retrievalMs} ms`);
 }
 
-const failed: AnswerScore = { retrieved: false, rightEntry: false, cited: [], outsideLinks: [] };
+// Every question in the set is tallied, reached or not. An answer counts only if
+// the Worker would have delivered it: one that missed the deadline, like a
+// question never reached, failed or given no entries, is a null (see tally).
+const byId = new Map(results.map((r) => [r.id, r]));
 const tallies = CANDIDATES.map((model) => {
-  const scores = results.filter((r) => r.answers[model]).map((r) => r.answers[model].score ?? failed);
+  const scores = set.questions.map((q) => {
+    const answer = byId.get(q.id)?.answers[model];
+    return answer?.withinDeadline ? answer.score : null;
+  });
   return {
     ...tally(model, scores),
-    retrievalMisses: results.filter((r) => r.answers[model]?.score?.retrieved === false).length,
-    overDeadline: results.filter((r) => r.answers[model] && !r.answers[model].withinDeadline).length,
+    overDeadline: results.filter((r) => r.answers[model]?.answer != null && !r.answers[model].withinDeadline).length,
   };
 });
+const retrievalMisses = results.filter((r) => !r.retrieved).length;
 
 writeFileSync(
   outPath,
-  `${JSON.stringify({ corpusDate, indexCorpusDate: meta.corpusDate, startedAt, stoppedAt, candidates: CANDIDATES, tallies, questions: results }, null, 2)}\n`,
+  `${JSON.stringify({ corpusDate, indexCorpusDate: meta.corpusDate, startedAt, stoppedAt, candidates: CANDIDATES, retrievalMisses, tallies, questions: results }, null, 2)}\n`,
 );
-console.log(`\n${stoppedAt ? `Stopped early at ${stoppedAt}.\n` : ''}Wrote ${results.length} questions to ${outPath}.`);
+console.log(`\n${stoppedAt ? `Stopped early at ${stoppedAt}.\n` : ''}Wrote ${results.length} of ${set.questions.length} questions to ${outPath}.`);
+console.log(`Retrieval supplied no right entry for ${retrievalMisses} of the ${results.length} questions reached; those misses are not the models'.`);
 for (const t of tallies) {
   console.log(
-    `${t.model}: right entry ${t.rightEntry}/${t.questions}, no outside link ${t.noOutsideLinks}/${t.questions}, ` +
-      `retrieval missed ${t.retrievalMisses}, over the ${REQUEST_DEADLINE_MS} ms deadline ${t.overDeadline}` +
+    `${t.model}: answered ${t.answered}/${t.questions}, right entry ${t.rightEntry}/${t.questions}, no outside link ${t.noOutsideLinks}/${t.questions}, ` +
+      `over the ${REQUEST_DEADLINE_MS} ms deadline ${t.overDeadline}` +
       `${t.meetsMechanicalBar ? '; meets the mechanical bar' : ''}.`,
   );
 }

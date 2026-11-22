@@ -225,4 +225,17 @@ describe('tally', () => {
   it('misses it with one outside link, however many are right', () => {
     expect(tally('m', [...of(19, 19), score(true, 1)])).toMatchObject({ rightEntry: 20, noOutsideLinks: 19, meetsMechanicalBar: false });
   });
+
+  it('never passes a run that answered nothing', () => {
+    expect(tally('m', []).meetsMechanicalBar).toBe(false);
+    expect(tally('m', Array<null>(20).fill(null))).toMatchObject({ answered: 0, rightEntry: 0, meetsMechanicalBar: false });
+  });
+
+  it('counts an unanswered question as wrong, and misses the bar while any is unanswered', () => {
+    // 19 right and one with no answer the Worker would deliver: 19 clears 16,
+    // but the run did not answer the whole set, so it is not a pass.
+    expect(tally('m', [...of(19, 19), null])).toMatchObject({ questions: 20, answered: 19, rightEntry: 19, meetsMechanicalBar: false });
+    // Judged on the four it reached, 4 of 4 would clear the bar; on the set of 20 it cannot.
+    expect(tally('m', [...of(4, 4), ...Array<null>(16).fill(null)])).toMatchObject({ rightEntry: 4, meetsMechanicalBar: false });
+  });
 });
