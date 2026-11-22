@@ -21,7 +21,8 @@
  * nothing in the Worker's dataset.
  *
  * Stops at the first Workers AI limit (3036, the daily allocation; 3040,
- * capacity) or HTTP 429, and at the first question no candidate can answer.
+ * capacity) or HTTP 429, and at the first question whose retrieval fails or
+ * gives no entries, since no candidate can answer it.
  * The output file is rewritten after every question, so a run cut short keeps
  * what it reached.
  *
@@ -179,9 +180,12 @@ function restBindings(account: string, token: string): { AI: AiBinding; INDEX: I
         // The REST reference does not list `namespace` for a query, as the
         // binding does. The corpus record is the one vector outside the entries'
         // namespace, so finding it here means the search was not confined to
-        // them, and the retrieval scored would not be the Worker's. retrieve()
-        // runs this under Promise.allSettled, so the throw alone would become
-        // one half's failure; the flag is what stops the run.
+        // them, and the retrieval scored would not be the Worker's. It is a
+        // tripwire, not a proof: the record's vector scores near zero against a
+        // question, so a search that ignored the namespace would rarely rank it.
+        // retrieve() runs this under Promise.allSettled, so the throw alone
+        // would become one half's failure; the flag is what stops the run when
+        // it does trip.
         if (matches.some((match) => match.id === CORPUS_RECORD_ID)) {
           namespaceIgnored = true;
           throw new Error('the search returned the corpus record, so its namespace was not applied');
@@ -289,8 +293,9 @@ run: for (const q of set.questions) {
     stoppedAt = `${q.id}, retrieval: a search returned the corpus record, so the REST search was not confined to the entries' namespace and no retrieval in this run is the Worker's`;
     break;
   }
-  // A question no candidate can answer means no candidate can pass any more, so
-  // the run stops there rather than spend the rest of the allocation.
+  // A failed retrieval leaves no candidate able to answer this question, so none
+  // can pass any more, and the run stops rather than spend the rest of the
+  // allocation.
   if (retrieval === undefined) {
     if (!isLimit(retrievalError)) {
       results.push({ ...q, entries: [], retrieved: false, retrievalFailed: errorLine(retrievalError), retrievalMs: Date.now() - t0, answers: {} });
