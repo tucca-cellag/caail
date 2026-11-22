@@ -36,11 +36,10 @@
   --caail-surface: oklch(97.2% 0.006 250);     /* #F3F6FA */
   --caail-border: oklch(92.5% 0.012 250);      /* #E0E7EE */
   /* The edge of a text box or select, whose border is its only boundary: WCAG 1.4.11
-     asks 3:1 against what is around it, which --caail-border is not. Snapshot,
-     2026-11-22: --caail-border 1.25:1; this 3.94:1 on --caail-bg and 3.64:1 on
-     --caail-surface, and the dark value below 3.78:1 and 3.42:1. The live figures come
-     from e2e/control-edges.spec.ts, which measures the rendered controls and holds each
-     edge to 3:1. */
+     asks 3:1 against what is around it, which --caail-border is not.
+     e2e/control-edges.spec.ts measures the controls it renders against what surrounds
+     them and holds each edge to 3:1 in both themes; the chat box, which sits on
+     --caail-surface, is not among them while chat is off. */
   --caail-control-edge: oklch(60% 0.02 255);   /* #78818C */
   --caail-ink: oklch(24% 0.05 264);            /* #131E37 */
   --caail-muted: oklch(50% 0.02 255);          /* #5C646F */
