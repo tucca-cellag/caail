@@ -7,7 +7,10 @@
  * Two measures per answer, both read from the answer and the entries retrieval
  * supplied, never from a judgement:
  *   - right entry: the answer cites at least one entry of every `mustCite` group;
- *   - no outside links: every link in the answer names an entry it was given.
+ *   - no outside links: every http(s) link in the answer names an entry it was
+ *     given. Only http(s) URLs are read, the form the Worker reads citations
+ *     in; a link in any other form (a Markdown target with no scheme, a bare
+ *     host, a reference-style link) is left to the reading below.
  * Whether an answer also stays inside the entries in what it says, rather than
  * filling in from general knowledge, takes reading it; the scoring script puts
  * each answer beside its entries so it can be read.
@@ -111,18 +114,6 @@ export function linksIn(answer: string): string[] {
   return urls.map((url) => trimTrailing(url, LINK_TRAILING));
 }
 
-/**
- * Links with no http(s) scheme, which linksIn does not read: a Markdown link's
- * target such as `www.example.org`, `example.org/x` or a relative path, and a
- * bare `www.` host in the text. Every entry's link is absolute, so none of these
- * can name one, and each is an outside link.
- */
-export function schemelessLinksIn(answer: string): string[] {
-  const targets = [...answer.matchAll(/\]\(\s*<?([^)\s>]+)/g)].map((m) => m[1]).filter((t) => !/^https?:\/\//i.test(t));
-  const hosts = answer.match(/(?<![\w/.@-])www\.[^\s)\]>]+/gi) ?? [];
-  return [...new Set([...targets, ...hosts].map((link) => trimTrailing(link, LINK_TRAILING)))];
-}
-
 export interface AnswerScore {
   /** Retrieval supplied an entry of every group, so a right answer was possible. */
   retrieved: boolean;
@@ -130,7 +121,7 @@ export interface AnswerScore {
   rightEntry: boolean;
   /** The entries the answer cites, by id, in the order retrieval supplied them. */
   cited: string[];
-  /** Links in the answer that name no entry it was given: made up, altered or outside. */
+  /** http(s) links in the answer that name no entry it was given: made up, altered or outside. */
   outsideLinks: string[];
 }
 
@@ -149,7 +140,6 @@ export function scoreAnswer(question: Question, entries: RetrievedEntry[], answe
     if (id === undefined) outsideLinks.push(link);
     else linked.add(id);
   }
-  outsideLinks.push(...schemelessLinksIn(answer));
   const cited = entries.map((entry) => entry.id).filter((id) => linked.has(id));
   const supplied = new Set(entries.map((entry) => entry.id));
   return {

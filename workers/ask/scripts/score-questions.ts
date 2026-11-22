@@ -85,7 +85,7 @@ const plan = requestPlan(set.questions, (q) => lookup.match(q).length > 0, CANDI
 console.log(
   [
     `Question set: ${plan.questions} questions, corpus ${corpusDate}; candidates, cheapest first: ${CANDIDATES.join(', ')}.`,
-    `Bar: the right entry on at least ${rightEntryBar(plan.questions)} of ${plan.questions}, and no outside link on any.`,
+    `Bar: the right entry on at least ${rightEntryBar(plan.questions)} of ${plan.questions}, and no outside http(s) link on any.`,
     '',
     `Requests a run sends, at most: ${plan.total}.`,
     `  Workers AI: ${plan.workersAi.total} = ${plan.workersAi.embeddings} question embeddings + ${plan.workersAi.modelCalls} model calls (${plan.questions} x ${plan.candidates}).`,
@@ -363,4 +363,6 @@ for (const t of tallies) {
       `Over the ${REQUEST_DEADLINE_MS} ms deadline: ${t.overDeadline}, timed over REST from here, so not part of the bar.`,
   );
 }
-console.log('\nRead each answer against its entries before taking a candidate: no outside link is not the same as staying inside them.');
+console.log(
+  '\nRead each answer against its entries before taking a candidate: no outside http(s) link is not the same as linking only to entries, or as staying inside them.',
+);
