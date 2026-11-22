@@ -98,7 +98,8 @@ const level = (n: number) => {
   .md-cell[data-level='2'] { background: var(--caail-density-2); }
   /* The top two steps take the page colour as text: white on their dark fills in light
      mode, and the dark page colour in dark mode, where the ramp inverts and those fills
-     turn light. White there measured 3.65:1 and 2.00:1. */
+     turn light. White there measured 3.65:1 and 2.00:1 (snapshot, 2026-11-22);
+     e2e/dark-text-contrast.spec.ts holds the grid to axe's colour-contrast check. */
   .md-cell[data-level='3'] { background: var(--caail-density-3); color: var(--caail-bg); }
   .md-cell[data-level='4'] { background: var(--caail-density-4); color: var(--caail-bg); }
   a.md-cell:hover, a.md-cell:focus-visible { outline: 2px solid var(--caail-primary); outline-offset: 1px; }
