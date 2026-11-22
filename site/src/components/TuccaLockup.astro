@@ -21,6 +21,7 @@
  */
 import blkbl from '../assets/tucca/cca-horiz-blkbl.png';
 import white from '../assets/tucca/cca-horiz-white.png';
+import { lockupClearSpace } from '../lib/tucca-lockup';
 
 /**
  * The accessible name, in ONE place.
@@ -77,7 +78,10 @@ interface Props {
 
 const { width = 168, class: className, textName = false } = Astro.props;
 const height = Math.round((width * blkbl.height) / blkbl.width);
-const style = `--tl-w:${width}px;--tl-h:${height}px;--tl-light:url("${blkbl.src}");--tl-dark:url("${white.src}")`;
+// Tufts' clear space, the T's cap height at this size, carried as the link's own padding
+// so no placement can set text or a rule inside it (src/lib/tucca-lockup.ts).
+const clear = lockupClearSpace(height).toFixed(2);
+const style = `--tl-w:${width}px;--tl-h:${height}px;--tl-clear:${clear}px;--tl-light:url("${blkbl.src}");--tl-dark:url("${white.src}")`;
 
 /*
  * On the markup below: the mark is deliberately tight against both anchor tags,
@@ -117,6 +121,7 @@ const style = `--tl-w:${width}px;--tl-h:${height}px;--tl-light:url("${blkbl.src}
     display: inline-block;
     line-height: 0;
     border-radius: 4px;
+    padding: var(--tl-clear);
   }
   /* Present in the DOM for text extraction, absent from layout and from the
      accessibility tree (the anchor's aria-label already names this). */

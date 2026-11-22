@@ -48,7 +48,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     It hydrates when the page is idle, or after IDLE_TIMEOUT_MS if it never is (src/lib/idle-timeout.ts). */}
 {CHAT_ENABLED && <CaailChatWidget client:idle={{ timeout: IDLE_TIMEOUT_MS }} />}
 <style>
-  .caail-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem; font-size: .72rem; color: var(--caail-muted); border-top: 1px solid var(--caail-border); padding-top: .8rem; margin-top: 1rem; }
+  /* No top padding: the lockup brings its own clear space, which keeps the rule above clear of it. */
+  .caail-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem; font-size: .72rem; color: var(--caail-muted); border-top: 1px solid var(--caail-border); margin-top: 1rem; }
   .caail-foot-brand { display: inline-flex; align-items: center; }
   .caail-footer a, .caail-statements a { color: var(--caail-link); }
   .caail-statements { font-size: var(--caail-fs-xs); line-height: 1.5; color: var(--caail-muted); }
