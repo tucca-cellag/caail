@@ -40,8 +40,9 @@ manifests and `plugin/skills/caail/SKILL.md`.
 
 **The check-free list, which lives here and nowhere else** (`SKILL.md` step 4 points at it rather
 than restating it, because the enumeration has already been wrong in both directions once each):
-`.claude/` rules and agents, the two unfiltered `.claude/skills/*` directories named above,
-`LICENSE` and `.zenodo.json`. None of the three plugin manifests is check-free: `plugin/**`,
+`.claude/` rules and agents, the two unfiltered `.claude/skills/*` directories named above, and
+`.zenodo.json`. `LICENSE` is not check-free: `tufts-statements.test.ts` reads its copyright holder,
+so it is in `test.yml`'s two path filters. None of the three plugin manifests is check-free: `plugin/**`,
 `plugin-contribute/**` and `.claude-plugin/**` are filtered whole in `test.yml`, so everything under
 them runs checks (`site-config.test.ts` reads all three manifests, and `plugin-counts.test.ts` reads
 `plugin/.claude-plugin/plugin.json`).

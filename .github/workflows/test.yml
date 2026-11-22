@@ -13,6 +13,9 @@ on:
       # to workers/ has to trigger this workflow or it goes untested.
       - workers/**
       - '*.md'
+      # site/src/lib/tufts-statements.test.ts holds LICENSE's copyright holder to the
+      # footer's and README's, so a PR editing only LICENSE has to run it too.
+      - LICENSE
       - ResearchAreas/**
       - Datasets/**
       - Primers/**
@@ -138,6 +141,9 @@ on:
       - site/**
       - workers/**
       - '*.md'
+      # site/src/lib/tufts-statements.test.ts holds LICENSE's copyright holder to the
+      # footer's and README's, so a PR editing only LICENSE has to run it too.
+      - LICENSE
       - ResearchAreas/**
       - Datasets/**
       - Primers/**
