@@ -105,7 +105,8 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
             sizes. Served `data-pending`, which keeps its row but hides it (and takes it out of
             the tab order and the accessibility tree), and enabled by the script only when it
             starts the loop: so the page does not shift when it appears, and no reader is
-            offered a control over nothing. Under reduced motion CSS removes it at first paint.
+            offered a control over nothing. Under reduced motion CSS removes it at first paint,
+            and a reader who turns reduced motion on later gets the loop paused with it.
             Its name says what it acts on, since the counter itself is hidden from AT. */}
         <a class="tick-cap" href={`${base}/by-the-numbers/`}>Counted at build time <span aria-hidden="true">→</span></a>
         <button type="button" class="tick-pause" data-pending>
@@ -580,25 +581,33 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
 
       const button = document.querySelector<HTMLButtonElement>('.hero .tick-pause');
       const label = button?.querySelector<HTMLElement>('.tick-pause-label');
+      const setPaused = (next: boolean) => {
+        paused = next;
+        if (paused) {
+          window.clearTimeout(timer);
+          // Stop on the whole statistic rather than a half-typed one; resuming then
+          // holds it before erasing, as any fully typed entry is.
+          const [n, label0] = entries[entry]!;
+          chars = n.length + 1 + label0.length;
+          erasing = false;
+          paint();
+        }
+        tick.toggleAttribute('data-paused', paused);
+        button?.toggleAttribute('data-paused', paused);
+        if (label) label.textContent = paused ? 'Play' : 'Pause';
+        start();
+      };
       if (button && label) {
-        button.addEventListener('click', () => {
-          paused = !paused;
-          if (paused) {
-            window.clearTimeout(timer);
-            // Stop on the whole statistic rather than a half-typed one; resuming then
-            // holds it before erasing, as any fully typed entry is.
-            const [n, label0] = entries[entry]!;
-            chars = n.length + 1 + label0.length;
-            erasing = false;
-            paint();
-          }
-          tick.toggleAttribute('data-paused', paused);
-          button.toggleAttribute('data-paused', paused);
-          label.textContent = paused ? 'Play' : 'Pause';
-          start();
-        });
+        button.addEventListener('click', () => setPaused(!paused));
         delete button.dataset.pending;
       }
+      // `still` was read once, above. A reader who turns reduced motion on after load
+      // loses the control at once (CSS), so the loop has to stop with it, or the counter
+      // types on with nothing to pause it. Turning it off again leaves the pause standing,
+      // and the control comes back offering Play.
+      still.addEventListener('change', () => {
+        if (still.matches && !paused) setPaused(true);
+      });
       start();
     }
   }

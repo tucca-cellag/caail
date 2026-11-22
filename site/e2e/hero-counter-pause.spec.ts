@@ -74,6 +74,26 @@ test('no control is offered when nothing moves: reduced motion, or no script', a
   expect(html).toMatch(/<button[^>]*class="[^"]*tick-pause[^"]*"[^>]*\sdata-pending[\s>]/);
 });
 
+test('turning reduced motion on after load stops the counter, and the control returns offering Play', async ({ page }) => {
+  // The script reads the preference at load, while CSS removes the control the moment it
+  // changes: the loop has to stop with it, or the counter types on with no way to stop it.
+  await page.clock.install();
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.goto('./');
+  await expect(page.locator(BUTTON)).toBeVisible();
+  expect((await textsOver(page, 5000)).size, 'the counter never moved, so stopping it shows nothing').toBeGreaterThan(1);
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(page.locator(BUTTON)).toBeHidden();
+  expect([...(await textsOver(page, 8000))], 'the counter kept typing after its control was removed').toHaveLength(1);
+  expect(await caretStill(page), 'the caret still blinks under reduced motion').toBe(true);
+
+  // Turning it off again leaves the pause standing until the reader presses Play.
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await expect(page.locator(BUTTON)).toHaveAccessibleName('Play the counter');
+  expect([...(await textsOver(page, 4000))], 'turning reduced motion off restarted the counter by itself').toHaveLength(1);
+});
+
 test('enabling the control moves nothing: its row is reserved before the script runs', async ({ browser, baseURL }) => {
   // The script enables the button after first paint, so a row that appeared then would
   // shift the hero and everything below it. Measured with the script off and on.
