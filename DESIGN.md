@@ -105,7 +105,7 @@ Hero H1 is `clamp(3.2rem, 8.5vw, 6rem)` (weight 700, tight line-height). An earl
 - **Buttons:** primary (navy solid **pill**, `border-radius: 999px`), ghost/outline pill, plain ghost. **Badges:** DOI (mono, link-tinted), Code (green-tinted), Data (amber-tinted).
 - **Data tables:** rendered Markdown tables are branded in the site layer (canonical Markdown untouched) — navy sticky header, zebra rows, row hover, rounded bordered container, mono `<code>` cells. On table pages the content widens to fit the table while prose stays centered at a 45rem measure. A **Table ⇄ Cards** toggle (persisted) lets desktop readers switch to a card grid; **mobile always renders cards** (cards are derived client-side from the table by cloning cell nodes).
 - **Collapsible nav:** fixed edge-tab toggles collapse the left sidebar and (≥72rem) the right TOC to reclaim width; state persists and is applied pre-paint (no flash). Below 72rem the TOC is Starlight's native collapsible "On this page", styled as a tidy bordered bar.
-- **Footer:** text-only TUCCA credit + MIT + canonical-on-GitHub, above the default Starlight footer.
+- **Footer:** the TUCCA lockup (which carries Tufts' clear space as its own padding, `src/lib/tucca-lockup.ts`), the site links and MIT, then the statements every Tufts page carries: the accessibility statement and contact, the outside-link sentence, the copyright line and the Tufts Privacy and Non-Discrimination links, worded in `src/lib/tufts-statements.ts`. All above the default Starlight footer.
 - **States:** hover (border/shadow lift), focus (visible outline using `--caail-link`), active (primary-hover), disabled matrix cells (density-0, non-interactive).
 
 ## 6. Dark mode
