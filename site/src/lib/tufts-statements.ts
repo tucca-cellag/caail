@@ -31,13 +31,18 @@ export const OUTSIDE_LINK_LEAD = 'Links to sites outside tufts.edu:';
 export const OUTSIDE_LINK_SENTENCE =
   'This site or any product or service provided by the site is not affiliated with or endorsed by Tufts University.';
 
-/** Linked to from every Tufts page read; the privacy statement is #399's subject. */
+/** Linked to from every Tufts page read; the privacy statement is tucca-cellag/caail-planning#399's subject. */
 export const TUFTS_PRIVACY_URL = 'https://www.tufts.edu/about/privacy';
 export const NON_DISCRIMINATION_URL =
   'https://oeo.tufts.edu/policies-procedures/non-discrimination-statement/';
 
-/** The copyright holder, as every Tufts page read gives it. */
-export const COPYRIGHT_HOLDER = 'Tufts University';
+/**
+ * The copyright holder: Tufts University, as every Tufts page read gives it, and the
+ * contributors, who keep copyright in what they contribute (CONTRIBUTING.md offers a
+ * contribution under the licence rather than assigning it). LICENSE and README.md name
+ * the same holder, and `tufts-statements.test.ts` fails if either drifts from this.
+ */
+export const COPYRIGHT_HOLDER = 'Tufts University and CAAIL contributors';
 
 /**
  * The year on the copyright line: the build's, in UTC, so it is never typed and the

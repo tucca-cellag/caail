@@ -44,6 +44,6 @@ for (const route of ROUTES) {
       'https://oeo.tufts.edu/policies-procedures/non-discrimination-statement/',
     );
     // The build's year. A run straddling New Year's Day in UTC fails here once: rebuild.
-    expect(text).toContain(`© ${new Date().getUTCFullYear()} Tufts University`);
+    expect(text).toContain(`© ${new Date().getUTCFullYear()} Tufts University and CAAIL contributors`);
   });
 }
