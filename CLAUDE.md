@@ -404,6 +404,8 @@ non-catalog canonical files (`OtherResources.md`, `ReferenceWorks.md`, `AwesomeL
 - **The corpus date is a stamp, not git history:** `site/db/corpus-stamp.json`, committed with the
   NDJSON it hashes, and refused by `pnpm parse` and `db:check` once stale. When it is refreshed, and
   what to do after a merge or a revert: the `caail-db-authoring` skill; why: `corpus-stamp.ts`.
+- **The agent API's shape is stamped too** (`site/scripts/parser/api-schema-stamp.json`), and `pnpm
+  parse` refuses a stale stamp; `schema-stamp.ts`'s header says what to run and why.
 - **Guards.** A PreToolUse hook (`.claude/hooks/block-generated-edits.py`) blocks direct edits to the
   generated structured content (prose edits still allowed). `db:check` enforces id/referential integrity,
   matrix↔reference reachability, and the #81 column-list drift check; `db:verify` proves the emitted

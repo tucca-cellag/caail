@@ -136,23 +136,40 @@ const git = (repo: string, args: string[]) =>
  * Refuses a ref that is not a commit in the clone, naming it, rather than letting git throw. A
  * missing ref makes `rev-parse --quiet` fail with nothing on stderr; anything git does say (no git,
  * not a repository, a `safe.directory` refusal) is quoted, so it is not mistaken for a bad ref.
+ * Exported, with the command named in `label`, for the agent API's schema-stamp order guard
+ * (`check-schema-stamp-order.ts`), which reads its stamp from commits the same way.
  */
-function assertCommit(repo: string, ref: string): void {
+export function assertCommit(repo: string, ref: string, label = 'db:check-stamp-order'): void {
   try {
     git(repo, ['rev-parse', '--verify', '--quiet', `${ref}^{commit}`]);
   } catch (err) {
     const said = String((err as { stderr?: unknown }).stderr ?? (err as Error).message ?? '').trim();
     throw new RefusalError(
-      `db:check-stamp-order: ${ref} is not a commit in this clone, so there is nothing to compare` +
+      `${label}: ${ref} is not a commit in this clone, so there is nothing to compare` +
         (said ? ` (git said: ${said})` : '') + '.',
     );
   }
 }
 
+/**
+ * The text of `path` (relative to the repository root, as git names it) at commit `ref`, or null
+ * when `ref` has no such file. Read from the commit, never the working tree, which other CI steps
+ * regenerate. Exported for the schema-stamp order guard.
+ */
+export function committedFile(repo: string, ref: string, path: string): string | null {
+  if (!git(repo, ['ls-tree', '--name-only', ref, '--', path]).trim()) return null;
+  return git(repo, ['show', `${ref}:${path}`]);
+}
+
+/** The commits reachable from `ref` that changed `path`, newest first. Exported for the schema-stamp order guard. */
+export function commitsTouching(repo: string, ref: string, path: string): string[] {
+  return git(repo, ['log', '--format=%H', ref, '--', path]).split('\n').filter(Boolean);
+}
+
 /** The stamp at `ref`, or why it is unreadable; `{ stamp: null }` when `ref` has none. */
 function stampAt(repo: string, ref: string): { stamp: CorpusStamp | null } | { problem: string } {
-  if (!git(repo, ['ls-tree', '--name-only', ref, '--', STAMP_PATH]).trim()) return { stamp: null };
-  return parseStamp(git(repo, ['show', `${ref}:${STAMP_PATH}`]));
+  const text = committedFile(repo, ref, STAMP_PATH);
+  return text === null ? { stamp: null } : parseStamp(text);
 }
 
 /**

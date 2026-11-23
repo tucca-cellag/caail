@@ -1045,6 +1045,12 @@ export const ApiMatrixSchema = z.strictObject({
 export const ApiManifestSchema = z.strictObject({
   name: z.string(),
   corpusDate: CorpusDateSchema,
+  /** The API's major version (openapi.ts's API_VERSION): changes only at a redesign of the whole API. */
+  apiVersion: z.number().int().positive(),
+  /** The schema version (schema-stamp.ts): counts changes to the API's shape; any difference means it changed. */
+  schemaVersion: z.number().int().positive(),
+  /** What corpusDate, apiVersion and schemaVersion each date, in the consumer's words. */
+  versionNote: z.string(),
   /**
    * Maturity, stated to the consumer rather than assumed. Pinned to the literal on
    * purpose: agent-api's STATUS is the value, and a literal here fails the parse loudly

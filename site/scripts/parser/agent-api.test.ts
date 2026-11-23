@@ -31,6 +31,7 @@ import {
   assertAbsoluteLinks,
   absolutizeCellLinks,
   nonAbsoluteMarkdownTargets,
+  VERSION_NOTE,
 } from './agent-api.js';
 import { RETIRED_BASES, SITE_BASE, SITE_ORIGIN, SITE_URL } from '../../src/content/site-config.ts';
 import { buildPapersModel } from './papers.js';
@@ -49,6 +50,9 @@ import { ndjsonDirOf, readStampedDate, stampCorpus } from '../db/corpus-stamp.js
 import { latestStampDate } from '../db/check-stamp-order.js';
 import { NDJSON_DIR } from '../db/lib.js';
 import { curatedEntryCount } from './datasets.js';
+import { API_VERSION, assertValid } from './openapi.js';
+import { readStampedSchemaVersion } from './schema-stamp.js';
+import { CORPUS_DATE_COVERS, CORPUS_DATE_EXCLUDES } from './corpus-date-format.js';
 
 const papers = buildPapersModel();
 const catalog = buildCatalogModel();
@@ -142,7 +146,7 @@ describe('matrix.json', () => {
 
 describe('index.json manifest', () => {
   const matrix = buildMatrix(papers, DATE);
-  const manifest = buildManifest(papers, matrix, DATE) as any;
+  const manifest = buildManifest(papers, matrix, DATE, 1) as any;
 
   it('names only fields the schemas serve, so a renamed key cannot linger in the guidance', () => {
     // The held-check guidance tells agents which keys to match on; each must exist.
@@ -165,7 +169,7 @@ describe('index.json manifest', () => {
   });
 
   it('counts on-request studies apart, never inside datasetsTotal (tucca-cellag/caail-planning#750)', () => {
-    const m = buildManifest(papers, matrix, DATE, { curated: 1, inventory: 2, onRequest: 5 }) as any;
+    const m = buildManifest(papers, matrix, DATE, 1, { curated: 1, inventory: 2, onRequest: 5 }) as any;
     expect(m.counts.datasetsTotal).toBe(3);
     expect(m.counts.datasetsOnRequest).toBe(5);
   });
@@ -229,13 +233,94 @@ describe('buildAgentApi', () => {
   it('stamps every endpoint with the corpus date, so staleness is always visible', () => {
     // openapi.json is the DESCRIPTION, not a described response: a bare `corpusDate` key
     // at its root would make it invalid against the OpenAPI 3.1 meta-schema, so it states
-    // the same fact as info.version plus an x- extension. Assert that, don't exempt it.
+    // the same fact as an x- extension. Assert that, don't exempt it. Its info.version is
+    // the shape's version, not the date (tucca-cellag/caail-planning#153).
     for (const f of files.filter((f) => f.name !== 'openapi.json')) {
       expect((f.body as any).corpusDate, `${f.name} has no corpusDate`).toBe(DATE);
     }
     const doc = files.find((f) => f.name === 'openapi.json')!.body as any;
-    expect(doc.info.version).toBe(DATE);
+    expect(doc.info.version).not.toBe(DATE);
     expect(doc['x-corpus-date']).toBe(DATE);
+  });
+
+  it('serves the shape\'s version beside the corpus date, read from the committed stamp (tucca-cellag/caail-planning#153)', () => {
+    const manifest = files.find((f) => f.name === 'index.json')!.body as any;
+    const doc = files.find((f) => f.name === 'openapi.json')!.body as any;
+    const stamped = readStampedSchemaVersion();
+    expect(manifest.apiVersion).toBe(API_VERSION);
+    expect(manifest.schemaVersion).toBe(stamped);
+    expect(doc.info.version).toBe(`${API_VERSION}.${stamped}`);
+    // The keys sit beside corpusDate, where a consumer reads the date.
+    const keys = Object.keys(manifest);
+    expect(keys.slice(keys.indexOf('corpusDate'), keys.indexOf('corpusDate') + 4))
+      .toEqual(['corpusDate', 'apiVersion', 'schemaVersion', 'versionNote']);
+  });
+
+  it('serves a schema version it is given, in both places, so the stamp is the only source', () => {
+    const given = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE, schemaVersion: 7 });
+    expect((given.find((f) => f.name === 'index.json')!.body as any).schemaVersion).toBe(7);
+    expect((given.find((f) => f.name === 'openapi.json')!.body as any).info.version).toBe(`${API_VERSION}.7`);
+  });
+
+  it('says what each version signal dates, and narrows the corpus date to the catalog entries', () => {
+    const manifest = files.find((f) => f.name === 'index.json')!.body as any;
+    expect(manifest.versionNote).toBe(VERSION_NOTE);
+    expect(VERSION_NOTE).toContain(`corpusDate dates ${CORPUS_DATE_COVERS}, not ${CORPUS_DATE_EXCLUDES}.`);
+    expect(VERSION_NOTE).toMatch(/info\.version is the string apiVersion\.schemaVersion, two whole numbers/);
+    expect(VERSION_NOTE).toMatch(/treat any difference in it as a change of shape/);
+    // No promise of order: a pull request's base can lag main, so the guard cannot make one.
+    expect(VERSION_NOTE).not.toMatch(/only ever goes up|never resets/);
+    // What a consumer could mistake for shape is named: endpoint prose counts, column keys do not.
+    expect(VERSION_NOTE).toMatch(/endpoint descriptions included/);
+    expect(VERSION_NOTE).toMatch(/does not count the keys of open maps, which the content names/);
+    for (const key of ['`columns`', '`counts.papersBySection`', 'taxonomy.json', 'topics.json']) {
+      expect(VERSION_NOTE, key).toContain(key);
+    }
+    const doc = files.find((f) => f.name === 'openapi.json')!.body as any;
+    expect(doc.info.description).toContain(`dates ${CORPUS_DATE_COVERS}, not ${CORPUS_DATE_EXCLUDES}.`);
+    expect(doc.info.description).toMatch(/<apiVersion>\.<schemaVersion>/);
+    expect(doc.info.description).toMatch(/`versionNote` says exactly what it covers/);
+    // Consumers written when info.version held the date are told it moved.
+    expect(doc.info.description).toMatch(/Before schema version 1 .*`info\.version` carried the corpus date; `x-corpus-date` carries it now/);
+  });
+
+  it('names every open map in the served shape, so a new one cannot leave versionNote short', () => {
+    // Each open map (a z.record) in components, and the words in VERSION_NOTE that name it. A new
+    // one fails the first assertion until it is placed here and named in the note.
+    const NAMED: Record<string, string> = {
+      'Manifest.counts.papersBySection': '`counts.papersBySection`',
+      'Topics.index': 'topics.json',
+      'Taxonomy.definitions': 'taxonomy.json',
+      'Taxonomy.axes.area': 'taxonomy.json',
+      'Taxonomy.axes.method': 'taxonomy.json',
+      'Taxonomy.axes.theme': 'taxonomy.json',
+      'Taxonomy.searchTerms.areas': 'taxonomy.json',
+      'Taxonomy.searchTerms.methods': 'taxonomy.json',
+      'DatasetInventoryRow.columns': '`columns`',
+    };
+    const doc = files.find((f) => f.name === 'openapi.json')!.body as any;
+    const found: string[] = [];
+    const walk = (node: unknown, path: string[]): void => {
+      if (Array.isArray(node)) return node.forEach((n) => walk(n, path));
+      if (node === null || typeof node !== 'object') return;
+      const n = node as Record<string, unknown>;
+      if (n.additionalProperties !== null && typeof n.additionalProperties === 'object') found.push(path.join('.'));
+      for (const [k, v] of Object.entries(n)) walk(v, k === 'properties' ? path : [...path, k]);
+    };
+    for (const [id, schema] of Object.entries(doc.components.schemas)) walk(schema, [id]);
+    // `properties` hops are dropped from the path; any other keyword hop would show in it.
+    expect(found.sort()).toEqual(Object.keys(NAMED).sort());
+    for (const [path, words] of Object.entries(NAMED)) expect(VERSION_NOTE, path).toContain(words);
+  });
+
+  it('accepts any wording of an envelope note, so rewording one is content (tucca-cellag/caail-planning#153)', () => {
+    // A note is content: its schema must accept any wording, so rewording it does not fail the
+    // build. That it stays out of the hash is schema-stamp.test.ts's no-const check.
+    const manifest = structuredClone(files.find((f) => f.name === 'index.json')!.body) as Record<string, unknown>;
+    const notes = Object.keys(manifest).filter((k) => k.endsWith('Note'));
+    expect(notes).toEqual(expect.arrayContaining(['scopeNote', 'placementNote', 'versionNote']));
+    for (const k of notes) manifest[k] = `${String(manifest[k])} Reworded.`;
+    expect(() => assertValid('index.json', manifest)).not.toThrow();
   });
 
   it('stamps a real date when none is supplied', () => {

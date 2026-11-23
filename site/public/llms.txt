@@ -2,7 +2,7 @@
 
 > A curated, openly-licensed library at the intersection of cellular agriculture and artificial intelligence: papers and preprints (an AI-method × research-area matrix), software tools, databases, per-species datasets, talks, and field resources. A project of the Tufts University Center for Cellular Agriculture (TUCCA); content is MIT-licensed.
 
-Corpus date: 2026-11-14, the date stamped on the newest version of CAAIL's catalog data (the agent API's corpusDate), which can differ from the day that version went live (usually earlier). The canonical copy of this file is https://caail.tufts.edu/llms.txt. Its prose can change without moving that date, so a copy read anywhere else may be out of date even when the dates match: fetch the canonical copy before relying on it.
+Corpus date: 2026-11-14, the date stamped on the newest version of CAAIL's catalog records (the papers, software, databases, datasets and field reports, the studies whose data are shared only on request, and the topics and matrix axes they are filed under), which the agent API serves as corpusDate. It can differ from the day that version went live (usually earlier), and it does not date other served data, such as citation counts or the taxonomy definitions. The canonical copy of this file is https://caail.tufts.edu/llms.txt. Its prose can change without moving that date, so a copy read anywhere else may be out of date even when the dates match: fetch the canonical copy before relying on it.
 
 Status: beta. The inventory, topic tags and per-item metadata are solid, and each AI-method × research-area placement is a substantive claim about what the paper did. A placement is proposed by a language-model agent reading the paper's methods section, checked by a separate reviewer agent, and entered by a human maintainer; older placements are being re-verified against full texts. Where one is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. Full method: https://caail.tufts.edu/curation/
 
@@ -36,7 +36,7 @@ This website is a navigation layer over canonical, human-readable Markdown in th
 Static JSON, served by GET, with nothing to install or authenticate.
 
 - [OpenAPI description](https://caail.tufts.edu/api/openapi.json): the shape of every endpoint below, generated from the schemas that validate them. Read this before guessing a key; the topic tree is under `tree` and the inverted index under `index`, not under top-level `themes` or `tags`.
-- [Manifest](https://caail.tufts.edu/api/index.json): corpus date, endpoint list, and counts labelled with the population each one counted. Fetch first.
+- [Manifest](https://caail.tufts.edu/api/index.json): corpus date, API and schema versions (its `versionNote` says what each dates), endpoint list, and counts labelled with the population each one counted. Fetch first.
 - Endpoints: `matrix.json` (all method by area cells, empties included), `papers.json`, `catalog.json` (software and databases), `datasets.json` (curated `entries` plus the per-study `inventory` deposits, and an `onRequest` list of studies whose data are shared only on request, which are not datasets), `reports.json` (field-report editions; recommend the `current: true` record per series), `topics.json`, `taxonomy.json`, all under https://caail.tufts.edu/api/
 - The same files are at https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/, which some clients can reach when caail.tufts.edu is not allow-listed.
 

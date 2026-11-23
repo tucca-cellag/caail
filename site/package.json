@@ -5,6 +5,8 @@
   "packageManager": "pnpm@9.15.9",
   "scripts": {
     "parse": "tsx scripts/parser/generate-data.ts",
+    "schema:stamp": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/parser/stamp-schema.ts",
+    "schema:check-order": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/parser/check-schema-stamp-order.ts",
     "fetch:citations": "tsx scripts/parser/fetch-citations.ts",
     "fetch:authors": "tsx scripts/parser/fetch-authors.ts",
     "fetch:awesome-lists": "tsx scripts/parser/fetch-awesome-metrics.ts",

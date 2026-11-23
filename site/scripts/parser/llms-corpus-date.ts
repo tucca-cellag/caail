@@ -1,10 +1,10 @@
 /**
  * llms-corpus-date.ts: the corpus date both llmstxt.org files carry, the date stamped on the newest
- * version of CAAIL's catalog data (tucca-cellag/caail-planning#289).
+ * version of CAAIL's catalog records (tucca-cellag/caail-planning#289).
  *
  * The date is `readCorpusDate`'s, the one every file under `public/api/` already carries, read
  * from the corpus stamp (`site/db/corpus-stamp.json`, tucca-cellag/caail-planning#655), and it is
- * never typed here. It dates the catalog data, not the file: it moves only when the stamp does
+ * never typed here. It dates the catalog records (`CORPUS_DATE_COVERS`), not the file: it moves only when the stamp does
  * (`corpus-stamp.ts` says when that is), while both files hold prose that changes without it. So
  * two copies with
  * the same date can still differ, and a matching date does not show that a copy is current. The
@@ -33,7 +33,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { SITE_URL } from '../../src/content/site-config.ts';
-import { CORPUS_DATE_FORMAT } from './corpus-date-format.js';
+import { CORPUS_DATE_COVERS, CORPUS_DATE_EXCLUDES, CORPUS_DATE_FORMAT } from './corpus-date-format.js';
 
 /** The files that carry the note, named as they are served from the site root. */
 export type LlmsFile = 'llms.txt' | 'llms-full.txt';
@@ -56,8 +56,9 @@ export function corpusDateNote(date: string, file: LlmsFile): string {
     throw new Error(`llms corpus date: "${date}" is not a YYYY-MM-DD date`);
   }
   return (
-    `${CORPUS_DATE_PREFIX} ${date}, the date stamped on the newest version of CAAIL's catalog data ` +
-    "(the agent API's corpusDate), which can differ from the day that version went live (usually earlier). " +
+    `${CORPUS_DATE_PREFIX} ${date}, the date stamped on the newest version of ${CORPUS_DATE_COVERS}, ` +
+    'which the agent API serves as corpusDate. It can differ from the day that version went live (usually earlier), ' +
+    `and it does not date ${CORPUS_DATE_EXCLUDES}. ` +
     `The canonical copy of this file is ${SITE_URL}${file}. ` +
     'Its prose can change without moving that date, so a copy read anywhere else may be out of date ' +
     'even when the dates match: fetch the canonical copy before relying on it.'

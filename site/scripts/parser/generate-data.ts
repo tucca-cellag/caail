@@ -40,6 +40,7 @@ import { readPagesOnRequest } from '../db/extract.js';
 import { REPO_ROOT } from '../db/lib.js';
 import { PUBLIC_DIR, writeLlmsFull } from './llms-full.js';
 import { stampLlmsTxt, writeStampedLlmsTxt } from './llms-corpus-date.js';
+import { readStampedSchemaVersion } from './schema-stamp.js';
 import { buildAgentApi, writeAgentApi, publishSkillDoc, readCorpusDate } from './agent-api.js';
 import {
   PapersDataSchema,
@@ -144,11 +145,15 @@ export function loadCitationCache(
  *   the CLI reads it once and hands the same value to llms-full.txt and llms.txt, so one parse
  *   cannot write two dates, and no caller falls through to a second read in `buildAgentApi`.
  * @param outDir  Directory to write into. Defaults to DEFAULT_OUT_DIR.
+ * @param schemaVersion  The agent API's schema version (tucca-cellag/caail-planning#153). The CLI
+ *   reads it before writing anything, so a stale schema stamp refuses the parse before any output
+ *   changes; left out, `buildAgentApi` reads it, after the site data is written.
  */
 export function generateData(
   corpusDate: string,
   outDir: string = DEFAULT_OUT_DIR,
   apiDir: string = DEFAULT_API_DIR,
+  schemaVersion?: number,
 ): {
   counts: Counts;
   papersRefs: number;
@@ -169,6 +174,9 @@ export function generateData(
   contributeTemplates: number;
   contributeParams: number;
 } {
+  // Before any write, so a stale schema stamp refuses with every output untouched, whoever calls
+  // this (tucca-cellag/caail-planning#153); the CLI reads it earlier still and passes it in.
+  const apiSchemaVersion = schemaVersion ?? readStampedSchemaVersion();
   // Reconcile the caail-contribute skill against the issue forms it composes URLs for. Emits
   // nothing: the skill ships as Markdown and the templates ship as YAML, so there is no artifact
   // to write, only an agreement to enforce. Checked at build time rather than only in the test
@@ -537,6 +545,7 @@ export function generateData(
     taxonomy: apiTaxonomy,
     reports,
     corpusDate,
+    schemaVersion: apiSchemaVersion,
   });
   writeAgentApi(apiFiles, apiDir);
   publishSkillDoc(SKILL_DOC_PATH, join(apiDir, '..'));
@@ -586,9 +595,9 @@ export interface ParseOutputDirs {
  * before anything is written, rather than after every other output has been regenerated around
  * it. The stamped text is written last.
  */
-export function writeParseOutputs(corpusDate: string, dirs: ParseOutputDirs) {
+export function writeParseOutputs(corpusDate: string, dirs: ParseOutputDirs, schemaVersion?: number) {
   const llmsTxt = stampLlmsTxt(dirs.publicDir, corpusDate);
-  const data = generateData(corpusDate, dirs.outDir, dirs.apiDir);
+  const data = generateData(corpusDate, dirs.outDir, dirs.apiDir, schemaVersion);
   // Full-text agent index, generated alongside the JSON but written to public/ rather than the
   // data dir, so it is written here rather than in generateData().
   const llmsBytes = writeLlmsFull(corpusDate, dirs.publicDir);
@@ -620,6 +629,9 @@ if (isMain) {
     // llms.txt cannot disagree within one parse (a re-stamp landing mid-parse would otherwise give
     // them different dates).
     const corpusDate = readCorpusDate(REPO_ROOT);
+    // Read before any write, so a stale schema stamp refuses the parse with every output
+    // untouched rather than after the site data has been rewritten (tucca-cellag/caail-planning#153).
+    const schemaVersion = readStampedSchemaVersion();
     const {
       counts,
       papersRefs,
@@ -642,7 +654,7 @@ if (isMain) {
       outDir: DEFAULT_OUT_DIR,
       apiDir: DEFAULT_API_DIR,
       publicDir: PUBLIC_DIR,
-    });
+    }, schemaVersion);
     // eslint-disable-next-line no-console
     console.log(
       `parse: wrote papers.json (${papersRefs} references), counts.json, ` +
