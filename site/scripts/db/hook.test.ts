@@ -16,8 +16,13 @@ const HOOK = join(REPO_ROOT, '.claude', 'hooks', 'block-generated-edits.py');
 const P = (rel: string) => join(REPO_ROOT, rel);
 
 /** Run a copy of the hook; return its hookSpecificOutput, or null when it allows. */
-function run(payload: object, hook = HOOK): { permissionDecision: string; permissionDecisionReason: string } | null {
-  const out = execFileSync('python3', [hook], { input: JSON.stringify(payload), encoding: 'utf-8' }).trim();
+function run(
+  payload: object,
+  hook = HOOK,
+  opts: { cwd?: string; env?: Record<string, string> } = {},
+): { permissionDecision: string; permissionDecisionReason: string } | null {
+  const env = { ...process.env, ...opts.env };
+  const out = execFileSync('python3', [hook], { input: JSON.stringify(payload), encoding: 'utf-8', cwd: opts.cwd, env }).trim();
   return out ? JSON.parse(out).hookSpecificOutput : null;
 }
 
@@ -173,6 +178,16 @@ describe('block-generated-edits hook: judged by the path inside the checkout', (
   it('DENIES a path that climbs out of site/ with ".." back to the checkout\'s Papers.md', () => {
     const root = checkout('plain');
     expect(decide(write(`${root}/site/../Papers.md`), hookOf(root))).toBe('deny');
+  });
+
+  // A relative path is the project root's, not the hook process's cwd's: a bare Papers.md is
+  // refused even when the hook runs from inside site/, where the cwd alone would place it
+  // under an excluded directory.
+  it('DENIES a relative Papers.md when the hook runs with its cwd inside site/', () => {
+    const root = checkout('plain');
+    mkdirSync(join(root, 'site'), { recursive: true });
+    const opts = { cwd: join(root, 'site'), env: { CLAUDE_PROJECT_DIR: root } };
+    expect(run(write('Papers.md'), hookOf(root), opts)?.permissionDecision ?? null).toBe('deny');
   });
 
   // A path in no checkout cannot be placed inside one, so it is judged by its name alone:

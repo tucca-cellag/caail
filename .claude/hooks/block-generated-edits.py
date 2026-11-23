@@ -32,8 +32,12 @@ if not fp:
 # finds the file's own checkout whichever copy of the hook is running, and needs no
 # .git, so a checkout without one is judged the same. abspath also folds "..", so
 # <repo>/site/../Papers.md is judged as <repo>/Papers.md.
+#
+# A relative path is resolved against the project root, never this process's cwd:
+# a bare "Papers.md" is then the checkout's own Papers.md wherever the hook runs,
+# and is refused as it always was, rather than landing under a site/ the cwd sat in.
 HOOK_REL = os.path.join(".claude", "hooks", os.path.basename(__file__))
-path = os.path.abspath(fp)
+path = os.path.abspath(os.path.join(os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd(), fp))
 
 
 def checkout_root(p):
