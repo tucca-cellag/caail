@@ -169,4 +169,46 @@ describe('block-generated-edits hook: judged by the path inside the checkout', (
   it('DENIES a catalog file name in no checkout at all, even under a docs/ directory', () => {
     expect(decide(write(join(tmp, 'docs', 'loose', 'Papers.md')), hookOf(checkout('plain')))).toBe('deny');
   });
+
+  /**
+   * The deny message is usually the first instruction a curator gets, so its edit flow has to
+   * be one that works. There are two: edit caail.db (db:build, edit, db:export, db:emit), or
+   * edit the NDJSON and run db:emit alone. They cannot be interleaved: db:export rewrites
+   * every NDJSON file from caail.db, so an NDJSON edit followed by db:export is reverted with
+   * no error, and a caail.db edit with no db:export never reaches the tracked NDJSON.
+   */
+  describe('the deny message', () => {
+    let lines: string[] = [];
+    beforeAll(() => {
+      const root = checkout('plain');
+      const out = run(write(join(root, 'Papers.md')), hookOf(root));
+      lines = (out?.permissionDecisionReason ?? '').split('\n');
+    });
+    /** The db:* and parse commands a line runs, in order, read from its backticked commands. */
+    const commands = (line: string) =>
+      [...line.matchAll(/`([^`]+)`/g)].flatMap((m) => m[1].match(/\bdb:[a-z-]+|\bparse\b/g) ?? []);
+    const editsDb = (line: string) => /\bedit (?:site\/)?caail\.db\b/.test(line);
+    const editsNdjson = (line: string) => line.includes('site/db/ndjson/');
+
+    it('gives the NDJSON route on lines of its own, ending in db:emit without db:export', () => {
+      const ndjson = lines.filter(editsNdjson);
+      expect(ndjson.length, 'no line tells the reader how to edit the NDJSON').toBeGreaterThan(0);
+      for (const line of ndjson) {
+        expect(editsDb(line), `the NDJSON route shares a line with the caail.db route: ${line}`).toBe(false);
+        expect(commands(line)).toContain('db:emit');
+        expect(commands(line)).not.toContain('db:export');
+      }
+    });
+    it('gives the caail.db route on one line, running db:build, then db:export before db:emit', () => {
+      const db = lines.filter(editsDb);
+      expect(db).toHaveLength(1);
+      expect(commands(db[0])).toEqual(['db:build', 'db:export', 'db:emit']);
+    });
+    it('ends both routes with db:check, db:verify and parse, and says to commit what parse changed', () => {
+      const routes = lines.findLastIndex((l) => editsDb(l) || editsNdjson(l));
+      const tail = lines.slice(routes + 1).join('\n');
+      expect(commands(tail)).toEqual(['db:check', 'db:verify', 'parse']);
+      expect(tail).toContain('site/public/');
+    });
+  });
 });
