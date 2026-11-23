@@ -407,7 +407,8 @@ non-catalog canonical files (`OtherResources.md`, `ReferenceWorks.md`, `AwesomeL
 - **The agent API's shape is stamped too:** `site/scripts/parser/api-schema-stamp.json` counts
   changes to `openapi.json`'s `paths` and `components`, served as `index.json`'s `schemaVersion` and
   in `info.version`. `pnpm parse` and the vitest suite refuse it once stale, so a deliberate change
-  to a response schema or an endpoint description is followed by `pnpm --dir site schema:stamp`.
+  to a response schema or an endpoint description is followed by `pnpm --dir site schema:stamp`, and
+  `lint-papers.yml` refuses a version that does not move up when the shape does (a revert, say).
   Why, and what to do after a stamp conflict: `schema-stamp.ts`.
 - **Guards.** A PreToolUse hook (`.claude/hooks/block-generated-edits.py`) blocks direct edits to the
   generated structured content (prose edits still allowed). `db:check` enforces id/referential integrity,

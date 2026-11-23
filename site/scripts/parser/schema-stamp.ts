@@ -14,13 +14,20 @@
  *
  * `pnpm parse` refuses a stamp whose hash no longer matches (`readStampedSchemaVersion`, called by
  * `buildAgentApi`), and so does the vitest suite, so a change of shape cannot reach main without a
- * deliberate re-stamp: `pnpm --dir site schema:stamp`, which bumps the counter by one. The counter
- * is plain, with no order guard: unlike a date it has no meaning to check beyond "it moved".
+ * deliberate re-stamp: `pnpm --dir site schema:stamp`, which bumps the counter by one.
+ *
+ * The counter must also only go up on main, which neither of those can see: a revert or
+ * cherry-pick of a shape change restores an older stamp whose hash matches the restored shape, and
+ * would reuse a version main already published. `check-schema-stamp-order.ts`
+ * (`schema:check-order`, run by `lint-papers.yml` against the tree a change lands on) refuses that.
+ * The first design held that a counter needs no order guard; review found the revert case, and the
+ * guard was added (2026-11-23).
  *
  * Two branches that each change the shape each bump the counter, so git reports a conflict on the
- * stamp. Keep either side and re-run the stamp command: the merged shape matches neither hash, so
- * it bumps again, past both. A stamp that does not parse (conflict markers left in) is refused,
- * never guessed at, since rewriting it would reset the counter.
+ * stamp. Keep main's side and re-run the stamp command: the merged shape differs from main's, so it
+ * bumps past it, and the order guard refuses any resolution that does not. A stamp that does not
+ * parse (conflict markers left in) is refused, never guessed at, since rewriting it would reset the
+ * counter.
  *
  * It needs no git and no network, and reads no corpus data: `paths` and `components` come from the
  * zod schemas alone.
@@ -194,8 +201,8 @@ export function stampSchema(
     if ('problem' in parsed) {
       throw new RefusalError(
         `schema stamp: ${path} ${parsed.problem}; nothing stamped, since its version is unknown. ` +
-          'After a merge conflict, keep either side whole, then run this again: the merged shape ' +
-          'matches neither hash, so it bumps past both.',
+          "After a merge conflict, keep main's side whole, then run this again: the merged shape differs " +
+          "from main's, so it bumps past it.",
       );
     }
     if (parsed.stamp.sha256 === actual) return { path, changed: false, stamp: parsed.stamp };

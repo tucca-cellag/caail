@@ -193,6 +193,23 @@ jobs:
           fi
           pnpm --dir site db:check-stamp-order "$BASE"
 
+      # Keep the agent API's schema version moving up on main (tucca-cellag/caail-planning#153;
+      # the rules are in check-schema-stamp-order.ts's header). A revert or cherry-pick of a shape
+      # change restores an older site/scripts/parser/api-schema-stamp.json whose hash matches, so
+      # parse and vitest pass it while it reuses a version main already published. Same base and
+      # continue-on-error as the two guards above; the job's last step fails it on a refusal.
+      - name: Schema-stamp order guard
+        id: schema-stamp-order-guard
+        continue-on-error: true
+        env:
+          BASE: ${{ github.event_name == 'pull_request' && 'HEAD^1' || github.event.before }}
+        run: |
+          if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+            echo "::notice::No base commit to compare against, so the schema-stamp order guard did not run."
+            exit 0
+          fi
+          pnpm --dir site schema:check-order "$BASE"
+
       - name: Run Papers.md lint
         run: pnpm --dir site lint:papers
 
@@ -250,4 +267,10 @@ jobs:
         if: ${{ !cancelled() && steps.stamp-order-guard.outcome == 'failure' }}
         run: |
           echo "::error::The corpus-stamp order guard refused this change. Its step log, near the top of this job, says why."
+          exit 1
+
+      - name: Schema-stamp order guard result
+        if: ${{ !cancelled() && steps.schema-stamp-order-guard.outcome == 'failure' }}
+        run: |
+          echo "::error::The schema-stamp order guard refused this change. Its step log, near the top of this job, says why."
           exit 1
