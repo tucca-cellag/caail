@@ -19,20 +19,53 @@ except Exception:
 tool = data.get("tool_name", "")
 ti = data.get("tool_input", {}) or {}
 fp = ti.get("file_path", "") or ""
-
-# Git worktrees live at <repo>/.claude/worktrees/<name>/, so EVERY path inside
-# one contains "/.claude/" and fell through the exclusion below — silently
-# disabling this guard in exactly the workspace CLAUDE.md tells you to work in
-# ("the site is built one milestone at a time in a worktree off main"). Re-root
-# the path on the worktree before classifying it, so a worktree checkout is
-# judged the same as the primary one. Paths genuinely under a worktree's own
-# .claude/ or site/ still land in the exclusion after re-rooting.
-fp = re.sub(r"^.*/\.claude/worktrees/[^/]+/", "/", fp)
-
-# Only the repo-root generated catalog files (not site/*, docs/*, .claude/*).
-if "/site/" in fp or "/docs/" in fp or "/.claude/" in fp:
+if not fp:
     sys.exit(0)
-if not re.search(r"(^|/)(Papers|Software|Databases|FieldReports)\.md$", fp):
+
+# Classify the path by where it sits INSIDE its checkout, never by the directories
+# above the checkout. This once substring-matched "/site/", "/docs/" and "/.claude/"
+# against the absolute path, so a clone that itself lived under such a directory
+# (~/docs/caail, ~/site/caail) had the guard off for every file, with no signal.
+#
+# A checkout's root is the nearest directory above the file that carries this hook
+# at .claude/hooks/, as every clone and every git worktree of this repo does. That
+# finds the file's own checkout whichever copy of the hook is running, and needs no
+# .git, so a checkout without one is judged the same. abspath also folds "..", so
+# <repo>/site/../Papers.md is judged as <repo>/Papers.md.
+HOOK_REL = os.path.join(".claude", "hooks", os.path.basename(__file__))
+path = os.path.abspath(fp)
+
+
+def checkout_root(p):
+    d = os.path.dirname(p)
+    while True:
+        if os.path.isfile(os.path.join(d, HOOK_REL)):
+            return d
+        parent = os.path.dirname(d)
+        if parent == d:
+            return None
+        d = parent
+
+
+root = checkout_root(path)
+if root is None:
+    # In no checkout, so there is no inside to classify: judge by the file name
+    # alone, failing closed, rather than guess that a site/ or docs/ above the
+    # file is the repo's own.
+    target = path
+else:
+    rel = os.path.relpath(path, root).replace(os.sep, "/")
+    # Git worktrees live at <repo>/.claude/worktrees/<name>/. One whose directory
+    # carries the hook is found by checkout_root as a checkout of its own; one that
+    # does not is found from the primary checkout, so strip the worktree prefix and
+    # judge the rest, or every file in it would land in the .claude/ exclusion below
+    # and the guard would be off in exactly the workspace CLAUDE.md tells you to use.
+    rel = re.sub(r"^(?:\.claude/worktrees/[^/]+/)+", "", rel)
+    # Only the repo-root generated catalog files (not site/*, docs/*, .claude/*).
+    if rel.split("/", 1)[0] in ("site", "docs", ".claude"):
+        sys.exit(0)
+    target = rel
+if not re.search(r"(^|/)(Papers|Software|Databases|FieldReports)\.md$", target):
     sys.exit(0)
 
 MARKERS = ('<a id="', '](#', '### [')  # references, matrix/anchor links, catalog H3
