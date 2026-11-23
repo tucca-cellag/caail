@@ -280,11 +280,40 @@ describe('buildAgentApi', () => {
     expect(doc.info.description).toContain(`dates ${CORPUS_DATE_COVERS}, not ${CORPUS_DATE_EXCLUDES}.`);
     expect(doc.info.description).toMatch(/<apiVersion>\.<schemaVersion>/);
     expect(doc.info.description).toMatch(/`versionNote` says exactly what it covers/);
-    // Consumers written when info.version held the date are told it moved (round 3, R3-2).
+    // Consumers written when info.version held the date are told it moved.
     expect(doc.info.description).toMatch(/Before schema version 1 .*`info\.version` carried the corpus date; `x-corpus-date` carries it now/);
   });
 
-  it('accepts any wording of an envelope note, so rewording one is content (tucca-cellag/caail-planning#153 decision 3)', () => {
+  it('names every open map in the served shape, so a new one cannot leave versionNote short', () => {
+    // Each open map (a z.record) in components, and the words in VERSION_NOTE that name it. A new
+    // one fails the first assertion until it is placed here and named in the note.
+    const NAMED: Record<string, string> = {
+      'Manifest.counts.papersBySection': '`counts.papersBySection`',
+      'Topics.index': 'topics.json',
+      'Taxonomy.definitions': 'taxonomy.json',
+      'Taxonomy.axes.area': 'taxonomy.json',
+      'Taxonomy.axes.method': 'taxonomy.json',
+      'Taxonomy.axes.theme': 'taxonomy.json',
+      'Taxonomy.searchTerms.areas': 'taxonomy.json',
+      'Taxonomy.searchTerms.methods': 'taxonomy.json',
+      'DatasetInventoryRow.columns': '`columns`',
+    };
+    const doc = files.find((f) => f.name === 'openapi.json')!.body as any;
+    const found: string[] = [];
+    const walk = (node: unknown, path: string[]): void => {
+      if (Array.isArray(node)) return node.forEach((n) => walk(n, path));
+      if (node === null || typeof node !== 'object') return;
+      const n = node as Record<string, unknown>;
+      if (n.additionalProperties !== null && typeof n.additionalProperties === 'object') found.push(path.join('.'));
+      for (const [k, v] of Object.entries(n)) walk(v, k === 'properties' ? path : [...path, k]);
+    };
+    for (const [id, schema] of Object.entries(doc.components.schemas)) walk(schema, [id]);
+    // `properties` hops are dropped from the path; any other keyword hop would show in it.
+    expect(found.sort()).toEqual(Object.keys(NAMED).sort());
+    for (const [path, words] of Object.entries(NAMED)) expect(VERSION_NOTE, path).toContain(words);
+  });
+
+  it('accepts any wording of an envelope note, so rewording one is content (tucca-cellag/caail-planning#153)', () => {
     // A note is content: its schema must accept any wording, so rewording it does not fail the
     // build. That it stays out of the hash is schema-stamp.test.ts's no-const check.
     const manifest = structuredClone(files.find((f) => f.name === 'index.json')!.body) as Record<string, unknown>;

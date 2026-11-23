@@ -6,8 +6,9 @@
  * same to a consumer as a content update. This stamp is that signal.
  *
  * `api-schema-stamp.json`, beside this file, holds a counter and a sha256 of `openapi.json`'s
- * `paths` and `components` (`schemaHashOf`). Those two keys are the shape: every response schema
- * and every endpoint. They carry no date and no envelope-note text, so a catalog edit or a
+ * `paths` and `components`, with the root `openapi` and `jsonSchemaDialect` that say how they are
+ * read (`schemaHashOf`). That is the shape: every response schema and every endpoint. It carries no
+ * date and no envelope-note text, so a catalog edit or a
  * rewording of `scopeNote` cannot move the hash (both asserted in schema-stamp.test.ts). The
  * counter is served as `index.json`'s `schemaVersion` and as the second part of `info.version`,
  * after `API_VERSION`.
@@ -56,29 +57,49 @@ export interface SchemaStamp {
   sha256: string;
 }
 
-/** `value` with every object's keys sorted, recursively, so the hash ignores key order. */
-function canonical(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(canonical);
+/**
+ * The JSON Schema keywords whose list order means nothing: a property is required, or a value
+ * allowed, wherever it sits in the list. zod writes both in declaration order, so without sorting
+ * them reordering a schema's fields would move the hash with nothing a consumer can see changed.
+ */
+const ORDER_FREE_LISTS = new Set(['required', 'enum']);
+
+const isPrimitive = (v: unknown) => v === null || ['string', 'number', 'boolean'].includes(typeof v);
+
+/**
+ * `value` with every object's keys sorted, recursively, so the hash ignores key order, and with
+ * the order-free lists sorted. Only a list of plain values under one of those keywords is sorted:
+ * a property merely named `required` holds a schema object, not a list, and is left alone.
+ */
+function canonical(value: unknown, key?: string): unknown {
+  if (Array.isArray(value)) {
+    if (key !== undefined && ORDER_FREE_LISTS.has(key) && value.every(isPrimitive)) {
+      return [...value].sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
+    }
+    return value.map((v) => canonical(v));
+  }
   if (value !== null && typeof value === 'object') {
     const out: Record<string, unknown> = {};
-    for (const key of Object.keys(value).sort()) out[key] = canonical((value as Record<string, unknown>)[key]);
+    for (const k of Object.keys(value).sort()) out[k] = canonical((value as Record<string, unknown>)[k], k);
     return out;
   }
   return value;
 }
 
 /**
- * The sha256 of `doc`'s `paths` and `components`, over a canonical form (keys sorted, arrays kept
- * in order, since an array's order can be meaningful). Nothing else in the document is read, so
- * `info` and `x-corpus-date`, which carry the version and the date, stay out by construction.
- * Throws when either key is missing, since an empty shape would hash to a stable, wrong answer.
+ * The sha256 of `doc`'s `paths` and `components`, with the root `openapi` and `jsonSchemaDialect`,
+ * over a canonical form (keys sorted, order-free lists sorted, every other array kept in order,
+ * since an array's order can be meaningful). Nothing else in the document is read, so `info` and
+ * `x-corpus-date`, which carry the version and the date, stay out by construction. Throws when
+ * `paths` or `components` is missing, since an empty shape would hash to a stable, wrong answer.
  */
 export function schemaHashOf(doc: unknown): string {
-  const { paths, components } = (doc ?? {}) as { paths?: unknown; components?: unknown };
+  const { openapi, jsonSchemaDialect, paths, components } = (doc ?? {}) as Record<string, unknown>;
   if (paths === undefined || components === undefined) {
     throw new Error('schema stamp: the document has no `paths` or no `components` to hash');
   }
-  return createHash('sha256').update(JSON.stringify(canonical({ paths, components }))).digest('hex');
+  const shape = canonical({ openapi, jsonSchemaDialect, paths, components });
+  return createHash('sha256').update(JSON.stringify(shape)).digest('hex');
 }
 
 /**

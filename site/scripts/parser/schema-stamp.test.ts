@@ -59,6 +59,26 @@ describe('schemaHashOf', () => {
     expect(schemaHashOf({ paths: [1, 2], components: {} })).not.toBe(schemaHashOf({ paths: [2, 1], components: {} }));
   });
 
+  it('ignores the order of required and enum lists, which carries no meaning', () => {
+    const doc = buildOpenApiDocument('2000-01-01', 1) as any;
+    const reordered = structuredClone(doc);
+    const manifest = reordered.components.schemas.Manifest;
+    manifest.required = [...manifest.required].reverse();
+    const tier = reordered.components.schemas.CatalogEntry.properties.tier;
+    tier.enum = [...tier.enum].reverse();
+    expect(schemaHashOf(reordered)).toBe(schemaHashOf(doc));
+    // A property merely named `required` is a schema, not a list, and is still hashed as written.
+    expect(schemaHashOf({ paths: {}, components: { p: { properties: { required: { type: 'string' } } } } })).not.toBe(
+      schemaHashOf({ paths: {}, components: { p: { properties: { required: { type: 'number' } } } } }),
+    );
+  });
+
+  it('moves when the OpenAPI version or the JSON Schema dialect changes', () => {
+    const doc = buildOpenApiDocument('2000-01-01', 1) as any;
+    expect(schemaHashOf({ ...doc, openapi: '3.2.0' })).not.toBe(schemaHashOf(doc));
+    expect(schemaHashOf({ ...doc, jsonSchemaDialect: 'https://example.org/dialect' })).not.toBe(schemaHashOf(doc));
+  });
+
   it('refuses a document with no paths or no components, rather than hashing nothing', () => {
     expect(() => schemaHashOf({ components: {} })).toThrow(/no `paths` or no `components`/);
     expect(() => schemaHashOf({ paths: {} })).toThrow(/no `paths` or no `components`/);

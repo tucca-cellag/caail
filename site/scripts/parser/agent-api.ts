@@ -92,7 +92,8 @@ export const STATUS = 'beta' as const;
 export const VERSION_NOTE =
   `corpusDate dates ${CORPUS_DATE_COVERS}, not ${CORPUS_DATE_EXCLUDES}. ` +
   'apiVersion changes only at a redesign of the whole API. schemaVersion counts changes to the ' +
-  "shape of these files, everything openapi.json's paths and components describe, the endpoint " +
+  "shape of these files, everything openapi.json's paths and components describe (with the OpenAPI " +
+  'version and JSON Schema dialect they are read under), the endpoint ' +
   'descriptions included: treat any difference in it as a change of shape. openapi.json\'s ' +
   'info.version is the string apiVersion.schemaVersion, two whole numbers joined by a dot and not a ' +
   'decimal (1.10 follows 1.9), so compare schemaVersion itself. It does not count the keys of open ' +

@@ -16,7 +16,7 @@ export const CORPUS_DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/;
  * What a corpus date dates, in the reader's words: every table the corpus stamp hashes, which is
  * every table in `TABLES_PK` (`site/scripts/db/lib.ts`). `versionNote` in `index.json`, the OpenAPI
  * description and the llms files' corpus-date line all say it through these two constants, never in
- * a copy of their own (tucca-cellag/caail-planning#153 decision 2), and `corpus-date-format.test.ts`
+ * a copy of their own (tucca-cellag/caail-planning#153), and `corpus-date-format.test.ts`
  * fails when a table is added that no word here covers.
  */
 export const CORPUS_DATE_COVERS =

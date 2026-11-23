@@ -75,11 +75,9 @@ export const JSON_SCHEMA_DIALECT = 'https://json-schema.org/draft/2020-12/schema
 
 /**
  * The API's major version, served as `index.json`'s `apiVersion` and as the first part of
- * `info.version` (tucca-cellag/caail-planning#153, fitted by tucca-cellag/caail-planning#389's
- * option A). It changes only at
- * a redesign of the whole API: the v2 cutover moves it to 2. The schema version beside it, a
- * counter kept in `api-schema-stamp.json` (schema-stamp.ts), moves on every change of shape and
- * never resets when this does.
+ * `info.version` (tucca-cellag/caail-planning#153). It changes only at a redesign of the whole
+ * API. The schema version beside it, a counter kept in `api-schema-stamp.json` (schema-stamp.ts),
+ * moves on every change of shape and does not restart when this changes.
  */
 export const API_VERSION = 1;
 
