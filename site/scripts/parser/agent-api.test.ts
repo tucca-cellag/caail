@@ -243,7 +243,7 @@ describe('buildAgentApi', () => {
     expect(doc['x-corpus-date']).toBe(DATE);
   });
 
-  it('serves the shape\'s version beside the corpus date, read from the committed stamp (#153)', () => {
+  it('serves the shape\'s version beside the corpus date, read from the committed stamp (tucca-cellag/caail-planning#153)', () => {
     const manifest = files.find((f) => f.name === 'index.json')!.body as any;
     const doc = files.find((f) => f.name === 'openapi.json')!.body as any;
     const stamped = readStampedSchemaVersion();
@@ -272,14 +272,19 @@ describe('buildAgentApi', () => {
     expect(VERSION_NOTE).not.toMatch(/only ever goes up|never resets/);
     // What a consumer could mistake for shape is named: endpoint prose counts, column keys do not.
     expect(VERSION_NOTE).toMatch(/endpoint descriptions included/);
-    expect(VERSION_NOTE).toMatch(/does not count the keys of a dataset inventory row's `columns`/);
+    expect(VERSION_NOTE).toMatch(/does not count the keys of open maps, which the content names/);
+    for (const key of ['`columns`', '`counts.papersBySection`', 'taxonomy.json', 'topics.json']) {
+      expect(VERSION_NOTE, key).toContain(key);
+    }
     const doc = files.find((f) => f.name === 'openapi.json')!.body as any;
     expect(doc.info.description).toContain(`dates ${CORPUS_DATE_COVERS}, not ${CORPUS_DATE_EXCLUDES}.`);
     expect(doc.info.description).toMatch(/<apiVersion>\.<schemaVersion>/);
     expect(doc.info.description).toMatch(/`versionNote` says exactly what it covers/);
+    // Consumers written when info.version held the date are told it moved (round 3, R3-2).
+    expect(doc.info.description).toMatch(/Before schema version 1 .*`info\.version` carried the corpus date; `x-corpus-date` carries it now/);
   });
 
-  it('accepts any wording of an envelope note, so rewording one is content (#153 decision 3)', () => {
+  it('accepts any wording of an envelope note, so rewording one is content (tucca-cellag/caail-planning#153 decision 3)', () => {
     // A note is content: its schema must accept any wording, so rewording it does not fail the
     // build. That it stays out of the hash is schema-stamp.test.ts's no-const check.
     const manifest = structuredClone(files.find((f) => f.name === 'index.json')!.body) as Record<string, unknown>;

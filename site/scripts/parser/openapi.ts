@@ -75,7 +75,8 @@ export const JSON_SCHEMA_DIALECT = 'https://json-schema.org/draft/2020-12/schema
 
 /**
  * The API's major version, served as `index.json`'s `apiVersion` and as the first part of
- * `info.version` (tucca-cellag/caail-planning#153, fitted by #389's option A). It changes only at
+ * `info.version` (tucca-cellag/caail-planning#153, fitted by tucca-cellag/caail-planning#389's
+ * option A). It changes only at
  * a redesign of the whole API: the v2 cutover moves it to 2. The schema version beside it, a
  * counter kept in `api-schema-stamp.json` (schema-stamp.ts), moves on every change of shape and
  * never resets when this does.
@@ -391,7 +392,7 @@ function componentSchemas(): Record<string, unknown> {
  * consumer written against today's fields needs to know when the fields change, which a corpus
  * date cannot say, since it moves on every catalog edit and stays put when a field is renamed.
  * The date used to sit in `info.version`, on the reasoning that "which corpus is this" was the
- * only version question a consumer had; #153 is the case where it was not.
+ * only version question a consumer had; tucca-cellag/caail-planning#153 is the case where it was not.
  *
  * `paths` and `components` depend on neither argument, which is what lets schema-stamp.ts hash
  * them (asserted in schema-stamp.test.ts).
@@ -444,7 +445,11 @@ export function buildOpenApiDocument(corpusDate: string, schemaVersion: number):
         'changes to the paths and components below (index.json\'s `versionNote` says exactly ' +
         'what it covers), so record it to tell a change of shape from a change of content. ' +
         `\`x-corpus-date\`, and each file's \`corpusDate\`, dates ${CORPUS_DATE_COVERS}, ` +
-        `not ${CORPUS_DATE_EXCLUDES}.`,
+        `not ${CORPUS_DATE_EXCLUDES}. ` +
+        // A one-time pointer for consumers written before schema version 1, when info.version
+        // carried the date: nothing else can tell them the field changed meaning.
+        'Before schema version 1 (November 2026), `info.version` carried the corpus date; ' +
+        '`x-corpus-date` carries it now.',
       license: {
         name: 'MIT (CAAIL curation). Linked third-party resources keep their own licenses.',
         identifier: 'MIT',

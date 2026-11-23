@@ -85,9 +85,9 @@ export const STATUS = 'beta' as const;
  * corpus-date-format.ts: other served data changes without moving it and gets its own signal case
  * by case, as `searchTerms.sha256` does for the vocabulary. The schema version's coverage is said
  * here and only here, the OpenAPI description pointing at it: what `schemaHashOf` hashes, the
- * endpoint prose included, and the one thing a consumer could mistake for shape that it leaves
- * out, an inventory row's `columns` keys, which are each page's own headers. An envelope note is
- * content, not shape, so rewording this moves no version.
+ * endpoint prose included, and the class of thing a consumer could mistake for shape that it
+ * leaves out, the keys of every open map (a `z.record`), which the content names. An envelope note
+ * is content, not shape, so rewording this moves no version.
  */
 export const VERSION_NOTE =
   `corpusDate dates ${CORPUS_DATE_COVERS}, not ${CORPUS_DATE_EXCLUDES}. ` +
@@ -95,9 +95,10 @@ export const VERSION_NOTE =
   "shape of these files, everything openapi.json's paths and components describe, the endpoint " +
   'descriptions included: treat any difference in it as a change of shape. openapi.json\'s ' +
   'info.version is the string apiVersion.schemaVersion, two whole numbers joined by a dot and not a ' +
-  'decimal (1.10 follows 1.9), so compare schemaVersion itself. It does not count the keys of a ' +
-  'dataset inventory row\'s `columns`, ' +
-  'which follow each page\'s own table headers and are content. Record schemaVersion with what you ' +
+  'decimal (1.10 follows 1.9), so compare schemaVersion itself. It does not count the keys of open ' +
+  'maps, which the content names: an inventory row\'s `columns` (each page\'s own table headers), ' +
+  '`counts.papersBySection` (the section names), and the maps in taxonomy.json and topics.json keyed ' +
+  'by label or slug. Record schemaVersion with what you ' +
   'build against: if it differs on a later fetch, check openapi.json before trusting a field.';
 export const PLACEMENT_NOTE =
   "Placements are proposed by a language-model agent reading the paper's methods section, " +
@@ -908,7 +909,11 @@ export function buildManifest(
 // Assembly + write
 // ---------------------------------------------------------------------------
 
-/** Build every API file. Pure: no I/O, so it is testable without a filesystem. */
+/**
+ * Build every API file. It writes nothing, so it is testable without writing files. It does read
+ * two stamps when their values are not passed: the corpus stamp for `corpusDate`, and the schema
+ * stamp for `schemaVersion`, refusing a schema stamp that no longer matches the shape.
+ */
 export function buildAgentApi(inputs: AgentApiInputs): ApiFile[] {
   const corpusDate = inputs.corpusDate ?? readCorpusDate(REPO_ROOT);
   const schemaVersion = inputs.schemaVersion ?? readStampedSchemaVersion();

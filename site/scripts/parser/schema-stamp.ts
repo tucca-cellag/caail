@@ -30,7 +30,10 @@
  * counter.
  *
  * It needs no git and no network, and reads no corpus data: `paths` and `components` come from the
- * zod schemas alone.
+ * zod schemas alone, as zod's `toJSONSchema` writes them. So a zod upgrade that changes how it writes
+ * JSON Schema moves the hash with no schema edited, and a dependency update can fail on the stamp.
+ * The served document did change for consumers in that case, so it is re-stamped like any other
+ * change of shape: read the diff of `openapi.json` that parse writes, then run the stamp command.
  */
 
 import { createHash } from 'node:crypto';
