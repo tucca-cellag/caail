@@ -44,7 +44,7 @@ export const EDITION_SORT_FORMS = 'YYYY, YYYY-MM or YYYY-MM-DD';
  * It does not say HOW to edit a report. Earlier versions named the DB edit flows, and every review
  * round found another way that account was incomplete or contradicted the block-generated-edits
  * hook, whose own fix-it steps were wrong until tucca-cellag/caail-planning#372. The flow belongs to the DB tooling's
- * documentation, which does not yet cover reports (recorded on tucca-cellag/caail-planning#372).
+ * documentation: the Field reports section of the caail-db-authoring skill.
  */
 export const EDITION_SORT_RULE =
   `Every report needs a non-empty edition_label and an edition_sort that is a valid ${EDITION_SORT_FORMS} ` +

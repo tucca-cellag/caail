@@ -1,6 +1,6 @@
 ---
 name: caail-db-authoring
-description: Use when adding, editing, or removing a paper, software tool, database, dataset inventory row, or curated dataset entry (atlas/GEM/reference) in CAAIL — the structured catalog is authored in an in-repo SQLite DB (issue #78) and the canonical Markdown (Papers.md, Software.md, Databases.md, and the Datasets/*.md inventory tables + curated ### entries) is generated from it. Covers the edit-DB → export → emit → check → commit workflow. The DB-era successor to hand-editing the matrix and catalog files. While new items are paused until CAAIL v2, adding is refused; editing and removing still work.
+description: Use when adding, editing, or removing a paper, software tool, database, dataset inventory row, curated dataset entry (atlas/GEM/reference), or field report in CAAIL — the structured catalog is authored in an in-repo SQLite DB (issue #78) and the canonical Markdown (Papers.md, Software.md, Databases.md, FieldReports.md, and the Datasets/*.md inventory tables + curated ### entries) is generated from it. Covers the edit-DB → export → emit → check → commit workflow. The DB-era successor to hand-editing the matrix and catalog files. While new items are paused until CAAIL v2, adding is refused; editing and removing still work.
 ---
 
 # Authoring CAAIL's structured catalog via the SQLite DB
@@ -25,10 +25,11 @@ description: Use when adding, editing, or removing a paper, software tool, datab
 ## Overview
 
 CAAIL's **structured catalog** — the `Papers.md` matrix + references, the `Software.md`
-and `Databases.md` entries, and the `Datasets/*.md` inventory tables + curated `### …` entries
-(featured atlases, GEMs, reference entries) — is authored in an in-repo SQLite database and
-**generated** back to Markdown. The DB is the source of truth; those Markdown regions are derived
-and must not be hand-edited (a PreToolUse hook blocks structured edits; the CI sync guard fails on drift).
+and `Databases.md` entries, the `FieldReports.md` entries, and the `Datasets/*.md` inventory
+tables + curated `### …` entries (featured atlases, GEMs, reference entries) — is authored in
+an in-repo SQLite database and **generated** back to Markdown. The DB is the source of truth;
+those Markdown regions are derived and must not be hand-edited (a PreToolUse hook blocks
+structured edits; the CI sync guard fails on drift).
 
 The DB is **authoring-time only** — it never runs in the deploy build. `pnpm build` still
 parses the committed Markdown into `data/*.json`. This skill is the *workflow* for changing
@@ -57,6 +58,7 @@ Markdown-era workflow did.
 | Dataset inventory row | `dataset` | `ds:<slug>` | `dataset_rows` | `Datasets/<page>.md` |
 | Dataset curated entry (atlas / GEM / reference) | `dataset` | `ds:<slug>` | `dataset_entries` | `Datasets/<page>.md` |
 | Study with data on request (not a dataset) | none (not an item) | none (keyed by DOI) | `datasets_on_request` | `Datasets/<page>.md` (`## Data on request`) |
+| Field report (one edition) | `report` | `report:<slug>` | `reports` | `FieldReports.md` (see **Field reports** below) |
 | Topic (subject tag) | `topic` | `topic:<slug>` | `topics`, `item_topics`, `aliases` | — (surfaced as card chips + the `/topics/` hub) |
 
 A `dataset` item is an inventory row **or** a curated entry, never both (they share the `ds:` id
@@ -183,7 +185,9 @@ re-tagging, corrections), use the full procedure below.
    pnpm --dir site db:build      # site/db/ndjson/*.ndjson -> site/caail.db
    ```
 2. **Make the change** — in the DB (`sqlite3 site/caail.db`) or, for a one-line change, by
-   editing `site/db/ndjson/<table>.ndjson` directly and skipping to step 4. While new items
+   editing `site/db/ndjson/<table>.ndjson` directly and skipping to step 4. Skip step 3 on
+   that route: `db:export` rewrites every NDJSON file from `caail.db`, which does not hold
+   the edit, so it would revert it with no error. While new items
    are paused (the note at the top), only changes to held items belong here: the **Add …**
    bullets below wait for v2, whether the insert is made in the DB or in the NDJSON.
    - **Add a paper:** insert `items('paper:N','paper','N')` + `papers(...)` with the full
@@ -226,16 +230,50 @@ re-tagging, corrections), use the full procedure below.
    scopes: `papers`, `software`, `databases`, `data`/`datasets`. No AI attribution in CAAIL
    commits/PRs.
 
+## Field reports
+
+`FieldReports.md` is DB-owned in the same way. Each `###` entry is one edition of a report: a
+row of `site/db/ndjson/reports.ndjson` with a `report:<slug>` id. `db:emit` writes each entry
+back from its row's `heading_md` and `body_md`, matching the Nth `###` in the file to the Nth
+row by `ordinal`, and passes everything else through from the file: the page intro, and each
+series' `##` heading and intro. `pnpm parse` builds `api/reports.json` from the same rows.
+
+To change an existing report, take either route in the procedure above: edit `caail.db`, then
+`db:export` and `db:emit`; or edit `reports.ndjson`, then `db:emit` alone. Then run the step 5
+gates, and commit `FieldReports.md`, `reports.ndjson`, the stamp and what `parse` changed under
+`site/public/` (`api/reports.json` among them) together. Two values are stored twice, and
+nothing checks that the copies agree, so change both:
+
+- **The edition.** `edition_label` and `edition_sort` are columns, and they are also the
+  `*Edition <label>, published <sort>.*` line that leads `body_md`. The columns are what
+  `api/reports.json` serves and what decides which edition of a series is current; the line
+  is what `FieldReports.md` shows. What a valid pair is, and what a series may not hold, is
+  `EDITION_SORT_RULE` in `site/scripts/parser/reports.ts`; `db:check` and `parse` both
+  refuse data that breaks it.
+- **The heading.** `title` and `url` are what `api/reports.json` serves; `heading_md` is what
+  `db:emit` writes.
+
+Three changes are not column edits. Raise them rather than improvising one:
+
+- **Moving a report to another series.** `series_slug` is never emitted; the `##` a report sits
+  under comes from the file.
+- **Adding a report or a new edition.** It is a new item, paused like every other until v2.
+  `db:add` does not handle reports either, and `db:emit` stops when `reports.ndjson` and
+  `FieldReports.md` disagree on how many reports there are.
+- **Removing a report.** `db:remove` has no case for reports, and the same count check stops
+  `db:emit`.
+
 ## Known pitfalls
 
 | Pitfall | Reality |
 | --- | --- |
-| Hand-editing `Papers.md` / `Software.md` / `Databases.md` structured content | It's DB-owned — clobbered by the next `db:emit` and fails the CI sync guard. Edit the DB. (The PreToolUse hook blocks it; prose-only edits are still allowed.) |
+| Hand-editing `Papers.md` / `Software.md` / `Databases.md` / `FieldReports.md` structured content | It's DB-owned — clobbered by the next `db:emit` and fails the CI sync guard. Edit the DB. (The PreToolUse hook blocks it; prose-only edits are still allowed.) |
 | Committing NDJSON without running `db:emit` | The CI sync guard (`git diff --exit-code`) fails: committed Markdown must equal the emit output. |
 | Committing Markdown and NDJSON in separate commits | They move together — NDJSON is the source, Markdown is derived from it. |
 | Changing the NDJSON and leaving the corpus stamp behind | `pnpm parse` and `db:check` refuse a stamp whose hash no longer matches, naming `db:stamp`. Since `pnpm build` runs `parse`, a stale stamp that reached main would fail the Pages deploy until re-stamped, deliberately, rather than publish a date belonging to another corpus. Every db command that writes the NDJSON re-stamps when it finishes, and so does `db:emit`; after a hand edit with no emit, run `db:stamp`. Merging main into a branch when both changed the corpus conflicts on the stamp, and on the API files and `llms.txt` that carry its date: take either side of each, run `db:stamp --redate`, which dates the merged corpus today even when one side's stamp still matches (as it can when that side's NDJSON contains the other's), then `pnpm --dir site parse`, and commit all of them. The one exception: when the merged NDJSON is identical to main's, restore main's stamp (`git checkout origin/main -- site/db/corpus-stamp.json`) instead of re-dating, since the same corpus keeps its stamp and the order guard refuses it under another date. |
 | Reverting a corpus commit | The revert restores the earlier stamp along with the earlier NDJSON, so the hash matches and `db:check` passes, but the corpus date goes back to the day that earlier state was stamped. `lint-papers.yml`'s corpus-stamp order guard (`db:check-stamp-order`) refuses most such reverts, and a stamp dated in the future; what exactly it refuses is in `check-stamp-order.ts`'s header, deliberately not restated here. Re-date a revert whether or not it would be refused: `db:stamp --redate`, which dates it today, then `pnpm --dir site parse`, and commit both with the revert. The exception is a revert that leaves the NDJSON identical to main's, such as a branch undoing its own corpus commit before it merges: restore main's stamp (`git checkout origin/main -- site/db/corpus-stamp.json`) instead. The same command repairs a future-dated stamp. |
 | Editing `caail.db` but forgetting `db:export` | The `.db` is gitignored; only the NDJSON is tracked. Export or the change is lost. |
+| Editing the NDJSON directly, then running `db:export` | `db:export` rewrites every NDJSON file from `caail.db`, which does not hold the edit, so the edit is reverted with no error and `db:emit` then regenerates unchanged Markdown. After a direct NDJSON edit, run `db:emit` alone. |
 | Renumbering / reusing a `paper:N` id | Frozen and permanent (matrix links + external bookmarks). New paper = `max(ref_id)+1`; a removed paper's id is retired, not reused. |
 | Adding a reference without a matrix cell (or a cell without the reference) | Same-commit rule; `db:check` reachability + `lint:papers` catch it. |
 | Re-listing the matrix method rows in prose | They drift (see #81). The live set is `Papers.md`; only the columns are enumerated + guarded, and `db:check` asserts that list — so don't write the column *count* here either, it goes stale the next time one is added or retired. |
