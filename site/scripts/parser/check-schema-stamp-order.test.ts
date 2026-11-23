@@ -79,6 +79,16 @@ describe('checkSchemaStampOrder, read from commits', () => {
     expect(checkSchemaStampOrder(root, 'HEAD~2')).toBeNull();
   });
 
+  it('compares an unparseable base with the newest earlier stamp that parses', () => {
+    const root = scratchRepo();
+    commitStamp(root, at(5, A), 'published v5');
+    commitStamp(root, '<<<<<<< HEAD\n', 'conflicted stamp lands');
+    commitStamp(root, at(1, B), 'repair reuses 1');
+    const notes: string[] = [];
+    expect(checkSchemaStampOrder(root, 'HEAD^1', 'HEAD', notes)).toMatch(/schema version \(1\) is not above that tree's \(5\)/);
+    expect(notes.join('\n')).toMatch(/the newest that parses/);
+  });
+
   it('refuses a missing head stamp, notes an unparseable base, and names a bad ref', () => {
     const root = scratchRepo();
     expect(() => checkSchemaStampOrder(root, 'HEAD')).toThrow(/is not at HEAD/);

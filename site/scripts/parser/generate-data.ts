@@ -174,6 +174,9 @@ export function generateData(
   contributeTemplates: number;
   contributeParams: number;
 } {
+  // Before any write, so a stale schema stamp refuses with every output untouched, whoever calls
+  // this (tucca-cellag/caail-planning#153); the CLI reads it earlier still and passes it in.
+  const apiSchemaVersion = schemaVersion ?? readStampedSchemaVersion();
   // Reconcile the caail-contribute skill against the issue forms it composes URLs for. Emits
   // nothing: the skill ships as Markdown and the templates ship as YAML, so there is no artifact
   // to write, only an agreement to enforce. Checked at build time rather than only in the test
@@ -542,7 +545,7 @@ export function generateData(
     taxonomy: apiTaxonomy,
     reports,
     corpusDate,
-    schemaVersion,
+    schemaVersion: apiSchemaVersion,
   });
   writeAgentApi(apiFiles, apiDir);
   publishSkillDoc(SKILL_DOC_PATH, join(apiDir, '..'));

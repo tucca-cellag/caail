@@ -1047,7 +1047,7 @@ export const ApiManifestSchema = z.strictObject({
   corpusDate: CorpusDateSchema,
   /** The API's major version (openapi.ts's API_VERSION): changes only at a redesign of the whole API. */
   apiVersion: z.number().int().positive(),
-  /** The schema version (schema-stamp.ts): counts changes to the API's shape, never resets. */
+  /** The schema version (schema-stamp.ts): counts changes to the API's shape; any difference means it changed. */
   schemaVersion: z.number().int().positive(),
   /** What corpusDate, apiVersion and schemaVersion each date, in the consumer's words. */
   versionNote: z.string(),

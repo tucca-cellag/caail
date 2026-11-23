@@ -19,9 +19,9 @@
  *
  * A version more than one above `<base>`'s passes: a branch that changed the shape twice and stamped
  * each time has skipped a number, which tells a consumer nothing false. A base with no stamp passes,
- * since it predates the stamp, and so does a base whose stamp does not parse, with a notice, since
- * refusing it would refuse its repair too. Every stamp is read from its commit, never the working
- * tree.
+ * since it predates the stamp. A base whose stamp does not parse is compared, with a notice, with the
+ * newest earlier stamp that does, so its repair cannot reuse a number already published; with none,
+ * the head passes. Every stamp is read from its commit, never the working tree.
  *
  * It shares the corpus guard's gap: on a pull request `<base>` is the first parent of GitHub's merge
  * commit, which can lag main when GitHub has not rebuilt it, so a bad version can pass the pull
@@ -30,7 +30,7 @@
 
 import { relative, sep } from 'node:path';
 
-import { assertCommit, committedFile } from '../db/check-stamp-order.js';
+import { assertCommit, committedFile, commitsTouching } from '../db/check-stamp-order.js';
 import { exitOnRefusal, REPO_ROOT, RefusalError, runsAsMain } from '../db/lib.js';
 import { parseSchemaStamp, SCHEMA_STAMP_COMMAND, SCHEMA_STAMP_PATH, type SchemaStamp } from './schema-stamp.js';
 
@@ -85,7 +85,19 @@ export function checkSchemaStampOrder(repo: string, base: string, head = 'HEAD',
   if (baseText !== null) {
     const baseParsed = parseSchemaStamp(baseText);
     if ('problem' in baseParsed) {
-      notes.push(`${STAMP_REL} at ${base} ${baseParsed.problem}, so it is compared as if absent; this change can repair it.`);
+      // Compare with the newest earlier stamp that parses, so a repair cannot reuse its number.
+      for (const sha of commitsTouching(repo, base, STAMP_REL)) {
+        const text = committedFile(repo, sha, STAMP_REL);
+        const earlier = text === null ? null : parseSchemaStamp(text);
+        if (earlier !== null && 'stamp' in earlier) {
+          baseStamp = earlier.stamp;
+          notes.push(`${STAMP_REL} at ${base} ${baseParsed.problem}, so it is compared with ${sha.slice(0, 8)}'s, the newest that parses.`);
+          break;
+        }
+      }
+      if (baseStamp === null) {
+        notes.push(`${STAMP_REL} at ${base} ${baseParsed.problem}, and no earlier stamp parses, so it is compared as if absent.`);
+      }
     } else {
       baseStamp = baseParsed.stamp;
     }

@@ -440,7 +440,8 @@ export function buildOpenApiDocument(corpusDate: string, schemaVersion: number):
         'The version above is `<apiVersion>.<schemaVersion>`, two whole numbers as served in ' +
         'index.json, not a decimal: ' +
         'apiVersion changes only at a redesign of the whole API, and schemaVersion counts ' +
-        'changes to the paths and components below (index.json\'s `versionNote` says exactly ' +
+        'changes to the paths and components below, and to the OpenAPI version and JSON Schema ' +
+        'dialect above (index.json\'s `versionNote` says exactly ' +
         'what it covers), so record it to tell a change of shape from a change of content. ' +
         `\`x-corpus-date\`, and each file's \`corpusDate\`, dates ${CORPUS_DATE_COVERS}, ` +
         `not ${CORPUS_DATE_EXCLUDES}. ` +

@@ -161,6 +161,11 @@ export function committedFile(repo: string, ref: string, path: string): string |
   return git(repo, ['show', `${ref}:${path}`]);
 }
 
+/** The commits reachable from `ref` that changed `path`, newest first. Exported for the schema-stamp order guard. */
+export function commitsTouching(repo: string, ref: string, path: string): string[] {
+  return git(repo, ['log', '--format=%H', ref, '--', path]).split('\n').filter(Boolean);
+}
+
 /** The stamp at `ref`, or why it is unreadable; `{ stamp: null }` when `ref` has none. */
 function stampAt(repo: string, ref: string): { stamp: CorpusStamp | null } | { problem: string } {
   const text = committedFile(repo, ref, STAMP_PATH);

@@ -67,6 +67,17 @@ const ORDER_FREE_LISTS = new Set(['required', 'enum']);
 const isPrimitive = (v: unknown) => v === null || ['string', 'number', 'boolean'].includes(typeof v);
 
 /**
+ * Orders two list items by the UTF-16 code units of their JSON, the same on every machine.
+ * `localeCompare` collates by the process's default locale, which moved the hash on some
+ * (a Lithuanian locale sorts `y` between `i` and `j`), so a correct stamp was refused there.
+ */
+export function byCodeUnit(a: unknown, b: unknown): number {
+  const x = JSON.stringify(a);
+  const y = JSON.stringify(b);
+  return x < y ? -1 : x > y ? 1 : 0;
+}
+
+/**
  * `value` with every object's keys sorted, recursively, so the hash ignores key order, and with
  * the order-free lists sorted. Only a list of plain values under one of those keywords is sorted:
  * a property merely named `required` holds a schema object, not a list, and is left alone.
@@ -74,7 +85,7 @@ const isPrimitive = (v: unknown) => v === null || ['string', 'number', 'boolean'
 function canonical(value: unknown, key?: string): unknown {
   if (Array.isArray(value)) {
     if (key !== undefined && ORDER_FREE_LISTS.has(key) && value.every(isPrimitive)) {
-      return [...value].sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
+      return [...value].sort(byCodeUnit);
     }
     return value.map((v) => canonical(v));
   }
@@ -182,7 +193,9 @@ export function readStampedSchemaVersion(
     throw new Error(
       `agent API schema stamp: ${found.problem}. If the change of shape is deliberate, run ` +
         `${SCHEMA_STAMP_COMMAND} to count it, then run pnpm --dir site parse and commit the stamp ` +
-        'with what parse changed under site/public/api/.',
+        'with what parse changed under site/public/api/. If the shape is back to main\'s (a change ' +
+        'undone on this branch), restore main\'s stamp instead (git checkout origin/main -- ' +
+        'site/scripts/parser/api-schema-stamp.json): the same shape keeps its version.',
     );
   }
   return found.stamp.version;

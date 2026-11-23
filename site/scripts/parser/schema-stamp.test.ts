@@ -20,6 +20,7 @@ import {
   SCHEMA_STAMP_COMMAND,
   schemaHashOf,
   stampSchema,
+  byCodeUnit,
 } from './schema-stamp.js';
 
 const A = 'a'.repeat(64);
@@ -71,6 +72,12 @@ describe('schemaHashOf', () => {
     expect(schemaHashOf({ paths: {}, components: { p: { properties: { required: { type: 'string' } } } } })).not.toBe(
       schemaHashOf({ paths: {}, components: { p: { properties: { required: { type: 'number' } } } } }),
     );
+  });
+
+  it('orders list items by code unit, not by the machine\'s locale', () => {
+    // Any locale collation puts 'a' before 'Z'; code units put 'Z' (U+005A) first, on every machine.
+    expect(['a', 'Z', 'y', 'j', 'i'].sort(byCodeUnit)).toEqual(['Z', 'a', 'i', 'j', 'y']);
+    expect(byCodeUnit('x', 'x')).toBe(0);
   });
 
   it('moves when the OpenAPI version or the JSON Schema dialect changes', () => {
