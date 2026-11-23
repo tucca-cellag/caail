@@ -81,7 +81,7 @@ export function llmsFullSources(repoRoot: string = REPO_ROOT): string[] {
 
 /**
  * The served header, with the frontmatter caveat DERIVED from the source list, and the corpus
- * date note (`llms-corpus-date.ts`), which dates the catalog data and sends a reader of any copy
+ * date note (`llms-corpus-date.ts`), which dates the catalog records and sends a reader of any copy
  * to the canonical one.
  *
  * `FRONTMATTER_PREFIX` is a prefix test precisely so a second Starlight page can join the

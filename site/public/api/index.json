@@ -3,7 +3,7 @@
   "corpusDate": "2026-11-14",
   "apiVersion": 1,
   "schemaVersion": 1,
-  "versionNote": "corpusDate dates the catalog entries (the papers, software, databases and datasets), not other served data such as citation counts or the taxonomy definitions. apiVersion changes only at a redesign of the whole API. schemaVersion counts changes to the shape of these files, the fields and endpoints openapi.json describes, and never resets; openapi.json's info.version is apiVersion.schemaVersion. Record schemaVersion with what you build against: if it differs on a later fetch, check openapi.json before trusting a field.",
+  "versionNote": "corpusDate dates CAAIL's catalog records (the papers, software, databases, datasets and field reports, and the topics and matrix axes they are filed under), not other served data, such as citation counts or the taxonomy definitions. apiVersion changes only at a redesign of the whole API. schemaVersion counts changes to the shape of these files, everything openapi.json's paths and components describe, the endpoint descriptions included, and only ever goes up; openapi.json's info.version is apiVersion.schemaVersion. It does not count the keys of a dataset inventory row's `columns`, which follow each page's own table headers and are content. Record schemaVersion with what you build against: if it differs on a later fetch, check openapi.json before trusting a field.",
   "status": "beta",
   "placementsUnderReview": true,
   "canonical": "https://github.com/tucca-cellag/caail",

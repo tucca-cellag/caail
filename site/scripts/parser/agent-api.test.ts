@@ -51,7 +51,8 @@ import { latestStampDate } from '../db/check-stamp-order.js';
 import { NDJSON_DIR } from '../db/lib.js';
 import { curatedEntryCount } from './datasets.js';
 import { API_VERSION, assertValid } from './openapi.js';
-import { currentSchemaHash, readStampedSchemaVersion, schemaHashOf } from './schema-stamp.js';
+import { readStampedSchemaVersion } from './schema-stamp.js';
+import { CORPUS_DATE_COVERS, CORPUS_DATE_EXCLUDES } from './corpus-date-format.js';
 
 const papers = buildPapersModel();
 const catalog = buildCatalogModel();
@@ -264,24 +265,25 @@ describe('buildAgentApi', () => {
   it('says what each version signal dates, and narrows the corpus date to the catalog entries', () => {
     const manifest = files.find((f) => f.name === 'index.json')!.body as any;
     expect(manifest.versionNote).toBe(VERSION_NOTE);
-    expect(VERSION_NOTE).toMatch(/corpusDate dates the catalog entries/);
-    expect(VERSION_NOTE).toMatch(/not other served data such as citation counts or the taxonomy definitions/);
+    expect(VERSION_NOTE).toContain(`corpusDate dates ${CORPUS_DATE_COVERS}, not ${CORPUS_DATE_EXCLUDES}.`);
     expect(VERSION_NOTE).toMatch(/info\.version is apiVersion\.schemaVersion/);
+    // What a consumer could mistake for shape is named: endpoint prose counts, column keys do not.
+    expect(VERSION_NOTE).toMatch(/endpoint descriptions included/);
+    expect(VERSION_NOTE).toMatch(/does not count the keys of a dataset inventory row's `columns`/);
     const doc = files.find((f) => f.name === 'openapi.json')!.body as any;
-    expect(doc.info.description).toMatch(/dates the catalog entries/);
+    expect(doc.info.description).toContain(`dates ${CORPUS_DATE_COVERS}, not ${CORPUS_DATE_EXCLUDES}.`);
     expect(doc.info.description).toMatch(/<apiVersion>\.<schemaVersion>/);
+    expect(doc.info.description).toMatch(/`versionNote` says exactly what it covers/);
   });
 
-  it('leaves the schema stamp unchanged when an envelope note is reworded (#153 decision 3)', () => {
-    // A note is content: its schema must accept any wording, so rewording it neither fails
-    // the build nor reaches the hashed shape. Prove both on the real manifest.
+  it('accepts any wording of an envelope note, so rewording one is content (#153 decision 3)', () => {
+    // A note is content: its schema must accept any wording, so rewording it does not fail the
+    // build. That it stays out of the hash is schema-stamp.test.ts's no-const check.
     const manifest = structuredClone(files.find((f) => f.name === 'index.json')!.body) as Record<string, unknown>;
     const notes = Object.keys(manifest).filter((k) => k.endsWith('Note'));
     expect(notes).toEqual(expect.arrayContaining(['scopeNote', 'placementNote', 'versionNote']));
     for (const k of notes) manifest[k] = `${String(manifest[k])} Reworded.`;
     expect(() => assertValid('index.json', manifest)).not.toThrow();
-    const doc = files.find((f) => f.name === 'openapi.json')!.body;
-    expect(schemaHashOf(doc)).toBe(currentSchemaHash());
   });
 
   it('stamps a real date when none is supplied', () => {

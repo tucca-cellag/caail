@@ -24,6 +24,7 @@ import type { ValidateFunction } from 'ajv';
 import { z } from 'zod';
 
 import { SITE_BASE, SITE_ORIGIN } from '../../src/content/site-config.ts';
+import { CORPUS_DATE_COVERS, CORPUS_DATE_EXCLUDES } from './corpus-date-format.js';
 
 import {
   ApiCatalogIndexRowSchema,
@@ -439,10 +440,10 @@ export function buildOpenApiDocument(corpusDate: string, schemaVersion: number):
         // What each version signal dates, said where a consumer of the shape reads first.
         'The version above is `<apiVersion>.<schemaVersion>`, as served in index.json: ' +
         'apiVersion changes only at a redesign of the whole API, and schemaVersion counts ' +
-        'changes to the paths and components below, so record it to tell a change of shape ' +
-        'from a change of content. `x-corpus-date`, and each file\'s `corpusDate`, dates the ' +
-        'catalog entries (the papers, software, databases and datasets), not other served data ' +
-        'such as citation counts or the taxonomy definitions.',
+        'changes to the paths and components below (index.json\'s `versionNote` says exactly ' +
+        'what it covers), so record it to tell a change of shape from a change of content. ' +
+        `\`x-corpus-date\`, and each file's \`corpusDate\`, dates ${CORPUS_DATE_COVERS}, ` +
+        `not ${CORPUS_DATE_EXCLUDES}.`,
       license: {
         name: 'MIT (CAAIL curation). Linked third-party resources keep their own licenses.',
         identifier: 'MIT',

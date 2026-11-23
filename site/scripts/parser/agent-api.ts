@@ -32,6 +32,7 @@ import { fileURLToPath } from 'node:url';
 
 import { API_VERSION, assertValid, buildOpenApiDocument, OPENAPI_FILE } from './openapi.js';
 import { readStampedSchemaVersion } from './schema-stamp.js';
+import { CORPUS_DATE_COVERS, CORPUS_DATE_EXCLUDES } from './corpus-date-format.js';
 import { MATRIX_SECTION } from './types.js';
 import type { Catalog, CatalogEntry, DatasetInventory, DatasetInventoryRow, DoiRelation, OnRequestStudy, PapersData } from './types.js';
 import { isUnderBase, RETIRED_BASES, SITE_BASE, SITE_URL } from '../../src/content/site-config.ts';
@@ -80,18 +81,22 @@ export const STATUS = 'beta' as const;
 
 /**
  * What each of the manifest's three version signals dates (tucca-cellag/caail-planning#153). The
- * corpus date is narrowed to what it is stamped from, the catalog entries in `site/db/ndjson`:
- * other served data, such as citation counts and the taxonomy definitions, changes without moving
- * it and gets its own signal case by case, as `searchTerms.sha256` does for the vocabulary. An
- * envelope note is content, not shape, so rewording this moves no version.
+ * corpus date is narrowed to what it is stamped from, the NDJSON, in the shared words of
+ * corpus-date-format.ts: other served data changes without moving it and gets its own signal case
+ * by case, as `searchTerms.sha256` does for the vocabulary. The schema version's coverage is said
+ * here and only here, the OpenAPI description pointing at it: what `schemaHashOf` hashes, the
+ * endpoint prose included, and the one thing a consumer could mistake for shape that it leaves
+ * out, an inventory row's `columns` keys, which are each page's own headers. An envelope note is
+ * content, not shape, so rewording this moves no version.
  */
 export const VERSION_NOTE =
-  'corpusDate dates the catalog entries (the papers, software, databases and datasets), not other ' +
-  'served data such as citation counts or the taxonomy definitions. apiVersion changes only at a ' +
-  'redesign of the whole API. schemaVersion counts changes to the shape of these files, the fields ' +
-  'and endpoints openapi.json describes, and never resets; openapi.json\'s info.version is ' +
-  'apiVersion.schemaVersion. Record schemaVersion with what you build against: if it differs on a ' +
-  'later fetch, check openapi.json before trusting a field.';
+  `corpusDate dates ${CORPUS_DATE_COVERS}, not ${CORPUS_DATE_EXCLUDES}. ` +
+  'apiVersion changes only at a redesign of the whole API. schemaVersion counts changes to the ' +
+  "shape of these files, everything openapi.json's paths and components describe, the endpoint " +
+  'descriptions included, and only ever goes up; openapi.json\'s info.version is ' +
+  'apiVersion.schemaVersion. It does not count the keys of a dataset inventory row\'s `columns`, ' +
+  'which follow each page\'s own table headers and are content. Record schemaVersion with what you ' +
+  'build against: if it differs on a later fetch, check openapi.json before trusting a field.';
 export const PLACEMENT_NOTE =
   "Placements are proposed by a language-model agent reading the paper's methods section, " +
   'checked by a separate reviewer agent that must quote the passage it relies on, and ' +
@@ -493,7 +498,7 @@ export interface AgentApiInputs {
 }
 
 /**
- * The corpus date: the day the newest change to the catalog data was stamped, read from
+ * The corpus date: the day the newest change to the catalog records was stamped, read from
  * `site/db/corpus-stamp.json` (corpus-stamp.ts, tucca-cellag/caail-planning#655), not the
  * date this build ran.
  *
