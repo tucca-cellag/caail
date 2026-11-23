@@ -7,9 +7,9 @@
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { REPO_ROOT } from './lib.js';
 
 const HOOK = join(REPO_ROOT, '.claude', 'hooks', 'block-generated-edits.py');
@@ -103,11 +103,20 @@ describe('block-generated-edits hook — inside a git worktree', () => {
  * the suite runs in, so the cases hold wherever that repo happens to live.
  */
 describe('block-generated-edits hook: judged by the path inside the checkout', () => {
+  const HOOK_REL = join('.claude', 'hooks', 'block-generated-edits.py');
   let tmp = '';
-  beforeAll(() => { tmp = mkdtempSync(join(tmpdir(), 'caail-hook-')); });
+  beforeAll(() => {
+    tmp = mkdtempSync(join(tmpdir(), 'caail-hook-'));
+    // The no-checkout case below needs a temp dir that no checkout contains. A TMPDIR
+    // pointed inside one would place every fixture in that checkout's excluded
+    // directories, and the cases would fail with nothing wrong in the hook.
+    for (let d = tmp; ; d = dirname(d)) {
+      expect(existsSync(join(d, HOOK_REL)), `${d} holds a copy of the hook, so the fixtures sit inside a checkout`).toBe(false);
+      if (dirname(d) === d) break;
+    }
+  });
   afterAll(() => { rmSync(tmp, { recursive: true, force: true }); });
 
-  const HOOK_REL = join('.claude', 'hooks', 'block-generated-edits.py');
   /** Make `root` a checkout (idempotent) and return it. */
   function plant(root: string): string {
     mkdirSync(join(root, '.claude', 'hooks'), { recursive: true });
@@ -142,7 +151,9 @@ describe('block-generated-edits hook: judged by the path inside the checkout', (
         const wt = tree(checkout(parent));
         expect(decide(write(join(wt, 'Papers.md')), hookOf(wt))).toBe('deny');
       });
-      it('DENIES a Write to the worktree\'s Papers.md through the primary checkout\'s hook', () => {
+      // The worktree holds its own copy, so the primary's hook finds the worktree as the
+      // file's checkout. The worktree-prefix strip is the next case's, where it holds none.
+      it('DENIES a Write to the worktree\'s Papers.md when the primary checkout\'s hook runs on it', () => {
         const root = checkout(parent);
         const wt = tree(root);
         expect(decide(write(join(wt, 'Papers.md')), hookOf(root))).toBe('deny');
@@ -168,6 +179,13 @@ describe('block-generated-edits hook: judged by the path inside the checkout', (
   // the guard fails closed rather than guessing that a "docs" above it is the repo's own.
   it('DENIES a catalog file name in no checkout at all, even under a docs/ directory', () => {
     expect(decide(write(join(tmp, 'docs', 'loose', 'Papers.md')), hookOf(checkout('plain')))).toBe('deny');
+  });
+  it('says so when it refuses a file in no checkout, and not when the file is in one', () => {
+    const root = checkout('plain');
+    const loose = run(write(join(tmp, 'docs', 'loose', 'Papers.md')), hookOf(root))?.permissionDecisionReason ?? '';
+    expect(loose.split('\n')[0]).toMatch(/in no CAAIL checkout .* judged by its file name alone/);
+    const inside = run(write(join(root, 'Papers.md')), hookOf(root))?.permissionDecisionReason ?? '';
+    expect(inside).not.toContain('no CAAIL checkout');
   });
 
   /**
@@ -197,6 +215,11 @@ describe('block-generated-edits hook: judged by the path inside the checkout', (
         expect(editsDb(line), `the NDJSON route shares a line with the caail.db route: ${line}`).toBe(false);
         expect(commands(line)).toContain('db:emit');
         expect(commands(line)).not.toContain('db:export');
+        // Plain text counts too: a sentence naming db:export on this route may only warn
+        // against it, so "then run db:export" fails here even without backticks.
+        for (const sentence of line.split(/(?<=\.)\s+/).filter((s) => s.includes('db:export'))) {
+          expect(sentence, `the NDJSON route names db:export as a step: ${sentence}`).toMatch(/^Skip db:export\b/);
+        }
       }
     });
     it('gives the caail.db route on one line, running db:build, then db:export before db:emit', () => {

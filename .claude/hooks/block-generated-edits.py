@@ -51,8 +51,10 @@ root = checkout_root(path)
 if root is None:
     # In no checkout, so there is no inside to classify: judge by the file name
     # alone, failing closed, rather than guess that a site/ or docs/ above the
-    # file is the repo's own.
-    target = path
+    # file is the repo's own. Failing open here would also switch the guard off
+    # without a word for every path if checkout_root ever stopped finding
+    # checkouts, which is the defect this classification exists to remove.
+    target = path.replace(os.sep, "/")
 else:
     rel = os.path.relpath(path, root).replace(os.sep, "/")
     # Git worktrees live at <repo>/.claude/worktrees/<name>/. One whose directory
@@ -90,7 +92,13 @@ if not blocked:
     sys.exit(0)
 
 name = os.path.basename(fp)
-reason = (
+outside = "" if root is not None else (
+    f"{path} is in no CAAIL checkout this guard can find (no directory above it holds "
+    f"{HOOK_REL}), so it was judged by its file name alone and refused. If it is not "
+    "one of CAAIL's generated catalog files, save it under another name. If it is, the "
+    "routes below apply.\n"
+)
+reason = outside + (
     f"{name} is generated from the SQLite authoring DB (issue #78) — its matrix, "
     "references, and catalog entries are DB-owned, and a direct edit here drifts from "
     "the DB and is overwritten by the next `db:emit` (the CI sync guard will fail).\n"
