@@ -56,8 +56,10 @@ export function corpusDateNote(date: string, file: LlmsFile): string {
     throw new Error(`llms corpus date: "${date}" is not a YYYY-MM-DD date`);
   }
   return (
-    `${CORPUS_DATE_PREFIX} ${date}, the date stamped on the newest version of CAAIL's catalog data ` +
-    "(the agent API's corpusDate), which can differ from the day that version went live (usually earlier). " +
+    `${CORPUS_DATE_PREFIX} ${date}, the date stamped on the newest version of CAAIL's catalog entries ` +
+    "(the papers, software, databases and datasets; the agent API's corpusDate), which can differ from " +
+    'the day that version went live (usually earlier). It does not date other served data, such as ' +
+    'citation counts or the taxonomy definitions. ' +
     `The canonical copy of this file is ${SITE_URL}${file}. ` +
     'Its prose can change without moving that date, so a copy read anywhere else may be out of date ' +
     'even when the dates match: fetch the canonical copy before relying on it.'
