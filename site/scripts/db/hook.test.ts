@@ -19,10 +19,9 @@ const P = (rel: string) => join(REPO_ROOT, rel);
 function run(
   payload: object,
   hook = HOOK,
-  opts: { cwd?: string; env?: Record<string, string> } = {},
+  opts: { cwd?: string } = {},
 ): { permissionDecision: string; permissionDecisionReason: string } | null {
-  const env = { ...process.env, ...opts.env };
-  const out = execFileSync('python3', [hook], { input: JSON.stringify(payload), encoding: 'utf-8', cwd: opts.cwd, env }).trim();
+  const out = execFileSync('python3', [hook], { input: JSON.stringify(payload), encoding: 'utf-8', cwd: opts.cwd }).trim();
   return out ? JSON.parse(out).hookSpecificOutput : null;
 }
 
@@ -180,14 +179,18 @@ describe('block-generated-edits hook: judged by the path inside the checkout', (
     expect(decide(write(`${root}/site/../Papers.md`), hookOf(root))).toBe('deny');
   });
 
-  // A relative path is the project root's, not the hook process's cwd's: a bare Papers.md is
-  // refused even when the hook runs from inside site/, where the cwd alone would place it
-  // under an excluded directory.
-  it('DENIES a relative Papers.md when the hook runs with its cwd inside site/', () => {
+  // A relative path is resolved against the session's cwd from the hook input, which is where
+  // the tool writes it, never against the directory the hook process started in.
+  it.each([
+    ['DENIES', 'the checkout root', '', 'deny'],
+    ['ALLOWS', 'site/', 'site', null],
+  ])('%s a relative Papers.md when the session cwd is %s, wherever the hook process runs', (_v, _where, cwdRel, want) => {
     const root = checkout('plain');
     mkdirSync(join(root, 'site'), { recursive: true });
-    const opts = { cwd: join(root, 'site'), env: { CLAUDE_PROJECT_DIR: root } };
-    expect(run(write('Papers.md'), hookOf(root), opts)?.permissionDecision ?? null).toBe('deny');
+    const payload = { ...write('Papers.md'), cwd: join(root, cwdRel) };
+    // The process cwd is the opposite of the session's, so a hook reading it would get both wrong.
+    const opts = { cwd: join(root, cwdRel === 'site' ? '' : 'site') };
+    expect(run(payload, hookOf(root), opts)?.permissionDecision ?? null).toBe(want);
   });
 
   // A path in no checkout cannot be placed inside one, so it is judged by its name alone:

@@ -33,11 +33,11 @@ if not fp:
 # .git, so a checkout without one is judged the same. abspath also folds "..", so
 # <repo>/site/../Papers.md is judged as <repo>/Papers.md.
 #
-# A relative path is resolved against the project root, never this process's cwd:
-# a bare "Papers.md" is then the checkout's own Papers.md wherever the hook runs,
-# and is refused as it always was, rather than landing under a site/ the cwd sat in.
+# A relative path is resolved against the session's working directory, the "cwd"
+# field every hook input carries, so the hook judges the file the tool would write
+# rather than one under whichever directory this process happened to start in.
 HOOK_REL = os.path.join(".claude", "hooks", os.path.basename(__file__))
-path = os.path.abspath(os.path.join(os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd(), fp))
+path = os.path.abspath(os.path.join(data.get("cwd") or os.getcwd(), fp))
 
 
 def checkout_root(p):
@@ -98,9 +98,8 @@ if not blocked:
 name = os.path.basename(fp)
 outside = "" if root is not None else (
     f"{path} is in no CAAIL checkout this guard can find (no directory above it holds "
-    f"{HOOK_REL}), so it was judged by its file name alone and refused. If it is not "
-    "one of CAAIL's generated catalog files, save it under another name. If it is, the "
-    "routes below apply.\n"
+    f"{HOOK_REL}), so it was judged by its file name alone and refused. The routes "
+    "below apply only if it is one of CAAIL's own catalog files.\n"
 )
 reason = outside + (
     f"{name} is generated from the SQLite authoring DB (issue #78) — its matrix, "
