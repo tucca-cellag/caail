@@ -209,7 +209,7 @@ re-tagging, corrections), use the full procedure below.
    ```
 4. **Regenerate the canonical Markdown:**
    ```
-   pnpm --dir site db:emit       # NDJSON -> Papers.md / Software.md / Databases.md / Datasets/*.md
+   pnpm --dir site db:emit       # NDJSON -> Papers.md / Software.md / Databases.md / FieldReports.md / Datasets/*.md
    ```
    `db:emit` also re-stamps the NDJSON: `site/db/corpus-stamp.json` holds the corpus date the
    agent API and `llms.txt` carry, with a hash of the NDJSON, and is rewritten, dated today
@@ -267,7 +267,7 @@ Three changes are not column edits. Raise them rather than improvising one:
 
 | Pitfall | Reality |
 | --- | --- |
-| Hand-editing `Papers.md` / `Software.md` / `Databases.md` / `FieldReports.md` structured content | It's DB-owned — clobbered by the next `db:emit` and fails the CI sync guard. Edit the DB. (The PreToolUse hook blocks it; prose-only edits are still allowed.) |
+| Hand-editing `Papers.md` / `Software.md` / `Databases.md` / `FieldReports.md` structured content | It's DB-owned — clobbered by the next `db:emit` and fails the CI sync guard. Edit the DB. The PreToolUse hook blocks an edit only when it touches structured markup (a reference anchor, an in-page link, a catalog `### [` heading), so other DB-owned text gets past it: a field report's `*Edition …*` line is one, and `db:emit` reverts it with no error. |
 | Committing NDJSON without running `db:emit` | The CI sync guard (`git diff --exit-code`) fails: committed Markdown must equal the emit output. |
 | Committing Markdown and NDJSON in separate commits | They move together — NDJSON is the source, Markdown is derived from it. |
 | Changing the NDJSON and leaving the corpus stamp behind | `pnpm parse` and `db:check` refuse a stamp whose hash no longer matches, naming `db:stamp`. Since `pnpm build` runs `parse`, a stale stamp that reached main would fail the Pages deploy until re-stamped, deliberately, rather than publish a date belonging to another corpus. Every db command that writes the NDJSON re-stamps when it finishes, and so does `db:emit`; after a hand edit with no emit, run `db:stamp`. Merging main into a branch when both changed the corpus conflicts on the stamp, and on the API files and `llms.txt` that carry its date: take either side of each, run `db:stamp --redate`, which dates the merged corpus today even when one side's stamp still matches (as it can when that side's NDJSON contains the other's), then `pnpm --dir site parse`, and commit all of them. The one exception: when the merged NDJSON is identical to main's, restore main's stamp (`git checkout origin/main -- site/db/corpus-stamp.json`) instead of re-dating, since the same corpus keeps its stamp and the order guard refuses it under another date. |
