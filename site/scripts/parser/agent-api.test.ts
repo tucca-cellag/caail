@@ -31,6 +31,7 @@ import {
   assertAbsoluteLinks,
   absolutizeCellLinks,
   nonAbsoluteMarkdownTargets,
+  VERSION_NOTE,
 } from './agent-api.js';
 import { RETIRED_BASES, SITE_BASE, SITE_ORIGIN, SITE_URL } from '../../src/content/site-config.ts';
 import { buildPapersModel } from './papers.js';
@@ -49,6 +50,8 @@ import { ndjsonDirOf, readStampedDate, stampCorpus } from '../db/corpus-stamp.js
 import { latestStampDate } from '../db/check-stamp-order.js';
 import { NDJSON_DIR } from '../db/lib.js';
 import { curatedEntryCount } from './datasets.js';
+import { API_VERSION, assertValid } from './openapi.js';
+import { currentSchemaHash, readStampedSchemaVersion, schemaHashOf } from './schema-stamp.js';
 
 const papers = buildPapersModel();
 const catalog = buildCatalogModel();
@@ -142,7 +145,7 @@ describe('matrix.json', () => {
 
 describe('index.json manifest', () => {
   const matrix = buildMatrix(papers, DATE);
-  const manifest = buildManifest(papers, matrix, DATE) as any;
+  const manifest = buildManifest(papers, matrix, DATE, 1) as any;
 
   it('names only fields the schemas serve, so a renamed key cannot linger in the guidance', () => {
     // The held-check guidance tells agents which keys to match on; each must exist.
@@ -165,7 +168,7 @@ describe('index.json manifest', () => {
   });
 
   it('counts on-request studies apart, never inside datasetsTotal (tucca-cellag/caail-planning#750)', () => {
-    const m = buildManifest(papers, matrix, DATE, { curated: 1, inventory: 2, onRequest: 5 }) as any;
+    const m = buildManifest(papers, matrix, DATE, 1, { curated: 1, inventory: 2, onRequest: 5 }) as any;
     expect(m.counts.datasetsTotal).toBe(3);
     expect(m.counts.datasetsOnRequest).toBe(5);
   });
@@ -229,13 +232,56 @@ describe('buildAgentApi', () => {
   it('stamps every endpoint with the corpus date, so staleness is always visible', () => {
     // openapi.json is the DESCRIPTION, not a described response: a bare `corpusDate` key
     // at its root would make it invalid against the OpenAPI 3.1 meta-schema, so it states
-    // the same fact as info.version plus an x- extension. Assert that, don't exempt it.
+    // the same fact as an x- extension. Assert that, don't exempt it. Its info.version is
+    // the shape's version, not the date (tucca-cellag/caail-planning#153).
     for (const f of files.filter((f) => f.name !== 'openapi.json')) {
       expect((f.body as any).corpusDate, `${f.name} has no corpusDate`).toBe(DATE);
     }
     const doc = files.find((f) => f.name === 'openapi.json')!.body as any;
-    expect(doc.info.version).toBe(DATE);
+    expect(doc.info.version).not.toBe(DATE);
     expect(doc['x-corpus-date']).toBe(DATE);
+  });
+
+  it('serves the shape\'s version beside the corpus date, read from the committed stamp (#153)', () => {
+    const manifest = files.find((f) => f.name === 'index.json')!.body as any;
+    const doc = files.find((f) => f.name === 'openapi.json')!.body as any;
+    const stamped = readStampedSchemaVersion();
+    expect(manifest.apiVersion).toBe(API_VERSION);
+    expect(manifest.schemaVersion).toBe(stamped);
+    expect(doc.info.version).toBe(`${API_VERSION}.${stamped}`);
+    // The keys sit beside corpusDate, where a consumer reads the date.
+    const keys = Object.keys(manifest);
+    expect(keys.slice(keys.indexOf('corpusDate'), keys.indexOf('corpusDate') + 4))
+      .toEqual(['corpusDate', 'apiVersion', 'schemaVersion', 'versionNote']);
+  });
+
+  it('serves a schema version it is given, in both places, so the stamp is the only source', () => {
+    const given = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE, schemaVersion: 7 });
+    expect((given.find((f) => f.name === 'index.json')!.body as any).schemaVersion).toBe(7);
+    expect((given.find((f) => f.name === 'openapi.json')!.body as any).info.version).toBe(`${API_VERSION}.7`);
+  });
+
+  it('says what each version signal dates, and narrows the corpus date to the catalog entries', () => {
+    const manifest = files.find((f) => f.name === 'index.json')!.body as any;
+    expect(manifest.versionNote).toBe(VERSION_NOTE);
+    expect(VERSION_NOTE).toMatch(/corpusDate dates the catalog entries/);
+    expect(VERSION_NOTE).toMatch(/not other served data such as citation counts or the taxonomy definitions/);
+    expect(VERSION_NOTE).toMatch(/info\.version is apiVersion\.schemaVersion/);
+    const doc = files.find((f) => f.name === 'openapi.json')!.body as any;
+    expect(doc.info.description).toMatch(/dates the catalog entries/);
+    expect(doc.info.description).toMatch(/<apiVersion>\.<schemaVersion>/);
+  });
+
+  it('leaves the schema stamp unchanged when an envelope note is reworded (#153 decision 3)', () => {
+    // A note is content: its schema must accept any wording, so rewording it neither fails
+    // the build nor reaches the hashed shape. Prove both on the real manifest.
+    const manifest = structuredClone(files.find((f) => f.name === 'index.json')!.body) as Record<string, unknown>;
+    const notes = Object.keys(manifest).filter((k) => k.endsWith('Note'));
+    expect(notes).toEqual(expect.arrayContaining(['scopeNote', 'placementNote', 'versionNote']));
+    for (const k of notes) manifest[k] = `${String(manifest[k])} Reworded.`;
+    expect(() => assertValid('index.json', manifest)).not.toThrow();
+    const doc = files.find((f) => f.name === 'openapi.json')!.body;
+    expect(schemaHashOf(doc)).toBe(currentSchemaHash());
   });
 
   it('stamps a real date when none is supplied', () => {

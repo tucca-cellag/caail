@@ -30,7 +30,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { assertValid, buildOpenApiDocument, OPENAPI_FILE } from './openapi.js';
+import { API_VERSION, assertValid, buildOpenApiDocument, OPENAPI_FILE } from './openapi.js';
+import { readStampedSchemaVersion } from './schema-stamp.js';
 import { MATRIX_SECTION } from './types.js';
 import type { Catalog, CatalogEntry, DatasetInventory, DatasetInventoryRow, DoiRelation, OnRequestStudy, PapersData } from './types.js';
 import { isUnderBase, RETIRED_BASES, SITE_BASE, SITE_URL } from '../../src/content/site-config.ts';
@@ -76,6 +77,21 @@ export const SCOPE_NOTE =
  * place that reaches them.
  */
 export const STATUS = 'beta' as const;
+
+/**
+ * What each of the manifest's three version signals dates (tucca-cellag/caail-planning#153). The
+ * corpus date is narrowed to what it is stamped from, the catalog entries in `site/db/ndjson`:
+ * other served data, such as citation counts and the taxonomy definitions, changes without moving
+ * it and gets its own signal case by case, as `searchTerms.sha256` does for the vocabulary. An
+ * envelope note is content, not shape, so rewording this moves no version.
+ */
+export const VERSION_NOTE =
+  'corpusDate dates the catalog entries (the papers, software, databases and datasets), not other ' +
+  'served data such as citation counts or the taxonomy definitions. apiVersion changes only at a ' +
+  'redesign of the whole API. schemaVersion counts changes to the shape of these files, the fields ' +
+  'and endpoints openapi.json describes, and never resets; openapi.json\'s info.version is ' +
+  'apiVersion.schemaVersion. Record schemaVersion with what you build against: if it differs on a ' +
+  'later fetch, check openapi.json before trusting a field.';
 export const PLACEMENT_NOTE =
   "Placements are proposed by a language-model agent reading the paper's methods section, " +
   'checked by a separate reviewer agent that must quote the passage it relies on, and ' +
@@ -468,6 +484,12 @@ export interface AgentApiInputs {
   reports: unknown;
   /** ISO date stamped onto every response. Defaults to `readCorpusDate()`. */
   corpusDate?: string;
+  /**
+   * The schema version served in index.json and openapi.json. Defaults to the committed stamp,
+   * read by `readStampedSchemaVersion`, which refuses a stamp that no longer matches the shape:
+   * that default is how `pnpm parse` refuses a change of shape nobody counted.
+   */
+  schemaVersion?: number;
 }
 
 /**
@@ -754,6 +776,7 @@ export function buildManifest(
   papers: PapersData,
   matrix: ReturnType<typeof buildMatrix>,
   corpusDate: string,
+  schemaVersion: number,
   datasets: { curated: number; inventory: number; onRequest: number } = { curated: 0, inventory: 0, onRequest: 0 },
   catalog: { software: number; databases: number } = { software: 0, databases: 0 },
   reports: { count: number } = { count: 0 },
@@ -764,6 +787,11 @@ export function buildManifest(
   return {
     name: 'CAAIL: Cellular Agriculture AI Library',
     corpusDate,
+    // Beside the corpus date, so the shape's version is read in the same place as the
+    // content's. VERSION_NOTE says what each one dates.
+    apiVersion: API_VERSION,
+    schemaVersion,
+    versionNote: VERSION_NOTE,
     // First thing an agent reads, so the maturity belongs here rather than three
     // fetches deep. The inventory counts are firm; it is the classification over them
     // that is still being verified.
@@ -813,7 +841,7 @@ export function buildManifest(
       fieldReportEditions: reports.count,
     },
     endpoints: [
-      { path: 'index.json', use: 'This manifest: corpus date, counts by population, endpoint list.' },
+      { path: 'index.json', use: 'This manifest: corpus date, API and schema versions (`versionNote` says what each dates), counts by population, endpoint list.' },
       { path: 'matrix.json', use: 'All method×area cells, empties included. Use to ask what has and has not been indexed — then read `matrixNote` in papers-index.json before reading a silence as an absence.' },
       { path: 'papers-index.json', use: 'START HERE for papers. Every reference, one compact row: id, title, year, first author, section, methods, areas, DOI, code/data flags, and whether a post-publication notice is recorded (`hasNotice`). A sixth the size of papers.json, so it survives a fetch tool that truncates. Enumerate here, then fetch full records.' },
       { path: 'papers.json', use: 'Full records for the references you selected. Large (~554 KB): if your fetch summarises rather than returning bytes, a "not found" from this file is not evidence of absence.' },
@@ -876,6 +904,7 @@ export function buildManifest(
 /** Build every API file. Pure: no I/O, so it is testable without a filesystem. */
 export function buildAgentApi(inputs: AgentApiInputs): ApiFile[] {
   const corpusDate = inputs.corpusDate ?? readCorpusDate(REPO_ROOT);
+  const schemaVersion = inputs.schemaVersion ?? readStampedSchemaVersion();
   const matrix = buildMatrix(inputs.papers, corpusDate);
   const datasetCounts = {
     curated: ((inputs.datasets as { entries?: unknown[] } | null)?.entries ?? []).length,
@@ -892,7 +921,7 @@ export function buildAgentApi(inputs: AgentApiInputs): ApiFile[] {
   };
 
   const files: ApiFile[] = [
-    { name: 'index.json', body: buildManifest(inputs.papers, matrix, corpusDate, datasetCounts, catalogCounts, reportsCount) },
+    { name: 'index.json', body: buildManifest(inputs.papers, matrix, corpusDate, schemaVersion, datasetCounts, catalogCounts, reportsCount) },
     { name: 'matrix.json', body: matrix },
     { name: 'papers-index.json', body: buildPapersIndex(inputs.papers, corpusDate) },
     { name: 'papers.json', body: { ...inputs.papers, scopeNote: SCOPE_NOTE, corpusDate } },
@@ -931,9 +960,9 @@ export function buildAgentApi(inputs: AgentApiInputs): ApiFile[] {
 
   // Emitted last, and in the same pass, so it cannot describe a set of files that was
   // never written. It is the description rather than a described response, so it carries
-  // its corpus date as info.version + x-corpus-date rather than a bare corpusDate key,
-  // which would make the document invalid against the OpenAPI 3.1 meta-schema.
-  files.push({ name: OPENAPI_FILE, body: buildOpenApiDocument(corpusDate) });
+  // its corpus date as x-corpus-date rather than a bare corpusDate key, which would make the
+  // document invalid against the OpenAPI 3.1 meta-schema; info.version is the shape's version.
+  files.push({ name: OPENAPI_FILE, body: buildOpenApiDocument(corpusDate, schemaVersion) });
   return files;
 }
 

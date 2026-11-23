@@ -73,6 +73,15 @@ export const PATH_PREFIX = `${SITE_BASE}/api/`;
 export const JSON_SCHEMA_DIALECT = 'https://json-schema.org/draft/2020-12/schema';
 
 /**
+ * The API's major version, served as `index.json`'s `apiVersion` and as the first part of
+ * `info.version` (tucca-cellag/caail-planning#153, fitted by #389's option A). It changes only at
+ * a redesign of the whole API: the v2 cutover moves it to 2. The schema version beside it, a
+ * counter kept in `api-schema-stamp.json` (schema-stamp.ts), moves on every change of shape and
+ * never resets when this does.
+ */
+export const API_VERSION = 1;
+
+/**
  * One endpoint: the file, the schema its body must satisfy, and the prose an agent reads
  * to decide whether to fetch it. `id` names the schema under `components.schemas`.
  */
@@ -96,8 +105,9 @@ export const API_ENDPOINTS: readonly ApiEndpointSpec[] = [
     schema: ApiManifestSchema,
     summary: 'Corpus manifest',
     description:
-      'Read first. Corpus date, the endpoint list, a pointer to this document, and counts ' +
-      'labelled with the population each one counted.',
+      'Read first. Corpus date, API and schema versions (`versionNote` says what each one ' +
+      'dates), the endpoint list, a pointer to this document, and counts labelled with the ' +
+      'population each one counted.',
   },
   {
     file: 'matrix.json',
@@ -375,10 +385,17 @@ function componentSchemas(): Record<string, unknown> {
 /**
  * Build the OpenAPI 3.1 document.
  *
- * `info.version` carries the corpus date rather than a release number: these are data
- * endpoints, and "which corpus is this" is the only version question a consumer has.
+ * `info.version` is `<API_VERSION>.<schemaVersion>`, the shape of the files, and
+ * `x-corpus-date` is the corpus date, their content. They answer different questions: a
+ * consumer written against today's fields needs to know when the fields change, which a corpus
+ * date cannot say, since it moves on every catalog edit and stays put when a field is renamed.
+ * The date used to sit in `info.version`, on the reasoning that "which corpus is this" was the
+ * only version question a consumer had; #153 is the case where it was not.
+ *
+ * `paths` and `components` depend on neither argument, which is what lets schema-stamp.ts hash
+ * them (asserted in schema-stamp.test.ts).
  */
-export function buildOpenApiDocument(corpusDate: string): unknown {
+export function buildOpenApiDocument(corpusDate: string, schemaVersion: number): unknown {
   const paths: Record<string, unknown> = {};
   for (const e of API_ENDPOINTS) {
     paths[`${PATH_PREFIX}${e.file}`] = {
@@ -403,7 +420,7 @@ export function buildOpenApiDocument(corpusDate: string): unknown {
     jsonSchemaDialect: JSON_SCHEMA_DIALECT,
     info: {
       title: 'CAAIL agent API',
-      version: corpusDate,
+      version: `${API_VERSION}.${schemaVersion}`,
       summary: 'Static JSON endpoints describing the Cellular Agriculture AI Library.',
       description:
         'Static JSON files, served by GET, with nothing to install or authenticate. ' +
@@ -418,7 +435,14 @@ export function buildOpenApiDocument(corpusDate: string): unknown {
         'The same files are mirrored per-filename at ' +
         'https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/, which ' +
         'some clients can reach when that origin is not allow-listed. Resolve that mirror by ' +
-        'filename; do not join the paths below onto it.',
+        'filename; do not join the paths below onto it. ' +
+        // What each version signal dates, said where a consumer of the shape reads first.
+        'The version above is `<apiVersion>.<schemaVersion>`, as served in index.json: ' +
+        'apiVersion changes only at a redesign of the whole API, and schemaVersion counts ' +
+        'changes to the paths and components below, so record it to tell a change of shape ' +
+        'from a change of content. `x-corpus-date`, and each file\'s `corpusDate`, dates the ' +
+        'catalog entries (the papers, software, databases and datasets), not other served data ' +
+        'such as citation counts or the taxonomy definitions.',
       license: {
         name: 'MIT (CAAIL curation). Linked third-party resources keep their own licenses.',
         identifier: 'MIT',

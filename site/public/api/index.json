@@ -1,6 +1,9 @@
 {
   "name": "CAAIL: Cellular Agriculture AI Library",
   "corpusDate": "2026-11-14",
+  "apiVersion": 1,
+  "schemaVersion": 1,
+  "versionNote": "corpusDate dates the catalog entries (the papers, software, databases and datasets), not other served data such as citation counts or the taxonomy definitions. apiVersion changes only at a redesign of the whole API. schemaVersion counts changes to the shape of these files, the fields and endpoints openapi.json describes, and never resets; openapi.json's info.version is apiVersion.schemaVersion. Record schemaVersion with what you build against: if it differs on a later fetch, check openapi.json before trusting a field.",
   "status": "beta",
   "placementsUnderReview": true,
   "canonical": "https://github.com/tucca-cellag/caail",
@@ -35,7 +38,7 @@
   "endpoints": [
     {
       "path": "index.json",
-      "use": "This manifest: corpus date, counts by population, endpoint list."
+      "use": "This manifest: corpus date, API and schema versions (`versionNote` says what each dates), counts by population, endpoint list."
     },
     {
       "path": "matrix.json",
