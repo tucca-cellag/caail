@@ -293,7 +293,8 @@ a.site-title {
 .caail-tv-toggle { display: none; border: 1px solid var(--caail-border); border-radius: 8px; overflow: hidden; }
 .caail-tv-toggle button { font: inherit; font-size: 0.72rem; font-weight: 600; margin: 0; padding: 0.3rem 0.75rem; background: var(--caail-bg); color: var(--caail-muted); border: 0; cursor: pointer; text-align: center; }
 .caail-tv-toggle button + button { border-inline-start: 1px solid var(--caail-border); }
-.caail-tv-toggle button[aria-pressed='true'] { background: var(--caail-primary); color: #fff; }
+/* `--caail-bg`, not #fff: the fill turns light in dark mode (see CommunityBand's .cta). */
+.caail-tv-toggle button[aria-pressed='true'] { background: var(--caail-primary); color: var(--caail-bg); }
 
 .caail-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 0.8rem; }
 /* The cards are built inside `.sl-markdown-content`, where Starlight's prose flow

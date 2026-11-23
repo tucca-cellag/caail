@@ -61,6 +61,6 @@ BibTeX:
 When citing a specific catalogued resource (paper, software tool, dataset), cite the original source directly rather than CAAIL: the DOIs and canonical URLs in [Papers.md](./Papers.md), [Software.md](./Software.md), [Datasets/](./Datasets/), and [Databases.md](./Databases.md) are authoritative.
 
 # License
-&copy; 2026 [The Tufts University Center for Cellular Agriculture (TUCCA)](https://cellularagriculture.tufts.edu/) and CAAIL contributors.
+&copy; 2026 Tufts University and CAAIL contributors.
 
 Content in this repository is licensed under the [MIT License](./LICENSE). You are free to use, copy, modify, and redistribute the material (including commercially) provided that the copyright notice and license text are included with substantial portions of the work.

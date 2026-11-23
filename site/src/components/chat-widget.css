@@ -121,7 +121,7 @@
   padding: 0.4rem 0.5rem;
   color: var(--caail-ink);
   background: var(--caail-surface);
-  border: 1px solid var(--caail-border);
+  border: 1px solid var(--caail-control-edge);
   border-radius: 0.4rem;
   font: inherit;
 }

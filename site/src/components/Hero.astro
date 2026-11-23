@@ -100,7 +100,20 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
           ))}
         </p>
         <p class="visually-hidden">{statSentence}</p>
+        {/* The reader's control over the typing and the caret (WCAG 2.2.2), which otherwise
+            run without end. It has its own row, so its width never adds to the caption's
+            in a row that cannot wrap. Served `data-pending`, which keeps its row but hides it (and takes it out of
+            the tab order and the accessibility tree), and enabled by the script only when it
+            starts the loop (and removed when the loop will not start): so the page does not
+            shift when it appears, and no reader is offered a control over nothing. Under
+            reduced motion CSS removes it at first paint; a reader who turns reduced motion on
+            later keeps it, with the loop paused.
+            Its name says what it acts on, since the counter itself is hidden from AT. */}
         <a class="tick-cap" href={`${base}/by-the-numbers/`}>Counted at build time <span aria-hidden="true">→</span></a>
+        <button type="button" class="tick-pause" data-pending>
+          <span class="tick-pause-ic" aria-hidden="true"><Icon name="lucide:pause" class="ic-pause" /><Icon name="lucide:play" class="ic-play" /></span>
+          <span class="tick-pause-label">Pause</span><span class="visually-hidden"> the counter</span>
+        </button>
       </div>
 
       {/* The three ways in, in the space the counter leaves empty.
@@ -358,12 +371,16 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
   .tick-l { font-size: var(--caail-fs-lg); font-weight: 600; color: var(--caail-ink); }
 
   /* Caret. A drawn block rather than a "|" glyph, so it keeps its weight at any font
-     and sits on the same baseline as the number it trails. */
+     and sits on the same baseline as the number it trails. It shows and blinks only once
+     the script has started the loop (`data-live`): with no script there is no control
+     to stop it, and nothing for it to promise (WCAG 2.2.2). Hidden rather than removed,
+     so its arrival moves nothing. */
   .tick-caret {
     display: inline-block; width: 2px; height: 1.6rem; margin-left: -.25rem;
     background: var(--caail-link);
-    animation: tick-blink 1.06s step-end infinite;
+    visibility: hidden;
   }
+  .tick[data-live] .tick-caret { visibility: visible; animation: tick-blink 1.06s step-end infinite; }
   @keyframes tick-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
   /* Counted at build time, linking to where that can be checked. The claim and the
@@ -375,6 +392,19 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
   .tick-cap { display: inline-block; font-size: var(--caail-fs-xs); color: var(--caail-muted); text-decoration: none; margin-top: .3rem; transition: color .15s ease-out; }
   .tick-cap:hover, .tick-cap:focus-visible { color: var(--caail-link); }
   @media (prefers-reduced-motion: reduce) { .tick-cap { transition: none; } }
+
+  /* At least 24px each way, WCAG 2.5.8's target size. */
+  .tick-pause { display: inline-flex; align-items: center; gap: .3rem; min-height: 24px; min-width: 24px; margin: .3rem 0 0; padding: 0 .35rem; font: inherit; font-size: var(--caail-fs-xs); color: var(--caail-muted); background: none; border: 0; border-radius: 4px; cursor: pointer; }
+  .tick-pause[data-pending] { visibility: hidden; }
+  /* Pending only: once offered, the control stays, so a reader who turns reduced motion
+     on mid-page keeps it (and keeps focus on it). */
+  @media (prefers-reduced-motion: reduce) { .tick-pause[data-pending] { display: none; } }
+  .tick-pause:hover, .tick-pause:focus-visible { color: var(--caail-link); }
+  .tick-pause:focus-visible { outline: 2px solid var(--caail-link); outline-offset: 1px; }
+  .tick-pause-ic { display: inline-flex; }
+  .tick-pause [data-icon] { width: .9rem; height: .9rem; }
+  .tick-pause .ic-play, .tick-pause[data-paused] .ic-pause { display: none; }
+  .tick-pause[data-paused] .ic-play { display: inline; }
 
   /* The three ways in. Stacked below the counter on one column; beside it above 68rem. */
   .ways { list-style: none; margin: var(--caail-space-4) 0 0; padding: 0; display: grid; gap: .35rem; }
@@ -419,6 +449,7 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
   .tick-col { display: grid; grid-template-columns: max-content; }
   .tick, .tick-reserve { grid-area: 1 / 1; }
   .tick-cap { grid-row: 2; }
+  .tick-pause { grid-row: 3; justify-self: start; }
   .tick-reserve { display: grid; margin: 0; visibility: hidden; pointer-events: none; }
   .tick-ghost { grid-area: 1 / 1; display: flex; align-items: baseline; gap: .5rem; white-space: nowrap; }
 
@@ -430,6 +461,8 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
   @media (prefers-reduced-motion: reduce) {
     .tick-caret { display: none; animation: none; }
   }
+  /* Paused by the reader: the caret goes for the same reason it goes under reduced motion. */
+  .tick[data-paused] .tick-caret { display: none; animation: none; }
 
   /* TUCCA attribution — sits under the stat row, left-aligned with the hero. */
   .hero-attrib { display: flex; align-items: center; gap: .55rem; flex-wrap: wrap; margin: 0 0 0 auto; }
@@ -526,8 +559,13 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
         timer = window.setTimeout(step, erasing ? ERASE : TYPE);
       };
 
+      // The reader's pause. While it holds, nothing restarts the loop, a tab returning
+      // to view included.
+      let paused = false;
+
       const start = () => {
         window.clearTimeout(timer);
+        if (paused) return;
         const [n, label] = entries[entry]!;
         const full = n.length + 1 + label.length;
         // Resume at the cadence of whatever phase we are actually in.
@@ -547,7 +585,42 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
         if (document.hidden) window.clearTimeout(timer);
         else start();
       });
+
+      const button = document.querySelector<HTMLButtonElement>('.hero .tick-pause');
+      const label = button?.querySelector<HTMLElement>('.tick-pause-label');
+      const setPaused = (next: boolean) => {
+        paused = next;
+        if (paused) {
+          window.clearTimeout(timer);
+          // Stop on the whole statistic rather than a half-typed one; resuming then
+          // holds it before erasing, as any fully typed entry is.
+          const [n, label0] = entries[entry]!;
+          chars = n.length + 1 + label0.length;
+          erasing = false;
+          paint();
+        }
+        tick.toggleAttribute('data-paused', paused);
+        button?.toggleAttribute('data-paused', paused);
+        if (label) label.textContent = paused ? 'Play' : 'Pause';
+        start();
+      };
+      if (button && label) {
+        button.addEventListener('click', () => setPaused(!paused));
+        delete button.dataset.pending;
+      }
+      // `still` was read once, above. A reader who turns reduced motion on after load
+      // has asked for less motion, so the loop pauses; the control stays (its CSS hide
+      // applies only before it is offered) and offers Play. Turning reduced motion off
+      // again leaves the pause standing until the reader presses Play.
+      still.addEventListener('change', () => {
+        if (still.matches && !paused) setPaused(true);
+      });
+      tick.dataset.live = '';
       start();
     }
   }
+  // The loop did not start on this page view (reduced motion at load, or nothing to
+  // rotate), so nothing here will ever move: drop the control. Left pending, a later
+  // change of preference would open its reserved row and shift the hero for nothing.
+  if (!tick?.hasAttribute('data-live')) document.querySelector('.hero .tick-pause')?.remove();
 </script>

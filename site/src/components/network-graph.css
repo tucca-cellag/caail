@@ -5,7 +5,7 @@
 /* Neutralize Starlight's prose `* + *` flow margins on the controls so flex gap
    is the single source of spacing (these otherwise add stray 16px top margins). */
 .ng-controls > * { margin: 0; }
-.ng-select { padding: .5rem .7rem; border: 1px solid var(--caail-border); border-radius: 8px; font: inherit; background: var(--caail-bg); color: var(--caail-ink); }
+.ng-select { padding: .5rem .7rem; border: 1px solid var(--caail-control-edge); border-radius: 8px; font: inherit; background: var(--caail-bg); color: var(--caail-ink); }
 .ng-check { display: inline-flex; align-items: center; gap: .4rem; font-size: .8rem; color: var(--caail-ink); }
 /* Stats sit on their own caption line below the interactive controls at all widths. */
 .ng-meta { flex-basis: 100%; font-size: .72rem; color: var(--caail-muted); }
@@ -23,7 +23,8 @@
    adds a 16px top margin to the second button and breaks the pill alignment. */
 .ng-seg-btn { appearance: none; border: 0; margin: 0; background: none; cursor: pointer; font: inherit; font-size: .78rem; font-weight: 600; white-space: nowrap; flex: 0 0 auto; display: inline-flex; align-items: center; color: var(--caail-muted); padding: .34rem .85rem; border-radius: 999px; line-height: 1.2; transition: background-color .12s ease, color .12s ease; }
 .ng-seg-btn:hover { color: var(--caail-ink); }
-.ng-seg-btn[aria-pressed='true'] { background: var(--caail-primary); color: #fff; }
+/* `--caail-bg`, not #fff: the fill turns light in dark mode (see CommunityBand's .cta). */
+.ng-seg-btn[aria-pressed='true'] { background: var(--caail-primary); color: var(--caail-bg); }
 .ng-seg-btn:focus-visible { outline: 2px solid var(--caail-link); outline-offset: 2px; }
 
 .ng-stage { position: relative; border: 1px solid var(--caail-border); border-radius: 12px; overflow: hidden; background: var(--caail-surface); }

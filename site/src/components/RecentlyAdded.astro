@@ -1,22 +1,5 @@
 ---
 import recent from '../content/data/recent.json';
-const areaColor = {
-  media: 'var(--caail-area-media)', cell: 'var(--caail-area-cell)', bioprocess: 'var(--caail-area-bioprocess)', scaffolding: 'var(--caail-area-scaffolding)',
-  sensory: 'var(--caail-area-sensory)', metabolic: 'var(--caail-area-metabolic)',
-  foodsafety: 'var(--caail-area-foodsafety)', tooling: 'var(--caail-area-tooling)',
-} as const;
-// The dot is the ONE in-app surface where an area is shown without a visible text
-// label, which is the exact condition tokens.css's palette rationale assumes never
-// happens ("every surface renders the area's text label beside the colour"). Two of
-// the eight areas sit below WCAG 1.4.11's 3:1 against the dark background, so the
-// colour alone cannot carry it. An accessible name restores the assumption without
-// changing the layout.
-const areaLabel = {
-  media: 'Media Optimization', cell: 'Cellular Engineering', bioprocess: 'Bioprocess & Scale-Up',
-  scaffolding: 'Scaffolding', sensory: 'Sensory Prediction', metabolic: 'Metabolic Modeling',
-  foodsafety: 'Food Safety Prediction', tooling: 'AI Tooling / Methodology',
-} as const;
-type AreaKey = keyof typeof areaColor;
 ---
 <section class="recent">
   <h2 class="caail-display sr">Recently added</h2>
@@ -25,7 +8,6 @@ type AreaKey = keyof typeof areaColor;
       <span class="date">{r.date}</span>
       <span class="kind">{r.kind}</span>
       <span class="ttl">{r.title}</span>
-      <span class="dot" style={`background:${areaColor[r.area as AreaKey]}`} role="img" aria-label={`Research area: ${areaLabel[r.area as AreaKey]}`} title={areaLabel[r.area as AreaKey]}></span>
     </div>
   ))}
   <a class="more" href="https://github.com/tucca-cellag/caail/commits/main">View the full changelog →</a>
@@ -36,6 +18,5 @@ type AreaKey = keyof typeof areaColor;
   .date { font-family: var(--caail-font-mono); font-size: var(--caail-fs-xs); color: var(--caail-muted); white-space: nowrap; }
   .kind { font-size: var(--caail-fs-xs); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--caail-accent); width: 4rem; }
   .ttl { flex: 1; color: var(--caail-ink); }
-  .dot { width: .6rem; height: .6rem; border-radius: 3px; }
   .more { display: inline-block; margin-top: .7rem; font-size: var(--caail-fs-sm); font-weight: 700; color: var(--caail-link); }
 </style>

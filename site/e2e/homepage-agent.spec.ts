@@ -486,7 +486,7 @@ test('the ways-in list never collides with the counter, at any text size', async
       }
       if (minFontPx) {
         await page.addStyleTag({
-          content: `.tick-l, .ways, .ways *, .tick-cap { font-size: ${minFontPx}px !important; }`,
+          content: `.tick-l, .ways, .ways *, .tick-cap, .tick-pause { font-size: ${minFontPx}px !important; }`,
         });
       }
 

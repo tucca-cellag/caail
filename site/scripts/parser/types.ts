@@ -825,17 +825,6 @@ export const RecentEntrySchema = z.object({
   kind: z.enum(['Paper', 'Software', 'Dataset', 'Database', 'Resource']),
   /** short title: the commit subject with prefix, lead verb, and issue ref stripped */
   title: z.string().min(1),
-  /** research-area key driving the dot colour (RecentlyAdded.astro areaColor) */
-  area: z.enum([
-    'media',
-    'cell',
-    'bioprocess',
-    'scaffolding',
-    'sensory',
-    'metabolic',
-    'foodsafety',
-    'tooling',
-  ]),
 });
 
 /** recent.json is a flat array of entries, newest first. */
