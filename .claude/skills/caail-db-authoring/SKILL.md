@@ -1,6 +1,6 @@
 ---
 name: caail-db-authoring
-description: Use when adding, editing, or removing a paper, software tool, database, dataset inventory row, curated dataset entry (atlas/GEM/reference), or field report in CAAIL. The structured catalog is authored in an in-repo SQLite DB (issue #78) and the canonical Markdown (Papers.md, Software.md, Databases.md, FieldReports.md, and the Datasets/*.md inventory tables + curated ### entries) is generated from it. Covers the edit-DB → export → emit → check → commit workflow. The DB-era successor to hand-editing the matrix and catalog files. While new items are paused until CAAIL v2, adding is refused; editing still works, and so does `db:remove` for the kinds it has a case for (field reports are not one of them; see Field reports).
+description: Use when adding, editing, or removing a paper, software tool, database, dataset inventory row, curated dataset entry (atlas/GEM/reference), or field report in CAAIL. The structured catalog is authored in an in-repo SQLite DB (issue #78) and the canonical Markdown (Papers.md, Software.md, Databases.md, FieldReports.md, and the Datasets/*.md inventory tables + curated ### entries) is generated from it. Covers the edit-DB → export → emit → check → commit workflow. The DB-era successor to hand-editing the matrix and catalog files. While new items are paused until CAAIL v2, adding is refused; editing still works.
 ---
 
 # Authoring CAAIL's structured catalog via the SQLite DB
@@ -9,8 +9,8 @@ description: Use when adding, editing, or removing a paper, software tool, datab
 > or curated dataset entry, by `db:add` or by adding a row to the NDJSON, and do not add a
 > study to a Data on request list either. While the pause holds, `db:add` refuses every
 > descriptor and writes nothing. Edits to existing items (descriptions, licences, DOIs,
-> corrections) still work through the full procedure below, and so does `db:remove` for
-> the kinds it has a case for (field reports are not one of them; see Field reports).
+> corrections) still work through the full procedure below, and the pause does not stop
+> `db:remove`.
 > CI refuses a pull request that adds an item or a Data on request study to the NDJSON,
 > however it got there (`db:check-new-items` in `lint-papers.yml`; an entry added to the
 > Markdown alone fails the sync guard instead). A correction that adds an id declares it in
@@ -261,8 +261,9 @@ Three changes are not column edits. Raise them rather than improvising one:
 - **Adding a report or a new edition.** It is a new item, paused like every other until v2.
   `db:add` does not handle reports either, and `db:emit` stops when `reports.ndjson` and
   `FieldReports.md` disagree on how many reports there are.
-- **Removing a report.** `db:remove` has no case for reports, and the same count check stops
-  `db:emit`.
+- **Removing a report.** `db:remove` has no case for reports: it fails on a foreign-key error
+  and writes nothing. Deleting the row from `reports.ndjson` by hand instead stops `db:emit` on
+  the same count check.
 
 ## Known pitfalls
 
