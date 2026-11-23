@@ -20,8 +20,8 @@ export const CORPUS_DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/;
  * fails when a table is added that no word here covers.
  */
 export const CORPUS_DATE_COVERS =
-  "CAAIL's catalog records (the papers, software, databases, datasets and field reports, and the " +
-  'topics and matrix axes they are filed under)';
+  "CAAIL's catalog records (the papers, software, databases, datasets and field reports, the studies " +
+  'whose data are shared only on request, and the topics and matrix axes they are filed under)';
 
 /** What a corpus date does not date: served data stamped from somewhere other than the NDJSON. */
 export const CORPUS_DATE_EXCLUDES = 'other served data, such as citation counts or the taxonomy definitions';

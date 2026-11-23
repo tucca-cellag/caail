@@ -266,7 +266,10 @@ describe('buildAgentApi', () => {
     const manifest = files.find((f) => f.name === 'index.json')!.body as any;
     expect(manifest.versionNote).toBe(VERSION_NOTE);
     expect(VERSION_NOTE).toContain(`corpusDate dates ${CORPUS_DATE_COVERS}, not ${CORPUS_DATE_EXCLUDES}.`);
-    expect(VERSION_NOTE).toMatch(/info\.version is apiVersion\.schemaVersion/);
+    expect(VERSION_NOTE).toMatch(/info\.version is the string apiVersion\.schemaVersion, two whole numbers/);
+    expect(VERSION_NOTE).toMatch(/treat any difference in it as a change of shape/);
+    // No promise of order: a pull request's base can lag main, so the guard cannot make one.
+    expect(VERSION_NOTE).not.toMatch(/only ever goes up|never resets/);
     // What a consumer could mistake for shape is named: endpoint prose counts, column keys do not.
     expect(VERSION_NOTE).toMatch(/endpoint descriptions included/);
     expect(VERSION_NOTE).toMatch(/does not count the keys of a dataset inventory row's `columns`/);

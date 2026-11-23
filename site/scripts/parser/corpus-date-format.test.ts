@@ -24,7 +24,8 @@ const COVERAGE: Record<string, readonly string[] | { none: string }> = {
   catalog: ['software', 'databases'],
   dataset_rows: ['datasets'],
   dataset_entries: ['datasets'],
-  datasets_on_request: ['datasets'],
+  // Not 'datasets': the API says on-request studies are not datasets, so they get words of their own.
+  datasets_on_request: ['shared only on request'],
   reports: ['field reports'],
   topics: ['topics'],
   item_topics: ['topics'],

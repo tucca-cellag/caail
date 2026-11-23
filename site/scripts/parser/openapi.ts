@@ -438,7 +438,8 @@ export function buildOpenApiDocument(corpusDate: string, schemaVersion: number):
         'some clients can reach when that origin is not allow-listed. Resolve that mirror by ' +
         'filename; do not join the paths below onto it. ' +
         // What each version signal dates, said where a consumer of the shape reads first.
-        'The version above is `<apiVersion>.<schemaVersion>`, as served in index.json: ' +
+        'The version above is `<apiVersion>.<schemaVersion>`, two whole numbers as served in ' +
+        'index.json, not a decimal: ' +
         'apiVersion changes only at a redesign of the whole API, and schemaVersion counts ' +
         'changes to the paths and components below (index.json\'s `versionNote` says exactly ' +
         'what it covers), so record it to tell a change of shape from a change of content. ' +

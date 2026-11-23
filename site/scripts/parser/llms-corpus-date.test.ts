@@ -15,8 +15,8 @@ import { PUBLIC_DIR } from './llms-full.js';
 describe('corpusDateNote', () => {
   it('says what the date dates, where the canonical copy is, and that matching dates prove nothing', () => {
     expect(corpusDateNote('2026-11-14', 'llms.txt')).toBe(
-      `Corpus date: 2026-11-14, the date stamped on the newest version of ${CORPUS_DATE_COVERS} ` +
-        "(the agent API's corpusDate). It can differ from the day that version went live (usually earlier), " +
+      `Corpus date: 2026-11-14, the date stamped on the newest version of ${CORPUS_DATE_COVERS}, ` +
+        'which the agent API serves as corpusDate. It can differ from the day that version went live (usually earlier), ' +
         `and it does not date ${CORPUS_DATE_EXCLUDES}. ` +
         `The canonical copy of this file is ${SITE_URL}llms.txt. ` +
         'Its prose can change without moving that date, so a copy read anywhere else may be out of date ' +
