@@ -19,9 +19,10 @@ const P = (rel: string) => join(REPO_ROOT, rel);
 function run(
   payload: object,
   hook = HOOK,
-  opts: { cwd?: string } = {},
+  opts: { cwd?: string; env?: Record<string, string> } = {},
 ): { permissionDecision: string; permissionDecisionReason: string } | null {
-  const out = execFileSync('python3', [hook], { input: JSON.stringify(payload), encoding: 'utf-8', cwd: opts.cwd }).trim();
+  const env = { ...process.env, ...opts.env };
+  const out = execFileSync('python3', [hook], { input: JSON.stringify(payload), encoding: 'utf-8', cwd: opts.cwd, env }).trim();
   return out ? JSON.parse(out).hookSpecificOutput : null;
 }
 
@@ -191,6 +192,14 @@ describe('block-generated-edits hook: judged by the path inside the checkout', (
     // The process cwd is the opposite of the session's, so a hook reading it would get both wrong.
     const opts = { cwd: join(root, cwdRel === 'site' ? '' : 'site') };
     expect(run(payload, hookOf(root), opts)?.permissionDecision ?? null).toBe(want);
+  });
+
+  // A "~/" path names the home directory, not a directory called "~" under the session cwd,
+  // so a file under the checkout's own site/ given that way is still allowed.
+  it('ALLOWS a ~/ path to a file under the checkout\'s site/', () => {
+    const root = checkout('plain');
+    const payload = { ...write('~/plain/caail/site/src/Papers.md'), cwd: root };
+    expect(run(payload, hookOf(root), { env: { HOME: tmp } })?.permissionDecision ?? null).toBeNull();
   });
 
   // A path in no checkout cannot be placed inside one, so it is judged by its name alone:

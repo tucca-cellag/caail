@@ -38,7 +38,7 @@ if not fp:
 # the directory the tool resolves it against, not from whichever directory this
 # process happened to start in. Symlinks are not resolved: a path is judged as written.
 HOOK_REL = os.path.join(".claude", "hooks", os.path.basename(__file__))
-path = os.path.abspath(os.path.join(data.get("cwd") or os.getcwd(), fp))
+path = os.path.abspath(os.path.join(data.get("cwd") or os.getcwd(), os.path.expanduser(fp)))
 
 
 def checkout_root(p):
