@@ -1108,8 +1108,9 @@ export const ApiManifestSchema = z.strictObject({
  */
 export const ApiNetworkSchema = z.strictObject({
   corpusDate: CorpusDateSchema,
-  /** every reference is a node, so this equals papersAllSections in index.json */
-  nodes: z.number().int().nonnegative(),
+  /** how many nodes (every reference is one, so this equals papersAllSections in index.json);
+   *  the node records themselves are papers-index.json's rows, by the same id */
+  nodeCount: z.number().int().nonnegative(),
   sharedAuthor: GraphModeStatsSchema,
   citation: GraphModeStatsSchema,
   /** what an edge means in each mode, stated before the edges so a truncation keeps it */

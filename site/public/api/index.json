@@ -52,7 +52,7 @@
     },
     {
       "path": "papers.json",
-      "use": "Full records for the references you selected. Large (~554 KB): if your fetch summarises rather than returning bytes, a \"not found\" from this file is not evidence of absence. The Citations hub (/citations/) bands an OpenAlex citation count: papers.json's `citedByOpenAlex`, and `citationCount` on catalog.json's software and databases and datasets.json's curated entries. The bands are 1,000+ citations, 100–999 citations, 10–99 citations, Under 10 citations; an item with no count is in no band, not in the lowest."
+      "use": "Full records for the references you selected. Large (~554 KB): if your fetch summarises rather than returning bytes, a \"not found\" from this file is not evidence of absence. The Citations hub (https://caail.tufts.edu/citations/) bands an OpenAlex citation count: papers.json's `citedByOpenAlex`, and `citationCount` on catalog.json's software and databases and datasets.json's curated entries. The bands are 1,000+ citations, 100–999 citations, 10–99 citations, Under 10 citations; an item with no count is in no band, not in the lowest."
     },
     {
       "path": "network.json",
@@ -60,7 +60,7 @@
     },
     {
       "path": "catalog-index.json",
-      "use": "START HERE for software and databases. One compact row each: slug, name, kind, group, URL, DOI, whether that DOI is the item's own or a paper or document about it (`doiRelation`), license tier. A tenth the size of catalog.json. The Licenses hub (/licenses/) is a filter on `tier`, over catalog.json's software and databases (also in catalog-index.json's rows) and datasets.json's curated entries; papers are not in it. The tiers are permissive, copyleft, restricted, unknown: a coarse triage signal, not verified terms."
+      "use": "START HERE for software and databases. One compact row each: slug, name, kind, group, URL, DOI, whether that DOI is the item's own or a paper or document about it (`doiRelation`), license tier. A tenth the size of catalog.json. The Licenses hub (https://caail.tufts.edu/licenses/) is a filter on `tier`, over catalog.json's software and databases (also in catalog-index.json's rows) and datasets.json's curated entries; papers are not in it. The tiers are permissive, copyleft, restricted, unknown: a coarse triage signal, not verified terms."
     },
     {
       "path": "catalog.json",
@@ -89,6 +89,6 @@
   ],
   "repositoryActivity": {
     "url": "https://api.github.com/repos/tucca-cellag/caail/commits",
-    "use": "By the Numbers' momentum figures are repository activity, read from git history when the site is deployed, so no file here carries them. Read the same history from this GitHub endpoint. Its 30-day commit counts are the commits with one parent returned for `path=Papers.md` and for `path=Datasets` with `since` set 30 days back (page with `per_page` and `page`). For its latest paper or dataset addition, make one request per path (the endpoint takes one) for Papers.md, Software.md, Databases.md, Datasets, OtherResources.md, order the one-parent commits by `commit.committer.date`, newest first, and read the `commit.author.date` of the first whose subject reads (paging each path until one does, or its history ends) `type(scope): verb …`, with a first scope of papers for a paper and data or datasets for a dataset, and a lead verb of add, integrate, catalogue, catalog, inventory, all matched in any case and the verb as a whole word. The page's figures are the same counts as of its last deploy."
+    "use": "By the Numbers' momentum figures are repository activity, read from git history when the site is deployed, so no file here carries them. Read the same history from this GitHub endpoint. Its 30-day commit counts are the commits with one parent returned for `path=Papers.md` and for `path=Datasets` with `since` set 30 days back (page with `per_page` and `page`). For its latest paper or dataset addition, make one request per path (the endpoint takes one) for Papers.md, Software.md, Databases.md, Datasets, OtherResources.md, order the one-parent commits by `commit.committer.date`, newest first, and read the `commit.author.date` of the first whose subject reads (paging each path until one does, or its history ends) `type(scope): verb …`, with a first scope of papers for a paper and data or datasets for a dataset, and a lead verb of add, integrate, catalogue, catalog, inventory, all matched in any case and the verb as a whole word. GitHub rate-limits unauthenticated requests, so a refused request or an unread page leaves a figure incomplete, not zero. The page's figures are the same counts as of its last deploy."
   }
 }

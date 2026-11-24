@@ -234,6 +234,6 @@ describe('network.json serves the edges graph.json draws (tucca-cellag/caail-pla
   it('carries the same per-mode stats', () => {
     expect(network.sharedAuthor).toEqual(graph.metadata.sharedAuthor);
     expect(network.citation).toEqual(graph.metadata.citation);
-    expect(network.nodes).toBe(graph.nodes.length);
+    expect(network.nodeCount).toBe(graph.nodes.length);
   });
 });

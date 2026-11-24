@@ -801,7 +801,8 @@ export const NETWORK_EDGES_NOTE =
  */
 export const NETWORK_LIMITS_NOTE =
   'Edges are derived, not checked. Shared-author joins match authors by surname and first ' +
-  'initial, so they can join two people or split one. Citation edges come from a hand-refreshed ' +
+  'initial (by surname alone where a citation gives no initial), so they can join two people or ' +
+  'split one. Citation edges come from a hand-refreshed ' +
   "cache of OpenAlex records, so some references have none, and a direction is OpenAlex's " +
   'reading of a reference list. Neither cache is dated by `corpusDate`. An absent edge is not ' +
   'evidence that two papers are unrelated.';
@@ -817,7 +818,7 @@ export function buildNetwork(graph: Graph, corpusDate: string): unknown {
   // that truncates the tail still carries the counts to check against.
   return {
     corpusDate,
-    nodes: graph.metadata.nodes,
+    nodeCount: graph.metadata.nodes,
     sharedAuthor: graph.metadata.sharedAuthor,
     citation: graph.metadata.citation,
     edgesNote: NETWORK_EDGES_NOTE,
@@ -836,13 +837,13 @@ export function buildNetwork(graph: Graph, corpusDate: string): unknown {
 
 /** The Licenses hub's one axis, from the tier list licenses.ts classifies into. */
 export const LICENSES_HUB_NOTE =
-  "The Licenses hub (/licenses/) is a filter on `tier`, over catalog.json's software and " +
+  `The Licenses hub (${SITE_URL}licenses/) is a filter on \`tier\`, over catalog.json's software and ` +
   "databases (also in catalog-index.json's rows) and datasets.json's curated entries; papers are " +
   `not in it. The tiers are ${LICENSE_TIERS.join(', ')}: a coarse triage signal, not verified terms.`;
 
 /** The Citations hub's bands, written from citation-bands.ts so a changed band changes the text. */
 export const CITATIONS_HUB_NOTE =
-  "The Citations hub (/citations/) bands an OpenAlex citation count: papers.json's " +
+  `The Citations hub (${SITE_URL}citations/) bands an OpenAlex citation count: papers.json's ` +
   "`citedByOpenAlex`, and `citationCount` on catalog.json's software and databases and " +
   `datasets.json's curated entries. The bands are ${CITATION_BANDS.map((b) => BAND_META[b].label).join(', ')}; ` +
   'an item with no count is in no band, not in the lowest.';
@@ -878,7 +879,8 @@ export const REPOSITORY_ACTIVITY = {
     `${Object.keys(SCOPE_TO_KIND).filter((s) => SCOPE_TO_KIND[s] === 'Paper').join(' or ')} for a paper ` +
     `and ${Object.keys(SCOPE_TO_KIND).filter((s) => SCOPE_TO_KIND[s] === 'Dataset').join(' or ')} for a ` +
     `dataset, and a lead verb of ${ADDITION_VERBS.join(', ')}, all matched in any case and the verb as a ` +
-    "whole word. The page's figures are the same " +
+    "whole word. GitHub rate-limits unauthenticated requests, so a refused request or an unread " +
+    "page leaves a figure incomplete, not zero. The page's figures are the same " +
     'counts as of its last deploy.',
 } as const;
 

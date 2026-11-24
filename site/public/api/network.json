@@ -1,6 +1,6 @@
 {
   "corpusDate": "2026-11-14",
-  "nodes": 348,
+  "nodeCount": 348,
   "sharedAuthor": {
     "edges": 536,
     "connectedNodes": 228,
@@ -14,7 +14,7 @@
     "largestComponent": 250
   },
   "edgesNote": "Every reference is a node, named by its `id` as in papers-index.json. `sharedAuthorEdges` are undirected: two references that share at least one author, `source` the lower id and `target` the higher, with the shared names as one of the two papers writes them. `citationEdges` are directed: `source` cites `target`, both references CAAIL holds, read from OpenAlex. A reference in no edge of a mode is isolated in it, and `isolatedNodes` counts those, so the ids that appear here are only the connected ones.",
-  "limitsNote": "Edges are derived, not checked. Shared-author joins match authors by surname and first initial, so they can join two people or split one. Citation edges come from a hand-refreshed cache of OpenAlex records, so some references have none, and a direction is OpenAlex's reading of a reference list. Neither cache is dated by `corpusDate`. An absent edge is not evidence that two papers are unrelated.",
+  "limitsNote": "Edges are derived, not checked. Shared-author joins match authors by surname and first initial (by surname alone where a citation gives no initial), so they can join two people or split one. Citation edges come from a hand-refreshed cache of OpenAlex records, so some references have none, and a direction is OpenAlex's reading of a reference list. Neither cache is dated by `corpusDate`. An absent edge is not evidence that two papers are unrelated.",
   "truncationNote": "Compare the edges you parsed against `sharedAuthor.edges` and `citation.edges`. If you have fewer, your fetch truncated this file: say so, and do not report a missing edge.",
   "sharedAuthorEdges": [
     {"source":1,"target":306,"sharedAuthors":["Blackstone, N. T.","Nikkhah, A."]},

@@ -963,7 +963,7 @@ describe('network.json, the Citation Network page in the API (tucca-cellag/caail
     expect(body.citationEdges).toEqual(graph.citationEdges);
     expect(body.sharedAuthor).toEqual(graph.metadata.sharedAuthor);
     expect(body.citation).toEqual(graph.metadata.citation);
-    expect(body.nodes).toBe(papers.references.length);
+    expect(body.nodeCount).toBe(papers.references.length);
   });
 
   it('puts the counts and notes before the edges, so a truncated read keeps them', () => {
@@ -1017,6 +1017,8 @@ describe('the hub filters and momentum figures, documented in index.json (tucca-
 
   it('states the Licenses hub filter with every tier licenses.ts classifies into', () => {
     expect(use('catalog-index.json')).toContain(LICENSES_HUB_NOTE);
+    expect(LICENSES_HUB_NOTE).toContain(`${SITE_URL}licenses/`);
+    expect(CITATIONS_HUB_NOTE).toContain(`${SITE_URL}citations/`);
     for (const t of LICENSE_TIERS) expect(LICENSES_HUB_NOTE).toContain(t);
   });
 
