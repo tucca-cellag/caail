@@ -800,12 +800,13 @@ export const NETWORK_EDGES_NOTE =
  * so an agent does not carry more weight on an edge than it holds.
  */
 export const NETWORK_LIMITS_NOTE =
-  'Edges are derived, not checked. Shared-author joins match authors by surname and first ' +
-  'initial (by surname alone where a citation gives no initial), so they can join two people or ' +
-  "split one. Citation edges come from OpenAlex, so some references have none, and a direction " +
-  "is OpenAlex's reading of a reference list. Both sets are read from caches refreshed by hand " +
-  '(author names from Crossref and DataCite, citations from OpenAlex), and `corpusDate` dates ' +
-  'neither. An absent edge is not evidence that two papers are unrelated.';
+  'Edges are derived, not checked. Shared-author edges come from the author lists in the ' +
+  'citations themselves, matched by surname and first initial (by surname alone where a citation ' +
+  'gives no initial), so they can join two people or split one; a cache of publisher records ' +
+  '(Crossref, DataCite) removes some joins it shows are two people. Citation edges come from a ' +
+  "cache of OpenAlex records, so some references have none, and a direction is OpenAlex's " +
+  'reading of a reference list. Both caches are refreshed by hand, and `corpusDate` dates neither. ' +
+  'An absent edge is not evidence that two papers are unrelated.';
 
 /**
  * The served form of the network: graph.json's per-mode stats and both edge sets, without
@@ -848,7 +849,8 @@ export const CITATIONS_HUB_NOTE =
   `datasets.json's curated entries. The bands are ${CITATION_BANDS.map((b) => BAND_META[b].label).join(', ')}; ` +
   'an item with no count is in no band, not in the lowest.';
 
-const REPO_SLUG = 'tucca-cellag/caail';
+/** `owner/repo`, read from the GitHub base every served source link is built on, not typed again. */
+const REPO_SLUG = new URL(GITHUB_BLOB_BASE).pathname.split('/').slice(1, 3).join('/');
 
 /** The commit scopes recent.ts reads as one kind of addition, as the momentum account lists them. */
 function scopesOf(kind: 'Paper' | 'Dataset'): string {
@@ -865,7 +867,7 @@ export const DATASETS_HUBS_NOTE =
  * By the Numbers' momentum figures, as an agent can read them. They are git history read
  * when the site is deployed, relative to that day, so a committed file carrying them would
  * be stale the next day and fail the API sync guard; GitHub serves the same history as
- * JSON (Benji, tucca-cellag/caail-planning#882). Built from recent.ts's rule and paths,
+ * JSON (tucca-cellag/caail-planning#882). Built from recent.ts's rule and paths,
  * so the account cannot describe a different selection from the page's.
  */
 export const REPOSITORY_ACTIVITY = {
@@ -874,7 +876,7 @@ export const REPOSITORY_ACTIVITY = {
     "By the Numbers' momentum figures are repository activity, read from git history when the " +
     'site is deployed, so no file here carries them. Read the same history from this GitHub ' +
     'endpoint: one request per path (it takes one), newest first, paging with `per_page` and ' +
-    '`page`, and counting only commits with one parent. Its 30-day commit counts are those ' +
+    '`page`, and leaving out merge commits (those with more than one parent). Its 30-day commit counts are those ' +
     `commits for \`path=${MOMENTUM_PATHS.papers}\` and for \`path=${MOMENTUM_PATHS.datasets}\` whose ` +
     '`commit.committer.date` falls in the last 30 days. Its latest paper or dataset addition is ' +
     'the `commit.author.date` of the newest such commit by `commit.committer.date`, across ' +

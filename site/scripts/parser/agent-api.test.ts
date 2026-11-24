@@ -1033,14 +1033,19 @@ describe('the hub filters and momentum figures, documented in index.json (tucca-
   });
 
   it('backticks only fields the files it names serve, so a renamed key cannot linger', () => {
+    const keys = (...schemas: { shape: object }[]) => new Set(schemas.flatMap((s) => Object.keys(s.shape)));
+    const catalogAndEntries = keys(CatalogEntrySchema, DatasetEntrySchema, ApiCatalogIndexRowSchema);
+    // Each field, with the files it is named against: a name served by some other file fails.
+    const cases: [string, Set<string>][] = [
+      ['tier', catalogAndEntries],
+      ['citedByOpenAlex', keys(ReferenceSchema)],
+      ['citationCount', keys(CatalogEntrySchema, DatasetEntrySchema)],
+    ];
     const ticked = (text: string): string[] => [...text.matchAll(/`([A-Za-z]+)`/g)].map((m) => m[1]!);
-    const served = new Set([
-      ...Object.keys(ReferenceSchema.shape), ...Object.keys(CatalogEntrySchema.shape),
-      ...Object.keys(DatasetEntrySchema.shape), ...Object.keys(ApiCatalogIndexRowSchema.shape),
-    ]);
-    for (const f of [...ticked(LICENSES_HUB_NOTE), ...ticked(CITATIONS_HUB_NOTE), ...ticked(DATASETS_HUBS_NOTE)]) {
-      expect(served, f).toContain(f);
-    }
+    const named = new Set([...ticked(LICENSES_HUB_NOTE), ...ticked(CITATIONS_HUB_NOTE), ...ticked(DATASETS_HUBS_NOTE)]);
+    expect([...named].sort()).toEqual(cases.map(([f]) => f).sort());
+    for (const [field, served] of cases) expect(served, field).toContain(field);
+    expect(keys(ReferenceSchema).has('tier'), 'papers carry no license tier').toBe(false);
   });
 
   it('names the fields both hubs read, on items that carry them', () => {
@@ -1064,6 +1069,7 @@ describe('the hub filters and momentum figures, documented in index.json (tucca-
     expect(use).toContain(`${scopes('Dataset')} for a dataset`);
     // The 30-day count and the ordering both read the committer date, as git log does.
     expect(use).toContain('whose `commit.committer.date` falls in the last 30 days');
+    expect(use).toContain('leaving out merge commits');
     expect(use).toContain('`commit.author.date` of the newest such commit by `commit.committer.date`');
     // The exact rule is named by a link to the function, which must exist where it points.
     const link = `${GITHUB_BLOB_BASE}/site/scripts/parser/recent.ts`;
