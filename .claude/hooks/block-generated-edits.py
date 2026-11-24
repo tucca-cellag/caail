@@ -10,6 +10,7 @@ import json
 import os
 import re
 import sys
+import unicodedata
 
 try:
     data = json.load(sys.stdin)
@@ -39,6 +40,30 @@ if not fp:
 # process happened to start in. Symlinks are not resolved: a path is judged as written.
 HOOK_REL = os.path.join(".claude", "hooks", os.path.basename(__file__))
 path = os.path.abspath(os.path.join(data.get("cwd") or os.getcwd(), os.path.expanduser(fp)))
+
+CATALOG = ("Papers.md", "Software.md", "Databases.md", "FieldReports.md")
+
+
+def fold(name):
+    """A file name as macOS's default disk (APFS) compares it.
+
+    APFS opens papers.md as Papers.md, so a Write to the lowercase name at the
+    checkout root replaces the whole generated file. It folds more than ASCII case: it
+    also opens "Paperſ.md" (long s) as Papers.md and "ﬁeldReports.md" (fi ligature) as
+    FieldReports.md, and it ignores Unicode normalization. str.lower() misses both, and
+    re.IGNORECASE misses the ligature, so this uses Unicode's caseless matching,
+    NFD(casefold(NFD)). An HFS+ case-insensitive volume compares names by rules of its
+    own, which this does not model.
+
+    Only a name at the checkout root (or at a worktree's root, once the worktree prefix
+    below is stripped) is folded. Every other rule matches as spelled, exactly as before
+    folding existed, so another spelling of a catalog name below the root, in a nested
+    checkout holding no copy of this hook, or outside any checkout is not refused.
+    """
+    return unicodedata.normalize("NFD", unicodedata.normalize("NFD", name).casefold())
+
+
+CANONICAL = {fold(n): n for n in CATALOG}
 
 
 def checkout_root(p):
@@ -72,7 +97,16 @@ else:
     if rel.split("/", 1)[0] in ("site", "docs", ".claude"):
         sys.exit(0)
     target = rel
-if not re.search(r"(^|/)(Papers|Software|Databases|FieldReports)\.md$", target):
+base = target.rsplit("/", 1)[-1]
+if base in CATALOG:
+    catalog_name = base
+elif root is not None and "/" not in target:
+    # A catalog name at the checkout root spelled in another case: a case-insensitive
+    # disk opens it as the generated file, so it is refused as that file (see fold).
+    catalog_name = CANONICAL.get(fold(base))
+else:
+    catalog_name = None
+if catalog_name is None:
     sys.exit(0)
 
 MARKERS = ('<a id="', '](#', '### [')  # references, matrix/anchor links, catalog H3
@@ -96,13 +130,19 @@ elif tool == "MultiEdit":
 if not blocked:
     sys.exit(0)
 
-name = os.path.basename(fp)
+name = catalog_name
+typed = os.path.basename(path)
 outside = "" if root is not None else (
     f"{path} is in no CAAIL checkout this guard can find (no directory above it holds "
     f"{HOOK_REL}), so it was refused as if it were one of CAAIL's catalog files. The "
     "routes below apply only if it is one.\n"
 )
-reason = outside + (
+variant = "" if typed == name else (
+    f"{typed} was refused as {name}: a case-insensitive disk such as macOS's default "
+    "opens one name as the other, so the guard treats them as the same file on every "
+    "disk.\n"
+)
+reason = outside + variant + (
     f"{name} is generated from the SQLite authoring DB (issue #78) — its matrix, "
     "references, and catalog entries are DB-owned, and a direct edit here drifts from "
     "the DB and is overwritten by the next `db:emit` (the CI sync guard will fail).\n"
