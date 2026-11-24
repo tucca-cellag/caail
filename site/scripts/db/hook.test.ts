@@ -65,6 +65,58 @@ describe('block-generated-edits hook', () => {
 });
 
 /**
+ * macOS's default disk (APFS) is case-insensitive: it opens papers.md as Papers.md, so a
+ * Write to the lowercase name replaces the whole generated file. It folds more than ASCII
+ * case, too: it opens "Paperſ.md" (long s) as Papers.md and "ﬁeldReports.md" (the fi
+ * ligature) as FieldReports.md. str.lower() misses both, and a regex with re.IGNORECASE
+ * misses the ligature. Every name here is judged as text, so the cases hold on a
+ * case-sensitive disk too.
+ */
+describe('block-generated-edits hook: a catalog name in another letter case', () => {
+  it.each([
+    ['papers.md', 'lowercase'],
+    ['PAPERS.MD', 'uppercase'],
+    ['software.md', 'lowercase'],
+    ['dataBASES.md', 'mixed case'],
+    ['fieldreports.md', 'lowercase'],
+    ['Paperſ.md', 'a long s for the s'],
+    ['ﬁeldReports.md', 'the fi ligature for fi'],
+  ])('DENIES a whole-file Write to %s (%s)', (name) => {
+    expect(decide({ tool_name: 'Write', tool_input: { file_path: P(name), content: '# x' } })).toBe('deny');
+  });
+  it('DENIES a structured Edit to papers.md', () => {
+    expect(decide({ tool_name: 'Edit', tool_input: { file_path: P('papers.md'), old_string: '<a id="1">1</a> X', new_string: 'y' } })).toBe('deny');
+  });
+  it('DENIES a structured Edit to databases.md through a worktree path', () => {
+    const file = join(REPO_ROOT, '.claude', 'worktrees', 'some-feature', 'databases.md');
+    expect(decide({ tool_name: 'Edit', tool_input: { file_path: file, old_string: '### [GEO](u)', new_string: '### [GEO2](u)' } })).toBe('deny');
+  });
+  // The other direction: an Edit is still judged by its markup, and a name that only
+  // contains a catalog name is a different file on every disk.
+  it('ALLOWS a prose-only Edit to papers.md', () => {
+    expect(decide({ tool_name: 'Edit', tool_input: { file_path: P('papers.md'), old_string: 'This document presents', new_string: 'This document collects' } })).toBeNull();
+  });
+  it.each(['papers.md.bak', 'MyPapers.md', 'papers.mdx', 'Papers2.md'])('ALLOWS a whole-file Write to %s', (name) => {
+    expect(decide({ tool_name: 'Write', tool_input: { file_path: P(name), content: '# x' } })).toBeNull();
+  });
+  // Folding reaches only the checkout root. Below it the older rule holds as spelled: an
+  // exact catalog name outside site/, docs/ and .claude/ is refused, and another spelling
+  // is not.
+  it.each(['Datasets/Papers.md', 'plugin/skills/caail/reference/Databases.md'])(
+    'DENIES a whole-file Write to %s, an exact catalog name below the checkout root', (rel) => {
+      expect(decide({ tool_name: 'Write', tool_input: { file_path: P(rel), content: '# x' } })).toBe('deny');
+    });
+  it.each([
+    'Datasets/papers.md',
+    'workers/ask/software.md',
+    'plugin/skills/caail/reference/databases.md',
+    'ResearchAreas/fieldreports.md',
+  ])('ALLOWS a whole-file Write to %s, another spelling below the checkout root', (rel) => {
+    expect(decide({ tool_name: 'Write', tool_input: { file_path: P(rel), content: '# x' } })).toBeNull();
+  });
+});
+
+/**
  * Worktrees live at <repo>/.claude/worktrees/<name>/, so every path inside one
  * contains "/.claude/" and used to hit the hook's exclusion for config files —
  * silently disabling the guard in the workspace CLAUDE.md tells you to use.
@@ -222,6 +274,68 @@ describe('block-generated-edits hook: judged by the path inside the checkout', (
     expect(loose.split('\n')[0]).toMatch(/in no CAAIL checkout .* refused as if it were one of CAAIL's catalog files/);
     const inside = run(write(join(root, 'Papers.md')), hookOf(root))?.permissionDecisionReason ?? '';
     expect(inside).not.toContain('no CAAIL checkout');
+  });
+
+  /**
+   * Only a name at the checkout root, or at a worktree's root once the exact
+   * .claude/worktrees/<name>/ prefix is stripped, is matched in any letter case. Every other
+   * rule matches as spelled, exactly as before folding existed: the worktree prefix, the
+   * site/, docs/ and .claude/ exclusions, a catalog name below the root, and a name outside
+   * any checkout. Each "as before" case is pinned in both directions, so a change to any of
+   * them shows here.
+   */
+  describe('a path in another letter case', () => {
+    it('DENIES a relative papers.md when the session cwd is the checkout root', () => {
+      const root = checkout('plain');
+      expect(run({ ...write('papers.md'), cwd: root }, hookOf(root))?.permissionDecision ?? null).toBe('deny');
+    });
+    it('DENIES papers.md at the root of a worktree holding no copy of the hook', () => {
+      const root = checkout('plain');
+      expect(decide(write(join(root, '.claude', 'worktrees', 'bare', 'papers.md')), hookOf(root))).toBe('deny');
+    });
+    // As before: an exact catalog name below the root is refused wherever it is not under an
+    // exactly spelled site/, docs/ or .claude/. That covers a checkout nested outside
+    // .claude/worktrees/ with no copy of the hook, and a worktree prefix spelled otherwise.
+    it.each([
+      '.worktrees/old/Papers.md',
+      'SITE/src/Papers.md',
+      '.CLAUDE/scratch/Papers.md',
+      '.CLAUDE/worktrees/bare/Papers.md',
+      '.Claude/Worktrees/x/site/Papers.md',
+    ])('DENIES %s, an exact catalog name below the root, as before', (rel) => {
+      const root = checkout('plain');
+      expect(decide(write(join(root, rel)), hookOf(root))).toBe('deny');
+    });
+    // As before, and the limits this change accepts: below the root, and outside any
+    // checkout, another spelling of a catalog name is not refused, even where a
+    // case-insensitive disk would open it as a generated file, as in a nested checkout or a
+    // worktree reached through a prefix spelled otherwise (here with a Kelvin sign for the k).
+    it.each([
+      '.worktrees/old/papers.md',
+      '.Claude/Worktrees/bare/papers.md',
+      '.claude/worKtrees/bare/Software.md',
+      'Docs/papers.md',
+      '.Claude/Worktrees/bare/Site/papers.md',
+    ])('ALLOWS %s, another spelling below the root, as before', (rel) => {
+      const root = checkout('plain');
+      expect(decide(write(join(root, rel)), hookOf(root))).toBeNull();
+    });
+    it('ALLOWS papers.md in no checkout at all, where only the exact name is refused, as before', () => {
+      expect(decide(write(join(tmp, 'docs', 'loose', 'papers.md')), hookOf(checkout('plain')))).toBeNull();
+    });
+    it.each(['site/src/papers.md', 'docs/Papers.md', '.claude/worktrees/bare/site/papers.md'])(
+      'ALLOWS %s, under an excluded folder spelled exactly', (rel) => {
+        const root = checkout('plain');
+        expect(decide(write(join(root, rel)), hookOf(root))).toBeNull();
+      });
+    it('names the catalog file it refused as, and says why, only when the name was spelled otherwise', () => {
+      const root = checkout('plain');
+      const variant = run(write(join(root, 'papers.md')), hookOf(root))?.permissionDecisionReason ?? '';
+      expect(variant.split('\n')[0]).toMatch(/^papers\.md was refused as Papers\.md: a case-insensitive disk/);
+      expect(variant).toContain('Papers.md is generated from the SQLite authoring DB');
+      const exact = run(write(join(root, 'Papers.md')), hookOf(root))?.permissionDecisionReason ?? '';
+      expect(exact).not.toContain('case-insensitive');
+    });
   });
 
   /**
