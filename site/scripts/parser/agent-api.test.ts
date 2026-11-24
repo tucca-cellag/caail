@@ -33,6 +33,7 @@ import {
   nonAbsoluteMarkdownTargets,
   VERSION_NOTE,
   buildNetwork,
+  NETWORK_LIMITS_NOTE,
   CITATIONS_HUB_NOTE,
   DATASETS_HUBS_NOTE,
   LICENSES_HUB_NOTE,
@@ -1040,12 +1041,15 @@ describe('the hub filters and momentum figures, documented in index.json (tucca-
       ['tier', catalogAndEntries],
       ['citedByOpenAlex', keys(ReferenceSchema)],
       ['citationCount', keys(CatalogEntrySchema, DatasetEntrySchema)],
+      ['citationSources', keys(CatalogEntrySchema, DatasetEntrySchema)],
     ];
     const ticked = (text: string): string[] => [...text.matchAll(/`([A-Za-z]+)`/g)].map((m) => m[1]!);
     const named = new Set([...ticked(LICENSES_HUB_NOTE), ...ticked(CITATIONS_HUB_NOTE), ...ticked(DATASETS_HUBS_NOTE)]);
     expect([...named].sort()).toEqual(cases.map(([f]) => f).sort());
     for (const [field, served] of cases) expect(served, field).toContain(field);
     expect(keys(ReferenceSchema).has('tier'), 'papers carry no license tier').toBe(false);
+    // The datasets note names its entries alone, so the catalog schemas cannot stand in for it.
+    for (const f of ticked(DATASETS_HUBS_NOTE)) expect(keys(DatasetEntrySchema), f).toContain(f);
   });
 
   it('names the fields both hubs read, on items that carry them', () => {
@@ -1076,5 +1080,13 @@ describe('the hub filters and momentum figures, documented in index.json (tucca-
     expect(use).toContain(link);
     const source = readFileSync(join(REPO_ROOT, link.slice(GITHUB_BLOB_BASE.length + 1)), 'utf-8');
     expect(source).toContain('export function parseSubject(');
+    expect(use).toContain('(the first line of `commit.message`)');
+  });
+
+  it('links the shared-author join rule where it lives', () => {
+    const link = `${GITHUB_BLOB_BASE}/site/scripts/parser/authors.ts`;
+    expect(NETWORK_LIMITS_NOTE).toContain(link);
+    const source = readFileSync(join(REPO_ROOT, link.slice(GITHUB_BLOB_BASE.length + 1)), 'utf-8');
+    expect(source).toContain('export function authorKeys(');
   });
 });

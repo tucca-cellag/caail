@@ -801,8 +801,9 @@ export const NETWORK_EDGES_NOTE =
  */
 export const NETWORK_LIMITS_NOTE =
   'Edges are derived, not checked. Shared-author edges come from the author lists in the ' +
-  'citations themselves, matched by surname and first initial (by surname alone where a citation ' +
-  'gives no initial), so they can join two people or split one; a cache of publisher records ' +
+  'citations themselves, matched in outline by surname and first initial, so they can join two ' +
+  `people or split one (the exact rule is \`authorKeys\` in ${GITHUB_BLOB_BASE}/site/scripts/parser/authors.ts); ` +
+  'a cache of publisher records ' +
   '(Crossref, DataCite) removes some joins it shows are two people. Citation edges come from a ' +
   "cache of OpenAlex records, so some references have none, and a direction is OpenAlex's " +
   'reading of a reference list. Both caches are refreshed by hand, and `corpusDate` dates neither. ' +
@@ -846,7 +847,9 @@ export const LICENSES_HUB_NOTE =
 export const CITATIONS_HUB_NOTE =
   `The Citations hub (${SITE_URL}citations/) bands an OpenAlex citation count: papers.json's ` +
   "`citedByOpenAlex`, and `citationCount` on catalog.json's software and databases and " +
-  `datasets.json's curated entries. The bands are ${CITATION_BANDS.map((b) => BAND_META[b].label).join(', ')}; ` +
+  "datasets.json's curated entries, which for a resource publishing a paper per release sums " +
+  'its release DOIs (`citationSources` says how many). ' +
+  `The bands are ${CITATION_BANDS.map((b) => BAND_META[b].label).join(', ')}; ` +
   'an item with no count is in no band, not in the lowest.';
 
 /** `owner/repo`, read from the GitHub base every served source link is built on, not typed again. */
@@ -880,7 +883,8 @@ export const REPOSITORY_ACTIVITY = {
     `commits for \`path=${MOMENTUM_PATHS.papers}\` and for \`path=${MOMENTUM_PATHS.datasets}\` whose ` +
     '`commit.committer.date` falls in the last 30 days. Its latest paper or dataset addition is ' +
     'the `commit.author.date` of the newest such commit by `commit.committer.date`, across ' +
-    `${CONTENT_PATHS.join(', ')}, whose subject the page reads as an addition of that kind: in ` +
+    `${CONTENT_PATHS.join(', ')}, whose subject (the first line of \`commit.message\`) the page reads ` +
+    'as an addition of that kind: in ' +
     `outline \`type(scope): verb …\`, a first scope of ${scopesOf('Paper')} for a paper and ` +
     `${scopesOf('Dataset')} for a dataset, and a lead verb of ${ADDITION_VERBS.join(', ')}. The exact ` +
     `rule is \`parseSubject\` in ${GITHUB_BLOB_BASE}/site/scripts/parser/recent.ts. GitHub ` +
