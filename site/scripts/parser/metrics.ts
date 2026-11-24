@@ -27,7 +27,7 @@ import { fileURLToPath } from 'node:url';
 
 import { AREAS } from './areas.js';
 import { computeCounts } from './counts.js';
-import { lastAdditionDate } from './recent.js';
+import { lastAdditionDate, MOMENTUM_PATHS } from './recent.js';
 import {
   SPECIES_PAGES,
   inventoryRowCount,
@@ -292,8 +292,8 @@ function computeMomentum(repoRoot: string): Metrics['momentum'] {
     return {
       papersLastModified: lastAdditionDate('Paper', repoRoot),
       datasetsLastModified: lastAdditionDate('Dataset', repoRoot),
-      papersCommits30d: commits30d('Papers.md'),
-      datasetsCommits30d: commits30d('Datasets'),
+      papersCommits30d: commits30d(MOMENTUM_PATHS.papers),
+      datasetsCommits30d: commits30d(MOMENTUM_PATHS.datasets),
     };
   } catch {
     return null;
