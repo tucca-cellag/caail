@@ -19,20 +19,60 @@ except Exception:
 tool = data.get("tool_name", "")
 ti = data.get("tool_input", {}) or {}
 fp = ti.get("file_path", "") or ""
-
-# Git worktrees live at <repo>/.claude/worktrees/<name>/, so EVERY path inside
-# one contains "/.claude/" and fell through the exclusion below — silently
-# disabling this guard in exactly the workspace CLAUDE.md tells you to work in
-# ("the site is built one milestone at a time in a worktree off main"). Re-root
-# the path on the worktree before classifying it, so a worktree checkout is
-# judged the same as the primary one. Paths genuinely under a worktree's own
-# .claude/ or site/ still land in the exclusion after re-rooting.
-fp = re.sub(r"^.*/\.claude/worktrees/[^/]+/", "/", fp)
-
-# Only the repo-root generated catalog files (not site/*, docs/*, .claude/*).
-if "/site/" in fp or "/docs/" in fp or "/.claude/" in fp:
+if not fp:
     sys.exit(0)
-if not re.search(r"(^|/)(Papers|Software|Databases|FieldReports)\.md$", fp):
+
+# Classify the path by where it sits INSIDE its checkout, never by the directories
+# above the checkout. This once substring-matched "/site/", "/docs/" and "/.claude/"
+# against the absolute path, so a clone that itself lived under such a directory
+# (~/docs/caail, ~/site/caail) had the guard off for every file, with no signal.
+#
+# A checkout's root is the nearest directory above the file that carries this hook
+# at .claude/hooks/, as every clone and every git worktree of this repo does. That
+# finds the file's own checkout whichever copy of the hook is running, and needs no
+# .git, so a checkout without one is judged the same. abspath also folds "..", so
+# <repo>/site/../Papers.md is judged as <repo>/Papers.md.
+#
+# A relative path is resolved against the session's working directory, the "cwd"
+# field every hook input carries, so the hook judges the path the tool is given from
+# the directory the tool resolves it against, not from whichever directory this
+# process happened to start in. Symlinks are not resolved: a path is judged as written.
+HOOK_REL = os.path.join(".claude", "hooks", os.path.basename(__file__))
+path = os.path.abspath(os.path.join(data.get("cwd") or os.getcwd(), os.path.expanduser(fp)))
+
+
+def checkout_root(p):
+    d = os.path.dirname(p)
+    while True:
+        if os.path.isfile(os.path.join(d, HOOK_REL)):
+            return d
+        parent = os.path.dirname(d)
+        if parent == d:
+            return None
+        d = parent
+
+
+root = checkout_root(path)
+if root is None:
+    # In no checkout, so there is no inside to classify: judge by the file name
+    # alone, failing closed, rather than guess that a site/ or docs/ above the
+    # file is the repo's own. Failing open here would also switch the guard off
+    # without a word for every path if checkout_root ever stopped finding
+    # checkouts, which is the defect this classification exists to remove.
+    target = path.replace(os.sep, "/")
+else:
+    rel = os.path.relpath(path, root).replace(os.sep, "/")
+    # Git worktrees live at <repo>/.claude/worktrees/<name>/. One whose directory
+    # carries the hook is found by checkout_root as a checkout of its own; one that
+    # does not is found from the primary checkout, so strip the worktree prefix and
+    # judge the rest, or every file in it would land in the .claude/ exclusion below
+    # and the guard would be off in exactly the workspace CLAUDE.md tells you to use.
+    rel = re.sub(r"^(?:\.claude/worktrees/[^/]+/)+", "", rel)
+    # Only the repo-root generated catalog files (not site/*, docs/*, .claude/*).
+    if rel.split("/", 1)[0] in ("site", "docs", ".claude"):
+        sys.exit(0)
+    target = rel
+if not re.search(r"(^|/)(Papers|Software|Databases|FieldReports)\.md$", target):
     sys.exit(0)
 
 MARKERS = ('<a id="', '](#', '### [')  # references, matrix/anchor links, catalog H3
@@ -57,16 +97,23 @@ if not blocked:
     sys.exit(0)
 
 name = os.path.basename(fp)
-reason = (
+outside = "" if root is not None else (
+    f"{path} is in no CAAIL checkout this guard can find (no directory above it holds "
+    f"{HOOK_REL}), so it was refused as if it were one of CAAIL's catalog files. The "
+    "routes below apply only if it is one.\n"
+)
+reason = outside + (
     f"{name} is generated from the SQLite authoring DB (issue #78) — its matrix, "
     "references, and catalog entries are DB-owned, and a direct edit here drifts from "
     "the DB and is overwritten by the next `db:emit` (the CI sync guard will fail).\n"
-    "To change structured content: edit the DB, then regenerate —\n"
-    "  1. `pnpm --dir site db:build`   (materialize caail.db from NDJSON)\n"
-    "  2. edit caail.db  (or the relevant site/db/ndjson/*.ndjson)\n"
-    "  3. `pnpm --dir site db:export && pnpm --dir site db:emit`  (both re-stamp site/db/corpus-stamp.json)\n"
-    "  4. `pnpm --dir site db:check && pnpm --dir site db:verify && pnpm --dir site parse`, then commit "
-    "the Markdown, the NDJSON, site/db/corpus-stamp.json and what parse changed under site/public/ together.\n"
+    "To change structured content, take ONE of these two routes, and do not mix them:\n"
+    "  A. `pnpm --dir site db:build` (materializes site/caail.db from the NDJSON), edit site/caail.db, "
+    "then `pnpm --dir site db:export && pnpm --dir site db:emit`.\n"
+    "  B. edit the relevant site/db/ndjson/*.ndjson directly, then `pnpm --dir site db:emit` alone. "
+    "Skip db:export here: it rewrites every NDJSON file from caail.db, which would revert the edit.\n"
+    "Then, after either route: `pnpm --dir site db:check && pnpm --dir site db:verify && "
+    "pnpm --dir site parse`, and commit the Markdown, the NDJSON, site/db/corpus-stamp.json "
+    "(db:emit re-stamps it) and what parse changed under site/public/ together.\n"
     "See the caail-db-authoring skill. (Prose-only edits to these files are allowed; "
     "this fired because the change touches structured markup.)"
 )
