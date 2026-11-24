@@ -803,8 +803,11 @@ export const NETWORK_LIMITS_NOTE =
   'Authors are matched by surname and first initial, as citations give them, so two people who ' +
   'share both can be joined; a join is dropped only where the publisher records for both ' +
   "papers' DOIs show different people. Citation edges come from a cache of OpenAlex records " +
-  'refreshed by hand, so a reference added since its last refresh has none yet, and where ' +
-  'OpenAlex holds two records for one work, one is used. Neither cache is dated by `corpusDate`, ' +
+  'refreshed by hand: a reference with no DOI, or whose DOI has no record in that cache (one ' +
+  'added since its last refresh, or one OpenAlex did not match), has none in either direction, ' +
+  'and where OpenAlex holds two records for one work, one is used. A direction is OpenAlex\'s ' +
+  'reading of a reference list, not a checked fact: two references that cite each other usually ' +
+  'mark a reference-list error or two versions of one work. Neither cache is dated by `corpusDate`, ' +
   'so the edges can change while it stays the same. An absent edge is not evidence that two ' +
   'papers are unrelated.';
 
@@ -865,9 +868,10 @@ export const REPOSITORY_ACTIVITY = {
     'site is deployed, so no file here carries them. Read the same history from this GitHub ' +
     `endpoint. Its 30-day commit counts are the commits with one parent returned for ` +
     `\`path=${MOMENTUM_PATHS.papers}\` and for \`path=${MOMENTUM_PATHS.datasets}\` with \`since\` set ` +
-    '30 days back (page with `per_page` and `page`). Its latest paper or dataset addition is the ' +
-    'author date (`commit.author.date`) of the newest one-parent commit, across one request per ' +
-    `path (the endpoint takes one) for ${CONTENT_PATHS.join(', ')}, whose subject reads ` +
+    '30 days back (page with `per_page` and `page`). For its latest paper or dataset addition, ' +
+    `make one request per path (the endpoint takes one) for ${CONTENT_PATHS.join(', ')}, order the ` +
+    'one-parent commits by `commit.committer.date`, newest first, and read the ' +
+    '`commit.author.date` of the first whose subject reads ' +
     '`type(scope): verb …`, with a first scope of ' +
     `${Object.keys(SCOPE_TO_KIND).filter((s) => SCOPE_TO_KIND[s] === 'Paper').join(' or ')} for a paper ` +
     `and ${Object.keys(SCOPE_TO_KIND).filter((s) => SCOPE_TO_KIND[s] === 'Dataset').join(' or ')} for a ` +

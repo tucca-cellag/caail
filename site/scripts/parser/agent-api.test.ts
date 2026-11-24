@@ -1044,7 +1044,8 @@ describe('the hub filters and momentum figures, documented in index.json (tucca-
     expect(REPOSITORY_ACTIVITY.url).toMatch(/^https:\/\/api\.github\.com\/repos\/[^/]+\/[^/]+\/commits$/);
     expect(use).toContain(`\`path=${MOMENTUM_PATHS.papers}\``);
     expect(use).toContain(`\`path=${MOMENTUM_PATHS.datasets}\``);
-    expect(use).toContain(`for ${CONTENT_PATHS.join(', ')}, `);
+    expect(use).toContain(`for ${CONTENT_PATHS.join(', ')}, order the `);
+    expect(use).toContain('`commit.committer.date`, newest first');
     expect(use).toContain(`a lead verb of ${ADDITION_VERBS.join(', ')}.`);
     const scopes = (kind: string) => Object.keys(SCOPE_TO_KIND).filter((s) => SCOPE_TO_KIND[s] === kind).join(' or ');
     expect(use).toContain(`a first scope of ${scopes('Paper')} for a paper`);
