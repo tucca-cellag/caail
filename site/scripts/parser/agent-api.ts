@@ -800,16 +800,11 @@ export const NETWORK_EDGES_NOTE =
  * so an agent does not carry more weight on an edge than it holds.
  */
 export const NETWORK_LIMITS_NOTE =
-  'Authors are matched by surname and first initial, as citations give them, so two people who ' +
-  'share both can be joined; a join is dropped only where the publisher records for both ' +
-  "papers' DOIs show different people. Citation edges come from a cache of OpenAlex records " +
-  'refreshed by hand: a reference with no DOI, or whose DOI has no record in that cache (one ' +
-  'added since its last refresh, or one OpenAlex did not match), has none in either direction, ' +
-  'and where OpenAlex holds two records for one work, one is used. A direction is OpenAlex\'s ' +
-  'reading of a reference list, not a checked fact: two references that cite each other usually ' +
-  'mark a reference-list error or two versions of one work. Neither cache is dated by `corpusDate`, ' +
-  'so the edges can change while it stays the same. An absent edge is not evidence that two ' +
-  'papers are unrelated.';
+  'Edges are derived, not checked. Shared-author joins match authors by surname and first ' +
+  'initial, so they can join two people or split one. Citation edges come from a hand-refreshed ' +
+  "cache of OpenAlex records, so some references have none, and a direction is OpenAlex's " +
+  'reading of a reference list. Neither cache is dated by `corpusDate`. An absent edge is not ' +
+  'evidence that two papers are unrelated.';
 
 /**
  * The served form of the network: graph.json's per-mode stats and both edge sets, without
@@ -882,7 +877,8 @@ export const REPOSITORY_ACTIVITY = {
     '`type(scope): verb …`, with a first scope of ' +
     `${Object.keys(SCOPE_TO_KIND).filter((s) => SCOPE_TO_KIND[s] === 'Paper').join(' or ')} for a paper ` +
     `and ${Object.keys(SCOPE_TO_KIND).filter((s) => SCOPE_TO_KIND[s] === 'Dataset').join(' or ')} for a ` +
-    `dataset, and a lead verb of ${ADDITION_VERBS.join(', ')}. The page's figures are the same ` +
+    `dataset, and a lead verb of ${ADDITION_VERBS.join(', ')}, all matched in any case and the verb as a ` +
+    "whole word. The page's figures are the same " +
     'counts as of its last deploy.',
 } as const;
 

@@ -1035,7 +1035,9 @@ describe('the hub filters and momentum figures, documented in index.json (tucca-
       ...Object.keys(ReferenceSchema.shape), ...Object.keys(CatalogEntrySchema.shape),
       ...Object.keys(DatasetEntrySchema.shape), ...Object.keys(ApiCatalogIndexRowSchema.shape),
     ]);
-    for (const f of [...ticked(LICENSES_HUB_NOTE), ...ticked(CITATIONS_HUB_NOTE)]) expect(served, f).toContain(f);
+    for (const f of [...ticked(LICENSES_HUB_NOTE), ...ticked(CITATIONS_HUB_NOTE), ...ticked(DATASETS_HUBS_NOTE)]) {
+      expect(served, f).toContain(f);
+    }
   });
 
   it('names the fields both hubs read, on items that carry them', () => {
@@ -1055,7 +1057,7 @@ describe('the hub filters and momentum figures, documented in index.json (tucca-
     expect(use).toContain(`for ${CONTENT_PATHS.join(', ')}, order the `);
     expect(use).toContain('`commit.committer.date`, newest first');
     expect(use).toContain('paging each path until one does');
-    expect(use).toContain(`a lead verb of ${ADDITION_VERBS.join(', ')}.`);
+    expect(use).toContain(`a lead verb of ${ADDITION_VERBS.join(', ')}, all matched in any case and the verb as a whole word.`);
     const scopes = (kind: string) => Object.keys(SCOPE_TO_KIND).filter((s) => SCOPE_TO_KIND[s] === kind).join(' or ');
     expect(use).toContain(`a first scope of ${scopes('Paper')} for a paper`);
     expect(use).toContain(`and ${scopes('Dataset')} for a dataset`);
