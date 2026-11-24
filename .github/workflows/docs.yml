@@ -38,22 +38,38 @@ on:
       # lint-papers already red on the offending commit, which is where the attribution lives.
   workflow_dispatch:
 
+# Read-only by default. Only the deploy job below holds the Pages write
+# permission and can mint the OIDC token a Pages deployment needs, so neither
+# is ever available to the job that installs and runs the build's
+# dependencies. That job still decides what the artifact contains, and the
+# deploy job publishes it as uploaded.
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
   cancel-in-progress: false
 
+# Two jobs, as deploy-pages' own README recommends. With the upload and the
+# deploy as steps of one job, deploy-pages asked for the run's `github-pages`
+# artifact under a second after the upload finished, was told there were none,
+# and failed; on the run checked afterwards, the artifact was there. That
+# happened on pushes and dispatches alike, and
+# tucca-cellag/caail-planning#902 holds the runs. `needs: build` makes the
+# deploy start only once the build job has finished.
 jobs:
-  build-deploy:
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
     steps:
+      # The github-pages environment deploys from main only, and it sits on the
+      # deploy job alone, so a dispatch on another branch is stopped here,
+      # before anything is built. It fails rather than skips: a skipped run
+      # reads as a pass, and this one built and checked nothing.
+      - name: Deploy from main only
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "::error::docs.yml deploys from main only. This run on $GITHUB_REF built nothing and ran no Lighthouse."
+          exit 1
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
@@ -82,6 +98,19 @@ jobs:
         uses: actions/upload-pages-artifact@v5
         with:
           path: site/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    # The two permissions deploy-pages needs, and nothing else: a job's own
+    # block replaces the workflow's, so this job does not get contents: read.
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
       - name: Deploy to GitHub Pages
         id: deploy
         uses: actions/deploy-pages@v5
