@@ -35,7 +35,7 @@ import { readStampedSchemaVersion } from './schema-stamp.js';
 import { CORPUS_DATE_COVERS, CORPUS_DATE_EXCLUDES } from './corpus-date-format.js';
 import { MATRIX_SECTION } from './types.js';
 import type { Catalog, CatalogEntry, DatasetInventory, DatasetInventoryRow, DoiRelation, Graph, OnRequestStudy, PapersData } from './types.js';
-import { ADDITION_VERBS, CONTENT_PATHS, MOMENTUM_PATHS, SCOPE_TO_KIND } from './recent.js';
+import { ADDITION_VERBS, CONTENT_PATHS, MOMENTUM_PATHS, MOMENTUM_WINDOW_DAYS, SCOPE_TO_KIND } from './recent.js';
 import { BAND_META, CITATION_BANDS } from '../../src/lib/citation-bands.ts';
 import { LICENSE_TIERS } from '../../src/lib/licenses.ts';
 import { isUnderBase, RETIRED_BASES, SITE_BASE, SITE_URL } from '../../src/content/site-config.ts';
@@ -804,7 +804,7 @@ export const NETWORK_LIMITS_NOTE =
   'citations themselves, matched in outline by surname and first initial, so they can join two ' +
   `people or split one (the exact rule is \`authorKeys\` in ${GITHUB_BLOB_BASE}/site/scripts/parser/authors.ts); ` +
   'a cache of publisher records ' +
-  '(Crossref, DataCite) removes some joins it shows are two people. Citation edges come from a ' +
+  'removes some joins it shows are two people. Citation edges come from a ' +
   "cache of OpenAlex records, so some references have none, and a direction is OpenAlex's " +
   'reading of a reference list. Both caches are refreshed by hand, and `corpusDate` dates neither. ' +
   'An absent edge is not evidence that two papers are unrelated.';
@@ -879,11 +879,12 @@ export const REPOSITORY_ACTIVITY = {
     "By the Numbers' momentum figures are repository activity, read from git history when the " +
     'site is deployed, so no file here carries them. Read the same history from this GitHub ' +
     'endpoint: one request per path (it takes one), newest first, paging with `per_page` and ' +
-    '`page`, and leaving out merge commits (those with more than one parent). Its 30-day commit counts are those ' +
+    '`page`, and leaving out merge commits (those with more than one parent). Its ' +
+    `${MOMENTUM_WINDOW_DAYS}-day commit counts are those ` +
     `commits for \`path=${MOMENTUM_PATHS.papers}\` and for \`path=${MOMENTUM_PATHS.datasets}\` whose ` +
-    '`commit.committer.date` falls in the last 30 days. Its latest paper or dataset addition is ' +
+    `\`commit.committer.date\` falls in the last ${MOMENTUM_WINDOW_DAYS} days. Its latest paper or dataset addition is ` +
     'the `commit.author.date` of the newest such commit by `commit.committer.date`, across ' +
-    `${CONTENT_PATHS.join(', ')}, whose subject (the first line of \`commit.message\`) the page reads ` +
+    `${CONTENT_PATHS.join(', ')}, whose subject (git's \`%s\`: the first paragraph of \`commit.message\`, on one line) the page reads ` +
     'as an addition of that kind: in ' +
     `outline \`type(scope): verb …\`, a first scope of ${scopesOf('Paper')} for a paper and ` +
     `${scopesOf('Dataset')} for a dataset, and a lead verb of ${ADDITION_VERBS.join(', ')}. The exact ` +

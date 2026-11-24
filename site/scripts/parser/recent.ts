@@ -43,6 +43,9 @@ export const CONTENT_PATHS: readonly string[] = [
  */
 export const MOMENTUM_PATHS = { papers: 'Papers.md', datasets: 'Datasets' } as const;
 
+/** The days those two commit counts look back over. */
+export const MOMENTUM_WINDOW_DAYS = 30;
+
 /** First Conventional-Commit scope token → the entry kind shown on the card. */
 export const SCOPE_TO_KIND: Readonly<Record<string, RecentEntry['kind']>> = {
   papers: 'Paper',

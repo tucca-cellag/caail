@@ -42,7 +42,7 @@ import {
 import { buildGraphModel } from './graph.js';
 import { loadAuthorCache } from './authors.js';
 import { loadCitationCache } from './generate-data.js';
-import { ADDITION_VERBS, CONTENT_PATHS, MOMENTUM_PATHS, SCOPE_TO_KIND } from './recent.js';
+import { ADDITION_VERBS, CONTENT_PATHS, MOMENTUM_PATHS, MOMENTUM_WINDOW_DAYS, SCOPE_TO_KIND } from './recent.js';
 import { BAND_META, CITATION_BANDS } from '../../src/lib/citation-bands.ts';
 import { LICENSE_TIERS } from '../../src/lib/licenses.ts';
 import { GITHUB_BLOB_BASE } from '../dedicated-links.ts';
@@ -987,6 +987,7 @@ describe('network.json, the Citation Network page in the API (tucca-cellag/caail
   it('counts both edge sets in index.json, which always arrives whole', () => {
     expect(manifest.counts.networkSharedAuthorEdges).toBe(graph.edges.length);
     expect(manifest.counts.networkCitationEdges).toBe(graph.citationEdges.length);
+    expect(body.nodeCount).toBe(manifest.counts.papersAllSections);
   });
 
   it('serialises one edge per line and parses back to the same body', () => {
@@ -1072,7 +1073,7 @@ describe('the hub filters and momentum figures, documented in index.json (tucca-
     expect(use).toContain(`a first scope of ${scopes('Paper')} for a paper`);
     expect(use).toContain(`${scopes('Dataset')} for a dataset`);
     // The 30-day count and the ordering both read the committer date, as git log does.
-    expect(use).toContain('whose `commit.committer.date` falls in the last 30 days');
+    expect(use).toContain(`whose \`commit.committer.date\` falls in the last ${MOMENTUM_WINDOW_DAYS} days`);
     expect(use).toContain('leaving out merge commits');
     expect(use).toContain('`commit.author.date` of the newest such commit by `commit.committer.date`');
     // The exact rule is named by a link to the function, which must exist where it points.
@@ -1080,7 +1081,7 @@ describe('the hub filters and momentum figures, documented in index.json (tucca-
     expect(use).toContain(link);
     const source = readFileSync(join(REPO_ROOT, link.slice(GITHUB_BLOB_BASE.length + 1)), 'utf-8');
     expect(source).toContain('export function parseSubject(');
-    expect(use).toContain('(the first line of `commit.message`)');
+    expect(use).toContain("(git's `%s`: the first paragraph of `commit.message`, on one line)");
   });
 
   it('links the shared-author join rule where it lives', () => {

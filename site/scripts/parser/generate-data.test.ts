@@ -8,7 +8,7 @@
  * temp apiDir too so the emitted agent API doesn't land in the real site/public/.
  */
 
-import { describe, it, expect, afterAll } from 'vitest';
+import { describe, it, expect, afterAll, beforeAll } from 'vitest';
 import { mkdtempSync, mkdirSync, readdirSync, rmSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import os from 'node:os';
@@ -222,8 +222,14 @@ describe('writeParseOutputs()', () => {
 describe('network.json serves the edges graph.json draws (tucca-cellag/caail-planning#882)', () => {
   // Both files were written by the one generateData() run above, into the same temp dir: the
   // page reads graph.json, and an agent reads network.json, so they must hold one network.
-  const graph = JSON.parse(readFileSync(join(tmpDir, 'graph.json'), 'utf-8'));
-  const network = JSON.parse(readFileSync(join(tmpDir, 'api', 'network.json'), 'utf-8'));
+  // Read in beforeAll, not at collection: if generateData() failed above, its own error is
+  // what should show, not an ENOENT from here.
+  let graph: any;
+  let network: any;
+  beforeAll(() => {
+    graph = JSON.parse(readFileSync(join(tmpDir, 'graph.json'), 'utf-8'));
+    network = JSON.parse(readFileSync(join(tmpDir, 'api', 'network.json'), 'utf-8'));
+  });
 
   it('carries the same shared-author and citation edges, in the same order', () => {
     expect(graph.citationEdges.length).toBeGreaterThan(0);
