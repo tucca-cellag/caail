@@ -32,7 +32,20 @@ import {
   absolutizeCellLinks,
   nonAbsoluteMarkdownTargets,
   VERSION_NOTE,
+  buildNetwork,
+  NETWORK_LIMITS_NOTE,
+  CITATIONS_HUB_NOTE,
+  DATASETS_HUBS_NOTE,
+  LICENSES_HUB_NOTE,
+  REPOSITORY_ACTIVITY,
 } from './agent-api.js';
+import { buildGraphModel } from './graph.js';
+import { loadAuthorCache } from './authors.js';
+import { loadCitationCache } from './generate-data.js';
+import { ADDITION_VERBS, CONTENT_PATHS, MOMENTUM_PATHS, MOMENTUM_WINDOW_DAYS, SCOPE_TO_KIND } from './recent.js';
+import { BAND_META, CITATION_BANDS } from '../../src/lib/citation-bands.ts';
+import { LICENSE_TIERS } from '../../src/lib/licenses.ts';
+import { GITHUB_BLOB_BASE } from '../dedicated-links.ts';
 import { RETIRED_BASES, SITE_BASE, SITE_ORIGIN, SITE_URL } from '../../src/content/site-config.ts';
 import { buildPapersModel } from './papers.js';
 import { buildCatalogModel } from './catalog.js';
@@ -41,7 +54,8 @@ import { buildDatasetInventory } from './dataset-inventory.js';
 import { buildTopicsModel } from './topics.js';
 import { buildTaxonomyModel } from './taxonomy.js';
 import {
-  ApiCatalogIndexRowSchema, ApiManifestSchema, DatasetEntrySchema, DatasetInventoryRowSchema, OnRequestStudySchema,
+  ApiCatalogIndexRowSchema, ApiManifestSchema, CatalogEntrySchema, DatasetEntrySchema, DatasetInventoryRowSchema,
+  OnRequestStudySchema, ReferenceSchema,
 } from './types.js';
 import { buildApiTaxonomy } from './search-terms.js';
 import { buildReportsModel } from './reports.js';
@@ -63,6 +77,8 @@ const taxonomy = buildApiTaxonomy(buildTaxonomyModel());
 const reports = buildReportsModel();
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 const DATE = '2026-01-01';
+// The graph generate-data builds, with both caches, passed wherever the API is built.
+const fixtureGraph = buildGraphModel(papers, loadCitationCache(), loadAuthorCache());
 
 describe('matrix.json', () => {
   const matrix = buildMatrix(papers, DATE);
@@ -222,7 +238,7 @@ describe('topics.json inverted index', () => {
 });
 
 describe('buildAgentApi', () => {
-  const files = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
+  const files = buildAgentApi({ graph: fixtureGraph, papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
 
   it('emits every endpoint the manifest advertises', () => {
     const names = files.map((f) => f.name);
@@ -257,7 +273,7 @@ describe('buildAgentApi', () => {
   });
 
   it('serves a schema version it is given, in both places, so the stamp is the only source', () => {
-    const given = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE, schemaVersion: 7 });
+    const given = buildAgentApi({ graph: fixtureGraph, papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE, schemaVersion: 7 });
     expect((given.find((f) => f.name === 'index.json')!.body as any).schemaVersion).toBe(7);
     expect((given.find((f) => f.name === 'openapi.json')!.body as any).info.version).toBe(`${API_VERSION}.7`);
   });
@@ -328,7 +344,7 @@ describe('buildAgentApi', () => {
     // default. A shorthand `{ corpusDate }` once captured the same-named function
     // instead of the string, and JSON.stringify silently dropped it: the output was
     // deterministic and every assertion still passed while the field was undefined.
-    const dflt = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports });
+    const dflt = buildAgentApi({ graph: fixtureGraph, papers, catalog, datasets, inventory, topics, taxonomy, reports });
     for (const f of dflt) {
       const d =
         f.name === 'openapi.json'
@@ -342,8 +358,8 @@ describe('buildAgentApi', () => {
   it('derives the date from the corpus, not the clock, so the CI sync guard is stable', () => {
     // The emitted files are committed and CI re-runs the parse to diff them. A
     // build-time `new Date()` would differ on any later day and fail the guard.
-    const a = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports });
-    const b = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports });
+    const a = buildAgentApi({ graph: fixtureGraph, papers, catalog, datasets, inventory, topics, taxonomy, reports });
+    const b = buildAgentApi({ graph: fixtureGraph, papers, catalog, datasets, inventory, topics, taxonomy, reports });
     expect(JSON.stringify(a)).toBe(JSON.stringify(b));
 
     // Asserting the date differs from today would be flaky: a stamp made today makes them
@@ -389,7 +405,7 @@ describe('buildAgentApi', () => {
 // ---------------------------------------------------------------------------
 
 describe('reports.json (field reports)', () => {
-  const files = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
+  const files = buildAgentApi({ graph: fixtureGraph, papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
   const body = files.find((f) => f.name === 'reports.json')!.body as any;
   const manifest = files.find((f) => f.name === 'index.json')!.body as any;
 
@@ -468,7 +484,7 @@ describe('reports.json (field reports)', () => {
  */
 describe('datasets.json inventory', () => {
   const cowTable = extractInventory(join(REPO_ROOT, 'Datasets', 'Cow.md'))!;
-  const files = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
+  const files = buildAgentApi({ graph: fixtureGraph, papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
   const body = files.find((f) => f.name === 'datasets.json')!.body as any;
   const manifest = files.find((f) => f.name === 'index.json')!.body as any;
 
@@ -712,7 +728,7 @@ describe('site-relative hrefs in the API', () => {
         ...inventory.inventory[0]!, id: 'ds:fixture-bad-link', page: 'Pig', columns: { Description: '[s](./site/db/schema.sql)' },
       }],
     };
-    expect(() => buildAgentApi({ papers, catalog, datasets, inventory: bad, topics, taxonomy, reports, corpusDate: DATE }))
+    expect(() => buildAgentApi({ graph: fixtureGraph, papers, catalog, datasets, inventory: bad, topics, taxonomy, reports, corpusDate: DATE }))
       .toThrow(/^agent-api: inventory row ds:fixture-bad-link: Datasets\/Pig\.md: Markdown link target "\.\/site\/db\/schema\.sql" is not an absolute URL\.$/);
     const empty: typeof inventory = {
       ...inventory,
@@ -720,7 +736,7 @@ describe('site-relative hrefs in the API', () => {
         ...inventory.inventory[0]!, id: 'ds:fixture-empty-link', page: 'Pig', columns: { Description: 'see [GEO]()' },
       }],
     };
-    expect(() => buildAgentApi({ papers, catalog, datasets, inventory: empty, topics, taxonomy, reports, corpusDate: DATE }))
+    expect(() => buildAgentApi({ graph: fixtureGraph, papers, catalog, datasets, inventory: empty, topics, taxonomy, reports, corpusDate: DATE }))
       .toThrow(/Datasets\/Pig\.md: a link has an empty target/);
     // An empty fragment is not rewritten to a URL ending in a bare '#'; it is reported instead.
     expect(absolutizeCellLinks('[x](#)', 'Datasets/Pig.md')).toEqual({ md: '[x](#)', notAbsolute: ['#'] });
@@ -736,7 +752,7 @@ describe('site-relative hrefs in the API', () => {
         columns: { Description: 'see [Cow.md](./Cow.md) and [Papers.md #193](../Papers.md#193)' },
       }],
     };
-    const files = buildAgentApi({ papers, catalog, datasets, inventory: fixture, topics, taxonomy, reports, corpusDate: DATE });
+    const files = buildAgentApi({ graph: fixtureGraph, papers, catalog, datasets, inventory: fixture, topics, taxonomy, reports, corpusDate: DATE });
     const row = (files.find((f) => f.name === 'datasets.json')!.body as any).inventory
       .find((r: any) => r.id === 'ds:fixture-relative-links');
     expect(row.columns.Description).toBe(
@@ -752,7 +768,7 @@ describe('site-relative hrefs in the API', () => {
   it('ships no root-relative or fragment-only href in any emitted endpoint', () => {
     // An agent reading the JSON off-site (or from the raw mirror) cannot resolve
     // "/…" or "#…"; the parser's catalog summaries carry both forms for the site.
-    const files = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
+    const files = buildAgentApi({ graph: fixtureGraph, papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
     const input = JSON.stringify(catalog);
     expect(input).toContain(`href=\\"${SITE_BASE}/`); // the input really has them
     expect(input).toContain('href=\\"#');
@@ -807,7 +823,7 @@ describe('site/public/api/datasets.json (the shipped file)', () => {
  * test would pass happily on an index that had quietly grown back to the parent's size.
  */
 describe('the compact indexes', () => {
-  const built = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
+  const built = buildAgentApi({ graph: fixtureGraph, papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
   const body = (name: string) => built.find((f) => f.name === name)!.body as any;
   const bytes = (name: string) => serializeApiFile(name, built.find((f) => f.name === name)!.body).length;
 
@@ -932,5 +948,146 @@ describe('the compact indexes', () => {
     const noticed = papers.references.filter((r) => r.notices.length > 0).map((r) => r.id);
     expect(noticed.length).toBeGreaterThan(0);
     expect(rows.filter((r) => r.hasNotice).map((r) => r.id)).toEqual(noticed);
+  });
+});
+
+describe('network.json, the Citation Network page in the API (tucca-cellag/caail-planning#882)', () => {
+  // Built with both caches, as generate-data builds the page's graph.json, so the test covers
+  // the citation edges and the different-people exclusions rather than the no-cache fallback.
+  const graph = fixtureGraph;
+  const files = buildAgentApi({ graph, papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
+  const body = files.find((f) => f.name === 'network.json')!.body as any;
+  const manifest = files.find((f) => f.name === 'index.json')!.body as any;
+
+  it('serves the edges and per-mode stats of the graph it is given, unchanged', () => {
+    expect(graph.citationEdges.length).toBeGreaterThan(0);
+    expect(body.sharedAuthorEdges).toEqual(graph.edges);
+    expect(body.citationEdges).toEqual(graph.citationEdges);
+    expect(body.sharedAuthor).toEqual(graph.metadata.sharedAuthor);
+    expect(body.citation).toEqual(graph.metadata.citation);
+    expect(body.nodeCount).toBe(papers.references.length);
+  });
+
+  it('puts the counts and notes before the edges, so a truncated read keeps them', () => {
+    const keys = Object.keys(body);
+    for (const k of ['sharedAuthor', 'citation', 'edgesNote', 'limitsNote', 'truncationNote']) {
+      expect(keys.indexOf(k), k).toBeLessThan(keys.indexOf('sharedAuthorEdges'));
+    }
+    const text = serializeApiFile('network.json', body);
+    expect(text.indexOf('"edgesNote"')).toBeLessThan(text.indexOf('"sharedAuthorEdges"'));
+  });
+
+  it('names only reference ids that papers-index.json serves', () => {
+    const ids = new Set(papers.references.map((r) => r.id));
+    for (const e of [...body.sharedAuthorEdges, ...body.citationEdges]) {
+      expect(ids.has(e.source) && ids.has(e.target), `${e.source}-${e.target}`).toBe(true);
+    }
+  });
+
+  it('counts both edge sets in index.json, which always arrives whole', () => {
+    expect(manifest.counts.networkSharedAuthorEdges).toBe(graph.edges.length);
+    expect(manifest.counts.networkCitationEdges).toBe(graph.citationEdges.length);
+    expect(body.nodeCount).toBe(manifest.counts.papersAllSections);
+  });
+
+  it('serialises one edge per line and parses back to the same body', () => {
+    const text = serializeApiFile('network.json', body);
+    expect(JSON.parse(text)).toEqual(body);
+    const edgeLines = text.split('\n').filter((l) => /^ {4}\{"source":/.test(l));
+    expect(edgeLines.length).toBe(graph.edges.length + graph.citationEdges.length);
+  });
+
+  it('serialises an empty edge set as an empty array', () => {
+    const empty = buildNetwork({ ...graph, edges: [], citationEdges: [] }, DATE) as any;
+    const text = serializeApiFile('network.json', empty);
+    expect(text).toContain('"sharedAuthorEdges": [],');
+    expect(text).toContain('"citationEdges": []\n');
+    const parsed = JSON.parse(text);
+    expect(parsed.sharedAuthorEdges).toEqual([]);
+    expect(parsed.citationEdges).toEqual([]);
+  });
+
+  it('refuses a build with no graph, rather than serving a network the page does not draw', () => {
+    const noGraph = { papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE } as any;
+    expect(() => buildAgentApi(noGraph)).toThrow(/needs `graph`/);
+  });
+});
+
+describe('the hub filters and momentum figures, documented in index.json (tucca-cellag/caail-planning#882)', () => {
+  const manifest = buildAgentApi({ graph: fixtureGraph, papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE })
+    .find((f) => f.name === 'index.json')!.body as any;
+  const use = (path: string) => manifest.endpoints.find((e: any) => e.path === path).use as string;
+
+  it('states the Licenses hub filter with every tier licenses.ts classifies into', () => {
+    expect(use('catalog-index.json')).toContain(LICENSES_HUB_NOTE);
+    expect(LICENSES_HUB_NOTE).toContain(`${SITE_URL}licenses/`);
+    expect(CITATIONS_HUB_NOTE).toContain(`${SITE_URL}citations/`);
+    for (const t of LICENSE_TIERS) expect(LICENSES_HUB_NOTE).toContain(t);
+  });
+
+  it('names both hubs in datasets.json\'s own note, for its curated entries', () => {
+    expect(use('datasets.json')).toContain(DATASETS_HUBS_NOTE);
+  });
+
+  it('states the Citations hub bands as citation-bands.ts defines them', () => {
+    expect(use('papers.json')).toContain(CITATIONS_HUB_NOTE);
+    for (const b of CITATION_BANDS) expect(CITATIONS_HUB_NOTE).toContain(BAND_META[b].label);
+  });
+
+  it('backticks only fields the files it names serve, so a renamed key cannot linger', () => {
+    const keys = (...schemas: { shape: object }[]) => new Set(schemas.flatMap((s) => Object.keys(s.shape)));
+    const catalogAndEntries = keys(CatalogEntrySchema, DatasetEntrySchema, ApiCatalogIndexRowSchema);
+    // Each field, with the files it is named against: a name served by some other file fails.
+    const cases: [string, Set<string>][] = [
+      ['tier', catalogAndEntries],
+      ['citedByOpenAlex', keys(ReferenceSchema)],
+      ['citationCount', keys(CatalogEntrySchema, DatasetEntrySchema)],
+      ['citationSources', keys(CatalogEntrySchema, DatasetEntrySchema)],
+    ];
+    const ticked = (text: string): string[] => [...text.matchAll(/`([A-Za-z]+)`/g)].map((m) => m[1]!);
+    const named = new Set([...ticked(LICENSES_HUB_NOTE), ...ticked(CITATIONS_HUB_NOTE), ...ticked(DATASETS_HUBS_NOTE)]);
+    expect([...named].sort()).toEqual(cases.map(([f]) => f).sort());
+    for (const [field, served] of cases) expect(served, field).toContain(field);
+    expect(keys(ReferenceSchema).has('tier'), 'papers carry no license tier').toBe(false);
+    // The datasets note names its entries alone, so the catalog schemas cannot stand in for it.
+    for (const f of ticked(DATASETS_HUBS_NOTE)) expect(keys(DatasetEntrySchema), f).toContain(f);
+  });
+
+  it('names the fields both hubs read, on items that carry them', () => {
+    expect(CITATIONS_HUB_NOTE).toContain('`citedByOpenAlex`');
+    expect(CITATIONS_HUB_NOTE).toContain('`citationCount`');
+    expect(papers.references.some((r) => typeof r.citedByOpenAlex === 'number')).toBe(true);
+    expect((catalog.databases as any[]).some((e) => typeof e.citationCount === 'number')).toBe(true);
+    expect((catalog.software as any[]).every((e) => 'tier' in e)).toBe(true);
+  });
+
+  it('points at GitHub for the momentum figures, from the paths and rule the page uses', () => {
+    const use = REPOSITORY_ACTIVITY.use;
+    expect(manifest.repositoryActivity).toEqual(REPOSITORY_ACTIVITY);
+    expect(REPOSITORY_ACTIVITY.url).toMatch(/^https:\/\/api\.github\.com\/repos\/[^/]+\/[^/]+\/commits$/);
+    expect(use).toContain(`\`path=${MOMENTUM_PATHS.papers}\``);
+    expect(use).toContain(`\`path=${MOMENTUM_PATHS.datasets}\``);
+    expect(use).toContain(`across ${CONTENT_PATHS.join(', ')}, `);
+    expect(use).toContain(`a lead verb of ${ADDITION_VERBS.join(', ')}.`);
+    const scopes = (kind: string) => Object.keys(SCOPE_TO_KIND).filter((s) => SCOPE_TO_KIND[s] === kind).join(' or ');
+    expect(use).toContain(`a first scope of ${scopes('Paper')} for a paper`);
+    expect(use).toContain(`${scopes('Dataset')} for a dataset`);
+    // The 30-day count and the ordering both read the committer date, as git log does.
+    expect(use).toContain(`whose \`commit.committer.date\` falls in the last ${MOMENTUM_WINDOW_DAYS} days`);
+    expect(use).toContain('leaving out merge commits');
+    expect(use).toContain('`commit.author.date` of the newest such commit by `commit.committer.date`');
+    // The exact rule is named by a link to the function, which must exist where it points.
+    const link = `${GITHUB_BLOB_BASE}/site/scripts/parser/recent.ts`;
+    expect(use).toContain(link);
+    const source = readFileSync(join(REPO_ROOT, link.slice(GITHUB_BLOB_BASE.length + 1)), 'utf-8');
+    expect(source).toContain('export function parseSubject(');
+    expect(use).toContain("(git's `%s`: the first paragraph of `commit.message`, on one line)");
+  });
+
+  it('links the shared-author join rule where it lives', () => {
+    const link = `${GITHUB_BLOB_BASE}/site/scripts/parser/authors.ts`;
+    expect(NETWORK_LIMITS_NOTE).toContain(link);
+    const source = readFileSync(join(REPO_ROOT, link.slice(GITHUB_BLOB_BASE.length + 1)), 'utf-8');
+    expect(source).toContain('export function authorKeys(');
   });
 });

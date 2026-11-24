@@ -34,6 +34,7 @@ import {
   ApiManifestSchema,
   ApiMatrixCellSchema,
   ApiMatrixSchema,
+  ApiNetworkSchema,
   ApiPaperIndexRowSchema,
   ApiPapersIndexSchema,
   ApiPapersSchema,
@@ -44,8 +45,11 @@ import {
   AreaSchema,
   CatalogEntrySchema,
   CellSchema,
+  CitationEdgeSchema,
   DatasetEntrySchema,
   DatasetInventoryRowSchema,
+  GraphEdgeSchema,
+  GraphModeStatsSchema,
   OnRequestStudySchema,
   ReferenceSchema,
   ReportSchema,
@@ -150,6 +154,19 @@ export const API_ENDPOINTS: readonly ApiEndpointSpec[] = [
       'This file is large: if your fetch summarises rather than returning bytes, it may be ' +
       'silently truncated, and a "not found" from it is not evidence of absence. Use ' +
       'papers-index.json to enumerate, and come here for the records you selected.',
+  },
+  {
+    file: 'network.json',
+    id: 'Network',
+    schema: ApiNetworkSchema,
+    summary: 'The Citation Network page\'s edges between references',
+    description:
+      'Both edge sets the Citation Network page draws, built from the same model: ' +
+      '`sharedAuthorEdges` (undirected, `source` the lower reference id, with the shared ' +
+      'names) and `citationEdges` (directed, `source` cites `target`, from OpenAlex, between ' +
+      'references CAAIL holds). Node ids are the `id`s of papers-index.json, whose rows carry ' +
+      'everything else about a node. Per-mode counts and connectivity come first; read ' +
+      '`edgesNote` and `limitsNote` before treating an edge, or its absence, as a finding.',
   },
   {
     file: 'catalog-index.json',
@@ -353,6 +370,9 @@ const SHARED_SCHEMAS: ReadonlyArray<readonly [string, z.ZodType]> = [
   ['DatasetInventoryRow', DatasetInventoryRowSchema],
   ['OnRequestStudy', OnRequestStudySchema],
   ['Report', ReportSchema],
+  ['SharedAuthorEdge', GraphEdgeSchema],
+  ['CitationEdge', CitationEdgeSchema],
+  ['GraphModeStats', GraphModeStatsSchema],
 ];
 
 /**

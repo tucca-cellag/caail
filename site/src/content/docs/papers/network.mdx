@@ -22,4 +22,7 @@ how edges are drawn:
 Node size reflects how connected a paper is in the active mode; color marks its primary research
 area. Filter by area, toggle unconnected papers, and click a node for its details.
 
+Both edge sets are also served as JSON for AI agents and scripts, at
+[`/api/network.json`](/api/network.json), built from the same data this page draws.
+
 <NetworkGraph client:idle={{ timeout: IDLE_TIMEOUT_MS }} />

@@ -33,6 +33,7 @@ import { buildTopicsModel } from './topics.js';
 import { buildTaxonomyModel } from './taxonomy.js';
 import { buildApiTaxonomy } from './search-terms.js';
 import { buildReportsModel } from './reports.js';
+import { buildGraphModel } from './graph.js';
 
 const papers = buildPapersModel();
 const catalog = buildCatalogModel();
@@ -45,7 +46,10 @@ const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 const API_DIR = join(REPO_ROOT, 'site', 'public', 'api');
 const DATE = '2026-01-01';
 
-const inputs = { papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE };
+// The schema checks need a graph, not the page's: without the caches it has no citation
+// edges, which leaves that array empty but still validated.
+const graph = buildGraphModel(papers);
+const inputs = { graph, papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE };
 
 describe('openapi.json', () => {
   const files = buildAgentApi(inputs);

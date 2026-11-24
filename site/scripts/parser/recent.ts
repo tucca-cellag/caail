@@ -28,7 +28,7 @@ import { RecentSchema, type Recent, type RecentEntry } from './types.js';
 const DEFAULT_REPO_ROOT: string = fileURLToPath(new URL('../../../', import.meta.url));
 
 /** Canonical content files/dirs whose additions the home page advertises. */
-const CONTENT_PATHS: readonly string[] = [
+export const CONTENT_PATHS: readonly string[] = [
   'Papers.md',
   'Software.md',
   'Databases.md',
@@ -36,8 +36,18 @@ const CONTENT_PATHS: readonly string[] = [
   'OtherResources.md',
 ];
 
+/**
+ * The paths By the Numbers counts commits on, for its two 30-day figures (metrics.ts). Named here
+ * beside the rule for an addition so the agent API's account of the same figures
+ * (`repositoryActivity` in index.json) is built from the values the page uses, not retyped.
+ */
+export const MOMENTUM_PATHS = { papers: 'Papers.md', datasets: 'Datasets' } as const;
+
+/** The days those two commit counts look back over. */
+export const MOMENTUM_WINDOW_DAYS = 30;
+
 /** First Conventional-Commit scope token → the entry kind shown on the card. */
-const SCOPE_TO_KIND: Readonly<Record<string, RecentEntry['kind']>> = {
+export const SCOPE_TO_KIND: Readonly<Record<string, RecentEntry['kind']>> = {
   papers: 'Paper',
   data: 'Dataset',
   datasets: 'Dataset',
@@ -57,7 +67,7 @@ const TITLE_OVERRIDES: Readonly<Record<string, string>> = {
 };
 
 /** Subject lead verbs that mark a commit as an *addition* (vs. a reorg/relabel). */
-const ADDITION_VERBS: readonly string[] = [
+export const ADDITION_VERBS: readonly string[] = [
   'add',
   'integrate',
   'catalogue',

@@ -24,6 +24,17 @@ on:
       # the site's address. Parse writes SITE_URL into the agent API and llms.txt's
       # corpus-date line, so a lone edit here changes output the sync guard diffs.
       - site/src/content/site-config.ts
+      # the license tiers and citation bands, which the agent API writes into index.json's
+      # endpoint notes, so a lone relabel here changes output the sync guard diffs.
+      - site/src/lib/licenses.ts
+      - site/src/lib/citation-bands.ts
+      # the link rewriting the agent API runs every served link through, and the route
+      # and slug tables it reads, so a lone edit here changes URLs the sync guard diffs.
+      - site/scripts/dedicated-links.ts
+      - site/scripts/remark/rewrite-caail-links.ts
+      - site/src/content/caail-pages.ts
+      - site/src/content/dedicated-routes.ts
+      - site/src/lib/heading-slug.ts
       # generated outputs, so a hand-edit trips the sync guard that catches it
       - site/public/api/**
       - site/public/setup.md
@@ -79,6 +90,17 @@ on:
       # the site's address. Parse writes SITE_URL into the agent API and llms.txt's
       # corpus-date line, so a lone edit here changes output the sync guard diffs.
       - site/src/content/site-config.ts
+      # the license tiers and citation bands, which the agent API writes into index.json's
+      # endpoint notes, so a lone relabel here changes output the sync guard diffs.
+      - site/src/lib/licenses.ts
+      - site/src/lib/citation-bands.ts
+      # the link rewriting the agent API runs every served link through, and the route
+      # and slug tables it reads, so a lone edit here changes URLs the sync guard diffs.
+      - site/scripts/dedicated-links.ts
+      - site/scripts/remark/rewrite-caail-links.ts
+      - site/src/content/caail-pages.ts
+      - site/src/content/dedicated-routes.ts
+      - site/src/lib/heading-slug.ts
       # generated outputs, so a hand-edit trips the sync guard that catches it
       - site/public/api/**
       - site/public/setup.md
