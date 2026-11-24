@@ -34,8 +34,9 @@ if not fp:
 # <repo>/site/../Papers.md is judged as <repo>/Papers.md.
 #
 # A relative path is resolved against the session's working directory, the "cwd"
-# field every hook input carries, so the hook judges the file the tool would write
-# rather than one under whichever directory this process happened to start in.
+# field every hook input carries, so the hook judges the path the tool is given from
+# the directory the tool resolves it against, not from whichever directory this
+# process happened to start in. Symlinks are not resolved: a path is judged as written.
 HOOK_REL = os.path.join(".claude", "hooks", os.path.basename(__file__))
 path = os.path.abspath(os.path.join(data.get("cwd") or os.getcwd(), fp))
 

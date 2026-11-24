@@ -198,6 +198,15 @@ describe('block-generated-edits hook: judged by the path inside the checkout', (
   it('DENIES a catalog file name in no checkout at all, even under a docs/ directory', () => {
     expect(decide(write(join(tmp, 'docs', 'loose', 'Papers.md')), hookOf(checkout('plain')))).toBe('deny');
   });
+  // The other direction: failing closed is for catalog names only, and an Edit outside a
+  // checkout is still judged by its markup, so neither of these may be refused.
+  it('ALLOWS a file in no checkout whose name is not a catalog file name', () => {
+    expect(decide(write(join(tmp, 'docs', 'loose', 'README.md')), hookOf(checkout('plain')))).toBeNull();
+  });
+  it('ALLOWS a prose-only Edit to a catalog file name in no checkout', () => {
+    const edit = { tool_name: 'Edit', tool_input: { file_path: join(tmp, 'docs', 'loose', 'Papers.md'), old_string: 'draft', new_string: 'final' } };
+    expect(decide(edit, hookOf(checkout('plain')))).toBeNull();
+  });
   it('says so when it refuses a file in no checkout, and not when the file is in one', () => {
     const root = checkout('plain');
     const loose = run(write(join(tmp, 'docs', 'loose', 'Papers.md')), hookOf(root))?.permissionDecisionReason ?? '';

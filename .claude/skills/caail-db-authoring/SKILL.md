@@ -157,7 +157,8 @@ id; that's the point). Paper ids reuse the numeric public anchor and are **never
 For a straight **add** or **remove**, use the one-command helpers (they assign the frozen
 id, insert/delete correctly, run the guards, and regenerate NDJSON + Markdown). While new
 items are paused (the note at the top), `db:add` refuses every descriptor; the pause does
-not stop `db:remove`:
+not stop `db:remove`. `db:remove` has no case yet for field reports or curated dataset
+entries, and fails on both with a foreign-key error (see Field reports):
 
 ```
 pnpm --dir site db:add <descriptor.json>   # add a paper / tool / database / dataset row (refuses while new items are paused)
