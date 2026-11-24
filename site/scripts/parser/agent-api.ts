@@ -802,10 +802,10 @@ export const NETWORK_EDGES_NOTE =
 export const NETWORK_LIMITS_NOTE =
   'Edges are derived, not checked. Shared-author joins match authors by surname and first ' +
   'initial (by surname alone where a citation gives no initial), so they can join two people or ' +
-  'split one. Citation edges come from a hand-refreshed ' +
-  "cache of OpenAlex records, so some references have none, and a direction is OpenAlex's " +
-  'reading of a reference list. Neither cache is dated by `corpusDate`. An absent edge is not ' +
-  'evidence that two papers are unrelated.';
+  "split one. Citation edges come from OpenAlex, so some references have none, and a direction " +
+  "is OpenAlex's reading of a reference list. Both sets are read from caches refreshed by hand " +
+  '(author names from Crossref and DataCite, citations from OpenAlex), and `corpusDate` dates ' +
+  'neither. An absent edge is not evidence that two papers are unrelated.';
 
 /**
  * The served form of the network: graph.json's per-mode stats and both edge sets, without
@@ -850,6 +850,11 @@ export const CITATIONS_HUB_NOTE =
 
 const REPO_SLUG = 'tucca-cellag/caail';
 
+/** The commit scopes recent.ts reads as one kind of addition, as the momentum account lists them. */
+function scopesOf(kind: 'Paper' | 'Dataset'): string {
+  return Object.keys(SCOPE_TO_KIND).filter((s) => SCOPE_TO_KIND[s] === kind).join(' or ');
+}
+
 /** The two hubs, as they apply to datasets.json's curated entries (the inventory rows carry neither field). */
 export const DATASETS_HUBS_NOTE =
   "The Licenses hub filters the curated entries' `tier`, and the Citations hub bands their " +
@@ -868,20 +873,17 @@ export const REPOSITORY_ACTIVITY = {
   use:
     "By the Numbers' momentum figures are repository activity, read from git history when the " +
     'site is deployed, so no file here carries them. Read the same history from this GitHub ' +
-    `endpoint. Its 30-day commit counts are the commits with one parent returned for ` +
-    `\`path=${MOMENTUM_PATHS.papers}\` and for \`path=${MOMENTUM_PATHS.datasets}\` with \`since\` set ` +
-    '30 days back (page with `per_page` and `page`). For its latest paper or dataset addition, ' +
-    `make one request per path (the endpoint takes one) for ${CONTENT_PATHS.join(', ')}, order the ` +
-    'one-parent commits by `commit.committer.date`, newest first, and read the ' +
-    '`commit.author.date` of the first whose subject reads (paging each path until one does, ' +
-    'or its history ends) ' +
-    '`type(scope): verb …`, with a first scope of ' +
-    `${Object.keys(SCOPE_TO_KIND).filter((s) => SCOPE_TO_KIND[s] === 'Paper').join(' or ')} for a paper ` +
-    `and ${Object.keys(SCOPE_TO_KIND).filter((s) => SCOPE_TO_KIND[s] === 'Dataset').join(' or ')} for a ` +
-    `dataset, and a lead verb of ${ADDITION_VERBS.join(', ')}, all matched in any case and the verb as a ` +
-    "whole word. GitHub rate-limits unauthenticated requests, so a refused request or an unread " +
-    "page leaves a figure incomplete, not zero. The page's figures are the same " +
-    'counts as of its last deploy.',
+    'endpoint: one request per path (it takes one), newest first, paging with `per_page` and ' +
+    '`page`, and counting only commits with one parent. Its 30-day commit counts are those ' +
+    `commits for \`path=${MOMENTUM_PATHS.papers}\` and for \`path=${MOMENTUM_PATHS.datasets}\` whose ` +
+    '`commit.committer.date` falls in the last 30 days. Its latest paper or dataset addition is ' +
+    'the `commit.author.date` of the newest such commit by `commit.committer.date`, across ' +
+    `${CONTENT_PATHS.join(', ')}, whose subject the page reads as an addition of that kind: in ` +
+    `outline \`type(scope): verb …\`, a first scope of ${scopesOf('Paper')} for a paper and ` +
+    `${scopesOf('Dataset')} for a dataset, and a lead verb of ${ADDITION_VERBS.join(', ')}. The exact ` +
+    `rule is \`parseSubject\` in ${GITHUB_BLOB_BASE}/site/scripts/parser/recent.ts. GitHub ` +
+    'rate-limits unauthenticated requests, so a refused request or an unread page leaves a figure ' +
+    "incomplete, not zero. The page's figures are the same counts as of its last deploy.",
 } as const;
 
 // ---------------------------------------------------------------------------

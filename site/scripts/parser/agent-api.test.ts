@@ -44,6 +44,7 @@ import { loadCitationCache } from './generate-data.js';
 import { ADDITION_VERBS, CONTENT_PATHS, MOMENTUM_PATHS, SCOPE_TO_KIND } from './recent.js';
 import { BAND_META, CITATION_BANDS } from '../../src/lib/citation-bands.ts';
 import { LICENSE_TIERS } from '../../src/lib/licenses.ts';
+import { GITHUB_BLOB_BASE } from '../dedicated-links.ts';
 import { RETIRED_BASES, SITE_BASE, SITE_ORIGIN, SITE_URL } from '../../src/content/site-config.ts';
 import { buildPapersModel } from './papers.js';
 import { buildCatalogModel } from './catalog.js';
@@ -1056,13 +1057,18 @@ describe('the hub filters and momentum figures, documented in index.json (tucca-
     expect(REPOSITORY_ACTIVITY.url).toMatch(/^https:\/\/api\.github\.com\/repos\/[^/]+\/[^/]+\/commits$/);
     expect(use).toContain(`\`path=${MOMENTUM_PATHS.papers}\``);
     expect(use).toContain(`\`path=${MOMENTUM_PATHS.datasets}\``);
-    expect(use).toContain(`for ${CONTENT_PATHS.join(', ')}, order the `);
-    expect(use).toContain('`commit.committer.date`, newest first');
-    expect(use).toContain('paging each path until one does');
-    expect(use).toContain(`a lead verb of ${ADDITION_VERBS.join(', ')}, all matched in any case and the verb as a whole word.`);
+    expect(use).toContain(`across ${CONTENT_PATHS.join(', ')}, `);
+    expect(use).toContain(`a lead verb of ${ADDITION_VERBS.join(', ')}.`);
     const scopes = (kind: string) => Object.keys(SCOPE_TO_KIND).filter((s) => SCOPE_TO_KIND[s] === kind).join(' or ');
     expect(use).toContain(`a first scope of ${scopes('Paper')} for a paper`);
-    expect(use).toContain(`and ${scopes('Dataset')} for a dataset`);
-    expect(use).toContain('`commit.author.date`');
+    expect(use).toContain(`${scopes('Dataset')} for a dataset`);
+    // The 30-day count and the ordering both read the committer date, as git log does.
+    expect(use).toContain('whose `commit.committer.date` falls in the last 30 days');
+    expect(use).toContain('`commit.author.date` of the newest such commit by `commit.committer.date`');
+    // The exact rule is named by a link to the function, which must exist where it points.
+    const link = `${GITHUB_BLOB_BASE}/site/scripts/parser/recent.ts`;
+    expect(use).toContain(link);
+    const source = readFileSync(join(REPO_ROOT, link.slice(GITHUB_BLOB_BASE.length + 1)), 'utf-8');
+    expect(source).toContain('export function parseSubject(');
   });
 });
