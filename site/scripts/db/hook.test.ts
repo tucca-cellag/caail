@@ -201,7 +201,7 @@ describe('block-generated-edits hook: judged by the path inside the checkout', (
   it('says so when it refuses a file in no checkout, and not when the file is in one', () => {
     const root = checkout('plain');
     const loose = run(write(join(tmp, 'docs', 'loose', 'Papers.md')), hookOf(root))?.permissionDecisionReason ?? '';
-    expect(loose.split('\n')[0]).toMatch(/in no CAAIL checkout .* judged by its file name alone/);
+    expect(loose.split('\n')[0]).toMatch(/in no CAAIL checkout .* refused as if it were one of CAAIL's catalog files/);
     const inside = run(write(join(root, 'Papers.md')), hookOf(root))?.permissionDecisionReason ?? '';
     expect(inside).not.toContain('no CAAIL checkout');
   });

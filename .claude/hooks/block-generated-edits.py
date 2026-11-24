@@ -98,8 +98,8 @@ if not blocked:
 name = os.path.basename(fp)
 outside = "" if root is not None else (
     f"{path} is in no CAAIL checkout this guard can find (no directory above it holds "
-    f"{HOOK_REL}), so it was judged by its file name alone and refused. The routes "
-    "below apply only if it is one of CAAIL's own catalog files.\n"
+    f"{HOOK_REL}), so it was refused as if it were one of CAAIL's catalog files. The "
+    "routes below apply only if it is one.\n"
 )
 reason = outside + (
     f"{name} is generated from the SQLite authoring DB (issue #78) — its matrix, "
