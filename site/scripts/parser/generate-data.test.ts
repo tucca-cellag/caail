@@ -218,3 +218,22 @@ describe('writeParseOutputs()', () => {
     expect({ rewritten: fromCurrent.llmsTxtRewritten, text: fromCurrent.llmsTxt }).toEqual({ rewritten: false, text: CURRENT });
   });
 });
+
+describe('network.json serves the edges graph.json draws (tucca-cellag/caail-planning#882)', () => {
+  // Both files were written by the one generateData() run above, into the same temp dir: the
+  // page reads graph.json, and an agent reads network.json, so they must hold one network.
+  const graph = JSON.parse(readFileSync(join(tmpDir, 'graph.json'), 'utf-8'));
+  const network = JSON.parse(readFileSync(join(tmpDir, 'api', 'network.json'), 'utf-8'));
+
+  it('carries the same shared-author and citation edges, in the same order', () => {
+    expect(graph.citationEdges.length).toBeGreaterThan(0);
+    expect(network.sharedAuthorEdges).toEqual(graph.edges);
+    expect(network.citationEdges).toEqual(graph.citationEdges);
+  });
+
+  it('carries the same per-mode stats', () => {
+    expect(network.sharedAuthor).toEqual(graph.metadata.sharedAuthor);
+    expect(network.citation).toEqual(graph.metadata.citation);
+    expect(network.nodes).toBe(graph.nodes.length);
+  });
+});

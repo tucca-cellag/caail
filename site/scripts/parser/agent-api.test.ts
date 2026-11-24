@@ -32,7 +32,17 @@ import {
   absolutizeCellLinks,
   nonAbsoluteMarkdownTargets,
   VERSION_NOTE,
+  buildNetwork,
+  CITATIONS_HUB_NOTE,
+  LICENSES_HUB_NOTE,
+  REPOSITORY_ACTIVITY,
 } from './agent-api.js';
+import { buildGraphModel } from './graph.js';
+import { loadAuthorCache } from './authors.js';
+import { loadCitationCache } from './generate-data.js';
+import { ADDITION_VERBS, CONTENT_PATHS, MOMENTUM_PATHS } from './recent.js';
+import { BAND_META, CITATION_BANDS } from '../../src/lib/citation-bands.ts';
+import { LICENSE_TIERS } from '../../src/lib/licenses.ts';
 import { RETIRED_BASES, SITE_BASE, SITE_ORIGIN, SITE_URL } from '../../src/content/site-config.ts';
 import { buildPapersModel } from './papers.js';
 import { buildCatalogModel } from './catalog.js';
@@ -41,7 +51,8 @@ import { buildDatasetInventory } from './dataset-inventory.js';
 import { buildTopicsModel } from './topics.js';
 import { buildTaxonomyModel } from './taxonomy.js';
 import {
-  ApiCatalogIndexRowSchema, ApiManifestSchema, DatasetEntrySchema, DatasetInventoryRowSchema, OnRequestStudySchema,
+  ApiCatalogIndexRowSchema, ApiManifestSchema, CatalogEntrySchema, DatasetEntrySchema, DatasetInventoryRowSchema,
+  OnRequestStudySchema, ReferenceSchema,
 } from './types.js';
 import { buildApiTaxonomy } from './search-terms.js';
 import { buildReportsModel } from './reports.js';
@@ -932,5 +943,105 @@ describe('the compact indexes', () => {
     const noticed = papers.references.filter((r) => r.notices.length > 0).map((r) => r.id);
     expect(noticed.length).toBeGreaterThan(0);
     expect(rows.filter((r) => r.hasNotice).map((r) => r.id)).toEqual(noticed);
+  });
+});
+
+describe('network.json, the Citation Network page in the API (tucca-cellag/caail-planning#882)', () => {
+  // Built with both caches, as generate-data builds the page's graph.json, so the test covers
+  // the citation edges and the different-people exclusions rather than the no-cache fallback.
+  const graph = buildGraphModel(papers, loadCitationCache(), loadAuthorCache());
+  const files = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, graph, corpusDate: DATE });
+  const body = files.find((f) => f.name === 'network.json')!.body as any;
+  const manifest = files.find((f) => f.name === 'index.json')!.body as any;
+
+  it('serves the edges and per-mode stats of the graph it is given, unchanged', () => {
+    expect(graph.citationEdges.length).toBeGreaterThan(0);
+    expect(body.sharedAuthorEdges).toEqual(graph.edges);
+    expect(body.citationEdges).toEqual(graph.citationEdges);
+    expect(body.sharedAuthor).toEqual(graph.metadata.sharedAuthor);
+    expect(body.citation).toEqual(graph.metadata.citation);
+    expect(body.nodes).toBe(papers.references.length);
+  });
+
+  it('puts the counts and notes before the edges, so a truncated read keeps them', () => {
+    const keys = Object.keys(body);
+    for (const k of ['sharedAuthor', 'citation', 'edgesNote', 'limitsNote', 'truncationNote']) {
+      expect(keys.indexOf(k), k).toBeLessThan(keys.indexOf('sharedAuthorEdges'));
+    }
+    const text = serializeApiFile('network.json', body);
+    expect(text.indexOf('"edgesNote"')).toBeLessThan(text.indexOf('"sharedAuthorEdges"'));
+  });
+
+  it('names only reference ids that papers-index.json serves', () => {
+    const ids = new Set(papers.references.map((r) => r.id));
+    for (const e of [...body.sharedAuthorEdges, ...body.citationEdges]) {
+      expect(ids.has(e.source) && ids.has(e.target), `${e.source}-${e.target}`).toBe(true);
+    }
+  });
+
+  it('counts both edge sets in index.json, which always arrives whole', () => {
+    expect(manifest.counts.networkSharedAuthorEdges).toBe(graph.edges.length);
+    expect(manifest.counts.networkCitationEdges).toBe(graph.citationEdges.length);
+  });
+
+  it('serialises one edge per line and parses back to the same body', () => {
+    const text = serializeApiFile('network.json', body);
+    expect(JSON.parse(text)).toEqual(body);
+    const edgeLines = text.split('\n').filter((l) => /^ {4}\{"source":/.test(l));
+    expect(edgeLines.length).toBe(graph.edges.length + graph.citationEdges.length);
+  });
+
+  it('serialises an empty edge set as an empty array', () => {
+    const empty = buildNetwork({ ...graph, edges: [], citationEdges: [] }, DATE) as any;
+    const parsed = JSON.parse(serializeApiFile('network.json', empty));
+    expect(parsed.sharedAuthorEdges).toEqual([]);
+    expect(parsed.citationEdges).toEqual([]);
+  });
+
+  it('falls back to a graph built from the papers when none is given', () => {
+    const fallback = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
+    const net = fallback.find((f) => f.name === 'network.json')!.body as any;
+    expect(net.sharedAuthorEdges).toEqual(buildGraphModel(papers).edges);
+  });
+});
+
+describe('the hub filters and momentum figures, documented in index.json (tucca-cellag/caail-planning#882)', () => {
+  const manifest = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE })
+    .find((f) => f.name === 'index.json')!.body as any;
+  const use = (path: string) => manifest.endpoints.find((e: any) => e.path === path).use as string;
+
+  it('states the Licenses hub filter with every tier licenses.ts classifies into', () => {
+    expect(use('catalog-index.json')).toContain(LICENSES_HUB_NOTE);
+    for (const t of LICENSE_TIERS) expect(LICENSES_HUB_NOTE).toContain(t);
+  });
+
+  it('states the Citations hub bands as citation-bands.ts defines them', () => {
+    expect(use('papers.json')).toContain(CITATIONS_HUB_NOTE);
+    for (const b of CITATION_BANDS) expect(CITATIONS_HUB_NOTE).toContain(BAND_META[b].label);
+  });
+
+  it('backticks only fields the files it names serve, so a renamed key cannot linger', () => {
+    const ticked = (text: string): string[] => [...text.matchAll(/`([A-Za-z]+)`/g)].map((m) => m[1]!);
+    const served = new Set([
+      ...Object.keys(ReferenceSchema.shape), ...Object.keys(CatalogEntrySchema.shape),
+      ...Object.keys(DatasetEntrySchema.shape), ...Object.keys(ApiCatalogIndexRowSchema.shape),
+    ]);
+    for (const f of [...ticked(LICENSES_HUB_NOTE), ...ticked(CITATIONS_HUB_NOTE)]) expect(served, f).toContain(f);
+  });
+
+  it('names the fields both hubs read, on items that carry them', () => {
+    expect(CITATIONS_HUB_NOTE).toContain('`citedByOpenAlex`');
+    expect(CITATIONS_HUB_NOTE).toContain('`citationCount`');
+    expect(papers.references.some((r) => typeof r.citedByOpenAlex === 'number')).toBe(true);
+    expect((catalog.databases as any[]).some((e) => typeof e.citationCount === 'number')).toBe(true);
+    expect((catalog.software as any[]).every((e) => 'tier' in e)).toBe(true);
+  });
+
+  it('points at GitHub for the momentum figures, from the paths and rule the page uses', () => {
+    expect(manifest.repositoryActivity).toEqual(REPOSITORY_ACTIVITY);
+    expect(REPOSITORY_ACTIVITY.url).toBe(`https://api.github.com/repos/${new URL(manifest.canonical).pathname.slice(1)}/commits`);
+    for (const p of [MOMENTUM_PATHS.papers, MOMENTUM_PATHS.datasets, ...CONTENT_PATHS, ...ADDITION_VERBS]) {
+      expect(REPOSITORY_ACTIVITY.use, p).toContain(p);
+    }
   });
 });

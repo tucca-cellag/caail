@@ -34,7 +34,11 @@ import { API_VERSION, assertValid, buildOpenApiDocument, OPENAPI_FILE } from './
 import { readStampedSchemaVersion } from './schema-stamp.js';
 import { CORPUS_DATE_COVERS, CORPUS_DATE_EXCLUDES } from './corpus-date-format.js';
 import { MATRIX_SECTION } from './types.js';
-import type { Catalog, CatalogEntry, DatasetInventory, DatasetInventoryRow, DoiRelation, OnRequestStudy, PapersData } from './types.js';
+import type { Catalog, CatalogEntry, DatasetInventory, DatasetInventoryRow, DoiRelation, Graph, OnRequestStudy, PapersData } from './types.js';
+import { buildGraphModel } from './graph.js';
+import { ADDITION_VERBS, CONTENT_PATHS, MOMENTUM_PATHS, SCOPE_TO_KIND } from './recent.js';
+import { BAND_META, CITATION_BANDS } from '../../src/lib/citation-bands.ts';
+import { LICENSE_TIERS } from '../../src/lib/licenses.ts';
 import { isUnderBase, RETIRED_BASES, SITE_BASE, SITE_URL } from '../../src/content/site-config.ts';
 import { CATALOG_SOURCES } from './catalog.js';
 import { ndjsonDirOf, readStampedDate } from '../db/corpus-stamp.js';
@@ -491,6 +495,13 @@ export interface AgentApiInputs {
   taxonomy: unknown;
   /** The field-report records (buildReportsModel): `{ reports: Report[] }` with derived recency. */
   reports: unknown;
+  /**
+   * The paper-network model the Citation Network page draws (graph.ts), served as
+   * network.json. generate-data passes the very object it writes as graph.json, which is
+   * what makes the served edges the page's edges; left out, it is rebuilt from `papers`
+   * with no author or citation cache, so a caller that omits it gets no citation edges.
+   */
+  graph?: Graph;
   /** ISO date stamped onto every response. Defaults to `readCorpusDate()`. */
   corpusDate?: string;
   /**
@@ -773,6 +784,96 @@ export function buildCatalogIndex(catalog: unknown, corpusDate: string): unknown
 }
 
 // ---------------------------------------------------------------------------
+// network.json — the Citation Network page's edges (tucca-cellag/caail-planning#882)
+// ---------------------------------------------------------------------------
+
+export const NETWORK_EDGES_NOTE =
+  'Every reference is a node, named by its `id` as in papers-index.json. `sharedAuthorEdges` ' +
+  'are undirected: two references that share at least one author, `source` the lower id and ' +
+  '`target` the higher, with the shared names as one of the two papers writes them. ' +
+  '`citationEdges` are directed: `source` cites `target`, both references CAAIL holds, read ' +
+  'from OpenAlex. A reference in no edge of a mode is isolated in it, and `isolatedNodes` ' +
+  'counts those, so the ids that appear here are only the connected ones.';
+
+/**
+ * What the edges do not establish. Each clause is a limit of the code that builds them, said
+ * so an agent does not carry more weight on an edge than it holds.
+ */
+export const NETWORK_LIMITS_NOTE =
+  'Authors are matched by surname and first initial, as citations give them, so two people who ' +
+  'share both can be joined; a join is dropped only where the publisher records for both ' +
+  "papers' DOIs show different people. Citation edges come from a cache of OpenAlex records " +
+  'refreshed by hand, so a reference added since its last refresh has none yet, and where ' +
+  'OpenAlex holds two records for one work, one is used. An absent edge is not evidence that ' +
+  'two papers are unrelated.';
+
+/**
+ * The served form of the network: graph.json's per-mode stats and both edge sets, without
+ * the nodes, whose fields papers-index.json already serves by the same id. Built from the
+ * Graph model itself rather than re-derived, so it cannot draw a different network from
+ * the page's.
+ */
+export function buildNetwork(graph: Graph, corpusDate: string): unknown {
+  // Key order is the emitted order: the stats and notes precede the edge arrays, so a fetch
+  // that truncates the tail still carries the counts to check against.
+  return {
+    corpusDate,
+    nodes: graph.metadata.nodes,
+    sharedAuthor: graph.metadata.sharedAuthor,
+    citation: graph.metadata.citation,
+    edgesNote: NETWORK_EDGES_NOTE,
+    limitsNote: NETWORK_LIMITS_NOTE,
+    truncationNote:
+      'Compare the edges you parsed against `sharedAuthor.edges` and `citation.edges`. If you ' +
+      'have fewer, your fetch truncated this file: say so, and do not report a missing edge.',
+    sharedAuthorEdges: graph.edges,
+    citationEdges: graph.citationEdges,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// What the hub pages filter on, stated where an agent reads the endpoints
+// ---------------------------------------------------------------------------
+
+/** The Licenses hub's one axis, from the tier list licenses.ts classifies into. */
+export const LICENSES_HUB_NOTE =
+  "The Licenses hub (/licenses/) is a filter on `tier`, over catalog.json's software and " +
+  "databases (also in catalog-index.json's rows) and datasets.json's curated entries; papers are " +
+  `not in it. The tiers are ${LICENSE_TIERS.join(', ')}: a coarse triage signal, not verified terms.`;
+
+/** The Citations hub's bands, written from citation-bands.ts so a changed band changes the text. */
+export const CITATIONS_HUB_NOTE =
+  "The Citations hub (/citations/) bands an OpenAlex citation count: papers.json's " +
+  "`citedByOpenAlex`, and `citationCount` on catalog.json's software and databases and " +
+  `datasets.json's curated entries. The bands are ${CITATION_BANDS.map((b) => BAND_META[b].label).join(', ')}; ` +
+  'an item with no count is in no band, not in the lowest.';
+
+/**
+ * By the Numbers' momentum figures, as an agent can read them. They are git history read
+ * when the site is deployed, relative to that day, so a committed file carrying them would
+ * be stale the next day and fail the API sync guard; GitHub serves the same history as
+ * JSON (Benji, tucca-cellag/caail-planning#882). Built from recent.ts's rule and paths,
+ * so the account cannot describe a different selection from the page's.
+ */
+const REPO_SLUG = 'tucca-cellag/caail';
+
+export const REPOSITORY_ACTIVITY = {
+  url: `https://api.github.com/repos/${REPO_SLUG}/commits`,
+  use:
+    "By the Numbers' momentum figures are repository activity, read from git history when the " +
+    'site is deployed, so no file here carries them. Read the same history from this GitHub ' +
+    `endpoint. Its 30-day commit counts are the commits with one parent returned for ` +
+    `\`path=${MOMENTUM_PATHS.papers}\` and for \`path=${MOMENTUM_PATHS.datasets}\` with \`since\` set ` +
+    '30 days back (page with `per_page` and `page`). Its latest paper or dataset addition is the ' +
+    `newest one-parent commit touching ${CONTENT_PATHS.join(', ')} whose subject reads ` +
+    '`type(scope): verb …`, with a first scope of ' +
+    `${Object.keys(SCOPE_TO_KIND).filter((s) => SCOPE_TO_KIND[s] === 'Paper').join(' or ')} for a paper ` +
+    `and ${Object.keys(SCOPE_TO_KIND).filter((s) => SCOPE_TO_KIND[s] === 'Dataset').join(' or ')} for a ` +
+    `dataset, and a lead verb of ${ADDITION_VERBS.join(', ')}. The page's figures are the same ` +
+    'counts as of its last deploy.',
+} as const;
+
+// ---------------------------------------------------------------------------
 // index.json — the manifest an agent reads first
 // ---------------------------------------------------------------------------
 
@@ -789,6 +890,7 @@ export function buildManifest(
   datasets: { curated: number; inventory: number; onRequest: number } = { curated: 0, inventory: 0, onRequest: 0 },
   catalog: { software: number; databases: number } = { software: 0, databases: 0 },
   reports: { count: number } = { count: 0 },
+  network: { sharedAuthorEdges: number; citationEdges: number } = { sharedAuthorEdges: 0, citationEdges: 0 },
 ): unknown {
   const bySection: Record<string, number> = {};
   for (const r of papers.references) bySection[r.section] = (bySection[r.section] ?? 0) + 1;
@@ -806,7 +908,7 @@ export function buildManifest(
     // that is still being verified.
     status: STATUS,
     placementsUnderReview: true,
-    canonical: 'https://github.com/tucca-cellag/caail',
+    canonical: `https://github.com/${REPO_SLUG}`,
     site: SITE_URL,
     license: 'MIT (CAAIL curation). Linked third-party resources keep their own licenses.',
     scopeNote: SCOPE_NOTE,
@@ -848,13 +950,24 @@ export function buildManifest(
       // every count here does; the latest per series is the one to recommend, and reports.json
       // carries `current: true` to pick it (see the reports.json endpoint note).
       fieldReportEditions: reports.count,
+      // network.json's two edge sets, counted here as well as in that file, for the same
+      // reason as the catalogue above: this file always arrives whole.
+      networkSharedAuthorEdges: network.sharedAuthorEdges,
+      networkCitationEdges: network.citationEdges,
     },
     endpoints: [
       { path: 'index.json', use: 'This manifest: corpus date, API and schema versions (`versionNote` says what each dates), counts by population, endpoint list.' },
       { path: 'matrix.json', use: 'All method×area cells, empties included. Use to ask what has and has not been indexed — then read `matrixNote` in papers-index.json before reading a silence as an absence.' },
       { path: 'papers-index.json', use: 'START HERE for papers. Every reference, one compact row: id, title, year, first author, section, methods, areas, DOI, code/data flags, and whether a post-publication notice is recorded (`hasNotice`). A sixth the size of papers.json, so it survives a fetch tool that truncates. Enumerate here, then fetch full records.' },
-      { path: 'papers.json', use: 'Full records for the references you selected. Large (~554 KB): if your fetch summarises rather than returning bytes, a "not found" from this file is not evidence of absence.' },
-      { path: 'catalog-index.json', use: 'START HERE for software and databases. One compact row each: slug, name, kind, group, URL, DOI, whether that DOI is the item\'s own or a paper or document about it (`doiRelation`), license tier. A tenth the size of catalog.json.' },
+      { path: 'papers.json', use: 'Full records for the references you selected. Large (~554 KB): if your fetch summarises rather than returning bytes, a "not found" from this file is not evidence of absence. ' + CITATIONS_HUB_NOTE },
+      {
+        path: 'network.json',
+        use:
+          "The Citation Network page's two edge sets between references: shared author (undirected) " +
+          'and citation (directed, A cites B), with per-mode counts and connectivity. Read `edgesNote` ' +
+          'and `limitsNote` before treating an edge, or its absence, as a finding.',
+      },
+      { path: 'catalog-index.json', use: 'START HERE for software and databases. One compact row each: slug, name, kind, group, URL, DOI, whether that DOI is the item\'s own or a paper or document about it (`doiRelation`), license tier. A tenth the size of catalog.json. ' + LICENSES_HUB_NOTE },
       { path: 'catalog.json', use: 'Full records with summaries. Large (~576 KB), two thirds of it the same summary prose as Markdown and as HTML; same truncation caveat as papers.json.' },
       {
         path: 'datasets.json',
@@ -903,6 +1016,7 @@ export function buildManifest(
       { path: 'taxonomy.json', use: 'What each method, area and subject theme means in CAAIL, with exclusion criteria. Read before trusting a placement. Definitions are split by vocabulary under `axes` (`area`, `method`, `theme`) because a label may appear in more than one — "Bioprocess & Scale-Up" is both a matrix column and a theme, with different text. `definitions` is the flat matrix lookup (areas + methods only); look a theme up under `axes.theme`. `searchTerms` is the curated search vocabulary per area and method, plus `methodGeneric` for text that applies some AI method (a generic term also listed under a method labels that method too) and `fieldCore` for terms that name cellular agriculture itself; follow its `contract` when matching, which also says how the lists compose. Record `searchTerms.sha256` with each collection run; its `contract` says when it changes.' },
       { path: OPENAPI_FILE, use: 'OpenAPI 3.1 description of every endpoint above, generated from the schemas that validate them. Read this instead of guessing a key.' },
     ],
+    repositoryActivity: REPOSITORY_ACTIVITY,
   };
 }
 
@@ -932,12 +1046,18 @@ export function buildAgentApi(inputs: AgentApiInputs): ApiFile[] {
   const reportsCount = {
     count: ((inputs.reports as { reports?: unknown[] } | null)?.reports ?? []).length,
   };
+  const graph = inputs.graph ?? buildGraphModel(inputs.papers);
+  const networkCounts = {
+    sharedAuthorEdges: graph.edges.length,
+    citationEdges: graph.citationEdges.length,
+  };
 
   const files: ApiFile[] = [
-    { name: 'index.json', body: buildManifest(inputs.papers, matrix, corpusDate, schemaVersion, datasetCounts, catalogCounts, reportsCount) },
+    { name: 'index.json', body: buildManifest(inputs.papers, matrix, corpusDate, schemaVersion, datasetCounts, catalogCounts, reportsCount, networkCounts) },
     { name: 'matrix.json', body: matrix },
     { name: 'papers-index.json', body: buildPapersIndex(inputs.papers, corpusDate) },
     { name: 'papers.json', body: { ...inputs.papers, scopeNote: SCOPE_NOTE, corpusDate } },
+    { name: 'network.json', body: buildNetwork(graph, corpusDate) },
     { name: 'catalog-index.json', body: buildCatalogIndex(inputs.catalog, corpusDate) },
     { name: 'catalog.json', body: { ...(catalogForApi(inputs.catalog) as object), corpusDate } },
     {
@@ -991,19 +1111,28 @@ export function buildAgentApi(inputs: AgentApiInputs): ApiFile[] {
  * Row-per-line gets both: the payload is compact, and a reference changing shows up as one
  * changed line with the id visible at the front of it.
  */
-const COMPACT_ARRAY: Record<string, string> = {
-  'papers-index.json': 'references',
-  'catalog-index.json': 'entries',
+const COMPACT_ARRAY: Record<string, readonly string[]> = {
+  'papers-index.json': ['references'],
+  'catalog-index.json': ['entries'],
+  // ~1,270 edges of two or three fields each: pretty-printed, nine lines an edge.
+  'network.json': ['sharedAuthorEdges', 'citationEdges'],
 };
 
 export function serializeApiFile(name: string, body: unknown): string {
-  const key = COMPACT_ARRAY[name];
-  const rows = key ? (body as Record<string, unknown>)[key] : undefined;
-  if (!key || !Array.isArray(rows)) return JSON.stringify(body, null, 2) + '\n';
+  const keys = (COMPACT_ARRAY[name] ?? []).filter((k) =>
+    Array.isArray((body as Record<string, unknown>)[k]),
+  );
+  if (keys.length === 0) return JSON.stringify(body, null, 2) + '\n';
 
-  // Everything except the row array keeps its readable form; the array is emitted with one
+  // Everything except the row arrays keeps its readable form; each array is emitted with one
   // minified object per line, which is valid JSON and stays reviewable in a diff.
-  const rest = JSON.stringify({ ...(body as object), [key]: [] }, null, 2);
+  let out = JSON.stringify({ ...(body as object), ...Object.fromEntries(keys.map((k) => [k, []])) }, null, 2);
+  for (const key of keys) out = compactRows(out, key, (body as Record<string, unknown[]>)[key]);
+  return out + '\n';
+}
+
+/** Replace the emptied `"key": []` in `json` with `rows`, one minified row per line. */
+function compactRows(json: string, key: string, rows: unknown[]): string {
   const lines = rows.map((r) => '    ' + JSON.stringify(r)).join(',\n');
 
   // The replacement is a FUNCTION, not a string, and that is load-bearing rather than
@@ -1019,7 +1148,7 @@ export function serializeApiFile(name: string, body: unknown): string {
   // yields VALID JSON with a silently wrong value, so it would pass the schema validation,
   // the round-trip parse and the CI sync guard alike — the last because regeneration is
   // deterministic, so the committed and regenerated copies would be corrupt identically.
-  return rest.replace(`"${key}": []`, () => `"${key}": [\n${lines}\n  ]`) + '\n';
+  return json.replace(`"${key}": []`, () => `"${key}": [\n${lines}\n  ]`);
 }
 
 /** Write the built files into `apiDir`, creating it if needed. */

@@ -1086,8 +1086,41 @@ export const ApiManifestSchema = z.strictObject({
     datasetsOnRequest: z.number().int().nonnegative(),
     /** field-report editions across all series (one record per edition, current + superseded) */
     fieldReportEditions: z.number().int().nonnegative(),
+    /** network.json's undirected shared-author edges, so a truncated read of it can be told */
+    networkSharedAuthorEdges: z.number().int().nonnegative(),
+    /** network.json's directed citation edges, likewise */
+    networkCitationEdges: z.number().int().nonnegative(),
   }),
   endpoints: z.array(z.strictObject({ path: z.string(), use: z.string() })),
+  /**
+   * Where the By the Numbers page's momentum figures come from for an agent. They are git
+   * history read when the site is deployed, so no committed file can carry them without
+   * going stale the next day (tucca-cellag/caail-planning#882): this points at GitHub's own
+   * JSON for that history instead.
+   */
+  repositoryActivity: z.strictObject({ url: z.string(), use: z.string() }),
+});
+
+/**
+ * network.json: the Citation Network page's two edge sets, built from the same graph model
+ * the page draws (tucca-cellag/caail-planning#882). Edge endpoints are reference ids, as in
+ * papers-index.json; the stats are graph.json's per-mode metadata.
+ */
+export const ApiNetworkSchema = z.strictObject({
+  corpusDate: CorpusDateSchema,
+  /** every reference is a node, so this equals papersAllSections in index.json */
+  nodes: z.number().int().nonnegative(),
+  sharedAuthor: GraphModeStatsSchema,
+  citation: GraphModeStatsSchema,
+  /** what an edge means in each mode, stated before the edges so a truncation keeps it */
+  edgesNote: z.string(),
+  /** what the edges do not establish */
+  limitsNote: z.string(),
+  truncationNote: z.string(),
+  /** undirected: `source` is the lower id, `target` the higher */
+  sharedAuthorEdges: z.array(GraphEdgeSchema),
+  /** directed: `source` cites `target` */
+  citationEdges: z.array(CitationEdgeSchema),
 });
 
 export const ApiPapersSchema = PapersDataSchema.extend({

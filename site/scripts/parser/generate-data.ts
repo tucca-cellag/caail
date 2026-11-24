@@ -536,6 +536,8 @@ export function generateData(
   // Emit the agent-facing static API under public/, from the same validated models the
   // site renders, so the two can't disagree about the corpus.
   const apiFiles = buildAgentApi({
+    // The object written as graph.json above, so network.json serves the page's own edges.
+    graph,
     papers: model,
     catalog,
     datasets,

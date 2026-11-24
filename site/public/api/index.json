@@ -2,7 +2,7 @@
   "name": "CAAIL: Cellular Agriculture AI Library",
   "corpusDate": "2026-11-14",
   "apiVersion": 1,
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "versionNote": "corpusDate dates CAAIL's catalog records (the papers, software, databases, datasets and field reports, the studies whose data are shared only on request, and the topics and matrix axes they are filed under), not other served data, such as citation counts or the taxonomy definitions. apiVersion changes only at a redesign of the whole API. schemaVersion counts changes to the shape of these files, everything openapi.json's paths and components describe (with the OpenAPI version and JSON Schema dialect they are read under), the endpoint descriptions included: treat any difference in it as a change of shape. openapi.json's info.version is the string apiVersion.schemaVersion, two whole numbers joined by a dot and not a decimal (1.10 follows 1.9), so compare schemaVersion itself. It does not count the keys of open maps, which the content names: an inventory row's `columns` (each page's own table headers), `counts.papersBySection` (the section names), and the maps in taxonomy.json and topics.json keyed by label or slug. Record schemaVersion with what you build against: if it differs on a later fetch, check openapi.json before trusting a field.",
   "status": "beta",
   "placementsUnderReview": true,
@@ -33,7 +33,9 @@
     "software": 143,
     "databases": 150,
     "catalogTotal": 293,
-    "fieldReportEditions": 9
+    "fieldReportEditions": 9,
+    "networkSharedAuthorEdges": 536,
+    "networkCitationEdges": 737
   },
   "endpoints": [
     {
@@ -50,11 +52,15 @@
     },
     {
       "path": "papers.json",
-      "use": "Full records for the references you selected. Large (~554 KB): if your fetch summarises rather than returning bytes, a \"not found\" from this file is not evidence of absence."
+      "use": "Full records for the references you selected. Large (~554 KB): if your fetch summarises rather than returning bytes, a \"not found\" from this file is not evidence of absence. The Citations hub (/citations/) bands an OpenAlex citation count: papers.json's `citedByOpenAlex`, and `citationCount` on catalog.json's software and databases and datasets.json's curated entries. The bands are 1,000+ citations, 100–999 citations, 10–99 citations, Under 10 citations; an item with no count is in no band, not in the lowest."
+    },
+    {
+      "path": "network.json",
+      "use": "The Citation Network page's two edge sets between references: shared author (undirected) and citation (directed, A cites B), with per-mode counts and connectivity. Read `edgesNote` and `limitsNote` before treating an edge, or its absence, as a finding."
     },
     {
       "path": "catalog-index.json",
-      "use": "START HERE for software and databases. One compact row each: slug, name, kind, group, URL, DOI, whether that DOI is the item's own or a paper or document about it (`doiRelation`), license tier. A tenth the size of catalog.json."
+      "use": "START HERE for software and databases. One compact row each: slug, name, kind, group, URL, DOI, whether that DOI is the item's own or a paper or document about it (`doiRelation`), license tier. A tenth the size of catalog.json. The Licenses hub (/licenses/) is a filter on `tier`, over catalog.json's software and databases (also in catalog-index.json's rows) and datasets.json's curated entries; papers are not in it. The tiers are permissive, copyleft, restricted, unknown: a coarse triage signal, not verified terms."
     },
     {
       "path": "catalog.json",
@@ -80,5 +86,9 @@
       "path": "openapi.json",
       "use": "OpenAPI 3.1 description of every endpoint above, generated from the schemas that validate them. Read this instead of guessing a key."
     }
-  ]
+  ],
+  "repositoryActivity": {
+    "url": "https://api.github.com/repos/tucca-cellag/caail/commits",
+    "use": "By the Numbers' momentum figures are repository activity, read from git history when the site is deployed, so no file here carries them. Read the same history from this GitHub endpoint. Its 30-day commit counts are the commits with one parent returned for `path=Papers.md` and for `path=Datasets` with `since` set 30 days back (page with `per_page` and `page`). Its latest paper or dataset addition is the newest one-parent commit touching Papers.md, Software.md, Databases.md, Datasets, OtherResources.md whose subject reads `type(scope): verb …`, with a first scope of papers for a paper and data or datasets for a dataset, and a lead verb of add, integrate, catalogue, catalog, inventory. The page's figures are the same counts as of its last deploy."
+  }
 }
