@@ -34,6 +34,7 @@ import {
   VERSION_NOTE,
   buildNetwork,
   CITATIONS_HUB_NOTE,
+  DATASETS_HUBS_NOTE,
   LICENSES_HUB_NOTE,
   REPOSITORY_ACTIVITY,
 } from './agent-api.js';
@@ -995,7 +996,10 @@ describe('network.json, the Citation Network page in the API (tucca-cellag/caail
 
   it('serialises an empty edge set as an empty array', () => {
     const empty = buildNetwork({ ...graph, edges: [], citationEdges: [] }, DATE) as any;
-    const parsed = JSON.parse(serializeApiFile('network.json', empty));
+    const text = serializeApiFile('network.json', empty);
+    expect(text).toContain('"sharedAuthorEdges": [],');
+    expect(text).toContain('"citationEdges": []\n');
+    const parsed = JSON.parse(text);
     expect(parsed.sharedAuthorEdges).toEqual([]);
     expect(parsed.citationEdges).toEqual([]);
   });
@@ -1014,6 +1018,10 @@ describe('the hub filters and momentum figures, documented in index.json (tucca-
   it('states the Licenses hub filter with every tier licenses.ts classifies into', () => {
     expect(use('catalog-index.json')).toContain(LICENSES_HUB_NOTE);
     for (const t of LICENSE_TIERS) expect(LICENSES_HUB_NOTE).toContain(t);
+  });
+
+  it('names both hubs in datasets.json\'s own note, for its curated entries', () => {
+    expect(use('datasets.json')).toContain(DATASETS_HUBS_NOTE);
   });
 
   it('states the Citations hub bands as citation-bands.ts defines them', () => {
@@ -1046,6 +1054,7 @@ describe('the hub filters and momentum figures, documented in index.json (tucca-
     expect(use).toContain(`\`path=${MOMENTUM_PATHS.datasets}\``);
     expect(use).toContain(`for ${CONTENT_PATHS.join(', ')}, order the `);
     expect(use).toContain('`commit.committer.date`, newest first');
+    expect(use).toContain('paging each path until one does');
     expect(use).toContain(`a lead verb of ${ADDITION_VERBS.join(', ')}.`);
     const scopes = (kind: string) => Object.keys(SCOPE_TO_KIND).filter((s) => SCOPE_TO_KIND[s] === kind).join(' or ');
     expect(use).toContain(`a first scope of ${scopes('Paper')} for a paper`);

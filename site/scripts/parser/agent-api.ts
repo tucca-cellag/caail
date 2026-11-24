@@ -852,6 +852,14 @@ export const CITATIONS_HUB_NOTE =
   `datasets.json's curated entries. The bands are ${CITATION_BANDS.map((b) => BAND_META[b].label).join(', ')}; ` +
   'an item with no count is in no band, not in the lowest.';
 
+const REPO_SLUG = 'tucca-cellag/caail';
+
+/** The two hubs, as they apply to datasets.json's curated entries (the inventory rows carry neither field). */
+export const DATASETS_HUBS_NOTE =
+  "The Licenses hub filters the curated entries' `tier`, and the Citations hub bands their " +
+  "`citationCount`, as papers.json's and catalog-index.json's notes say; an entry with no " +
+  'count is in no band, not in the lowest.';
+
 /**
  * By the Numbers' momentum figures, as an agent can read them. They are git history read
  * when the site is deployed, relative to that day, so a committed file carrying them would
@@ -859,8 +867,6 @@ export const CITATIONS_HUB_NOTE =
  * JSON (Benji, tucca-cellag/caail-planning#882). Built from recent.ts's rule and paths,
  * so the account cannot describe a different selection from the page's.
  */
-const REPO_SLUG = 'tucca-cellag/caail';
-
 export const REPOSITORY_ACTIVITY = {
   url: `https://api.github.com/repos/${REPO_SLUG}/commits`,
   use:
@@ -871,7 +877,8 @@ export const REPOSITORY_ACTIVITY = {
     '30 days back (page with `per_page` and `page`). For its latest paper or dataset addition, ' +
     `make one request per path (the endpoint takes one) for ${CONTENT_PATHS.join(', ')}, order the ` +
     'one-parent commits by `commit.committer.date`, newest first, and read the ' +
-    '`commit.author.date` of the first whose subject reads ' +
+    '`commit.author.date` of the first whose subject reads (paging each path until one does, ' +
+    'or its history ends) ' +
     '`type(scope): verb …`, with a first scope of ' +
     `${Object.keys(SCOPE_TO_KIND).filter((s) => SCOPE_TO_KIND[s] === 'Paper').join(' or ')} for a paper ` +
     `and ${Object.keys(SCOPE_TO_KIND).filter((s) => SCOPE_TO_KIND[s] === 'Dataset').join(' or ')} for a ` +
@@ -1015,7 +1022,8 @@ export function buildManifest(
           'A third array, `onRequest`, lists studies whose own data availability statement ' +
           'says their data are shared only on request, each with its `paperDoi` and ' +
           '`statement`. They are not datasets: they carry no id, are not in `datasetsTotal`, ' +
-          'and a match on one means CAAIL lists the study, not that it holds any data from it.',
+          'and a match on one means CAAIL lists the study, not that it holds any data from it. ' +
+          DATASETS_HUBS_NOTE,
       },
       { path: 'reports.json', use: 'Field reports: recurring institutional state-of-field surveys (GFI State of the Industry and the like), one record per edition. When recommending one, use the record with `current: true` for its series and treat any record with a `supersededBy` id as historical only; `seriesEditions` walks the history. The latest edition is derived, so it stays correct as new editions land.' },
       { path: 'topics.json', use: 'Subject tree plus an inverted index: topic → items across all content types. Start here for "what should I use for X".' },
@@ -1145,6 +1153,7 @@ export function serializeApiFile(name: string, body: unknown): string {
 
 /** Replace the emptied `"key": []` in `json` with `rows`, one minified row per line. */
 function compactRows(json: string, key: string, rows: unknown[]): string {
+  if (rows.length === 0) return json;
   const lines = rows.map((r) => '    ' + JSON.stringify(r)).join(',\n');
 
   // The replacement is a FUNCTION, not a string, and that is load-bearing rather than

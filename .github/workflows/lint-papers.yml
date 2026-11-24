@@ -24,6 +24,10 @@ on:
       # the site's address. Parse writes SITE_URL into the agent API and llms.txt's
       # corpus-date line, so a lone edit here changes output the sync guard diffs.
       - site/src/content/site-config.ts
+      # the license tiers and citation bands, which the agent API writes into index.json's
+      # endpoint notes, so a lone relabel here changes output the sync guard diffs.
+      - site/src/lib/licenses.ts
+      - site/src/lib/citation-bands.ts
       # generated outputs, so a hand-edit trips the sync guard that catches it
       - site/public/api/**
       - site/public/setup.md
@@ -79,6 +83,10 @@ on:
       # the site's address. Parse writes SITE_URL into the agent API and llms.txt's
       # corpus-date line, so a lone edit here changes output the sync guard diffs.
       - site/src/content/site-config.ts
+      # the license tiers and citation bands, which the agent API writes into index.json's
+      # endpoint notes, so a lone relabel here changes output the sync guard diffs.
+      - site/src/lib/licenses.ts
+      - site/src/lib/citation-bands.ts
       # generated outputs, so a hand-edit trips the sync guard that catches it
       - site/public/api/**
       - site/public/setup.md
