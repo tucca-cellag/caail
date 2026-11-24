@@ -35,7 +35,6 @@ import { readStampedSchemaVersion } from './schema-stamp.js';
 import { CORPUS_DATE_COVERS, CORPUS_DATE_EXCLUDES } from './corpus-date-format.js';
 import { MATRIX_SECTION } from './types.js';
 import type { Catalog, CatalogEntry, DatasetInventory, DatasetInventoryRow, DoiRelation, Graph, OnRequestStudy, PapersData } from './types.js';
-import { buildGraphModel } from './graph.js';
 import { ADDITION_VERBS, CONTENT_PATHS, MOMENTUM_PATHS, SCOPE_TO_KIND } from './recent.js';
 import { BAND_META, CITATION_BANDS } from '../../src/lib/citation-bands.ts';
 import { LICENSE_TIERS } from '../../src/lib/licenses.ts';
@@ -498,10 +497,11 @@ export interface AgentApiInputs {
   /**
    * The paper-network model the Citation Network page draws (graph.ts), served as
    * network.json. generate-data passes the very object it writes as graph.json, which is
-   * what makes the served edges the page's edges; left out, it is rebuilt from `papers`
-   * with no author or citation cache, so a caller that omits it gets no citation edges.
+   * what makes the served edges the page's edges. Required, and refused when absent: a
+   * graph rebuilt here would have no citation edges and none of the author cache's
+   * different-people exclusions, and would still pass every check downstream.
    */
-  graph?: Graph;
+  graph: Graph;
   /** ISO date stamped onto every response. Defaults to `readCorpusDate()`. */
   corpusDate?: string;
   /**
@@ -804,8 +804,9 @@ export const NETWORK_LIMITS_NOTE =
   'share both can be joined; a join is dropped only where the publisher records for both ' +
   "papers' DOIs show different people. Citation edges come from a cache of OpenAlex records " +
   'refreshed by hand, so a reference added since its last refresh has none yet, and where ' +
-  'OpenAlex holds two records for one work, one is used. An absent edge is not evidence that ' +
-  'two papers are unrelated.';
+  'OpenAlex holds two records for one work, one is used. Neither cache is dated by `corpusDate`, ' +
+  'so the edges can change while it stays the same. An absent edge is not evidence that two ' +
+  'papers are unrelated.';
 
 /**
  * The served form of the network: graph.json's per-mode stats and both edge sets, without
@@ -865,7 +866,8 @@ export const REPOSITORY_ACTIVITY = {
     `endpoint. Its 30-day commit counts are the commits with one parent returned for ` +
     `\`path=${MOMENTUM_PATHS.papers}\` and for \`path=${MOMENTUM_PATHS.datasets}\` with \`since\` set ` +
     '30 days back (page with `per_page` and `page`). Its latest paper or dataset addition is the ' +
-    `newest one-parent commit touching ${CONTENT_PATHS.join(', ')} whose subject reads ` +
+    'author date (`commit.author.date`) of the newest one-parent commit, across one request per ' +
+    `path (the endpoint takes one) for ${CONTENT_PATHS.join(', ')}, whose subject reads ` +
     '`type(scope): verb …`, with a first scope of ' +
     `${Object.keys(SCOPE_TO_KIND).filter((s) => SCOPE_TO_KIND[s] === 'Paper').join(' or ')} for a paper ` +
     `and ${Object.keys(SCOPE_TO_KIND).filter((s) => SCOPE_TO_KIND[s] === 'Dataset').join(' or ')} for a ` +
@@ -1046,7 +1048,13 @@ export function buildAgentApi(inputs: AgentApiInputs): ApiFile[] {
   const reportsCount = {
     count: ((inputs.reports as { reports?: unknown[] } | null)?.reports ?? []).length,
   };
-  const graph = inputs.graph ?? buildGraphModel(inputs.papers);
+  if (!inputs.graph) {
+    throw new Error(
+      'agent-api: buildAgentApi needs `graph`, the model generate-data writes as graph.json, ' +
+        'so network.json serves the edges the Citation Network page draws.',
+    );
+  }
+  const graph = inputs.graph;
   const networkCounts = {
     sharedAuthorEdges: graph.edges.length,
     citationEdges: graph.citationEdges.length,
@@ -1114,7 +1122,7 @@ export function buildAgentApi(inputs: AgentApiInputs): ApiFile[] {
 const COMPACT_ARRAY: Record<string, readonly string[]> = {
   'papers-index.json': ['references'],
   'catalog-index.json': ['entries'],
-  // ~1,270 edges of two or three fields each: pretty-printed, nine lines an edge.
+  // One row per edge: pretty-printed, an edge of two or three fields takes up to nine lines.
   'network.json': ['sharedAuthorEdges', 'citationEdges'],
 };
 

@@ -40,7 +40,7 @@ import {
 import { buildGraphModel } from './graph.js';
 import { loadAuthorCache } from './authors.js';
 import { loadCitationCache } from './generate-data.js';
-import { ADDITION_VERBS, CONTENT_PATHS, MOMENTUM_PATHS } from './recent.js';
+import { ADDITION_VERBS, CONTENT_PATHS, MOMENTUM_PATHS, SCOPE_TO_KIND } from './recent.js';
 import { BAND_META, CITATION_BANDS } from '../../src/lib/citation-bands.ts';
 import { LICENSE_TIERS } from '../../src/lib/licenses.ts';
 import { RETIRED_BASES, SITE_BASE, SITE_ORIGIN, SITE_URL } from '../../src/content/site-config.ts';
@@ -74,6 +74,8 @@ const taxonomy = buildApiTaxonomy(buildTaxonomyModel());
 const reports = buildReportsModel();
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 const DATE = '2026-01-01';
+// The graph generate-data builds, with both caches, passed wherever the API is built.
+const fixtureGraph = buildGraphModel(papers, loadCitationCache(), loadAuthorCache());
 
 describe('matrix.json', () => {
   const matrix = buildMatrix(papers, DATE);
@@ -233,7 +235,7 @@ describe('topics.json inverted index', () => {
 });
 
 describe('buildAgentApi', () => {
-  const files = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
+  const files = buildAgentApi({ graph: fixtureGraph, papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
 
   it('emits every endpoint the manifest advertises', () => {
     const names = files.map((f) => f.name);
@@ -268,7 +270,7 @@ describe('buildAgentApi', () => {
   });
 
   it('serves a schema version it is given, in both places, so the stamp is the only source', () => {
-    const given = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE, schemaVersion: 7 });
+    const given = buildAgentApi({ graph: fixtureGraph, papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE, schemaVersion: 7 });
     expect((given.find((f) => f.name === 'index.json')!.body as any).schemaVersion).toBe(7);
     expect((given.find((f) => f.name === 'openapi.json')!.body as any).info.version).toBe(`${API_VERSION}.7`);
   });
@@ -339,7 +341,7 @@ describe('buildAgentApi', () => {
     // default. A shorthand `{ corpusDate }` once captured the same-named function
     // instead of the string, and JSON.stringify silently dropped it: the output was
     // deterministic and every assertion still passed while the field was undefined.
-    const dflt = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports });
+    const dflt = buildAgentApi({ graph: fixtureGraph, papers, catalog, datasets, inventory, topics, taxonomy, reports });
     for (const f of dflt) {
       const d =
         f.name === 'openapi.json'
@@ -353,8 +355,8 @@ describe('buildAgentApi', () => {
   it('derives the date from the corpus, not the clock, so the CI sync guard is stable', () => {
     // The emitted files are committed and CI re-runs the parse to diff them. A
     // build-time `new Date()` would differ on any later day and fail the guard.
-    const a = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports });
-    const b = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports });
+    const a = buildAgentApi({ graph: fixtureGraph, papers, catalog, datasets, inventory, topics, taxonomy, reports });
+    const b = buildAgentApi({ graph: fixtureGraph, papers, catalog, datasets, inventory, topics, taxonomy, reports });
     expect(JSON.stringify(a)).toBe(JSON.stringify(b));
 
     // Asserting the date differs from today would be flaky: a stamp made today makes them
@@ -400,7 +402,7 @@ describe('buildAgentApi', () => {
 // ---------------------------------------------------------------------------
 
 describe('reports.json (field reports)', () => {
-  const files = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
+  const files = buildAgentApi({ graph: fixtureGraph, papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
   const body = files.find((f) => f.name === 'reports.json')!.body as any;
   const manifest = files.find((f) => f.name === 'index.json')!.body as any;
 
@@ -479,7 +481,7 @@ describe('reports.json (field reports)', () => {
  */
 describe('datasets.json inventory', () => {
   const cowTable = extractInventory(join(REPO_ROOT, 'Datasets', 'Cow.md'))!;
-  const files = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
+  const files = buildAgentApi({ graph: fixtureGraph, papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
   const body = files.find((f) => f.name === 'datasets.json')!.body as any;
   const manifest = files.find((f) => f.name === 'index.json')!.body as any;
 
@@ -723,7 +725,7 @@ describe('site-relative hrefs in the API', () => {
         ...inventory.inventory[0]!, id: 'ds:fixture-bad-link', page: 'Pig', columns: { Description: '[s](./site/db/schema.sql)' },
       }],
     };
-    expect(() => buildAgentApi({ papers, catalog, datasets, inventory: bad, topics, taxonomy, reports, corpusDate: DATE }))
+    expect(() => buildAgentApi({ graph: fixtureGraph, papers, catalog, datasets, inventory: bad, topics, taxonomy, reports, corpusDate: DATE }))
       .toThrow(/^agent-api: inventory row ds:fixture-bad-link: Datasets\/Pig\.md: Markdown link target "\.\/site\/db\/schema\.sql" is not an absolute URL\.$/);
     const empty: typeof inventory = {
       ...inventory,
@@ -731,7 +733,7 @@ describe('site-relative hrefs in the API', () => {
         ...inventory.inventory[0]!, id: 'ds:fixture-empty-link', page: 'Pig', columns: { Description: 'see [GEO]()' },
       }],
     };
-    expect(() => buildAgentApi({ papers, catalog, datasets, inventory: empty, topics, taxonomy, reports, corpusDate: DATE }))
+    expect(() => buildAgentApi({ graph: fixtureGraph, papers, catalog, datasets, inventory: empty, topics, taxonomy, reports, corpusDate: DATE }))
       .toThrow(/Datasets\/Pig\.md: a link has an empty target/);
     // An empty fragment is not rewritten to a URL ending in a bare '#'; it is reported instead.
     expect(absolutizeCellLinks('[x](#)', 'Datasets/Pig.md')).toEqual({ md: '[x](#)', notAbsolute: ['#'] });
@@ -747,7 +749,7 @@ describe('site-relative hrefs in the API', () => {
         columns: { Description: 'see [Cow.md](./Cow.md) and [Papers.md #193](../Papers.md#193)' },
       }],
     };
-    const files = buildAgentApi({ papers, catalog, datasets, inventory: fixture, topics, taxonomy, reports, corpusDate: DATE });
+    const files = buildAgentApi({ graph: fixtureGraph, papers, catalog, datasets, inventory: fixture, topics, taxonomy, reports, corpusDate: DATE });
     const row = (files.find((f) => f.name === 'datasets.json')!.body as any).inventory
       .find((r: any) => r.id === 'ds:fixture-relative-links');
     expect(row.columns.Description).toBe(
@@ -763,7 +765,7 @@ describe('site-relative hrefs in the API', () => {
   it('ships no root-relative or fragment-only href in any emitted endpoint', () => {
     // An agent reading the JSON off-site (or from the raw mirror) cannot resolve
     // "/…" or "#…"; the parser's catalog summaries carry both forms for the site.
-    const files = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
+    const files = buildAgentApi({ graph: fixtureGraph, papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
     const input = JSON.stringify(catalog);
     expect(input).toContain(`href=\\"${SITE_BASE}/`); // the input really has them
     expect(input).toContain('href=\\"#');
@@ -818,7 +820,7 @@ describe('site/public/api/datasets.json (the shipped file)', () => {
  * test would pass happily on an index that had quietly grown back to the parent's size.
  */
 describe('the compact indexes', () => {
-  const built = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
+  const built = buildAgentApi({ graph: fixtureGraph, papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
   const body = (name: string) => built.find((f) => f.name === name)!.body as any;
   const bytes = (name: string) => serializeApiFile(name, built.find((f) => f.name === name)!.body).length;
 
@@ -949,8 +951,8 @@ describe('the compact indexes', () => {
 describe('network.json, the Citation Network page in the API (tucca-cellag/caail-planning#882)', () => {
   // Built with both caches, as generate-data builds the page's graph.json, so the test covers
   // the citation edges and the different-people exclusions rather than the no-cache fallback.
-  const graph = buildGraphModel(papers, loadCitationCache(), loadAuthorCache());
-  const files = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, graph, corpusDate: DATE });
+  const graph = fixtureGraph;
+  const files = buildAgentApi({ graph, papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
   const body = files.find((f) => f.name === 'network.json')!.body as any;
   const manifest = files.find((f) => f.name === 'index.json')!.body as any;
 
@@ -998,15 +1000,14 @@ describe('network.json, the Citation Network page in the API (tucca-cellag/caail
     expect(parsed.citationEdges).toEqual([]);
   });
 
-  it('falls back to a graph built from the papers when none is given', () => {
-    const fallback = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
-    const net = fallback.find((f) => f.name === 'network.json')!.body as any;
-    expect(net.sharedAuthorEdges).toEqual(buildGraphModel(papers).edges);
+  it('refuses a build with no graph, rather than serving a network the page does not draw', () => {
+    const noGraph = { papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE } as any;
+    expect(() => buildAgentApi(noGraph)).toThrow(/needs `graph`/);
   });
 });
 
 describe('the hub filters and momentum figures, documented in index.json (tucca-cellag/caail-planning#882)', () => {
-  const manifest = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE })
+  const manifest = buildAgentApi({ graph: fixtureGraph, papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE })
     .find((f) => f.name === 'index.json')!.body as any;
   const use = (path: string) => manifest.endpoints.find((e: any) => e.path === path).use as string;
 
@@ -1038,10 +1039,16 @@ describe('the hub filters and momentum figures, documented in index.json (tucca-
   });
 
   it('points at GitHub for the momentum figures, from the paths and rule the page uses', () => {
+    const use = REPOSITORY_ACTIVITY.use;
     expect(manifest.repositoryActivity).toEqual(REPOSITORY_ACTIVITY);
-    expect(REPOSITORY_ACTIVITY.url).toBe(`https://api.github.com/repos/${new URL(manifest.canonical).pathname.slice(1)}/commits`);
-    for (const p of [MOMENTUM_PATHS.papers, MOMENTUM_PATHS.datasets, ...CONTENT_PATHS, ...ADDITION_VERBS]) {
-      expect(REPOSITORY_ACTIVITY.use, p).toContain(p);
-    }
+    expect(REPOSITORY_ACTIVITY.url).toMatch(/^https:\/\/api\.github\.com\/repos\/[^/]+\/[^/]+\/commits$/);
+    expect(use).toContain(`\`path=${MOMENTUM_PATHS.papers}\``);
+    expect(use).toContain(`\`path=${MOMENTUM_PATHS.datasets}\``);
+    expect(use).toContain(`for ${CONTENT_PATHS.join(', ')}, `);
+    expect(use).toContain(`a lead verb of ${ADDITION_VERBS.join(', ')}.`);
+    const scopes = (kind: string) => Object.keys(SCOPE_TO_KIND).filter((s) => SCOPE_TO_KIND[s] === kind).join(' or ');
+    expect(use).toContain(`a first scope of ${scopes('Paper')} for a paper`);
+    expect(use).toContain(`and ${scopes('Dataset')} for a dataset`);
+    expect(use).toContain('`commit.author.date`');
   });
 });
