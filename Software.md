@@ -551,7 +551,7 @@ Summary: A meta-tool that converts documentation websites, GitHub repositories, 
 
 Summary: An open-source library of AI research and engineering skills covering vLLM, Megatron, GRPO, HuggingFace, and the broader LLM training and serving stack, maintained by [Orchestra Research](https://github.com/orchestra-research). Designed to package skills into Claude Code, Codex, or Gemini agents so they operate as fully-equipped AI research agents. Cell-ag teams building or fine-tuning their own biology foundation models (cf. [TranscriptFormer](#transcriptformer)) or running large-scale agentic workflows can pull from this library for the ML-training and serving infrastructure layer rather than reinventing it. MIT-licensed.
 
-### [Seqera AI / Co-Scientist](https://docs.seqera.io/platform-cloud/seqera-ai/)
+### [Seqera AI / Co-Scientist](https://docs.seqera.io/platform-cloud/co-scientist/)
 
 Summary: Seqera Cloud's AI assistant for bioinformatics workflows, providing an interactive co-scientist that helps users author and debug Nextflow pipelines, query workflow run data, and interpret results. Accessible through the Seqera CLI and Seqera Platform; no companion paper at time of curation.
 

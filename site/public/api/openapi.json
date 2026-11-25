@@ -11,7 +11,7 @@
       "identifier": "MIT"
     }
   },
-  "x-corpus-date": "2026-11-14",
+  "x-corpus-date": "2026-11-25",
   "paths": {
     "/api/index.json": {
       "get": {

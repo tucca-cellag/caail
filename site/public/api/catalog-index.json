@@ -1,5 +1,5 @@
 {
-  "corpusDate": "2026-11-14",
+  "corpusDate": "2026-11-25",
   "count": 293,
   "truncationNote": "Compare the number of rows you parsed against `count`. If you have fewer, your fetch truncated this file and you are looking at part of the corpus: say so, and do not report an absence from it. Fetching with a tool that returns bytes rather than a summary avoids this entirely.",
   "entries": [
@@ -103,7 +103,7 @@
     {"slug":"superpowers","name":"Superpowers","kind":"software","group":"AI Agents & Foundation Models","url":"https://github.com/obra/superpowers","doi":null,"doiRelation":null,"tier":"permissive"},
     {"slug":"skill-seekers","name":"Skill Seekers","kind":"software","group":"AI Agents & Foundation Models","url":"https://github.com/yusufkaraaslan/Skill_Seekers","doi":null,"doiRelation":null,"tier":"permissive"},
     {"slug":"ai-research-skills-library","name":"AI Research Skills Library","kind":"software","group":"AI Agents & Foundation Models","url":"https://github.com/orchestra-research/AI-research-SKILLs","doi":null,"doiRelation":null,"tier":"permissive"},
-    {"slug":"seqera-ai-co-scientist","name":"Seqera AI / Co-Scientist","kind":"software","group":"AI Agents & Foundation Models","url":"https://docs.seqera.io/platform-cloud/seqera-ai/","doi":null,"doiRelation":null,"tier":"restricted"},
+    {"slug":"seqera-ai-co-scientist","name":"Seqera AI / Co-Scientist","kind":"software","group":"AI Agents & Foundation Models","url":"https://docs.seqera.io/platform-cloud/co-scientist/","doi":null,"doiRelation":null,"tier":"restricted"},
     {"slug":"dotmatics-luma","name":"Dotmatics Luma","kind":"software","group":"AI Agents & Foundation Models","url":"https://go.dotmatics.com/luma-lab-orchestration","doi":null,"doiRelation":null,"tier":"unknown"},
     {"slug":"scdataset","name":"scDataset","kind":"software","group":"AI Agents & Foundation Models","url":"https://github.com/scDataset/scDataset","doi":"10.48550/arxiv.2506.01883","doiRelation":"publication","tier":"permissive"},
     {"slug":"transcriptformer","name":"TranscriptFormer","kind":"software","group":"AI Agents & Foundation Models","url":"https://virtualcellmodels.cziscience.com/model/transcriptformer","doi":"10.1126/science.aec8514","doiRelation":"publication","tier":"permissive"},
