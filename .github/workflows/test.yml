@@ -56,7 +56,9 @@ on:
       # The two skills that state the pause on new items, which
       # site/scripts/db/add-item.test.ts holds to NEW_ITEMS_PAUSED. Without them a
       # PR editing only one of these files runs no workflow, so its note could
-      # drift from what db:add does with nothing failing.
+      # drift from what db:add does with nothing failing. caail-db-authoring's
+      # Procedure is also read by site/scripts/db/hook.test.ts, which holds the
+      # edit guard's deny message to the step numbers it names.
       - .claude/skills/caail-db-authoring/SKILL.md
       - .claude/skills/zotero-to-caail-sync/SKILL.md
       # lint-papers.yml, whose new-item guard step comment
@@ -184,7 +186,9 @@ on:
       # The two skills that state the pause on new items, which
       # site/scripts/db/add-item.test.ts holds to NEW_ITEMS_PAUSED. Without them a
       # PR editing only one of these files runs no workflow, so its note could
-      # drift from what db:add does with nothing failing.
+      # drift from what db:add does with nothing failing. caail-db-authoring's
+      # Procedure is also read by site/scripts/db/hook.test.ts, which holds the
+      # edit guard's deny message to the step numbers it names.
       - .claude/skills/caail-db-authoring/SKILL.md
       - .claude/skills/zotero-to-caail-sync/SKILL.md
       # lint-papers.yml, whose new-item guard step comment

@@ -1,18 +1,19 @@
 /**
  * hook.test.ts — pins the PreToolUse guard (.claude/hooks/block-generated-edits.py):
- * structured edits to the generated catalog files are denied; prose edits, dataset
- * narrative, and non-canonical files are allowed. Shells the real hook exactly as
- * Claude Code would (tool JSON on stdin; a deny is a JSON object on stdout).
+ * whole-file Writes and structured Edits to the root catalog files are denied; other
+ * Edits, the pages under Datasets/ and non-canonical files are allowed. Shells the real hook
+ * exactly as Claude Code would (tool JSON on stdin; a deny is a JSON object on stdout).
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { REPO_ROOT } from './lib.js';
 
 const HOOK = join(REPO_ROOT, '.claude', 'hooks', 'block-generated-edits.py');
+const SKILL = join(REPO_ROOT, '.claude', 'skills', 'caail-db-authoring', 'SKILL.md');
 const P = (rel: string) => join(REPO_ROOT, rel);
 
 /** Run a copy of the hook; return its hookSpecificOutput, or null when it allows. */
@@ -377,11 +378,131 @@ describe('block-generated-edits hook: judged by the path inside the checkout', (
       expect(db).toHaveLength(1);
       expect(commands(db[0])).toEqual(['db:build', 'db:export', 'db:emit']);
     });
-    it('ends both routes with db:check, db:verify and parse, and says to commit what parse changed', () => {
+    /**
+     * The gates after either route are the caail-db-authoring skill's, and the message points at
+     * them rather than copying them: a copy here once listed three of the five. So the step it
+     * names is checked against the skill, and the message may name none of that step's commands.
+     */
+    it('ends both routes by pointing at the skill\'s gate and commit steps, naming no gate itself', () => {
       const routes = lines.findLastIndex((l) => editsDb(l) || editsNdjson(l));
       const tail = lines.slice(routes + 1).join('\n');
-      expect(commands(tail)).toEqual(['db:check', 'db:verify', 'parse']);
+      const skill = readFileSync(SKILL, 'utf-8');
+      const start = skill.indexOf('\n## Procedure');
+      expect(start, 'the skill has no ## Procedure section').toBeGreaterThan(-1);
+      const end = skill.indexOf('\n## ', start + 1);
+      const procedure = skill.slice(start, end === -1 ? undefined : end);
+      /** The text of step n of the Procedure, up to the next numbered step. */
+      const stepText = (n: string) => {
+        const ls = procedure.split('\n');
+        const i = ls.findIndex((l) => l.startsWith(`${n}. `));
+        if (i === -1) return '';
+        const j = ls.findIndex((l, k) => k > i && /^\d+\. /.test(l));
+        return ls.slice(i, j === -1 ? undefined : j).join('\n');
+      };
+
+      const gate = tail.match(/\bstep (\d+) of the caail-db-authoring skill's Procedure\b/);
+      expect(gate, 'the message names no step of the skill for its gates').not.toBeNull();
+      expect(stepText(gate![1]), `step ${gate![1]} of the skill's Procedure is not its gate step`).toMatch(/^\d+\. \*\*Gate before commit\*\*/);
+      const commit = tail.match(/\bas its step (\d+) says\b/);
+      expect(commit, 'the message names no step of the skill for the commit').not.toBeNull();
+      expect(stepText(commit![1]), `step ${commit![1]} of the skill's Procedure does not say what to commit`).toMatch(/^\d+\. .*\bcommit\b/);
+
+      const gates = [...stepText(gate![1]).matchAll(/pnpm --dir site ([a-z:-]+)/g)].map((m) => m[1]);
+      expect(gates.length, 'no gate command read from the skill').toBeGreaterThan(0);
+      const spans = [...tail.matchAll(/`([^`]+)`/g)].map((m) => m[1].split(/\s+/));
+      for (const g of gates) {
+        expect(spans.some((words) => words.includes(g)), `the message names the gate ${g} itself`).toBe(false);
+        // Outside backticks too: a gate run as a command, and any gate whose name is no
+        // ordinary word (db:check, lint:papers), named anywhere. "parse" and "test" stay
+        // allowed as words, since the commit instruction says what parse changed.
+        expect(tail.includes(`pnpm --dir site ${g}`), `the message runs the gate ${g} itself`).toBe(false);
+        if (g.includes(':')) {
+          const named = new RegExp(`(^|[^\\w:-])${g.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}($|[^\\w:-])`);
+          expect(named.test(tail), `the message names the gate ${g} in plain text`).toBe(false);
+        }
+      }
       expect(tail).toContain('site/public/');
     });
+  });
+
+  /**
+   * The closing sentence says why the guard fired, and it fires for two different reasons: a
+   * whole-file Write whatever it holds, and an Edit only when it touches structured markup.
+   * It once gave the Edit reason for both, and said prose-only edits are allowed, which an
+   * Edit to an entry's body passes as and db:emit then reverts.
+   */
+  describe('why the deny message says it fired', () => {
+    const reasonOf = (payload: object) => {
+      const root = checkout('plain');
+      return run(payload, hookOf(root))?.permissionDecisionReason ?? '';
+    };
+    const editOf = (tool: string, file: string) => ({
+      tool_name: tool,
+      tool_input: tool === 'MultiEdit'
+        ? { file_path: file, edits: [{ old_string: 'prose', new_string: 'p2' }, { old_string: '### [GEO](u)', new_string: '### [GEO2](u)' }] }
+        : { file_path: file, old_string: '### [GEO](u)', new_string: '### [GEO2](u)' },
+    });
+
+    it('names a whole-file Write when it refuses a Write', () => {
+      const reason = reasonOf(write(join(checkout('plain'), 'Papers.md')));
+      expect(reason).toContain('This fired because the change is a whole-file Write');
+      expect(reason).not.toContain("This fired because the edit's text contains");
+    });
+    it.each(['Edit', 'MultiEdit'])('names the markers when it refuses an %s', (tool) => {
+      const reason = reasonOf(editOf(tool, join(checkout('plain'), 'Databases.md')));
+      expect(reason).toContain("This fired because the edit's text contains one of");
+      expect(reason).not.toContain('whole-file Write');
+    });
+    // The markers the message names are the hook's own MARKERS, read from its source, so the
+    // message cannot list a set the guard does not match.
+    it.each(['Write', 'Edit'])('names exactly the markers the hook matches (%s)', (tool) => {
+      // Read with Python's own parser, so any marker string, one holding a ")" included,
+      // comes back exactly as the hook declares it.
+      const read = 'import ast, json, sys\n'
+        + 'tree = ast.parse(open(sys.argv[1], encoding="utf-8").read())\n'
+        + 'print(json.dumps(next(ast.literal_eval(n.value) for n in tree.body\n'
+        + '    if isinstance(n, ast.Assign) and getattr(n.targets[0], "id", None) == "MARKERS")))';
+      const markers: string[] = JSON.parse(execFileSync('python3', ['-c', read, HOOK], { encoding: 'utf-8' }));
+      expect(markers.length, 'the hook declares no MARKERS').toBeGreaterThan(0);
+      const file = join(checkout('plain'), 'Databases.md');
+      const reason = reasonOf(tool === 'Write' ? write(file) : editOf(tool, file));
+      const fired = reason.slice(reason.indexOf('This fired because'));
+      const named = [...fired.matchAll(/`([^`]+)`/g)].map((m) => m[1]).filter((s) => !s.startsWith('db:'));
+      expect(named).toEqual(markers);
+    });
+    it.each(['Write', 'Edit'])('never says prose-only edits are allowed, and says what an unguarded edit meets (%s)', (tool) => {
+      const file = join(checkout('plain'), 'Databases.md');
+      const reason = reasonOf(tool === 'Write' ? write(file) : editOf(tool, file));
+      expect(reason).not.toMatch(/prose[- ]only edits? .*allowed/i);
+      expect(reason).toMatch(/gets past this guard, but .*not safe either: `db:emit` regenerates that text from the DB, and the CI sync guard fails/);
+      // db:emit does not quietly undo every such edit: some make it stop, so no claim that it reverts them.
+      expect(reason).not.toMatch(/\brevert(s|ed)? it\b|is overwritten/);
+      // And a prose editor whose span caught a marker is told how to make the edit.
+      expect(reason).toMatch(/is hand-authored: to edit it, narrow the Edit so its text carries none of these markers/);
+    });
+  });
+});
+
+/**
+ * What the guard lets through, pinned as behaviour: a case here fails when the hook starts
+ * refusing it, and none of them reads the docs. The hook's docstring is the one written account
+ * of what passes, which CLAUDE.md's "Guards" bullet and the caail-db-authoring skill point at,
+ * so a change that fails one of these should change the docstring with it.
+ */
+describe('block-generated-edits hook: DB-owned text it does not guard', () => {
+  it('ALLOWS an Edit to a reference\'s DOI in Papers.md that touches no anchor', () => {
+    expect(decide({ tool_name: 'Edit', tool_input: { file_path: P('Papers.md'), old_string: 'https://doi.org/10.1000/old', new_string: 'https://doi.org/10.1000/new' } })).toBeNull();
+  });
+  it('ALLOWS an Edit to a catalog entry\'s Summary line in Software.md', () => {
+    expect(decide({ tool_name: 'Edit', tool_input: { file_path: P('Software.md'), old_string: 'Summary: A tool for', new_string: 'Summary: A library for' } })).toBeNull();
+  });
+  it('ALLOWS an Edit to a field report\'s edition line in FieldReports.md', () => {
+    expect(decide({ tool_name: 'Edit', tool_input: { file_path: P('FieldReports.md'), old_string: '*Edition 2023, published 2024.*', new_string: '*Edition 2024, published 2025.*' } })).toBeNull();
+  });
+  it('ALLOWS an Edit to an inventory table row in Datasets/Cow.md', () => {
+    expect(decide({ tool_name: 'Edit', tool_input: { file_path: P('Datasets/Cow.md'), old_string: '| GSE1 | muscle |', new_string: '| GSE2 | muscle |' } })).toBeNull();
+  });
+  it('ALLOWS a whole-file Write to Datasets/Cow.md', () => {
+    expect(decide({ tool_name: 'Write', tool_input: { file_path: P('Datasets/Cow.md'), content: '# x' } })).toBeNull();
   });
 });

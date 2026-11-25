@@ -1,11 +1,24 @@
 #!/usr/bin/env python3
-"""PreToolUse guard (issue #78): the structured catalog in Papers.md / Software.md /
-Databases.md / FieldReports.md is GENERATED from the SQLite authoring DB. Direct edits
-to that structured content (matrix cells, references, catalog entries, field-report
-entries) drift from the DB and are clobbered on the next `db:emit`, so this blocks them
-and steers to the DB workflow. Surrounding prose is preserved verbatim by db:emit, so
-prose-only edits are allowed through; whole-file Writes are always blocked. The CI sync
-guard is the backstop — this is the fast local reminder."""
+"""PreToolUse guard (issue #78) on the root catalog files, Papers.md / Software.md /
+Databases.md / FieldReports.md (CATALOG below), whose structured content is GENERATED
+from the SQLite authoring DB: `db:emit` regenerates it, so a direct edit there is not
+safe. This refuses every whole-file Write to one of them, and any Edit or MultiEdit
+whose old or new text contains one of MARKERS below, and steers to the DB workflow. An
+exact catalog name below the root, outside site/, docs/ and .claude/, is refused the same
+way (see fold). Prose around that content (a page's intro, a group's intro) is hand-authored and passed
+through verbatim by `db:emit`, which is why an Edit with no marker is allowed.
+
+That is less than the DB owns, and nothing else here stops the rest. The rule is the
+whole account: an Edit or MultiEdit whose text carries no marker passes, whatever it
+changes, and an edit made with any other tool (a `sed` run through Bash, for one) is never
+seen, as .claude/settings.json registers this hook for Edit, Write and MultiEdit alone.
+Every page under Datasets/ passes too, since this guard does not check them, though their
+inventory tables and curated entries are DB-owned. Examples of DB-owned text that passes:
+an entry's body (a catalog Summary: line, a field report's text), a reference's citation,
+DOI and `> **Code**:` or notice lines, and the matrix's row and column labels. The CI sync
+guard, which fails on any
+difference between the committed Markdown and what `db:emit` writes, is the backstop for
+all of it; this is the fast local reminder for the structural edits."""
 import json
 import os
 import re
@@ -142,20 +155,34 @@ variant = "" if typed == name else (
     "opens one name as the other, so the guard treats them as the same file on every "
     "disk.\n"
 )
+# Why it fired, by tool; the path-based reasons are the outside and variant lines above.
+# The markers are printed from MARKERS, so the message cannot name a set the guard does
+# not match, and the sentence after it refers back to them.
+markers = ", ".join(f"`{m}`" for m in MARKERS)
+fired = (
+    "This fired because the change is a whole-file Write, which this guard refuses "
+    f"whatever it holds; it refuses an Edit only when its text contains one of {markers}."
+    if tool == "Write" else
+    f"This fired because the edit's text contains one of {markers}."
+)
 reason = outside + variant + (
-    f"{name} is generated from the SQLite authoring DB (issue #78) — its matrix, "
-    "references, and catalog entries are DB-owned, and a direct edit here drifts from "
-    "the DB and is overwritten by the next `db:emit` (the CI sync guard will fail).\n"
+    f"{name} is generated from the SQLite authoring DB (issue #78): its matrix, "
+    "references and catalog entries are DB-owned, and `db:emit` regenerates them, so a "
+    "direct edit here is not safe and the CI sync guard fails on the drift.\n"
     "To change structured content, take ONE of these two routes, and do not mix them:\n"
     "  A. `pnpm --dir site db:build` (materializes site/caail.db from the NDJSON), edit site/caail.db, "
     "then `pnpm --dir site db:export && pnpm --dir site db:emit`.\n"
     "  B. edit the relevant site/db/ndjson/*.ndjson directly, then `pnpm --dir site db:emit` alone. "
     "Skip db:export here: it rewrites every NDJSON file from caail.db, which would revert the edit.\n"
-    "Then, after either route: `pnpm --dir site db:check && pnpm --dir site db:verify && "
-    "pnpm --dir site parse`, and commit the Markdown, the NDJSON, site/db/corpus-stamp.json "
-    "(db:emit re-stamps it) and what parse changed under site/public/ together.\n"
-    "See the caail-db-authoring skill. (Prose-only edits to these files are allowed; "
-    "this fired because the change touches structured markup.)"
+    "Then, after either route, run every gate in step 5 of the caail-db-authoring skill's "
+    "Procedure, and commit the Markdown, the NDJSON, site/db/corpus-stamp.json (db:emit "
+    "re-stamps it) and what parse changed under site/public/ together, as its step 6 says.\n"
+    + fired +
+    " An Edit that contains none of them gets past this guard, but if it changes other "
+    "DB-owned text, such as an entry's body or a reference's citation, it is not safe "
+    "either: `db:emit` regenerates that text from the DB, and the CI sync guard fails on "
+    "any difference. Prose around the structure, such as a page's or a group's intro, is "
+    "hand-authored: to edit it, narrow the Edit so its text carries none of these markers."
 )
 print(json.dumps({"hookSpecificOutput": {
     "hookEventName": "PreToolUse",
