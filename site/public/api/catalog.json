@@ -2621,9 +2621,9 @@
           "theme": "ai-methods-tooling"
         }
       ],
-      "license": null,
-      "licenseSource": null,
-      "tier": "unknown",
+      "license": "MIT",
+      "licenseSource": "manual",
+      "tier": "permissive",
       "doi": null,
       "doiSource": null,
       "doiRelation": null,
@@ -2710,9 +2710,9 @@
           "theme": "ai-methods-tooling"
         }
       ],
-      "license": null,
-      "licenseSource": null,
-      "tier": "unknown",
+      "license": "MIT",
+      "licenseSource": "manual",
+      "tier": "permissive",
       "doi": "10.3389/fmicb.2020.550420",
       "doiSource": "manual",
       "doiRelation": "publication",
@@ -2737,9 +2737,9 @@
           "theme": "ai-methods-tooling"
         }
       ],
-      "license": null,
-      "licenseSource": null,
-      "tier": "unknown",
+      "license": "MIT",
+      "licenseSource": "manual",
+      "tier": "permissive",
       "doi": "10.1093/nargab/lqac007",
       "doiSource": "manual",
       "doiRelation": "publication",
