@@ -29,8 +29,11 @@ CAAIL's **structured catalog** is authored in an in-repo SQLite database and **g
 back to Markdown. It covers the `Papers.md` matrix + references, the `Software.md` and
 `Databases.md` entries, the `FieldReports.md` entries, and the `Datasets/*.md` inventory
 tables + curated `### …` entries (featured atlases, GEMs, reference entries). The DB is the source of truth;
-those Markdown regions are derived and must not be hand-edited (a PreToolUse hook blocks
-structured edits; the CI sync guard fails on drift).
+those Markdown regions are derived and must not be hand-edited: `db:emit` regenerates them,
+so a hand edit is not safe, and the CI sync guard fails on the drift. The PreToolUse hook
+(`.claude/hooks/block-generated-edits.py`) refuses some hand edits to the generated catalog
+files. Its docstring and `MARKERS` say which, and what gets past it; the sync guard is what
+catches the rest.
 
 The DB is **authoring-time only** — it never runs in the deploy build. `pnpm build` still
 parses the committed Markdown into `data/*.json`. This skill is the *workflow* for changing
@@ -270,7 +273,7 @@ Three changes are not column edits. Raise them rather than improvising one:
 
 | Pitfall | Reality |
 | --- | --- |
-| Hand-editing `Papers.md` / `Software.md` / `Databases.md` / `FieldReports.md` structured content | It's DB-owned: clobbered by the next `db:emit`, and it fails the CI sync guard. Edit the DB. The PreToolUse hook blocks every whole-file Write to these files, but an Edit only when it touches one of the structured-markup `MARKERS` in `.claude/hooks/block-generated-edits.py`, so an Edit to other DB-owned text gets past it: a field report's `*Edition …*` line is one, and `db:emit` reverts it with no error. |
+| Hand-editing `Papers.md` / `Software.md` / `Databases.md` / `FieldReports.md` structured content | It's DB-owned: `db:emit` regenerates it, so a hand edit is not safe, and it fails the CI sync guard. Edit the DB. The PreToolUse hook (`.claude/hooks/block-generated-edits.py`) refuses only some such edits, and its docstring says which, so its silence is not permission. |
 | Committing NDJSON without running `db:emit` | The CI sync guard (`git diff --exit-code`) fails: committed Markdown must equal the emit output. |
 | Committing Markdown and NDJSON in separate commits | They move together — NDJSON is the source, Markdown is derived from it. |
 | Changing the NDJSON and leaving the corpus stamp behind | `pnpm parse` and `db:check` refuse a stamp whose hash no longer matches, naming `db:stamp`. Since `pnpm build` runs `parse`, a stale stamp that reached main would fail the Pages deploy until re-stamped, deliberately, rather than publish a date belonging to another corpus. Every db command that writes the NDJSON re-stamps when it finishes, and so does `db:emit`; after a hand edit with no emit, run `db:stamp`. Merging main into a branch when both changed the corpus conflicts on the stamp, and on the API files and `llms.txt` that carry its date: take either side of each, run `db:stamp --redate`, which dates the merged corpus today even when one side's stamp still matches (as it can when that side's NDJSON contains the other's), then `pnpm --dir site parse`, and commit all of them. The one exception: when the merged NDJSON is identical to main's, restore main's stamp (`git checkout origin/main -- site/db/corpus-stamp.json`) instead of re-dating, since the same corpus keeps its stamp and the order guard refuses it under another date. |

@@ -87,7 +87,7 @@ A lead would add domain judgement on top of the checks in section 2, and get pub
 
 ## 4. Automated checks
 
-The structured catalogue is generated from an in-repo database, which rules out a class of error mechanically. Direct edits to the generated Markdown are blocked, and CI fails if the committed Markdown drifts from the database. On every change:
+The structured catalogue is generated from an in-repo database, which rules out a class of error mechanically. The generated Markdown is rewritten from the database, and CI fails if the committed Markdown drifts from it. On every change:
 
 - **Referential integrity.** Every matrix anchor resolves to a real reference, and every primary-research reference is reachable from at least one cell.
 - **Round-trip verification.** The generated Markdown re-parses to a model identical to the database's.
