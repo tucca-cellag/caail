@@ -2621,9 +2621,9 @@
           "theme": "ai-methods-tooling"
         }
       ],
-      "license": null,
-      "licenseSource": null,
-      "tier": "unknown",
+      "license": "MIT",
+      "licenseSource": "manual",
+      "tier": "permissive",
       "doi": null,
       "doiSource": null,
       "doiRelation": null,
@@ -2710,9 +2710,9 @@
           "theme": "ai-methods-tooling"
         }
       ],
-      "license": null,
-      "licenseSource": null,
-      "tier": "unknown",
+      "license": "MIT",
+      "licenseSource": "manual",
+      "tier": "permissive",
       "doi": "10.3389/fmicb.2020.550420",
       "doiSource": "manual",
       "doiRelation": "publication",
@@ -2737,9 +2737,9 @@
           "theme": "ai-methods-tooling"
         }
       ],
-      "license": null,
-      "licenseSource": null,
-      "tier": "unknown",
+      "license": "MIT",
+      "licenseSource": "manual",
+      "tier": "permissive",
       "doi": "10.1093/nargab/lqac007",
       "doiSource": "manual",
       "doiRelation": "publication",
@@ -3157,7 +3157,7 @@
       "slug": "seqera-ai-co-scientist",
       "itemId": "sw:seqera-ai-co-scientist",
       "name": "Seqera AI / Co-Scientist",
-      "url": "https://docs.seqera.io/platform-cloud/seqera-ai/",
+      "url": "https://docs.seqera.io/platform-cloud/co-scientist/",
       "group": "AI Agents & Foundation Models",
       "summary": "Seqera Cloud's AI assistant for bioinformatics workflows, providing an interactive co-scientist that helps users author and debug Nextflow pipelines, query workflow run data, and interpret results. Accessible through the Seqera CLI and Seqera Platform; no companion paper at time of curation.",
       "summaryHtml": "<p>Seqera Cloud's AI assistant for bioinformatics workflows, providing an interactive co-scientist that helps users author and debug Nextflow pipelines, query workflow run data, and interpret results. Accessible through the Seqera CLI and Seqera Platform; no companion paper at time of curation.</p>",
@@ -8997,5 +8997,5 @@
       "citationDois": []
     }
   ],
-  "corpusDate": "2026-11-14"
+  "corpusDate": "2026-11-25"
 }
